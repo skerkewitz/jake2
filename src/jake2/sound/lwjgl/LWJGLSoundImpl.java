@@ -18,8 +18,8 @@ import jake2.util.Vargs;
 
 import java.nio.*;
 
-import org.lwjgl.LWJGLException;
 import org.lwjgl.openal.*;
+
 
 
 /**
@@ -37,8 +37,9 @@ public final class LWJGLSoundImpl implements Sound {
 
     // the last 4 buffers are used for cinematics streaming
     private IntBuffer buffers = Lib.newIntBuffer(MAX_SFX + STREAM_QUEUE);
+	private long device;
 
-    // singleton 
+	// singleton
     private LWJGLSoundImpl() {
     }
 
@@ -50,11 +51,8 @@ public final class LWJGLSoundImpl implements Sound {
 	try {
 	    initOpenAL();
 	    checkError();	
-	} catch (OpenALException e) {
-	    Com.Printf(e.getMessage() + '\n');
-	    return false;
 	} catch (Exception e) {
-	    Com.DPrintf(e.getMessage() + '\n');
+	    Com.Printf(e.getMessage() + '\n');
 	    return false;
 	}
 
@@ -95,31 +93,31 @@ public final class LWJGLSoundImpl implements Sound {
     }
 
 
-    private void initOpenAL() throws OpenALException 
-    {
-	try { AL.create(); } catch (LWJGLException e) { throw new OpenALException(e); }
-	String deviceName = null;
+	private void initOpenAL() {
+		device = ALC10.nalcOpenDevice(0);
 
-	String os = System.getProperty("os.name");
-	if (os.startsWith("Windows")) {
-	    deviceName = "DirectSound3D";
-	}
 
-	String defaultSpecifier = ALC10.alcGetString(AL.getDevice(), ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
+		String deviceName = null;
 
-	Com.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
+		String os = System.getProperty("os.name");
+		if (os.startsWith("Windows")) {
+		    deviceName = "DirectSound3D";
+		}
 
-	// Check for an error.
-	if (ALC10.alcGetError(AL.getDevice()) != ALC10.ALC_NO_ERROR) 
-	{
-	    Com.DPrintf("Error with SoundDevice");
-	}
-    }
+		String defaultSpecifier = ALC10.alcGetString(device, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
 
-    void exitOpenAL() 
-    {
-	AL.destroy();
-    }
+		Com.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
+
+		// Check for an error.
+		if (ALC10.alcGetError(device) != ALC10.ALC_NO_ERROR)
+		{
+		    Com.DPrintf("Error with SoundDevice");
+		}
+  }
+
+    void exitOpenAL() {
+	    ALC10.alcCloseDevice(device);
+		}
 
     // TODO check the sfx direct buffer size
     // 2MB sfx buffer
@@ -206,10 +204,10 @@ public final class LWJGLSoundImpl implements Sound {
     public void Update(float[] origin, float[] forward, float[] right, float[] up) {
 
 	Channel.convertVector(origin, listenerOrigin);		
-	AL10.alListener(AL10.AL_POSITION, listenerOrigin);
+	AL10.alListenerfv(AL10.AL_POSITION, listenerOrigin);
 
 	Channel.convertOrientation(forward, up, listenerOrientation);		
-	AL10.alListener(AL10.AL_ORIENTATION, listenerOrientation);
+	AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation);
 
 	// set the master volume
 	AL10.alListenerf(AL10.AL_GAIN, s_volume.value);

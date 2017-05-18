@@ -460,61 +460,61 @@ public abstract class Main extends Base {
 	**
 	*/
 	void GL_DrawParticles(int num_particles) {
-		float[] up = { 0, 0, 0 };
-		float[] right = { 0, 0, 0 };
-		float scale;
-		int color;
-
-		float origin_x, origin_y, origin_z;
-
-		Math3D.VectorScale(vup, 1.5f, up);
-		Math3D.VectorScale(vright, 1.5f, right);
-		
-		GL_Bind(r_particletexture.texnum);
-		gl.glDepthMask(false); // no z buffering
-		gl.glEnable(GL_BLEND);
-		GL_TexEnv(GL_MODULATE);
-		
-		gl.glBegin(GL_TRIANGLES);
-
-		FloatBuffer sourceVertices = particle_t.vertexArray;
-		IntBuffer sourceColors = particle_t.colorArray;
-		for (int j = 0, i = 0; i < num_particles; i++) {
-			origin_x = sourceVertices.get(j++);
-			origin_y = sourceVertices.get(j++);
-			origin_z = sourceVertices.get(j++);
-
-			// hack a scale up to keep particles from disapearing
-			scale =
-				(origin_x - r_origin[0]) * vpn[0]
-					+ (origin_y - r_origin[1]) * vpn[1]
-					+ (origin_z - r_origin[2]) * vpn[2];
-
-			scale = (scale < 20) ? 1 :  1 + scale * 0.004f;
-
-			color = sourceColors.get(i);
-			gl.glColor4ub(
-				(byte)((color >> 0) & 0xFF),
-				(byte)((color >> 8) & 0xFF),
-				(byte)((color >> 16) & 0xFF),
-				(byte)((color >> 24) & 0xFF)
-			);
-			// first vertex
-			gl.glTexCoord2f(0.0625f, 0.0625f);
-			gl.glVertex3f(origin_x, origin_y, origin_z);
-			// second vertex
-			gl.glTexCoord2f(1.0625f, 0.0625f);
-			gl.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
-			// third vertex
-			gl.glTexCoord2f(0.0625f, 1.0625f);
-			gl.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
-		}
-		gl.glEnd();
-		
-		gl.glDisable(GL_BLEND);
-		gl.glColor4f(1, 1, 1, 1);
-		gl.glDepthMask(true); // back to normal Z buffering
-		GL_TexEnv(GL_REPLACE);
+//		float[] up = { 0, 0, 0 };
+//		float[] right = { 0, 0, 0 };
+//		float scale;
+//		int color;
+//
+//		float origin_x, origin_y, origin_z;
+//
+//		Math3D.VectorScale(vup, 1.5f, up);
+//		Math3D.VectorScale(vright, 1.5f, right);
+//
+//		GL_Bind(r_particletexture.texnum);
+//		gl.glDepthMask(false); // no z buffering
+//		gl.glEnable(GL_BLEND);
+//		GL_TexEnv(GL_MODULATE);
+//
+//		gl.glBegin(GL_TRIANGLES);
+//
+//		FloatBuffer sourceVertices = particle_t.vertexArray;
+//		IntBuffer sourceColors = particle_t.colorArray;
+//		for (int j = 0, i = 0; i < num_particles; i++) {
+//			origin_x = sourceVertices.get(j++);
+//			origin_y = sourceVertices.get(j++);
+//			origin_z = sourceVertices.get(j++);
+//
+//			// hack a scale up to keep particles from disapearing
+//			scale =
+//				(origin_x - r_origin[0]) * vpn[0]
+//					+ (origin_y - r_origin[1]) * vpn[1]
+//					+ (origin_z - r_origin[2]) * vpn[2];
+//
+//			scale = (scale < 20) ? 1 :  1 + scale * 0.004f;
+//
+//			color = sourceColors.get(i);
+//			gl.glColor4ub(
+//				(byte)((color >> 0) & 0xFF),
+//				(byte)((color >> 8) & 0xFF),
+//				(byte)((color >> 16) & 0xFF),
+//				(byte)((color >> 24) & 0xFF)
+//			);
+//			// first vertex
+//			gl.glTexCoord2f(0.0625f, 0.0625f);
+//			gl.glVertex3f(origin_x, origin_y, origin_z);
+//			// second vertex
+//			gl.glTexCoord2f(1.0625f, 0.0625f);
+//			gl.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
+//			// third vertex
+//			gl.glTexCoord2f(0.0625f, 1.0625f);
+//			gl.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
+//		}
+//		gl.glEnd();
+//
+//		gl.glDisable(GL_BLEND);
+//		gl.glColor4f(1, 1, 1, 1);
+//		gl.glDepthMask(true); // back to normal Z buffering
+//		GL_TexEnv(GL_REPLACE);
 	}
 
 	/*

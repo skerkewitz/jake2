@@ -34,298 +34,345 @@ import jake2.render.Base;
 import java.awt.Dimension;
 import java.util.LinkedList;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.opengl.GL;
+
+import static org.lwjgl.glfw.GLFW.*;
+//import org.lwjgl.opengl.Display;
+//import org.lwjgl.opengl.DisplayMode;
 
 /**
  * LWJGLBase
- * 
+ *
  * @author dsanders/cwei
  */
 public abstract class LwjglDriver extends LwjglGL implements GLDriver {
 
-    protected LwjglDriver() {
-        // see LwjglRenderer
-    }
+	private long window;
 
-    private DisplayMode oldDisplayMode;
-
-    // window position on the screen
-    int window_xpos, window_ypos;
-
-    private java.awt.DisplayMode toAwtDisplayMode(DisplayMode m) {
-        return new java.awt.DisplayMode(m.getWidth(), m.getHeight(), m
-                .getBitsPerPixel(), m.getFrequency());
-    }
-
-    public java.awt.DisplayMode[] getModeList() {
-	DisplayMode[] modes;
-	try {
-	    modes = Display.getAvailableDisplayModes();
-	} catch (LWJGLException e) {
-	    Com.Println(e.getMessage());
-	    return new java.awt.DisplayMode[0];
-	}
-        LinkedList l = new LinkedList();
-        l.add(toAwtDisplayMode(oldDisplayMode));
-
-        for (int i = 0; i < modes.length; i++) {
-            DisplayMode m = modes[i];
-
-            if (m.getBitsPerPixel() != oldDisplayMode.getBitsPerPixel())
-                continue;
-            if (m.getFrequency() > oldDisplayMode.getFrequency())
-                continue;
-            if (m.getHeight() < 240 || m.getWidth() < 320)
-                continue;
-
-            int j = 0;
-            java.awt.DisplayMode ml = null;
-            for (j = 0; j < l.size(); j++) {
-                ml = (java.awt.DisplayMode) l.get(j);
-                if (ml.getWidth() > m.getWidth())
-                    break;
-                if (ml.getWidth() == m.getWidth()
-                        && ml.getHeight() >= m.getHeight())
-                    break;
-            }
-            if (j == l.size()) {
-                l.addLast(toAwtDisplayMode(m));
-            } else if (ml.getWidth() > m.getWidth()
-                    || ml.getHeight() > m.getHeight()) {
-                l.add(j, toAwtDisplayMode(m));
-            } else if (m.getFrequency() > ml.getRefreshRate()) {
-                l.remove(j);
-                l.add(j, toAwtDisplayMode(m));
-            }
-        }
-        java.awt.DisplayMode[] ma = new java.awt.DisplayMode[l.size()];
-        l.toArray(ma);
-        return ma;
-    }
-
-    public DisplayMode[] getLWJGLModeList() {
-	DisplayMode[] modes;
-	try {
-	    modes = Display.getAvailableDisplayModes();
-	} catch (LWJGLException e) {
-	    Com.Println(e.getMessage());
-	    return new DisplayMode[0];
+	protected LwjglDriver() {
+		// see LwjglRenderer
 	}
 
-        LinkedList l = new LinkedList();
-        l.add(oldDisplayMode);
+//	private DisplayMode oldDisplayMode;
 
-        for (int i = 0; i < modes.length; i++) {
-            DisplayMode m = modes[i];
+	// window position on the screen
+	int window_xpos, window_ypos;
 
-            if (m.getBitsPerPixel() != oldDisplayMode.getBitsPerPixel())
-                continue;
-            if (m.getFrequency() > Math.max(60, oldDisplayMode.getFrequency()))
-                continue;
-            if (m.getHeight() < 240 || m.getWidth() < 320)
-                continue;
-            if (m.getHeight() > oldDisplayMode.getHeight() || m.getWidth() > oldDisplayMode.getWidth())
-                continue;
+//	private java.awt.DisplayMode toAwtDisplayMode(DisplayMode m) {
+//		return new java.awt.DisplayMode(m.getWidth(), m.getHeight(), m
+//						.getBitsPerPixel(), m.getFrequency());
+//	}
 
-            int j = 0;
-            DisplayMode ml = null;
-            for (j = 0; j < l.size(); j++) {
-                ml = (DisplayMode) l.get(j);
-                if (ml.getWidth() > m.getWidth())
-                    break;
-                if (ml.getWidth() == m.getWidth()
-                        && ml.getHeight() >= m.getHeight())
-                    break;
-            }
-            if (j == l.size()) {
-                l.addLast(m);
-            } else if (ml.getWidth() > m.getWidth()
-                    || ml.getHeight() > m.getHeight()) {
-                l.add(j, m);
-            } else if (m.getFrequency() > ml.getFrequency()) {
-                l.remove(j);
-                l.add(j, m);
-            }
-        }
-        DisplayMode[] ma = new DisplayMode[l.size()];
-        l.toArray(ma);
-        return ma;
-    }
+//	public java.awt.DisplayMode[] getModeList() {
+//		DisplayMode[] modes;
+//		try {
+//			modes = Display.getAvailableDisplayModes();
+//		} catch (LWJGLException e) {
+//			Com.Println(e.getMessage());
+//			return new java.awt.DisplayMode[0];
+//		}
+//		LinkedList l = new LinkedList();
+//		l.add(toAwtDisplayMode(oldDisplayMode));
+//
+//		for (int i = 0; i < modes.length; i++) {
+//			DisplayMode m = modes[i];
+//
+//			if (m.getBitsPerPixel() != oldDisplayMode.getBitsPerPixel())
+//				continue;
+//			if (m.getFrequency() > oldDisplayMode.getFrequency())
+//				continue;
+//			if (m.getHeight() < 240 || m.getWidth() < 320)
+//				continue;
+//
+//			int j = 0;
+//			java.awt.DisplayMode ml = null;
+//			for (j = 0; j < l.size(); j++) {
+//				ml = (java.awt.DisplayMode) l.get(j);
+//				if (ml.getWidth() > m.getWidth())
+//					break;
+//				if (ml.getWidth() == m.getWidth()
+//								&& ml.getHeight() >= m.getHeight())
+//					break;
+//			}
+//			if (j == l.size()) {
+//				l.addLast(toAwtDisplayMode(m));
+//			} else if (ml.getWidth() > m.getWidth()
+//							|| ml.getHeight() > m.getHeight()) {
+//				l.add(j, toAwtDisplayMode(m));
+//			} else if (m.getFrequency() > ml.getRefreshRate()) {
+//				l.remove(j);
+//				l.add(j, toAwtDisplayMode(m));
+//			}
+//		}
+//		java.awt.DisplayMode[] ma = new java.awt.DisplayMode[l.size()];
+//		l.toArray(ma);
+//		return ma;
+//	}
+//
+//	public DisplayMode[] getLWJGLModeList() {
+//		DisplayMode[] modes;
+//		try {
+//			modes = Display.getAvailableDisplayModes();
+//		} catch (LWJGLException e) {
+//			Com.Println(e.getMessage());
+//			return new DisplayMode[0];
+//		}
+//
+//		LinkedList l = new LinkedList();
+//		l.add(oldDisplayMode);
+//
+//		for (int i = 0; i < modes.length; i++) {
+//			DisplayMode m = modes[i];
+//
+//			if (m.getBitsPerPixel() != oldDisplayMode.getBitsPerPixel())
+//				continue;
+//			if (m.getFrequency() > Math.max(60, oldDisplayMode.getFrequency()))
+//				continue;
+//			if (m.getHeight() < 240 || m.getWidth() < 320)
+//				continue;
+//			if (m.getHeight() > oldDisplayMode.getHeight() || m.getWidth() > oldDisplayMode.getWidth())
+//				continue;
+//
+//			int j = 0;
+//			DisplayMode ml = null;
+//			for (j = 0; j < l.size(); j++) {
+//				ml = (DisplayMode) l.get(j);
+//				if (ml.getWidth() > m.getWidth())
+//					break;
+//				if (ml.getWidth() == m.getWidth()
+//								&& ml.getHeight() >= m.getHeight())
+//					break;
+//			}
+//			if (j == l.size()) {
+//				l.addLast(m);
+//			} else if (ml.getWidth() > m.getWidth()
+//							|| ml.getHeight() > m.getHeight()) {
+//				l.add(j, m);
+//			} else if (m.getFrequency() > ml.getFrequency()) {
+//				l.remove(j);
+//				l.add(j, m);
+//			}
+//		}
+//		DisplayMode[] ma = new DisplayMode[l.size()];
+//		l.toArray(ma);
+//		return ma;
+//	}
 
-    private DisplayMode findDisplayMode(Dimension dim) {
-        DisplayMode mode = null;
-        DisplayMode m = null;
-        DisplayMode[] modes = getLWJGLModeList();
-        int w = dim.width;
-        int h = dim.height;
+//	private DisplayMode findDisplayMode(Dimension dim) {
+//		DisplayMode mode = null;
+//		DisplayMode m = null;
+//		DisplayMode[] modes = getLWJGLModeList();
+//		int w = dim.width;
+//		int h = dim.height;
+//
+//		for (int i = 0; i < modes.length; i++) {
+//			m = modes[i];
+//			if (m.getWidth() == w && m.getHeight() == h) {
+//				mode = m;
+//				break;
+//			}
+//		}
+//		if (mode == null)
+//			mode = oldDisplayMode;
+//		return mode;
+//	}
+//
+//	String getModeString(DisplayMode m) {
+//		StringBuffer sb = new StringBuffer();
+//		sb.append(m.getWidth());
+//		sb.append('x');
+//		sb.append(m.getHeight());
+//		sb.append('x');
+//		sb.append(m.getBitsPerPixel());
+//		sb.append('@');
+//		sb.append(m.getFrequency());
+//		sb.append("Hz");
+//		return sb.toString();
+//	}
 
-        for (int i = 0; i < modes.length; i++) {
-            m = modes[i];
-            if (m.getWidth() == w && m.getHeight() == h) {
-                mode = m;
-                break;
-            }
-        }
-        if (mode == null)
-            mode = oldDisplayMode;
-        return mode;
-    }
+	/**
+	 * @param dim
+	 * @param mode
+	 * @param fullscreen
+	 * @return enum rserr_t
+	 */
+	public int setMode(Dimension dim, int mode, boolean fullscreen) {
 
-    String getModeString(DisplayMode m) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(m.getWidth());
-        sb.append('x');
-        sb.append(m.getHeight());
-        sb.append('x');
-        sb.append(m.getBitsPerPixel());
-        sb.append('@');
-        sb.append(m.getFrequency());
-        sb.append("Hz");
-        return sb.toString();
-    }
+//		Dimension newDim = new Dimension();
 
-    /**
-     * @param dim
-     * @param mode
-     * @param fullscreen
-     * @return enum rserr_t
-     */
-    public int setMode(Dimension dim, int mode, boolean fullscreen) {
+		VID.Printf(Defines.PRINT_ALL, "Initializing OpenGL display\n");
 
-        Dimension newDim = new Dimension();
+		VID.Printf(Defines.PRINT_ALL, "...setting mode " + mode + ":");
 
-        VID.Printf(Defines.PRINT_ALL, "Initializing OpenGL display\n");
+		// Setup an error callback. The default implementation
+		// will print the error message in System.err.
+		GLFWErrorCallback.createPrint(System.err).set();
 
-        VID.Printf(Defines.PRINT_ALL, "...setting mode " + mode + ":");
+		// Initialize GLFW. Most GLFW functions will not work before doing this.
+		if ( !glfwInit() )
+			throw new IllegalStateException("Unable to initialize GLFW");
 
-        /*
-         * fullscreen handling
-         */
-        if (oldDisplayMode == null) {
-            oldDisplayMode = Display.getDisplayMode();
-        }
+		glfwDefaultWindowHints();
+		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+		glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 2);
+		glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1);
+		dim = new Dimension(640, 480);
 
-        if (!VID.GetModeInfo(newDim, mode)) {
-            VID.Printf(Defines.PRINT_ALL, " invalid mode\n");
-            return Base.rserr_invalid_mode;
-        }
+		window = GLFW.glfwCreateWindow(dim.width, dim.height, "Quake2", 0, 0);
+		if ( window == 0 )
+			throw new RuntimeException("Failed to create the GLFW window");
 
-        VID.Printf(Defines.PRINT_ALL, " " + newDim.width + " " + newDim.height
-                + '\n');
 
-        // destroy the existing window
-        shutdown();
+		glfwSetWindowPos(window, 100, 100);
 
-        Display.setTitle("Jake2 (lwjgl)");
+		glfwMakeContextCurrent(window);
 
-        DisplayMode displayMode = findDisplayMode(newDim);
-        newDim.width = displayMode.getWidth();
-        newDim.height = displayMode.getHeight();
+		// Make the window visible
+		glfwShowWindow(window);
 
-        if (fullscreen) {
-            try {
-                Display.setDisplayMode(displayMode);
-            } catch (LWJGLException e) {
-                return Base.rserr_invalid_mode;
-            }
+		glfwMakeContextCurrent(window);
 
-            Display.setLocation(0, 0);
+		// Enable v-sync
+		glfwSwapInterval(1);
 
-            try {
-                Display.setFullscreen(fullscreen);
-            } catch (LWJGLException e) {
-                return Base.rserr_invalid_fullscreen;
-            }
+		// This line is critical for LWJGL's interoperation with GLFW's
+		// OpenGL context, or any context that is managed externally.
+		// LWJGL detects the context that is current in the current thread,
+		// creates the GLCapabilities instance and makes the OpenGL
+		// bindings available for use.
+		GL.createCapabilities();
 
-            VID.Printf(Defines.PRINT_ALL, "...setting fullscreen "
-                    + getModeString(displayMode) + '\n');
+//        /*
+//         * fullscreen handling
+//         */
+//		if (oldDisplayMode == null) {
+//			oldDisplayMode = Display.getDisplayMode();
+//		}
 
-        } else {
-            try {
-                Display.setDisplayMode(displayMode);
-            } catch (LWJGLException e) {
-                return Base.rserr_invalid_mode;
-            }
+//		if (!VID.GetModeInfo(newDim, mode)) {
+//			VID.Printf(Defines.PRINT_ALL, " invalid mode\n");
+//			return Base.rserr_invalid_mode;
+//		}
 
-            try {
-                Display.setFullscreen(false);
-            } catch (LWJGLException e) {
-                return Base.rserr_invalid_fullscreen;
-            }
-            //Display.setLocation(window_xpos, window_ypos);
-        }
+		Dimension newDim = dim;
 
-        Base.setVid(newDim.width, newDim.height);
+		VID.Printf(Defines.PRINT_ALL, " " + newDim.width + " " + newDim.height
+						+ '\n');
 
-        // vid.width = newDim.width;
-        // vid.height = newDim.height;
+		// destroy the existing window
+		shutdown();
 
-        try {
-            Display.create();
-        } catch (LWJGLException e) {
-            return Base.rserr_unknown;
-        }
+//		Display.setTitle("Jake2 (lwjgl)");
+//
+//		DisplayMode displayMode = findDisplayMode(newDim);
+//		newDim.width = displayMode.getWidth();
+//		newDim.height = displayMode.getHeight();
 
-        // let the sound and input subsystems know about the new window
-        VID.NewWindow(newDim.width, newDim.height);
-        return Base.rserr_ok;
-    }
+//		if (fullscreen) {
+//			try {
+//				Display.setDisplayMode(displayMode);
+//			} catch (LWJGLException e) {
+//				return Base.rserr_invalid_mode;
+//			}
+//
+//			Display.setLocation(0, 0);
+//
+//			try {
+//				Display.setFullscreen(fullscreen);
+//			} catch (LWJGLException e) {
+//				return Base.rserr_invalid_fullscreen;
+//			}
+//
+//			VID.Printf(Defines.PRINT_ALL, "...setting fullscreen "
+//							+ getModeString(displayMode) + '\n');
+//
+//		} else {
+//			try {
+//				Display.setDisplayMode(displayMode);
+//			} catch (LWJGLException e) {
+//				return Base.rserr_invalid_mode;
+//			}
+//
+//			try {
+//				Display.setFullscreen(false);
+//			} catch (LWJGLException e) {
+//				return Base.rserr_invalid_fullscreen;
+//			}
+//			//Display.setLocation(window_xpos, window_ypos);
+//		}
 
-    public void shutdown() {
-        if (oldDisplayMode != null && Display.isFullscreen()) {
-            try {
-                Display.setDisplayMode(oldDisplayMode);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+		Base.setVid(newDim.width, newDim.height);
 
-        while (Display.isCreated()) {
-            Display.destroy();
-        }
-    }
+//		vid.width = newDim.width;
+//		vid.height = newDim.height;
 
-    /**
-     * @return true
-     */
-    public boolean init(int xpos, int ypos) {
-        // do nothing
-        window_xpos = xpos;
-        window_ypos = ypos;
-        return true;
-    }
+//		try {
+//			Display.create();
+//		} catch (LWJGLException e) {
+//			return Base.rserr_unknown;
+//		}
 
-    public void beginFrame(float camera_separation) {
-        // do nothing
-    }
+		// let the sound and input subsystems know about the new window
+		VID.NewWindow(newDim.width, newDim.height);
+		return Base.rserr_ok;
+	}
 
-    public void endFrame() {
-        glFlush();
-        // swap buffers
-        Display.update();
-    }
+	public void shutdown() {
+//		if (oldDisplayMode != null && Display.isFullscreen()) {
+//			try {
+//				Display.setDisplayMode(oldDisplayMode);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		}
+//
+//		while (Display.isCreated()) {
+//			Display.destroy();
+//		}
+	}
 
-    public void appActivate(boolean activate) {
-        // do nothing
-    }
+	/**
+	 * @return true
+	 */
+	public boolean init(int xpos, int ypos) {
+		// do nothing
+		window_xpos = xpos;
+		window_ypos = ypos;
+		return true;
+	}
 
-    public void enableLogging(boolean enable) {
-        // do nothing
-    }
+	public void beginFrame(float camera_separation) {
+		// do nothing
+	}
 
-    public void logNewFrame() {
-        // do nothing
-    }
+	public void endFrame() {
+		glFlush();
+		// swap buffers
+		GLFW.glfwSwapBuffers(window);
+		//Display.update();
+	}
 
-    /**
-     * this is a hack for jogl renderers.
-     * 
-     * @param callback
-     */
-    public final void updateScreen(xcommand_t callback) {
-        callback.execute();
-    }
+	public void appActivate(boolean activate) {
+		// do nothing
+	}
+
+	public void enableLogging(boolean enable) {
+		// do nothing
+	}
+
+	public void logNewFrame() {
+		// do nothing
+	}
+
+	/**
+	 * this is a hack for jogl renderers.
+	 *
+	 * @param callback
+	 */
+	public final void updateScreen(xcommand_t callback) {
+		callback.execute();
+	}
 
 }

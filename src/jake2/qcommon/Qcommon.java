@@ -38,6 +38,8 @@ import jake2.util.Vargs;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+
 /**
  * Qcommon contains some  basic routines for the game engine
  * namely initialization, shutdown and frame generation.
@@ -74,21 +76,21 @@ public final class Qcommon extends Globals {
 			Cbuf.AddEarlyCommands(false);
 			Cbuf.Execute();
 
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.setStatus("initializing filesystem...");
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.setStatus("initializing filesystem...");
 			
 			FS.InitFilesystem();
 
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.setStatus("loading config...");
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.setStatus("loading config...");
 			
 			reconfigure(false);
 
 			FS.setCDDir(); // use cddir from config.cfg
 			FS.markBaseSearchPaths(); // mark the default search paths
 			
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.testQ2Data(); // test for valid baseq2
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.testQ2Data(); // test for valid baseq2
 			
 			reconfigure(true); // reload default.cfg and config.cfg
 			
@@ -114,19 +116,26 @@ public final class Qcommon extends Globals {
 
 			Cvar.Get("version", s, CVAR_SERVERINFO | CVAR_NOSET);
 
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
 			
 			NET.Init();	//ok
 			Netchan.Netchan_Init();	//ok
 
-			if (Globals.dedicated.value != 1.0f)			
-				Jake2.Q2Dialog.setStatus("initializing server subsystem...");
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.setStatus("initializing server subsystem...");
 			SV_MAIN.SV_Init();	//ok
 			
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.setStatus("initializing client subsystem...");
-			
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.setStatus("initializing client subsystem...");
+
+			final String home = System.getProperty("user.home");
+			final String sep = System.getProperty("file.separator");
+
+			String dir = home + sep + "Jake2" + sep + "baseq2";
+			Cvar.Set("cddir", dir);
+			FS.setCDDir();
+
 			CL.Init();
 
 			// add + commands from command line
@@ -149,8 +158,8 @@ public final class Qcommon extends Globals {
 			// save config when configuration is completed
 			CL.WriteConfiguration();
 			
-			if (Globals.dedicated.value != 1.0f)
-				Jake2.Q2Dialog.dispose();
+//			if (Globals.dedicated.value != 1.0f)
+//				Jake2.Q2Dialog.dispose();
 
 		} catch (longjmpException e) {
 			Sys.Error("Error during initialization");
@@ -163,6 +172,7 @@ public final class Qcommon extends Globals {
 	 * @param msec the current game time
 	 */
 	public static void Frame(int msec) {
+		glfwPollEvents();
 		try {
 
 			if (Globals.log_stats.modified) {

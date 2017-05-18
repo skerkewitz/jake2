@@ -41,7 +41,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.OpenALException;
 
 /**
  * Channel
@@ -114,7 +113,7 @@ public class Channel {
 		sourceId = tmp.get(0);
 		// can't generate more sources 
 		if (sourceId <= 0) break;
-	    } catch (OpenALException e) {
+	    } catch (Exception e) {
 		// can't generate more sources 
 		break;
 	    }
@@ -128,7 +127,7 @@ public class Channel {
 	    AL10.alSourcef (sourceId, AL10.AL_GAIN, 1.0f);
 	    AL10.alSourcef (sourceId, AL10.AL_PITCH, 1.0f);
 	    AL10.alSourcei (sourceId, AL10.AL_SOURCE_RELATIVE,  AL10.AL_FALSE);
-	    AL10.alSource(sourceId, AL10.AL_VELOCITY, NULLVECTOR);
+	    AL10.alSourcefv(sourceId, AL10.AL_VELOCITY, NULLVECTOR);
 	    AL10.alSourcei (sourceId, AL10.AL_LOOPING, AL10.AL_FALSE);
 	    AL10.alSourcef (sourceId, AL10.AL_REFERENCE_DISTANCE, 200.0f);
 	    AL10.alSourcef (sourceId, AL10.AL_MIN_GAIN, 0.0005f);
@@ -329,7 +328,7 @@ public class Channel {
 		    if (ch.bufferChanged) {
 			try {
 			    AL10.alSourcei(sourceId, AL10.AL_BUFFER, ch.bufferId);
-			} catch (OpenALException e) {
+			} catch (Exception e) {
 			    // fallback for buffer changing
 			    AL10.alSourceStop(sourceId);
 			    AL10.alSourcei(sourceId, AL10.AL_BUFFER, ch.bufferId);
@@ -339,13 +338,13 @@ public class Channel {
 			AL10.alSourcef (sourceId, AL10.AL_GAIN, ch.volume);
 		    }
 		    AL10.alSourcef (sourceId, AL10.AL_ROLLOFF_FACTOR, ch.rolloff);
-		    AL10.alSource(sourceId, AL10.AL_POSITION, sourceOrigin);
+		    AL10.alSourcefv(sourceId, AL10.AL_POSITION, sourceOrigin);
 		    AL10.alSourcePlay(sourceId);
 		    ch.modified = false;
 		} else {
 		    state = AL10.alGetSourcei(sourceId, AL10.AL_SOURCE_STATE);
 		    if (state == AL10.AL_PLAYING) {
-			AL10.alSource(sourceId, AL10.AL_POSITION, sourceOrigin);
+			AL10.alSourcefv(sourceId, AL10.AL_POSITION, sourceOrigin);
 		    } else {
 			ch.clear();
 		    }

@@ -454,59 +454,59 @@ public abstract class Main extends Base {
 	 * GL_DrawParticles
 	 */
 	void GL_DrawParticles(int num_particles) {
-		float origin_x, origin_y, origin_z;
-
-		Math3D.VectorScale(vup, 1.5f, up);
-		Math3D.VectorScale(vright, 1.5f, right);
-		
-		GL_Bind(r_particletexture.texnum);
-		gl.glDepthMask(false); // no z buffering
-		gl.glEnable(GL_BLEND);
-		GL_TexEnv(GL_MODULATE);
-		
-		gl.glBegin(GL_TRIANGLES);
-
-		FloatBuffer sourceVertices = particle_t.vertexArray;
-		IntBuffer sourceColors = particle_t.colorArray;
-		float scale;
-		int color;
-		for (int j = 0, i = 0; i < num_particles; i++) {
-			origin_x = sourceVertices.get(j++);
-			origin_y = sourceVertices.get(j++);
-			origin_z = sourceVertices.get(j++);
-
-			// hack a scale up to keep particles from disapearing
-			scale =
-				(origin_x - r_origin[0]) * vpn[0]
-					+ (origin_y - r_origin[1]) * vpn[1]
-					+ (origin_z - r_origin[2]) * vpn[2];
-
-			scale = (scale < 20) ? 1 :  1 + scale * 0.004f;
-
-			color = sourceColors.get(i);
-		
-			gl.glColor4ub(
-				(byte)((color) & 0xFF),
-				(byte)((color >> 8) & 0xFF),
-				(byte)((color >> 16) & 0xFF),
-				(byte)((color >>> 24))
-			);
-			// first vertex
-			gl.glTexCoord2f(0.0625f, 0.0625f);
-			gl.glVertex3f(origin_x, origin_y, origin_z);
-			// second vertex
-			gl.glTexCoord2f(1.0625f, 0.0625f);
-			gl.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
-			// third vertex
-			gl.glTexCoord2f(0.0625f, 1.0625f);
-			gl.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
-		}
-		gl.glEnd();
-		
-		gl.glDisable(GL_BLEND);
-		gl.glColor4f(1, 1, 1, 1);
-		gl.glDepthMask(true); // back to normal Z buffering
-		GL_TexEnv(GL_REPLACE);
+//		float origin_x, origin_y, origin_z;
+//
+//		Math3D.VectorScale(vup, 1.5f, up);
+//		Math3D.VectorScale(vright, 1.5f, right);
+//
+//		GL_Bind(r_particletexture.texnum);
+//		gl.glDepthMask(false); // no z buffering
+//		gl.glEnable(GL_BLEND);
+//		GL_TexEnv(GL_MODULATE);
+//
+//		gl.glBegin(GL_TRIANGLES);
+//
+//		FloatBuffer sourceVertices = particle_t.vertexArray;
+//		IntBuffer sourceColors = particle_t.colorArray;
+//		float scale;
+//		int color;
+//		for (int j = 0, i = 0; i < num_particles; i++) {
+//			origin_x = sourceVertices.get(j++);
+//			origin_y = sourceVertices.get(j++);
+//			origin_z = sourceVertices.get(j++);
+//
+//			// hack a scale up to keep particles from disapearing
+//			scale =
+//				(origin_x - r_origin[0]) * vpn[0]
+//					+ (origin_y - r_origin[1]) * vpn[1]
+//					+ (origin_z - r_origin[2]) * vpn[2];
+//
+//			scale = (scale < 20) ? 1 :  1 + scale * 0.004f;
+//
+//			color = sourceColors.get(i);
+//
+//			gl.glColor4ub(
+//				(byte)((color) & 0xFF),
+//				(byte)((color >> 8) & 0xFF),
+//				(byte)((color >> 16) & 0xFF),
+//				(byte)((color >>> 24))
+//			);
+//			// first vertex
+//			gl.glTexCoord2f(0.0625f, 0.0625f);
+//			gl.glVertex3f(origin_x, origin_y, origin_z);
+//			// second vertex
+//			gl.glTexCoord2f(1.0625f, 0.0625f);
+//			gl.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
+//			// third vertex
+//			gl.glTexCoord2f(0.0625f, 1.0625f);
+//			gl.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
+//		}
+//		gl.glEnd();
+//
+//		gl.glDisable(GL_BLEND);
+//		gl.glColor4f(1, 1, 1, 1);
+//		gl.glDepthMask(true); // back to normal Z buffering
+//		GL_TexEnv(GL_REPLACE);
 	}
 
 	/**
@@ -1089,7 +1089,7 @@ public abstract class Main extends Base {
 
 		/*
 		** get our various GL strings
-		*/
+//		*/
 		gl_config.vendor_string = gl.glGetString(GL_VENDOR);
 		VID.Printf(Defines.PRINT_ALL, "GL_VENDOR: " + gl_config.vendor_string + '\n');
 		gl_config.renderer_string = gl.glGetString(GL_RENDERER);
@@ -1098,7 +1098,7 @@ public abstract class Main extends Base {
 		VID.Printf(Defines.PRINT_ALL, "GL_VERSION: " + gl_config.version_string + '\n');
 		gl_config.extensions_string = gl.glGetString(GL_EXTENSIONS);
 		VID.Printf(Defines.PRINT_ALL, "GL_EXTENSIONS: " + gl_config.extensions_string + '\n');
-		
+
 		gl_config.parseOpenGLVersion();
 
 		String renderer_buffer = gl_config.renderer_string.toLowerCase();

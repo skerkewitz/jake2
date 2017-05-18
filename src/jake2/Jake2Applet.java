@@ -100,12 +100,12 @@ public class Jake2Applet extends JApplet {
                     }
                 };
 
-            // open the q2dialog, if we are not in dedicated mode.
-            if (Globals.dedicated.value != 1.0f) {
-                Jake2.Q2Dialog = new Q2DataDialog();
-                Locale.setDefault(Locale.US);
-                Jake2.Q2Dialog.setVisible(true);
-            }
+//            // open the q2dialog, if we are not in dedicated mode.
+//            if (Globals.dedicated.value != 1.0f) {
+//                Jake2.Q2Dialog = new Q2DataDialog();
+//                Locale.setDefault(Locale.US);
+//                Jake2.Q2Dialog.setVisible(true);
+//            }
 
             Qcommon.Init(new String[] { "Jake2" });
 

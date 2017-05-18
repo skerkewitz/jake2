@@ -35,7 +35,7 @@ import java.util.Locale;
  */
 public final class Jake2 {
 
-    public static Q2DataDialog Q2Dialog;
+    //public static Q2DataDialog Q2Dialog;
 
     /**
      * main is used to start the game. Quake2 for Java supports the following
@@ -77,13 +77,13 @@ public final class Jake2 {
     		Globals.dedicated.value = 1.0f;
     	    	
     	
-    	// open the q2dialog, if we are not in dedicated mode.
-    	if (Globals.dedicated.value != 1.0f)
-    	{
-    		Q2Dialog = new Q2DataDialog();
-    		Locale.setDefault(Locale.US);
-    		Q2Dialog.setVisible(true);
-    	}
+//    	// open the q2dialog, if we are not in dedicated mode.
+//    	if (Globals.dedicated.value != 1.0f)
+//    	{
+//    		Q2Dialog = new Q2DataDialog();
+//    		Locale.setDefault(Locale.US);
+//    		Q2Dialog.setVisible(true);
+//    	}
 
         // in C the first arg is the filename
         int argc = (args == null) ? 1 : args.length + 1;
@@ -105,6 +105,7 @@ public final class Jake2 {
             time = newtime - oldtime;
 
             if (time > 0)
+
                 Qcommon.Frame(time);
             oldtime = newtime;
         }

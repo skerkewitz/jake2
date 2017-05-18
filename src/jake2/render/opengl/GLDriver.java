@@ -22,7 +22,7 @@ public interface GLDriver {
     
     void logNewFrame();
     
-    java.awt.DisplayMode[] getModeList();
+//    java.awt.DisplayMode[] getModeList();
 
     void updateScreen(xcommand_t callback);
 

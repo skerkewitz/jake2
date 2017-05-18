@@ -2,6 +2,7 @@ package jake2.render.opengl;
 
 import java.nio.*;
 
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
 public class LwjglGL implements QGL {
@@ -50,13 +51,12 @@ public class LwjglGL implements QGL {
         GL11.glColor4ub(red, green, blue, alpha);
     }
 
-    public final void glColorPointer(int size, boolean unsigned, int stride,
-            ByteBuffer pointer) {
-        GL11.glColorPointer(size, unsigned, stride, pointer);
+    public final void glColorPointer(int size, boolean unsigned, int stride, ByteBuffer pointer) {
+        GL11.glColorPointer(size, GL11.GL_BYTE, stride, pointer);
     }
     
     public final void glColorPointer(int size, int stride, FloatBuffer pointer) {
-        GL11.glColorPointer(size, stride, pointer);
+        GL11.glColorPointer(size, GL11.GL_FLOAT, stride, pointer);
     }
 
     public final void glCullFace(int mode) {
@@ -129,7 +129,7 @@ public class LwjglGL implements QGL {
     }
 
     public final void glGetFloat(int pname, FloatBuffer params) {
-        GL11.glGetFloat(pname, params);
+        GL11.glGetFloatv(pname, params);
     }
 
     public final String glGetString(int name) {
@@ -150,7 +150,7 @@ public class LwjglGL implements QGL {
     }
 
     public final void glLoadMatrix(FloatBuffer m) {
-        GL11.glLoadMatrix(m);
+        GL11.glLoadMatrixf(m);
     }
 
     public final void glMatrixMode(int mode) {
@@ -208,7 +208,7 @@ public class LwjglGL implements QGL {
     }
 
     public final void glTexCoordPointer(int size, int stride, FloatBuffer pointer) {
-        GL11.glTexCoordPointer(size, stride, pointer);
+        GL11.glTexCoordPointer(size, GL11.GL_FLOAT, stride, pointer);
     }
 
     public final void glTexEnvi(int target, int pname, int param) {
@@ -257,7 +257,7 @@ public class LwjglGL implements QGL {
     }
 
     public final void glVertexPointer(int size, int stride, FloatBuffer pointer) {
-        GL11.glVertexPointer(size, stride, pointer);
+        GL11.glVertexPointer(size, GL11.GL_FLOAT, stride, pointer);
     }
 
     public final void glViewport(int x, int y, int width, int height) {
@@ -266,7 +266,7 @@ public class LwjglGL implements QGL {
 
     public final void glColorTable(int target, int internalFormat, int width,
             int format, int type, ByteBuffer data) {
-        EXTPalettedTexture.glColorTableEXT(target, internalFormat, width, format, type, data);
+//        EXTPalettedTexture.glColorTableEXT(target, internalFormat, width, format, type, data);
     }
 
     public final void glActiveTextureARB(int texture) {
@@ -278,7 +278,7 @@ public class LwjglGL implements QGL {
     }
 
     public final void glPointParameterEXT(int pname, FloatBuffer pfParams) {
-        EXTPointParameters.glPointParameterEXT(pname, pfParams);
+//        EXTPointParameters.glPointParameterEXT(pname, pfParams);
     }
 
     public final void glPointParameterfEXT(int pname, float param) {
@@ -305,7 +305,7 @@ public class LwjglGL implements QGL {
      * util extensions
      */
     public void setSwapInterval(int interval) {
-	Display.setSwapInterval(interval);
+        GLFW.glfwSwapInterval(interval);
     }
 
 }

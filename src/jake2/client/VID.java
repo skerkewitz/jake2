@@ -33,6 +33,7 @@ import jake2.qcommon.*;
 import jake2.render.Renderer;
 import jake2.sound.S;
 import jake2.sys.IN;
+import jake2.sys.KBD;
 import jake2.util.Vargs;
 
 import java.awt.Dimension;
@@ -153,7 +154,10 @@ public class VID extends Globals {
 	static void FreeReflib()
 	{
 		if (Globals.re != null) {
-			Globals.re.getKeyboardHandler().Close();
+			KBD keyboardHandler = Globals.re.getKeyboardHandler();
+			if (keyboardHandler != null) {
+				keyboardHandler.Close();
+			}
 			IN.Shutdown();
 		}
 
@@ -219,7 +223,7 @@ public class VID extends Globals {
 		}
 
 		/* Init KBD */
-		Globals.re.getKeyboardHandler().Init();
+//		Globals.re.getKeyboardHandler().Init();
 
 		Com.Printf( "------------------------------------\n");
 		reflib_active = true;
