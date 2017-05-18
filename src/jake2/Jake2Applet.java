@@ -107,7 +107,7 @@ public class Jake2Applet extends JApplet {
 //                Jake2.Q2Dialog.setVisible(true);
 //            }
 
-            Qcommon.Init(new String[] { "Jake2" });
+            Qcommon.Companion.Init(new String[] { "Jake2" });
 
             Globals.nostdout = Cvar.Get("nostdout", "0", 0);
 
@@ -122,7 +122,7 @@ public class Jake2Applet extends JApplet {
                         time = newtime - oldtime;
 
                         if (time > 0)
-                            Qcommon.Frame(time);
+                            Qcommon.Companion.Frame(time);
                         oldtime = newtime;
                     }
                 }

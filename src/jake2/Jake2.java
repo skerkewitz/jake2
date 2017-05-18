@@ -92,7 +92,7 @@ public final class Jake2 {
         if (argc > 1) {
             System.arraycopy(args, 0, c_args, 1, argc - 1);
         }
-        Qcommon.Init(c_args);
+        Qcommon.Companion.Init(c_args);
 
         Globals.nostdout = Cvar.Get("nostdout", "0", 0);
 
@@ -106,7 +106,7 @@ public final class Jake2 {
 
             if (time > 0)
 
-                Qcommon.Frame(time);
+                Qcommon.Companion.Frame(time);
             oldtime = newtime;
         }
     }
