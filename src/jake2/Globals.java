@@ -34,6 +34,8 @@ import jake2.render.model_t;
 
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -63,42 +65,42 @@ public class Globals implements Defines {
 	public static int c_pointcontents;
 	public static int server_state;
 
-	public static cvar_t cl_add_blend;
-	public static cvar_t cl_add_entities;
-	public static cvar_t cl_add_lights;
-	public static cvar_t cl_add_particles;
-	public static cvar_t cl_anglespeedkey;
-	public static cvar_t cl_autoskins;
-	public static cvar_t cl_footsteps;
-	public static cvar_t cl_forwardspeed;
-	public static cvar_t cl_gun;
-	public static cvar_t cl_maxfps;
-	public static cvar_t cl_noskins;
-	public static cvar_t cl_pitchspeed;
-	public static cvar_t cl_predict;
-	public static cvar_t cl_run;
-	public static cvar_t cl_sidespeed;
-	public static cvar_t cl_stereo;
-	public static cvar_t cl_stereo_separation;
-	public static cvar_t cl_timedemo = new cvar_t();
-	public static cvar_t cl_timeout;
-	public static cvar_t cl_upspeed;
-	public static cvar_t cl_yawspeed;
-	public static cvar_t dedicated;
-	public static cvar_t developer;
-	public static cvar_t fixedtime;
-	public static cvar_t freelook;
-	public static cvar_t host_speeds;
-	public static cvar_t log_stats;
-	public static cvar_t logfile_active;
-	public static cvar_t lookspring;
-	public static cvar_t lookstrafe;
-	public static cvar_t nostdout;
-	public static cvar_t sensitivity;
-	public static cvar_t showtrace;
-	public static cvar_t timescale;
-	public static cvar_t in_mouse;
-	public static cvar_t in_joystick;
+	public static TVar cl_add_blend;
+	public static TVar cl_add_entities;
+	public static TVar cl_add_lights;
+	public static TVar cl_add_particles;
+	public static TVar cl_anglespeedkey;
+	public static TVar cl_autoskins;
+	public static TVar cl_footsteps;
+	public static TVar cl_forwardspeed;
+	public static TVar cl_gun;
+	public static TVar cl_maxfps;
+	public static TVar cl_noskins;
+	public static TVar cl_pitchspeed;
+	public static TVar cl_predict;
+	public static TVar cl_run;
+	public static TVar cl_sidespeed;
+	public static TVar cl_stereo;
+	public static TVar cl_stereo_separation;
+	public static TVar cl_timedemo = new TVar();
+	public static TVar cl_timeout;
+	public static TVar cl_upspeed;
+	public static TVar cl_yawspeed;
+	public static TVar dedicated;
+	public static TVar developer;
+	public static TVar fixedtime;
+	public static TVar freelook;
+	public static TVar host_speeds;
+	public static TVar log_stats;
+	public static TVar logfile_active;
+	public static TVar lookspring;
+	public static TVar lookstrafe;
+	public static TVar nostdout;
+	public static TVar sensitivity;
+	public static TVar showtrace;
+	public static TVar timescale;
+	public static TVar in_mouse;
+	public static TVar in_joystick;
 
 
 	public static sizebuf_t net_message = new sizebuf_t();
@@ -129,28 +131,28 @@ public class Globals implements Defines {
 
 	public static FileWriter log_stats_file = null;
 
-	public static cvar_t m_pitch;
-	public static cvar_t m_yaw;
-	public static cvar_t m_forward;
-	public static cvar_t m_side;
+	public static TVar m_pitch;
+	public static TVar m_yaw;
+	public static TVar m_forward;
+	public static TVar m_side;
 
-	public static cvar_t cl_lightlevel;
+	public static TVar cl_lightlevel;
 
 	//
 	//	   userinfo
 	//
-	public static cvar_t info_password;
-	public static cvar_t info_spectator;
-	public static cvar_t name;
-	public static cvar_t skin;
-	public static cvar_t rate;
-	public static cvar_t fov;
-	public static cvar_t msg;
-	public static cvar_t hand;
-	public static cvar_t gender;
-	public static cvar_t gender_auto;
+	public static TVar info_password;
+	public static TVar info_spectator;
+	public static TVar name;
+	public static TVar skin;
+	public static TVar rate;
+	public static TVar fov;
+	public static TVar msg;
+	public static TVar hand;
+	public static TVar gender;
+	public static TVar gender_auto;
 
-	public static cvar_t cl_vwep;
+	public static TVar cl_vwep;
 
 	public static client_static_t cls = new client_static_t();
 	public static client_state_t cl = new client_state_t();
@@ -171,14 +173,14 @@ public class Globals implements Defines {
 		}
 	}
 
-	public static cvar_t rcon_client_password;
-	public static cvar_t rcon_address;
+	public static TVar rcon_client_password;
+	public static TVar rcon_address;
 
-	public static cvar_t cl_shownet;
-	public static cvar_t cl_showmiss;
-	public static cvar_t cl_showclamp;
+	public static TVar cl_shownet;
+	public static TVar cl_showmiss;
+	public static TVar cl_showclamp;
 
-	public static cvar_t cl_paused;
+	public static TVar cl_paused;
 
 	// client/anorms.h
 	public static final float bytedirs[][] = { /**
@@ -349,9 +351,8 @@ public class Globals implements Defines {
 
 	public static boolean userinfo_modified = false;
 
-	public static cvar_t cvar_vars;
 	public static final console_t con = new console_t();
-	public static cvar_t con_notifytime;
+	public static TVar con_notifytime;
 	public static viddef_t viddef = new viddef_t();
 	// Renderer interface used by VID, SCR, ...
 	public static refexport_t re = new DummyRenderer();
@@ -369,7 +370,7 @@ public class Globals implements Defines {
 
 	public static int edit_line;
 
-	public static cvar_t crosshair;
+	public static TVar crosshair;
 	public static vrect_t scr_vrect = new vrect_t();
 	public static int sys_frame_time;
 	public static int chat_bufferlen = 0;
@@ -382,7 +383,7 @@ public class Globals implements Defines {
 	
 	public static float vec3_origin[] = { 0.0f, 0.0f, 0.0f };
 
-	public static cvar_t m_filter;
+	public static TVar m_filter;
 	public static int vidref_val = VIDREF_GL;
 	
 	public static Random rnd = new Random();

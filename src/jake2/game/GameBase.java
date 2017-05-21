@@ -59,67 +59,67 @@ public class GameBase {
             g_edicts[n] = new edict_t(n);
     }
 
-    public static cvar_t deathmatch = new cvar_t();
+    public static TVar deathmatch = new TVar();
 
-    public static cvar_t coop = new cvar_t();
+    public static TVar coop = new TVar();
 
-    public static cvar_t dmflags = new cvar_t();
+    public static TVar dmflags = new TVar();
 
-    public static cvar_t skill; // = new cvar_t();
+    public static TVar skill; // = new TVar();
 
-    public static cvar_t fraglimit = new cvar_t();
+    public static TVar fraglimit = new TVar();
 
-    public static cvar_t timelimit = new cvar_t();
+    public static TVar timelimit = new TVar();
 
-    public static cvar_t password = new cvar_t();
+    public static TVar password = new TVar();
 
-    public static cvar_t spectator_password = new cvar_t();
+    public static TVar spectator_password = new TVar();
 
-    public static cvar_t needpass = new cvar_t();
+    public static TVar needpass = new TVar();
 
-    public static cvar_t maxclients = new cvar_t();
+    public static TVar maxclients = new TVar();
 
-    public static cvar_t maxspectators = new cvar_t();
+    public static TVar maxspectators = new TVar();
 
-    public static cvar_t maxentities = new cvar_t();
+    public static TVar maxentities = new TVar();
 
-    public static cvar_t g_select_empty = new cvar_t();
+    public static TVar g_select_empty = new TVar();
 
-    public static cvar_t filterban = new cvar_t();
+    public static TVar filterban = new TVar();
 
-    public static cvar_t sv_maxvelocity = new cvar_t();
+    public static TVar sv_maxvelocity = new TVar();
 
-    public static cvar_t sv_gravity = new cvar_t();
+    public static TVar sv_gravity = new TVar();
 
-    public static cvar_t sv_rollspeed = new cvar_t();
+    public static TVar sv_rollspeed = new TVar();
 
-    public static cvar_t sv_rollangle = new cvar_t();
+    public static TVar sv_rollangle = new TVar();
 
-    public static cvar_t gun_x = new cvar_t();
+    public static TVar gun_x = new TVar();
 
-    public static cvar_t gun_y = new cvar_t();
+    public static TVar gun_y = new TVar();
 
-    public static cvar_t gun_z = new cvar_t();
+    public static TVar gun_z = new TVar();
 
-    public static cvar_t run_pitch = new cvar_t();
+    public static TVar run_pitch = new TVar();
 
-    public static cvar_t run_roll = new cvar_t();
+    public static TVar run_roll = new TVar();
 
-    public static cvar_t bob_up = new cvar_t();
+    public static TVar bob_up = new TVar();
 
-    public static cvar_t bob_pitch = new cvar_t();
+    public static TVar bob_pitch = new TVar();
 
-    public static cvar_t bob_roll = new cvar_t();
+    public static TVar bob_roll = new TVar();
 
-    public static cvar_t sv_cheats = new cvar_t();
+    public static TVar sv_cheats = new TVar();
 
-    public static cvar_t flood_msgs = new cvar_t();
+    public static TVar flood_msgs = new TVar();
 
-    public static cvar_t flood_persecond = new cvar_t();
+    public static TVar flood_persecond = new TVar();
 
-    public static cvar_t flood_waitdelay = new cvar_t();
+    public static TVar flood_waitdelay = new TVar();
 
-    public static cvar_t sv_maplist = new cvar_t();
+    public static TVar sv_maplist = new TVar();
 
     public final static float STOP_EPSILON = 0.1f;
 

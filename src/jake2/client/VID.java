@@ -28,7 +28,7 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.render.Renderer;
 import jake2.sound.Sound;
@@ -57,13 +57,13 @@ public class VID extends Globals {
 	// Globals.re;
 
 	// Console variables that we need to access from this module
-	static cvar_t vid_gamma;
-	static cvar_t vid_ref;			// Name of Refresh DLL loaded
-	static cvar_t vid_xpos;			// X coordinate of window position
-	static cvar_t vid_ypos;			// Y coordinate of window position
-	static cvar_t vid_width;
-	static cvar_t vid_height;
-	static cvar_t vid_fullscreen;
+	static TVar vid_gamma;
+	static TVar vid_ref;			// Name of Refresh DLL loaded
+	static TVar vid_xpos;			// X coordinate of window position
+	static TVar vid_ypos;			// Y coordinate of window position
+	static TVar vid_width;
+	static TVar vid_height;
+	static TVar vid_fullscreen;
 
 	// Global variables used internally by this module
 	// void *reflib_library;		// Handle to refresh DLL 
@@ -305,13 +305,13 @@ public class VID extends Globals {
 	public static void Init()
 	{
 		/* Create the video variables so we know how to start the graphics drivers */
-		vid_ref = Cvar.Get("vid_ref", Renderer.getPreferedName(), CVAR_ARCHIVE);
-		vid_xpos = Cvar.Get("vid_xpos", "3", CVAR_ARCHIVE);
-		vid_ypos = Cvar.Get("vid_ypos", "22", CVAR_ARCHIVE);
-		vid_width = Cvar.Get("vid_width", "640", CVAR_ARCHIVE);
-		vid_height = Cvar.Get("vid_height", "480", CVAR_ARCHIVE);
-		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", CVAR_ARCHIVE);
-		vid_gamma = Cvar.Get( "vid_gamma", "1", CVAR_ARCHIVE );
+		vid_ref = Cvar.Get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
+		vid_xpos = Cvar.Get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
+		vid_ypos = Cvar.Get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
+		vid_width = Cvar.Get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
+		vid_height = Cvar.Get("vid_height", "480", TVar.CVAR_FLAG_ARCHIVE);
+		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_gamma = Cvar.Get( "vid_gamma", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		vid_modes[11].width = (int)vid_width.value;
 		vid_modes[11].height = (int)vid_height.value;
@@ -357,11 +357,11 @@ public class VID extends Globals {
 	static final int REF_OPENGL_FASTJOGL =1;
 	static final int REF_OPENGL_LWJGL =2;
 
-	static cvar_t gl_mode;
-	static cvar_t gl_driver;
-	static cvar_t gl_picmip;
-	static cvar_t gl_ext_palettedtexture;
-	static cvar_t gl_swapinterval;
+	static TVar gl_mode;
+	static TVar gl_driver;
+	static TVar gl_picmip;
+	static TVar gl_ext_palettedtexture;
+	static TVar gl_swapinterval;
 
 	/*
 	====================================================================
@@ -535,10 +535,10 @@ public class VID extends Globals {
 		if ( gl_mode == null)
 			gl_mode = Cvar.Get( "gl_mode", "3", 0 );
 		if ( gl_ext_palettedtexture == null )
-			gl_ext_palettedtexture = Cvar.Get( "gl_ext_palettedtexture", "1", CVAR_ARCHIVE );
+			gl_ext_palettedtexture = Cvar.Get( "gl_ext_palettedtexture", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		if ( gl_swapinterval == null)
-			gl_swapinterval = Cvar.Get( "gl_swapinterval", "0", CVAR_ARCHIVE );
+			gl_swapinterval = Cvar.Get( "gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE );
 
 		s_mode_list.curvalue = (int)gl_mode.value;
 		if (vid_fullscreen.value != 0.0f) {
@@ -556,7 +556,7 @@ public class VID extends Globals {
 		}
 
 		if ( SCR.scr_viewsize == null )
-			SCR.scr_viewsize = Cvar.Get ("viewsize", "100", CVAR_ARCHIVE);
+			SCR.scr_viewsize = Cvar.Get ("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
 
 		s_screensize_slider.curvalue = (int)(SCR.scr_viewsize.value/10);
 

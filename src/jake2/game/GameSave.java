@@ -147,44 +147,41 @@ public class GameSave {
 
         // noset vars
         Globals.dedicated = GameBase.gi.cvar("dedicated", "0",
-                Defines.CVAR_NOSET);
+                TVar.CVAR_FLAG_NOSET);
 
         // latched vars
-        GameBase.sv_cheats = GameBase.gi.cvar("cheats", "0",
-                Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
+        GameBase.sv_cheats = GameBase.gi.cvar("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
         GameBase.gi.cvar("gamename", Defines.GAMEVERSION,
-                Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
-        GameBase.gi.cvar("gamedate", Globals.__DATE__, Defines.CVAR_SERVERINFO
-                | Defines.CVAR_LATCH);
+                TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        GameBase.gi.cvar("gamedate", Globals.__DATE__, TVar.CVAR_FLAG_SERVERINFO
+                | TVar.CVAR_FLAG_LATCH);
 
         GameBase.maxclients = GameBase.gi.cvar("maxclients", "4",
-                Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
+                TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
         GameBase.maxspectators = GameBase.gi.cvar("maxspectators", "4",
-                Defines.CVAR_SERVERINFO);
+                TVar.CVAR_FLAG_SERVERINFO);
         GameBase.deathmatch = GameBase.gi.cvar("deathmatch", "0",
-                Defines.CVAR_LATCH);
-        GameBase.coop = GameBase.gi.cvar("coop", "0", Defines.CVAR_LATCH);
-        GameBase.skill = GameBase.gi.cvar("skill", "0", Defines.CVAR_LATCH);
+                TVar.CVAR_FLAG_LATCH);
+        GameBase.coop = GameBase.gi.cvar("coop", "0", TVar.CVAR_FLAG_LATCH);
+        GameBase.skill = GameBase.gi.cvar("skill", "0", TVar.CVAR_FLAG_LATCH);
         GameBase.maxentities = GameBase.gi.cvar("maxentities", "1024",
-                Defines.CVAR_LATCH);
+                TVar.CVAR_FLAG_LATCH);
 
         // change anytime vars
-        GameBase.dmflags = GameBase.gi.cvar("dmflags", "0",
-                Defines.CVAR_SERVERINFO);
-        GameBase.fraglimit = GameBase.gi.cvar("fraglimit", "0",
-                Defines.CVAR_SERVERINFO);
+        GameBase.dmflags = GameBase.gi.cvar("dmflags", "0", TVar.CVAR_FLAG_SERVERINFO);
+        GameBase.fraglimit = GameBase.gi.cvar("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
         GameBase.timelimit = GameBase.gi.cvar("timelimit", "0",
-                Defines.CVAR_SERVERINFO);
+                TVar.CVAR_FLAG_SERVERINFO);
         GameBase.password = GameBase.gi.cvar("password", "",
-                Defines.CVAR_USERINFO);
+                TVar.CVAR_FLAG_USERINFO);
         GameBase.spectator_password = GameBase.gi.cvar("spectator_password",
-                "", Defines.CVAR_USERINFO);
+                "", TVar.CVAR_FLAG_USERINFO);
         GameBase.needpass = GameBase.gi.cvar("needpass", "0",
-                Defines.CVAR_SERVERINFO);
+                TVar.CVAR_FLAG_SERVERINFO);
         GameBase.filterban = GameBase.gi.cvar("filterban", "1", 0);
 
         GameBase.g_select_empty = GameBase.gi.cvar("g_select_empty", "0",
-                Defines.CVAR_ARCHIVE);
+                TVar.CVAR_FLAG_ARCHIVE);
 
         GameBase.run_pitch = GameBase.gi.cvar("run_pitch", "0.002", 0);
         GameBase.run_roll = GameBase.gi.cvar("run_roll", "0.005", 0);

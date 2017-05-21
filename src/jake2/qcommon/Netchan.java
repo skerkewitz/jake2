@@ -25,7 +25,7 @@ package jake2.qcommon;
 
 import jake2.Defines;
 import jake2.Globals;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.server.SV_MAIN;
 import jake2.sys.NET;
 import jake2.sys.Timer;
@@ -89,11 +89,11 @@ public final class Netchan extends SV_MAIN {
      * unacknowledged reliable
      */
 
-    public static cvar_t showpackets;
+    public static TVar showpackets;
 
-    public static cvar_t showdrop;
+    public static TVar showdrop;
 
-    public static cvar_t qport;
+    public static TVar qport;
 
     //public static netadr_t net_from = new netadr_t();
     public static sizebuf_t net_message = new sizebuf_t();
@@ -112,7 +112,7 @@ public final class Netchan extends SV_MAIN {
 
         showpackets = Cvar.Get("showpackets", "0", 0);
         showdrop = Cvar.Get("showdrop", "0", 0);
-        qport = Cvar.Get("qport", "" + port, Defines.CVAR_NOSET);
+        qport = Cvar.Get("qport", "" + port, TVar.CVAR_FLAG_NOSET);
     }
 
     private static final byte send_buf[] = new byte[Defines.MAX_MSGLEN];

@@ -27,7 +27,7 @@ package jake2.client;
 
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
 import jake2.sys.*;
@@ -1225,7 +1225,7 @@ public final class Menu extends Key {
      * 
      * =======================================================================
      */
-    static cvar_t win_noalttab;
+    static TVar win_noalttab;
 
     static menuframework_s s_options_menu = new menuframework_s();
 
@@ -1440,7 +1440,7 @@ public final class Menu extends Key {
     		}
     	}
     	
-        win_noalttab = Cvar.Get("win_noalttab", "0", CVAR_ARCHIVE);
+        win_noalttab = Cvar.Get("win_noalttab", "0", TVar.CVAR_FLAG_ARCHIVE);
 
         /*
          * * configure controls menu and menu items
@@ -3568,7 +3568,7 @@ public final class Menu extends Key {
         s_addressbook_menu.nitems = 0;
 
         for (int i = 0; i < NUM_ADDRESSBOOK_ENTRIES; i++) {
-            cvar_t adr = Cvar.Get("adr" + i, "", CVAR_ARCHIVE);
+            TVar adr = Cvar.Get("adr" + i, "", TVar.CVAR_FLAG_ARCHIVE);
 
             s_addressbook_fields[i].type = MTYPE_FIELD;
             s_addressbook_fields[i].name = null;
@@ -3892,7 +3892,7 @@ public final class Menu extends Key {
 
     static boolean PlayerConfig_MenuInit() {
         /*
-         * extern cvar_t * name; extern cvar_t * team; extern cvar_t * skin;
+         * extern TVar * name; extern TVar * team; extern TVar * skin;
          */
         //har currentdirectory[1024];
         String currentdirectory;
@@ -3904,7 +3904,7 @@ public final class Menu extends Key {
         int currentdirectoryindex = 0;
         int currentskinindex = 0;
 
-        cvar_t hand = Cvar.Get("hand", "0", CVAR_USERINFO | CVAR_ARCHIVE);
+        TVar hand = Cvar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
 
         PlayerConfig_ScanDirectories();
 

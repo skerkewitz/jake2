@@ -30,7 +30,7 @@ import jake2.game.EndianHandler;
 import jake2.game.GameSVCmds;
 import jake2.game.GameSave;
 import jake2.game.Info;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.CM;
 import jake2.qcommon.Com;
 import jake2.qcommon.Cvar;
@@ -382,16 +382,13 @@ public class SV_CCMDS {
 	==============
 	*/
 	public static void SV_WriteServerFile(boolean autosave) {
-		QuakeFile f;
-		cvar_t var;
 
-		String filename, name, string, comment;
-
+		String name, string, comment;
 		Com.DPrintf("SV_WriteServerFile(" + (autosave ? "true" : "false") + ")\n");
 
-		filename = FS.Gamedir() + "/save/current/server.ssv";
+		String filename = FS.Gamedir() + "/save/current/server.ssv";
 		try {
-			f = new QuakeFile(filename, "rw");
+			QuakeFile f = new QuakeFile(filename, "rw");
 
 			if (!autosave) {
 				Calendar c = Calendar.getInstance();
@@ -413,10 +410,10 @@ public class SV_CCMDS {
 
 			// write the mapcmd
 
-			// write all CVAR_LATCH cvars
+			// write all CVAR_FLAG_LATCH cvars
 			// these will be things like coop, skill, deathmatch, etc
-			for (var = Globals.cvar_vars; var != null; var = var.next) {
-				if (0 == (var.flags & Defines.CVAR_LATCH))
+			for(TVar var : Cvar.cvar_vars) {
+				if (0 == (var.flags & TVar.CVAR_FLAG_LATCH))
 					continue;
 				if (var.name.length() >= Defines.MAX_OSPATH - 1 || var.string.length() >= 128 - 1) {
 					Com.Printf("Cvar too long: " + var.name + " = " + var.string + "\n");
@@ -470,7 +467,7 @@ public class SV_CCMDS {
 			// read the mapcmd
 			mapcmd = f.readString();
 
-			// read all CVAR_LATCH cvars
+			// read all CVAR_FLAG_LATCH cvars
 			// these will be things like coop, skill, deathmatch, etc
 			while (true) {
 				name = f.readString();

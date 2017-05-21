@@ -29,6 +29,7 @@ import jake2.Globals;
 import jake2.client.CL_input;
 import jake2.client.Key;
 import jake2.game.Cmd;
+import jake2.game.TVar;
 import jake2.game.usercmd_t;
 import jake2.qcommon.Cvar;
 import jake2.qcommon.xcommand_t;
@@ -93,8 +94,8 @@ public final class IN extends Globals {
     }
 
     public static void Init() {
-        in_mouse = Cvar.Get("in_mouse", "1", CVAR_ARCHIVE);
-        in_joystick = Cvar.Get("in_joystick", "0", CVAR_ARCHIVE);
+        in_mouse = Cvar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        in_joystick = Cvar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
     }
 
     public static void Shutdown() {
@@ -104,7 +105,7 @@ public final class IN extends Globals {
     public static void Real_IN_Init() {
         // mouse variables
         Globals.m_filter = Cvar.Get("m_filter", "0", 0);
-        Globals.in_mouse = Cvar.Get("in_mouse", "1", CVAR_ARCHIVE);
+        Globals.in_mouse = Cvar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
         Globals.freelook = Cvar.Get("freelook", "1", 0);
         Globals.lookstrafe = Cvar.Get("lookstrafe", "0", 0);
         Globals.sensitivity = Cvar.Get("sensitivity", "3", 0);

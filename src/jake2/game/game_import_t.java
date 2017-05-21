@@ -171,17 +171,17 @@ public class game_import_t {
     }
 
     // console variable interaction
-    public cvar_t cvar(String var_name, String value, int flags) {
+    public TVar cvar(String var_name, String value, int flags) {
         return Cvar.Get(var_name, value, flags);
     }
 
     // console variable interaction
-    public cvar_t cvar_set(String var_name, String value) {
+    public TVar cvar_set(String var_name, String value) {
         return Cvar.Set(var_name, value);
     }
 
     // console variable interaction
-    public cvar_t cvar_forceset(String var_name, String value) {
+    public TVar cvar_forceset(String var_name, String value) {
         return Cvar.ForceSet(var_name, value);
     }
 

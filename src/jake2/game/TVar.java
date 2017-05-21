@@ -26,15 +26,20 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 /**
- * cvar_t implements the struct cvar_t of the C version
+ * TVar implements the struct TVar of the C version
  */
-public final class cvar_t
-{
-	public String name;
-	public String string;
-	public String latched_string;
-	public int flags = 0;
-	public boolean modified = false;
-	public float value = 0.0f;
-	public cvar_t next = null;
+public final class TVar {
+
+    final public static int CVAR_FLAG_ARCHIVE = 1; // set to cause it to be saved to vars.rc
+    final public static int CVAR_FLAG_USERINFO = 2; // added to userinfo when changed
+    final public static int CVAR_FLAG_SERVERINFO = 4; // added to serverinfo when changed
+    final public static int CVAR_FLAG_NOSET = 8; // don't allow change from console at all, but can be set from the command line
+    final public static int CVAR_FLAG_LATCH = 16; // save changes until server restart
+
+    public String name;
+    public String string;
+    public String latched_string;
+    public int flags = 0;
+    public boolean modified = false;
+    public float value = 0.0f;
 }

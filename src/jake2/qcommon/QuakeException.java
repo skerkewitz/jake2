@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon;
 
 /**
- * longjmpException is used to replace the setjmp/longjmp code.
+ * QuakeException is used to replace the setjmp/longjmp code.
  */
-public final class longjmpException extends IllegalStateException {
+public final class QuakeException extends IllegalStateException {
 
 }

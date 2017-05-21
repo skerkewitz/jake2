@@ -27,7 +27,7 @@ import jake2.Defines;
 import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.client.particle_t;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.render.image_t;
 import jake2.util.Lib;
@@ -59,7 +59,7 @@ public abstract class Image extends Main {
 	byte[] intensitytable = new byte[256];
 	byte[] gammatable = new byte[256];
 
-	cvar_t intensity;
+	TVar intensity;
 
 	//
 	//	qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky );

@@ -24,7 +24,7 @@ package jake2.sys;
 
 import jake2.Defines;
 import jake2.Globals;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.Com;
 import jake2.qcommon.Cvar;
 import jake2.qcommon.netadr_t;
@@ -277,11 +277,11 @@ public final class NET {
      * OpenIP, creates the network sockets. 
      */
     public static void OpenIP() {
-        cvar_t port, ip, clientport;
+        TVar port, ip, clientport;
 
-        port = Cvar.Get("port", "" + Defines.PORT_SERVER, Defines.CVAR_NOSET);
-        ip = Cvar.Get("ip", "localhost", Defines.CVAR_NOSET);
-        clientport = Cvar.Get("clientport", "" + Defines.PORT_CLIENT, Defines.CVAR_NOSET);
+        port = Cvar.Get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
+        ip = Cvar.Get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
+        clientport = Cvar.Get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
         
         if (ip_sockets[Defines.NS_SERVER] == null)
             ip_sockets[Defines.NS_SERVER] = Socket(Defines.NS_SERVER,
@@ -380,7 +380,7 @@ public final class NET {
         /*
          * struct timeval timeout; 
          * fd_set fdset; 
-         * extern cvar_t *dedicated;
+         * extern TVar *dedicated;
          * extern qboolean stdin_active;
          * 
          * if (!ip_sockets[NS_SERVER] || (dedicated && !dedicated.value))

@@ -28,7 +28,7 @@ package jake2.render.fast;
 import jake2.Defines;
 import jake2.client.VID;
 import jake2.game.cplane_t;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.render.*;
 import jake2.util.*;
@@ -1164,7 +1164,7 @@ public abstract class Model extends Surf {
 		resetModelArrays();
 		Polygon.reset();
 
-		cvar_t flushmap;
+		TVar flushmap;
 
 		registration_sequence++;
 		r_oldviewcluster = -1;		// force markleafs

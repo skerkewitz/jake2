@@ -236,7 +236,7 @@ public class GameSVCmds {
         byte b[];
 
         int i;
-        cvar_t game;
+        TVar game;
 
         game = GameBase.gi.cvar("game", "", 0);
 

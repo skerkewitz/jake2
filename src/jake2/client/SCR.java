@@ -27,7 +27,7 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
 import jake2.sys.Timer;
@@ -69,33 +69,33 @@ public final class SCR extends Globals {
     // scr_vrect ist in Globals definiert
     // position of render window on screen
 
-    static cvar_t scr_viewsize;
+    static TVar scr_viewsize;
 
-    static cvar_t scr_conspeed;
+    static TVar scr_conspeed;
 
-    static cvar_t scr_centertime;
+    static TVar scr_centertime;
 
-    static cvar_t scr_showturtle;
+    static TVar scr_showturtle;
 
-    static cvar_t scr_showpause;
+    static TVar scr_showpause;
 
-    static cvar_t scr_printspeed;
+    static TVar scr_printspeed;
 
-    static cvar_t scr_netgraph;
+    static TVar scr_netgraph;
 
-    static cvar_t scr_timegraph;
+    static TVar scr_timegraph;
 
-    static cvar_t scr_debuggraph;
+    static TVar scr_debuggraph;
 
-    static cvar_t scr_graphheight;
+    static TVar scr_graphheight;
 
-    static cvar_t scr_graphscale;
+    static TVar scr_graphscale;
 
-    static cvar_t scr_graphshift;
+    static TVar scr_graphshift;
 
-    static cvar_t scr_drawall;
+    static TVar scr_drawall;
 
-    public static cvar_t fps = new cvar_t();
+    public static TVar fps = new TVar();
 
     static dirty_t scr_dirty = new dirty_t();
 
@@ -418,7 +418,7 @@ public final class SCR extends Globals {
      * ================== SCR_Init ==================
      */
     static void Init() {
-        scr_viewsize = Cvar.Get("viewsize", "100", CVAR_ARCHIVE);
+        scr_viewsize = Cvar.Get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
         scr_conspeed = Cvar.Get("scr_conspeed", "3", 0);
         scr_showturtle = Cvar.Get("scr_showturtle", "0", 0);
         scr_showpause = Cvar.Get("scr_showpause", "1", 0);

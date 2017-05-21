@@ -24,7 +24,7 @@
 package jake2.render;
 
 import jake2.client.viddef_t;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.render.opengl.GLDriver;
 import jake2.render.opengl.QGL;
 import org.lwjgl.opengl.GL11;
@@ -168,7 +168,7 @@ public abstract class Base implements RenderAPI {
      */
     protected final static viddef_t vid = new viddef_t();
 
-    protected cvar_t vid_fullscreen;
+    protected TVar vid_fullscreen;
     
     protected QGL gl;
 

@@ -247,18 +247,18 @@ public final class Com
 
 	public static xcommand_t Error_f= new xcommand_t()
 	{
-		public void execute() throws longjmpException
+		public void execute() throws QuakeException
 		{
 			Error(Defines.ERR_FATAL, Cmd.Argv(1));
 		}
 	};
 
-	public static void Error(int code, String fmt) throws longjmpException
+	public static void Error(int code, String fmt) throws QuakeException
 	{
 		Error(code, fmt, null);
 	}
 
-	public static void Error(int code, String fmt, Vargs vargs) throws longjmpException
+	public static void Error(int code, String fmt, Vargs vargs) throws QuakeException
 	{
 		// va_list argptr;
 		// static char msg[MAXPRINTMSG];
@@ -275,7 +275,7 @@ public final class Com
 		{
 			CL.Drop();
 			recursive= false;
-			throw new longjmpException();
+			throw new QuakeException();
 		}
 		else if (code == Defines.ERR_DROP)
 		{
@@ -283,7 +283,7 @@ public final class Com
 			SV_MAIN.SV_Shutdown("Server crashed: " + msg + "\n", false);
 			CL.Drop();
 			recursive= false;
-			throw new longjmpException();
+			throw new QuakeException();
 		}
 		else
 		{
@@ -298,7 +298,7 @@ public final class Com
 	 * Com_InitArgv checks the number of command line arguments
 	 * and copies all arguments with valid length into com_argv.
 	 */
-	static void InitArgv(String[] args) throws longjmpException
+	static void InitArgv(String[] args) throws QuakeException
 	{
 
 		if (args.length > Defines.MAX_NUM_ARGVS)

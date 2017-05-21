@@ -282,8 +282,7 @@ public class SV_INIT {
         SV_CheckForSavegame();
 
         // set serverinfo variable
-        Cvar.FullSet("mapname", sv.name, Defines.CVAR_SERVERINFO
-                | Defines.CVAR_NOSET);
+        Cvar.FullSet("mapname", sv.name, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
     }
 
     /**
@@ -314,35 +313,35 @@ public class SV_INIT {
         if (Cvar.VariableValue("coop") != 0
                 && Cvar.VariableValue("deathmatch") != 0) {
             Com.Printf("Deathmatch and Coop both set, disabling Coop\n");
-            Cvar.FullSet("coop", "0", Defines.CVAR_SERVERINFO
-                    | Defines.CVAR_LATCH);
+            Cvar.FullSet("coop", "0", TVar.CVAR_FLAG_SERVERINFO
+                    | TVar.CVAR_FLAG_LATCH);
         }
 
         // dedicated servers are can't be single player and are usually DM
         // so unless they explicity set coop, force it to deathmatch
         if (Globals.dedicated.value != 0) {
             if (0 == Cvar.VariableValue("coop"))
-                Cvar.FullSet("deathmatch", "1", Defines.CVAR_SERVERINFO
-                        | Defines.CVAR_LATCH);
+                Cvar.FullSet("deathmatch", "1", TVar.CVAR_FLAG_SERVERINFO
+                        | TVar.CVAR_FLAG_LATCH);
         }
 
         // init clients
         if (Cvar.VariableValue("deathmatch") != 0) {
             if (SV_MAIN.maxclients.value <= 1)
-                Cvar.FullSet("maxclients", "8", Defines.CVAR_SERVERINFO
-                        | Defines.CVAR_LATCH);
+                Cvar.FullSet("maxclients", "8", TVar.CVAR_FLAG_SERVERINFO
+                        | TVar.CVAR_FLAG_LATCH);
             else if (SV_MAIN.maxclients.value > Defines.MAX_CLIENTS)
                 Cvar.FullSet("maxclients", "" + Defines.MAX_CLIENTS,
-                        Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
+                        TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
         } else if (Cvar.VariableValue("coop") != 0) {
             if (SV_MAIN.maxclients.value <= 1 || SV_MAIN.maxclients.value > 4)
-                Cvar.FullSet("maxclients", "4", Defines.CVAR_SERVERINFO
-                        | Defines.CVAR_LATCH);
+                Cvar.FullSet("maxclients", "4", TVar.CVAR_FLAG_SERVERINFO
+                        | TVar.CVAR_FLAG_LATCH);
 
         } else // non-deathmatch, non-coop is one player
         {
-            Cvar.FullSet("maxclients", "1", Defines.CVAR_SERVERINFO
-                    | Defines.CVAR_LATCH);
+            Cvar.FullSet("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO
+                    | TVar.CVAR_FLAG_LATCH);
         }
 
         svs.spawncount = Lib.rand();        

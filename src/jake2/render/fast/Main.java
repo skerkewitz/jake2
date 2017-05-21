@@ -33,7 +33,6 @@ import jake2.render.*;
 import jake2.util.*;
 import org.lwjgl.opengl.ARBMultitexture;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL13;
 
 import java.nio.FloatBuffer;
@@ -154,70 +153,70 @@ public abstract class Main extends Base {
 
 	int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
-	cvar_t r_norefresh;
-	cvar_t r_drawentities;
-	cvar_t r_drawworld;
-	cvar_t r_speeds;
-	cvar_t r_fullbright;
-	cvar_t r_novis;
-	cvar_t r_nocull;
-	cvar_t r_lerpmodels;
-	cvar_t r_lefthand;
+	TVar r_norefresh;
+	TVar r_drawentities;
+	TVar r_drawworld;
+	TVar r_speeds;
+	TVar r_fullbright;
+	TVar r_novis;
+	TVar r_nocull;
+	TVar r_lerpmodels;
+	TVar r_lefthand;
 
-	cvar_t r_lightlevel;
+	TVar r_lightlevel;
 	// FIXME: This is a HACK to get the client's light level
 
-	cvar_t gl_nosubimage;
-	cvar_t gl_allow_software;
+	TVar gl_nosubimage;
+	TVar gl_allow_software;
 
-	cvar_t gl_vertex_arrays;
+	TVar gl_vertex_arrays;
 
-	cvar_t gl_particle_min_size;
-	cvar_t gl_particle_max_size;
-	cvar_t gl_particle_size;
-	cvar_t gl_particle_att_a;
-	cvar_t gl_particle_att_b;
-	cvar_t gl_particle_att_c;
+	TVar gl_particle_min_size;
+	TVar gl_particle_max_size;
+	TVar gl_particle_size;
+	TVar gl_particle_att_a;
+	TVar gl_particle_att_b;
+	TVar gl_particle_att_c;
 
-	cvar_t gl_ext_swapinterval;
-	cvar_t gl_ext_palettedtexture;
-	cvar_t gl_ext_multitexture;
-	cvar_t gl_ext_pointparameters;
-	cvar_t gl_ext_compiled_vertex_array;
+	TVar gl_ext_swapinterval;
+	TVar gl_ext_palettedtexture;
+	TVar gl_ext_multitexture;
+	TVar gl_ext_pointparameters;
+	TVar gl_ext_compiled_vertex_array;
 
-	cvar_t gl_log;
-	cvar_t gl_bitdepth;
-	cvar_t gl_drawbuffer;
-	cvar_t gl_driver;
-	cvar_t gl_lightmap;
-	cvar_t gl_shadows;
-	cvar_t gl_mode;
-	cvar_t gl_dynamic;
-	cvar_t gl_monolightmap;
-	cvar_t gl_modulate;
-	cvar_t gl_nobind;
-	cvar_t gl_round_down;
-	cvar_t gl_picmip;
-	cvar_t gl_skymip;
-	cvar_t gl_showtris;
-	cvar_t gl_ztrick;
-	cvar_t gl_finish;
-	cvar_t gl_clear;
-	cvar_t gl_cull;
-	cvar_t gl_polyblend;
-	cvar_t gl_flashblend;
-	cvar_t gl_playermip;
-	cvar_t gl_saturatelighting;
-	cvar_t gl_swapinterval;
-	cvar_t gl_texturemode;
-	cvar_t gl_texturealphamode;
-	cvar_t gl_texturesolidmode;
-	cvar_t gl_lockpvs;
+	TVar gl_log;
+	TVar gl_bitdepth;
+	TVar gl_drawbuffer;
+	TVar gl_driver;
+	TVar gl_lightmap;
+	TVar gl_shadows;
+	TVar gl_mode;
+	TVar gl_dynamic;
+	TVar gl_monolightmap;
+	TVar gl_modulate;
+	TVar gl_nobind;
+	TVar gl_round_down;
+	TVar gl_picmip;
+	TVar gl_skymip;
+	TVar gl_showtris;
+	TVar gl_ztrick;
+	TVar gl_finish;
+	TVar gl_clear;
+	TVar gl_cull;
+	TVar gl_polyblend;
+	TVar gl_flashblend;
+	TVar gl_playermip;
+	TVar gl_saturatelighting;
+	TVar gl_swapinterval;
+	TVar gl_texturemode;
+	TVar gl_texturealphamode;
+	TVar gl_texturesolidmode;
+	TVar gl_lockpvs;
 
-	cvar_t gl_3dlabs_broken;
+	TVar gl_3dlabs_broken;
 
-	cvar_t vid_gamma;
-	cvar_t vid_ref;
+	TVar vid_gamma;
+	TVar vid_ref;
 
 	// ============================================================================
 	// to port from gl_rmain.c, ...
@@ -921,7 +920,7 @@ public abstract class Main extends Base {
 	 * R_Register
 	 */
 	protected void R_Register() {
-		r_lefthand = Cvar.Get("hand", "0", Defines.CVAR_USERINFO | Defines.CVAR_ARCHIVE);
+		r_lefthand = Cvar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
 		r_norefresh = Cvar.Get("r_norefresh", "0", 0);
 		r_fullbright = Cvar.Get("r_fullbright", "0", 0);
 		r_drawentities = Cvar.Get("r_drawentities", "1", 0);
@@ -936,19 +935,19 @@ public abstract class Main extends Base {
 		gl_nosubimage = Cvar.Get("gl_nosubimage", "0", 0);
 		gl_allow_software = Cvar.Get("gl_allow_software", "0", 0);
 
-		gl_particle_min_size = Cvar.Get("gl_particle_min_size", "2", Defines.CVAR_ARCHIVE);
-		gl_particle_max_size = Cvar.Get("gl_particle_max_size", "40", Defines.CVAR_ARCHIVE);
-		gl_particle_size = Cvar.Get("gl_particle_size", "40", Defines.CVAR_ARCHIVE);
-		gl_particle_att_a = Cvar.Get("gl_particle_att_a", "0.01", Defines.CVAR_ARCHIVE);
-		gl_particle_att_b = Cvar.Get("gl_particle_att_b", "0.0", Defines.CVAR_ARCHIVE);
-		gl_particle_att_c = Cvar.Get("gl_particle_att_c", "0.01", Defines.CVAR_ARCHIVE);
+		gl_particle_min_size = Cvar.Get("gl_particle_min_size", "2", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_max_size = Cvar.Get("gl_particle_max_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_size = Cvar.Get("gl_particle_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_a = Cvar.Get("gl_particle_att_a", "0.01", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_b = Cvar.Get("gl_particle_att_b", "0.0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_c = Cvar.Get("gl_particle_att_c", "0.01", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_modulate = Cvar.Get("gl_modulate", "1.5", Defines.CVAR_ARCHIVE);
+		gl_modulate = Cvar.Get("gl_modulate", "1.5", TVar.CVAR_FLAG_ARCHIVE);
 		gl_log = Cvar.Get("gl_log", "0", 0);
 		gl_bitdepth = Cvar.Get("gl_bitdepth", "0", 0);
-		gl_mode = Cvar.Get("gl_mode", "3", Defines.CVAR_ARCHIVE); // 640x480
+		gl_mode = Cvar.Get("gl_mode", "3", TVar.CVAR_FLAG_ARCHIVE); // 640x480
 		gl_lightmap = Cvar.Get("gl_lightmap", "0", 0);
-		gl_shadows = Cvar.Get("gl_shadows", "0", Defines.CVAR_ARCHIVE);
+		gl_shadows = Cvar.Get("gl_shadows", "0", TVar.CVAR_FLAG_ARCHIVE);
 		gl_dynamic = Cvar.Get("gl_dynamic", "1", 0);
 		gl_nobind = Cvar.Get("gl_nobind", "0", 0);
 		gl_round_down = Cvar.Get("gl_round_down", "1", 0);
@@ -956,37 +955,37 @@ public abstract class Main extends Base {
 		gl_skymip = Cvar.Get("gl_skymip", "0", 0);
 		gl_showtris = Cvar.Get("gl_showtris", "0", 0);
 		gl_ztrick = Cvar.Get("gl_ztrick", "0", 0);
-		gl_finish = Cvar.Get("gl_finish", "0", Defines.CVAR_ARCHIVE);
+		gl_finish = Cvar.Get("gl_finish", "0", TVar.CVAR_FLAG_ARCHIVE);
 		gl_clear = Cvar.Get("gl_clear", "0", 0);
 		gl_cull = Cvar.Get("gl_cull", "1", 0);
 		gl_polyblend = Cvar.Get("gl_polyblend", "1", 0);
 		gl_flashblend = Cvar.Get("gl_flashblend", "0", 0);
 		gl_playermip = Cvar.Get("gl_playermip", "0", 0);
 		gl_monolightmap = Cvar.Get("gl_monolightmap", "0", 0);
-		gl_driver = Cvar.Get("gl_driver", "opengl32", Defines.CVAR_ARCHIVE);
-		gl_texturemode = Cvar.Get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", Defines.CVAR_ARCHIVE);
-		gl_texturealphamode = Cvar.Get("gl_texturealphamode", "default", Defines.CVAR_ARCHIVE);
-		gl_texturesolidmode = Cvar.Get("gl_texturesolidmode", "default", Defines.CVAR_ARCHIVE);
+		gl_driver = Cvar.Get("gl_driver", "opengl32", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturemode = Cvar.Get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturealphamode = Cvar.Get("gl_texturealphamode", "default", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturesolidmode = Cvar.Get("gl_texturesolidmode", "default", TVar.CVAR_FLAG_ARCHIVE);
 		gl_lockpvs = Cvar.Get("gl_lockpvs", "0", 0);
 
-		gl_vertex_arrays = Cvar.Get("gl_vertex_arrays", "1", Defines.CVAR_ARCHIVE);
+		gl_vertex_arrays = Cvar.Get("gl_vertex_arrays", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_ext_swapinterval = Cvar.Get("gl_ext_swapinterval", "1", Defines.CVAR_ARCHIVE);
-		gl_ext_palettedtexture = Cvar.Get("gl_ext_palettedtexture", "0", Defines.CVAR_ARCHIVE);
-		gl_ext_multitexture = Cvar.Get("gl_ext_multitexture", "1", Defines.CVAR_ARCHIVE);
-		gl_ext_pointparameters = Cvar.Get("gl_ext_pointparameters", "1", Defines.CVAR_ARCHIVE);
-		gl_ext_compiled_vertex_array = Cvar.Get("gl_ext_compiled_vertex_array", "1", Defines.CVAR_ARCHIVE);
+		gl_ext_swapinterval = Cvar.Get("gl_ext_swapinterval", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_palettedtexture = Cvar.Get("gl_ext_palettedtexture", "0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_multitexture = Cvar.Get("gl_ext_multitexture", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_pointparameters = Cvar.Get("gl_ext_pointparameters", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_compiled_vertex_array = Cvar.Get("gl_ext_compiled_vertex_array", "1", TVar.CVAR_FLAG_ARCHIVE);
 
 		gl_drawbuffer = Cvar.Get("gl_drawbuffer", "GL_BACK", 0);
-		gl_swapinterval = Cvar.Get("gl_swapinterval", "0", Defines.CVAR_ARCHIVE);
+		gl_swapinterval = Cvar.Get("gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE);
 
 		gl_saturatelighting = Cvar.Get("gl_saturatelighting", "0", 0);
 
-		gl_3dlabs_broken = Cvar.Get("gl_3dlabs_broken", "1", Defines.CVAR_ARCHIVE);
+		gl_3dlabs_broken = Cvar.Get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", Defines.CVAR_ARCHIVE);
-		vid_gamma = Cvar.Get("vid_gamma", "1.0", Defines.CVAR_ARCHIVE);
-		vid_ref = Cvar.Get("vid_ref", "lwjgl", Defines.CVAR_ARCHIVE);
+		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_gamma = Cvar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_ref = Cvar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
 
 		Cmd.AddCommand("imagelist", new xcommand_t() {
 			public void execute() {
@@ -1322,7 +1321,7 @@ public abstract class Main extends Base {
 		*/
 		if (gl_mode.modified || vid_fullscreen.modified) {
 			// FIXME: only restart if CDS is required
-			cvar_t ref;
+			TVar ref;
 
 			ref = Cvar.Get("vid_ref", "lwjgl", 0);
 			ref.modified = true;

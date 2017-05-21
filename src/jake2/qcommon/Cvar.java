@@ -30,59 +30,61 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.Info;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.util.Lib;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Vector;
 
 /**
  * Cvar implements console variables. The original code is located in cvar.c
  */
-public class Cvar extends Globals {
+public class Cvar {
+
+    public static List<TVar> cvar_vars = new LinkedList<>();
 
     /**
-     * @param var_name
-     * @param var_value
+     * @param name
+     * @param value
      * @param flags
      * @return
      */
-    public static cvar_t Get(String var_name, String var_value, int flags) {
-        cvar_t var;
+    public static TVar Get(String name, String value, int flags) {
 
-        if ((flags & (CVAR_USERINFO | CVAR_SERVERINFO)) != 0) {
-            if (!InfoValidate(var_name)) {
+        if ((flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
+            if (!InfoValidate(name)) {
                 Com.Printf("invalid info cvar name\n");
                 return null;
             }
         }
 
-        var = Cvar.FindVar(var_name);
+        TVar var = Cvar.FindVar(name);
         if (var != null) {
             var.flags |= flags;
             return var;
         }
 
-        if (var_value == null)
+        if (value == null)
             return null;
 
-        if ((flags & (CVAR_USERINFO | CVAR_SERVERINFO)) != 0) {
-            if (!InfoValidate(var_value)) {
+        if ((flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
+            if (!InfoValidate(value)) {
                 Com.Printf("invalid info cvar value\n");
                 return null;
             }
         }
-        var = new cvar_t();
-        var.name = new String(var_name);
-        var.string = new String(var_value);
+        var = new TVar();
+        var.name = new String(name);
+        var.string = new String(value);
         var.modified = true;
         var.value = Lib.atof(var.string);
-        // link the variable in
-        var.next = Globals.cvar_vars;
-        Globals.cvar_vars = var;
-
         var.flags = flags;
+
+        // link the variable in
+        cvar_vars.add(var);
 
         return var;
     }
@@ -93,15 +95,14 @@ public class Cvar extends Globals {
     }
 
     public static String VariableString(String var_name) {
-        cvar_t var;
+        TVar var;
         var = FindVar(var_name);
         return (var == null) ? "" : var.string;
     }
 
-    static cvar_t FindVar(String var_name) {
-        cvar_t var;
+    static TVar FindVar(String var_name) {
 
-        for (var = Globals.cvar_vars; var != null; var = var.next) {
+        for (TVar var : cvar_vars) {
             if (var_name.equals(var.name))
                 return var;
         }
@@ -112,8 +113,8 @@ public class Cvar extends Globals {
     /**
      * Creates a variable if not found and sets their value, the parsed float value and their flags.
      */
-    public static cvar_t FullSet(String var_name, String value, int flags) {
-        cvar_t var;
+    public static TVar FullSet(String var_name, String value, int flags) {
+        TVar var;
 
         var = Cvar.FindVar(var_name);
         if (null == var) { // create it
@@ -122,7 +123,7 @@ public class Cvar extends Globals {
 
         var.modified = true;
 
-        if ((var.flags & CVAR_USERINFO) != 0)
+        if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
             Globals.userinfo_modified = true; // transmit at next oportunity
 
         var.string = value;
@@ -135,14 +136,14 @@ public class Cvar extends Globals {
     /** 
      * Sets the value of the variable without forcing. 
      */
-    public static cvar_t Set(String var_name, String value) {
+    public static TVar Set(String var_name, String value) {
         return Set2(var_name, value, false);
     }
 
     /** 
      * Sets the value of the variable with forcing. 
      */
-    public static cvar_t ForceSet(String var_name, String value) {
+    public static TVar ForceSet(String var_name, String value) {
         return Cvar.Set2(var_name, value, true);
     }
     
@@ -150,15 +151,15 @@ public class Cvar extends Globals {
      * Gereric set function, sets the value of the variable, with forcing its even possible to 
      * override the variables write protection. 
      */
-    static cvar_t Set2(String var_name, String value, boolean force) {
+    static TVar Set2(String var_name, String value, boolean force) {
 
-        cvar_t var = Cvar.FindVar(var_name);
+        TVar var = Cvar.FindVar(var_name);
         if (var == null) { 
         	// create it
             return Cvar.Get(var_name, value, 0);
         }
 
-        if ((var.flags & (CVAR_USERINFO | CVAR_SERVERINFO)) != 0) {
+        if ((var.flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
             if (!InfoValidate(value)) {
                 Com.Printf("invalid info cvar value\n");
                 return var;
@@ -166,12 +167,12 @@ public class Cvar extends Globals {
         }
 
         if (!force) {
-            if ((var.flags & CVAR_NOSET) != 0) {
+            if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0) {
                 Com.Printf(var_name + " is write protected.\n");
                 return var;
             }
 
-            if ((var.flags & CVAR_LATCH) != 0) {
+            if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0) {
                 if (var.latched_string != null) {
                     if (value.equals(var.latched_string))
                         return var;
@@ -205,7 +206,7 @@ public class Cvar extends Globals {
 
         var.modified = true;
 
-        if ((var.flags & CVAR_USERINFO) != 0)
+        if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
             Globals.userinfo_modified = true; // transmit at next oportunity
 
         var.string = value;
@@ -235,9 +236,9 @@ public class Cvar extends Globals {
 
             if (c == 4) {
                 if (Cmd.Argv(3).equals("u"))
-                    flags = CVAR_USERINFO;
+                    flags = TVar.CVAR_FLAG_USERINFO;
                 else if (Cmd.Argv(3).equals("s"))
-                    flags = CVAR_SERVERINFO;
+                    flags = TVar.CVAR_FLAG_SERVERINFO;
                 else {
                     Com.Printf("flags can only be 'u' or 's'\n");
                     return;
@@ -250,35 +251,34 @@ public class Cvar extends Globals {
 
     };
 
+
     /**
      * List command, lists all available commands.
      */
     static xcommand_t List_f = new xcommand_t() {
         public void execute() {
-            cvar_t var;
-            int i;
-
-            i = 0;
-            for (var = Globals.cvar_vars; var != null; var = var.next, i++) {
-                if ((var.flags & CVAR_ARCHIVE) != 0)
+            int i = 0;
+            for (TVar var : cvar_vars) {
+                if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
                     Com.Printf("*");
                 else
                     Com.Printf(" ");
-                if ((var.flags & CVAR_USERINFO) != 0)
+                if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
                     Com.Printf("U");
                 else
                     Com.Printf(" ");
-                if ((var.flags & CVAR_SERVERINFO) != 0)
+                if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
                     Com.Printf("Sound");
                 else
                     Com.Printf(" ");
-                if ((var.flags & CVAR_NOSET) != 0)
+                if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
                     Com.Printf("-");
-                else if ((var.flags & CVAR_LATCH) != 0)
+                else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
                     Com.Printf("L");
                 else
                     Com.Printf(" ");
                 Com.Printf(" " + var.name + " \"" + var.string + "\"\n");
+                i += 1;
             }
             Com.Printf(i + " cvars\n");
         }
@@ -308,7 +308,7 @@ public class Cvar extends Globals {
      * Returns the float value of a variable.
      */
     public static float VariableValue(String var_name) {
-        cvar_t var = Cvar.FindVar(var_name);
+        TVar var = Cvar.FindVar(var_name);
         if (var == null)
             return 0;
         
@@ -319,7 +319,7 @@ public class Cvar extends Globals {
      * Handles variable inspection and changing from the console.
      */
     public static boolean Command() {
-        cvar_t v;
+        TVar v;
 
         // check variables
         v = Cvar.FindVar(Cmd.Argv(0));
@@ -337,23 +337,21 @@ public class Cvar extends Globals {
     }
 
     public static String BitInfo(int bit) {
-        String info;
-        cvar_t var;
 
-        info = "";
-
-        for (var = Globals.cvar_vars; var != null; var = var.next) {
-            if ((var.flags & bit) != 0)
+        String info = "";
+        for(TVar var : cvar_vars) {
+            if ((var.flags & bit) != 0) {
                 info = Info.Info_SetValueForKey(info, var.name, var.string);
+            }
         }
         return info;
     }
 
     /**
-     * Returns an info string containing all the CVAR_SERVERINFO cvars. 
+     * Returns an info string containing all the CVAR_FLAG_SERVERINFO cvars.
      */
     public static String Serverinfo() {
-        return BitInfo(Defines.CVAR_SERVERINFO);
+        return BitInfo(TVar.CVAR_FLAG_SERVERINFO);
     }
 
     
@@ -361,9 +359,8 @@ public class Cvar extends Globals {
      * Any variables with latched values will be updated.
      */
     public static void GetLatchedVars() {
-        cvar_t var;
 
-        for (var = Globals.cvar_vars; var != null; var = var.next) {
+        for(TVar var : cvar_vars) {
             if (var.latched_string == null || var.latched_string.length() == 0)
                 continue;
             var.string = var.latched_string;
@@ -377,10 +374,10 @@ public class Cvar extends Globals {
     }
 
     /**
-     * Returns an info string containing all the CVAR_USERINFO cvars.
+     * Returns an info string containing all the CVAR_FLAG_USERINFO cvars.
      */
     public static String Userinfo() {
-        return BitInfo(CVAR_USERINFO);
+        return BitInfo(TVar.CVAR_FLAG_USERINFO);
     }
     
     /**
@@ -389,7 +386,7 @@ public class Cvar extends Globals {
      */
 
     public static void WriteVariables(String path) {
-        cvar_t var;
+
         RandomAccessFile f;
         String buffer;
 
@@ -403,8 +400,8 @@ public class Cvar extends Globals {
             Lib.fclose(f);
             return;
         }
-        for (var = cvar_vars; var != null; var = var.next) {
-            if ((var.flags & CVAR_ARCHIVE) != 0) {
+        for(TVar var : cvar_vars) {
+            if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0) {
                 buffer = "set " + var.name + " \"" + var.string + "\"\n";
                 try {
                     f.writeBytes(buffer);
@@ -423,9 +420,11 @@ public class Cvar extends Globals {
         Vector vars = new Vector();
 
         // check match
-        for (cvar_t cvar = Globals.cvar_vars; cvar != null; cvar = cvar.next)
-            if (cvar.name.startsWith(partial))
-                vars.add(cvar.name);
+        for(TVar var : cvar_vars) {
+            if (var.name.startsWith(partial)) {
+                vars.add(var.name);
+            }
+        }
 
         return vars;
     }

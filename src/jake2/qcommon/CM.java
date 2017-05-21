@@ -189,7 +189,7 @@ public class CM {
 
     public static boolean portalopen[] = new boolean[Defines.MAX_MAP_AREAPORTALS];
 
-    public static cvar_t map_noareas;
+    public static TVar map_noareas;
 
     public static byte cmod_base[];
 

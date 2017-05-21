@@ -26,7 +26,7 @@ package jake2.qcommon;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.sys.QSystem;
 
 import java.io.*;
@@ -80,11 +80,11 @@ public final class FS extends Globals {
 
     private static String fs_userdir;
 
-    public static cvar_t fs_basedir;
+    public static TVar fs_basedir;
 
-    public static cvar_t fs_cddir;
+    public static TVar fs_cddir;
 
-    public static cvar_t fs_gamedirvar;
+    public static TVar fs_gamedirvar;
 
     public static class filelink_t {
         String from;
@@ -714,10 +714,10 @@ public final class FS extends Globals {
         fs_gamedir = fs_basedir.string + '/' + dir;
 
         if (dir.equals(Globals.BASEDIRNAME) || (dir.length() == 0)) {
-            Cvar.FullSet("gamedir", "", CVAR_SERVERINFO | CVAR_NOSET);
-            Cvar.FullSet("game", "", CVAR_LATCH | CVAR_SERVERINFO);
+            Cvar.FullSet("gamedir", "", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+            Cvar.FullSet("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
         } else {
-            Cvar.FullSet("gamedir", dir, CVAR_SERVERINFO | CVAR_NOSET);
+            Cvar.FullSet("gamedir", dir, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
             if (fs_cddir.string != null && fs_cddir.string.length() > 0)
                 AddGameDirectory(fs_cddir.string + '/' + dir);
 
@@ -903,7 +903,7 @@ public final class FS extends Globals {
         // basedir <path>
         // allows the game to run from outside the data tree
         //
-        fs_basedir = Cvar.Get("basedir", ".", CVAR_NOSET);
+        fs_basedir = Cvar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
 
         //
         // cddir <path>
@@ -922,7 +922,7 @@ public final class FS extends Globals {
         markBaseSearchPaths();
 
         // check for game override
-        fs_gamedirvar = Cvar.Get("game", "", CVAR_LATCH | CVAR_SERVERINFO);
+        fs_gamedirvar = Cvar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
 
         if (fs_gamedirvar.string.length() > 0)
             SetGamedir(fs_gamedirvar.string);
@@ -932,7 +932,7 @@ public final class FS extends Globals {
      * set baseq2 directory
      */
     static void setCDDir() {
-        fs_cddir = Cvar.Get("cddir", "", CVAR_ARCHIVE);
+        fs_cddir = Cvar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
         if (fs_cddir.string.length() > 0)
             AddGameDirectory(fs_cddir.string);
     }

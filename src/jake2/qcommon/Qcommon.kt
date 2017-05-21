@@ -29,6 +29,7 @@ import jake2.Defines
 import jake2.Globals
 import jake2.client.*
 import jake2.game.Cmd
+import jake2.game.TVar
 import jake2.server.SV_MAIN
 import jake2.sys.*
 import jake2.sys.NET
@@ -100,12 +101,12 @@ class Qcommon : Globals() {
 
                 Globals.host_speeds = Cvar.Get("host_speeds", "0", 0)
                 Globals.log_stats = Cvar.Get("log_stats", "0", 0)
-                Globals.developer = Cvar.Get("developer", "0", Defines.CVAR_ARCHIVE)
+                Globals.developer = Cvar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
                 Globals.timescale = Cvar.Get("timescale", "0", 0)
                 Globals.fixedtime = Cvar.Get("fixedtime", "0", 0)
                 Globals.logfile_active = Cvar.Get("logfile", "0", 0)
                 Globals.showtrace = Cvar.Get("showtrace", "0", 0)
-                Globals.dedicated = Cvar.Get("dedicated", "0", Defines.CVAR_NOSET)
+                Globals.dedicated = Cvar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
                 val s = Com.sprintf("%4.2f %s %s %s",
                         Vargs(4)
                                 .add(Globals.VERSION)
@@ -113,7 +114,7 @@ class Qcommon : Globals() {
                                 .add(Globals.__DATE__)
                                 .add(BUILDSTRING))
 
-                Cvar.Get("version", s, Defines.CVAR_SERVERINFO or Defines.CVAR_NOSET)
+                Cvar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
 
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
@@ -160,7 +161,7 @@ class Qcommon : Globals() {
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.dispose();
 
-            } catch (e: longjmpException) {
+            } catch (e: QuakeException) {
                 QSystem.Error("Error during initialization")
             }
 
@@ -268,14 +269,14 @@ class Qcommon : Globals() {
                             Vargs(5).add(all).add(sv).add(gm).add(cl).add(rf))
                 }
 
-            } catch (e: longjmpException) {
+            } catch (e: QuakeException) {
                 Com.DPrintf("longjmp exception:" + e)
             }
 
         }
 
         internal fun reconfigure(clear: Boolean) {
-            val dir = Cvar.Get("cddir", "", Defines.CVAR_ARCHIVE)!!.string
+            val dir = Cvar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
             Cbuf.AddText("exec default.cfg\n")
             Cbuf.AddText("bind MWHEELUP weapnext\n")
             Cbuf.AddText("bind MWHEELDOWN weapprev\n")

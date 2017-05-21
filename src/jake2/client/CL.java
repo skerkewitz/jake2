@@ -62,7 +62,7 @@ public final class CL {
 
         String value;
 
-        cvar_t var;
+        TVar var;
     }
 
     public static String cheatvarsinfo[][] = { { "timescale", "1" },
@@ -432,15 +432,15 @@ public final class CL {
             //char name[32];
             String name;
             String adrstring;
-            cvar_t noudp;
-            cvar_t noipx;
+            TVar noudp;
+            TVar noipx;
 
             NET.Config(true); // allow remote
 
             // send a broadcast packet
             Com.Printf("pinging broadcast...\n");
 
-            noudp = Cvar.Get("noudp", "0", Defines.CVAR_NOSET);
+            noudp = Cvar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
             if (noudp.value == 0.0f) {
                 adr.type = Defines.NA_BROADCAST;
                 adr.port = Defines.PORT_SERVER;
@@ -450,7 +450,7 @@ public final class CL {
             }
 
             // we use no IPX
-            noipx = Cvar.Get("noipx", "1", Defines.CVAR_NOSET);
+            noipx = Cvar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
             if (noipx.value == 0.0f) {
                 adr.type = Defines.NA_BROADCAST_IPX;
                 //adr.port = BigShort(PORT_SERVER);
@@ -1245,21 +1245,21 @@ public final class CL {
 
         CL_input.InitInput();
 
-        Cvar.Get("adr0", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr1", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr2", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr3", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr4", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr5", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr6", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr7", "", Defines.CVAR_ARCHIVE);
-        Cvar.Get("adr8", "", Defines.CVAR_ARCHIVE);
+        Cvar.Get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr2", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr3", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr4", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr5", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr6", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr7", "", TVar.CVAR_FLAG_ARCHIVE);
+        Cvar.Get("adr8", "", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our variables
         //
         Globals.cl_stereo_separation = Cvar.Get("cl_stereo_separation", "0.4",
-                Defines.CVAR_ARCHIVE);
+                TVar.CVAR_FLAG_ARCHIVE);
         Globals.cl_stereo = Cvar.Get("cl_stereo", "0", 0);
 
         Globals.cl_add_blend = Cvar.Get("cl_blend", "1", 0);
@@ -1281,13 +1281,13 @@ public final class CL {
         Globals.cl_pitchspeed = Cvar.Get("cl_pitchspeed", "150", 0);
         Globals.cl_anglespeedkey = Cvar.Get("cl_anglespeedkey", "1.5", 0);
 
-        Globals.cl_run = Cvar.Get("cl_run", "0", Defines.CVAR_ARCHIVE);
-        Globals.lookspring = Cvar.Get("lookspring", "0", Defines.CVAR_ARCHIVE);
-        Globals.lookstrafe = Cvar.Get("lookstrafe", "0", Defines.CVAR_ARCHIVE);
+        Globals.cl_run = Cvar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.lookspring = Cvar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.lookstrafe = Cvar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
         Globals.sensitivity = Cvar
-                .Get("sensitivity", "3", Defines.CVAR_ARCHIVE);
+                .Get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Globals.m_pitch = Cvar.Get("m_pitch", "0.022", Defines.CVAR_ARCHIVE);
+        Globals.m_pitch = Cvar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
         Globals.m_yaw = Cvar.Get("m_yaw", "0.022", 0);
         Globals.m_forward = Cvar.Get("m_forward", "1", 0);
         Globals.m_side = Cvar.Get("m_side", "1", 0);
@@ -1307,29 +1307,29 @@ public final class CL {
         //
         // userinfo
         //
-        Globals.info_password = Cvar.Get("password", "", Defines.CVAR_USERINFO);
+        Globals.info_password = Cvar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
         Globals.info_spectator = Cvar.Get("spectator", "0",
-                Defines.CVAR_USERINFO);
-        Globals.name = Cvar.Get("name", "unnamed", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
-        Globals.skin = Cvar.Get("skin", "male/grunt", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
-        Globals.rate = Cvar.Get("rate", "25000", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE); // FIXME
-        Globals.msg = Cvar.Get("msg", "1", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
-        Globals.hand = Cvar.Get("hand", "0", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
-        Globals.fov = Cvar.Get("fov", "90", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
-        Globals.gender = Cvar.Get("gender", "male", Defines.CVAR_USERINFO
-                | Defines.CVAR_ARCHIVE);
+                TVar.CVAR_FLAG_USERINFO);
+        Globals.name = Cvar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
+        Globals.skin = Cvar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
+        Globals.rate = Cvar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE); // FIXME
+        Globals.msg = Cvar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
+        Globals.hand = Cvar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
+        Globals.fov = Cvar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
+        Globals.gender = Cvar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
+                | TVar.CVAR_FLAG_ARCHIVE);
         Globals.gender_auto = Cvar
-                .Get("gender_auto", "1", Defines.CVAR_ARCHIVE);
+                .Get("gender_auto", "1", TVar.CVAR_FLAG_ARCHIVE);
         Globals.gender.modified = false; // clear this so we know when user sets
                                          // it manually
 
-        Globals.cl_vwep = Cvar.Get("cl_vwep", "1", Defines.CVAR_ARCHIVE);
+        Globals.cl_vwep = Cvar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our commands

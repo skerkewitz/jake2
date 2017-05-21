@@ -1413,7 +1413,7 @@ public class CL_tent {
         }
     }
 
-    //extern cvar_t *hand;
+    //extern TVar *hand;
 
     // stack variable
     private static final float[] dist = new float[3];

@@ -27,7 +27,7 @@ package jake2.client;
 
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.sys.Timer;
 import jake2.util.Math3D;
@@ -41,15 +41,15 @@ import java.nio.FloatBuffer;
  */
 public final class V extends Globals {
 
-    static cvar_t cl_testblend;
+    static TVar cl_testblend;
 
-    static cvar_t cl_testparticles;
+    static TVar cl_testparticles;
 
-    static cvar_t cl_testentities;
+    static TVar cl_testentities;
 
-    static cvar_t cl_testlights;
+    static TVar cl_testlights;
 
-    static cvar_t cl_stats;
+    static TVar cl_stats;
 
     static int r_numdlights;
 
@@ -400,7 +400,7 @@ public final class V extends Globals {
 
         Cmd.AddCommand("viewpos", Viewpos_f);
 
-        crosshair = Cvar.Get("crosshair", "0", CVAR_ARCHIVE);
+        crosshair = Cvar.Get("crosshair", "0", TVar.CVAR_FLAG_ARCHIVE);
 
         cl_testblend = Cvar.Get("cl_testblend", "0", 0);
         cl_testparticles = Cvar.Get("cl_testparticles", "0", 0);

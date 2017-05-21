@@ -107,13 +107,6 @@ public interface Defines {
     int SFF_SUBDIR = 0x08;
     int SFF_SYSTEM = 0x10;
 
-    int CVAR_ARCHIVE = 1; // set to cause it to be saved to vars.rc
-    int CVAR_USERINFO = 2; // added to userinfo when changed
-    int CVAR_SERVERINFO = 4; // added to serverinfo when changed
-    int CVAR_NOSET = 8; // don't allow change from console at all,
-    // but can be set from the command line
-    int CVAR_LATCH = 16; // save changes until server restart
-
     // lower bits are stronger, and will eat weaker brushes completely
     int CONTENTS_SOLID = 1; // an eye is never valid in a solid
     int CONTENTS_WINDOW = 2; // translucent, but not watery

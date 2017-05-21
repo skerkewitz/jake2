@@ -25,6 +25,7 @@
  */
 package jake2
 
+import jake2.game.TVar
 import jake2.qcommon.Com
 import jake2.qcommon.Cvar
 import jake2.qcommon.Qcommon
@@ -80,7 +81,7 @@ object Jake2 {
 
         // TODO: check if dedicated is set in config file
 
-        Globals.dedicated = Cvar.Get("dedicated", "0", Globals.CVAR_NOSET)
+        Globals.dedicated = Cvar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
 
         if (dedicated)
             Globals.dedicated.value = 1.0f

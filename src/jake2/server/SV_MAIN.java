@@ -47,43 +47,43 @@ public class SV_MAIN {
 
     public static client_t sv_client; // current client
 
-    public static cvar_t sv_paused;
+    public static TVar sv_paused;
 
-    public static cvar_t sv_timedemo;
+    public static TVar sv_timedemo;
 
-    public static cvar_t sv_enforcetime;
+    public static TVar sv_enforcetime;
 
-    public static cvar_t timeout; // seconds without any message
+    public static TVar timeout; // seconds without any message
 
-    public static cvar_t zombietime; // seconds to sink messages after
+    public static TVar zombietime; // seconds to sink messages after
                                      // disconnect
 
-    public static cvar_t rcon_password; // password for remote server commands
+    public static TVar rcon_password; // password for remote server commands
 
-    public static cvar_t allow_download;
+    public static TVar allow_download;
 
-    public static cvar_t allow_download_players;
+    public static TVar allow_download_players;
 
-    public static cvar_t allow_download_models;
+    public static TVar allow_download_models;
 
-    public static cvar_t allow_download_sounds;
+    public static TVar allow_download_sounds;
 
-    public static cvar_t allow_download_maps;
+    public static TVar allow_download_maps;
 
-    public static cvar_t sv_airaccelerate;
+    public static TVar sv_airaccelerate;
 
-    public static cvar_t sv_noreload; // don't reload level state when
+    public static TVar sv_noreload; // don't reload level state when
                                       // reentering
 
-    public static cvar_t maxclients; // FIXME: rename sv_maxclients
+    public static TVar maxclients; // FIXME: rename sv_maxclients
 
-    public static cvar_t sv_showclamp;
+    public static TVar sv_showclamp;
 
-    public static cvar_t hostname;
+    public static TVar hostname;
 
-    public static cvar_t public_server; // should heartbeats be sent
+    public static TVar public_server; // should heartbeats be sent
 
-    public static cvar_t sv_reconnect_limit; // minimum seconds between connect
+    public static TVar sv_reconnect_limit; // minimum seconds between connect
                                              // messages
 
     /**
@@ -866,20 +866,16 @@ public class SV_MAIN {
 
         SV_MAIN.rcon_password = Cvar.Get("rcon_password", "", 0);
         Cvar.Get("skill", "1", 0);
-        Cvar.Get("deathmatch", "0", Defines.CVAR_LATCH);
-        Cvar.Get("coop", "0", Defines.CVAR_LATCH);
-        Cvar.Get("dmflags", "" + Defines.DF_INSTANT_ITEMS,
-                Defines.CVAR_SERVERINFO);
-        Cvar.Get("fraglimit", "0", Defines.CVAR_SERVERINFO);
-        Cvar.Get("timelimit", "0", Defines.CVAR_SERVERINFO);
-        Cvar.Get("cheats", "0", Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
-        Cvar.Get("protocol", "" + Defines.PROTOCOL_VERSION,
-                Defines.CVAR_SERVERINFO | Defines.CVAR_NOSET);
+        Cvar.Get("deathmatch", "0", TVar.CVAR_FLAG_LATCH);
+        Cvar.Get("coop", "0", TVar.CVAR_FLAG_LATCH);
+        Cvar.Get("dmflags", "" + Defines.DF_INSTANT_ITEMS, TVar.CVAR_FLAG_SERVERINFO);
+        Cvar.Get("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        Cvar.Get("timelimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        Cvar.Get("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        Cvar.Get("protocol", "" + Defines.PROTOCOL_VERSION, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
 
-        SV_MAIN.maxclients = Cvar.Get("maxclients", "1",
-                Defines.CVAR_SERVERINFO | Defines.CVAR_LATCH);
-        SV_MAIN.hostname = Cvar.Get("hostname", "noname",
-                Defines.CVAR_SERVERINFO | Defines.CVAR_ARCHIVE);
+        SV_MAIN.maxclients = Cvar.Get("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        SV_MAIN.hostname = Cvar.Get("hostname", "noname",TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_ARCHIVE);
         SV_MAIN.timeout = Cvar.Get("timeout", "125", 0);
         SV_MAIN.zombietime = Cvar.Get("zombietime", "2", 0);
         SV_MAIN.sv_showclamp = Cvar.Get("showclamp", "0", 0);
@@ -887,26 +883,18 @@ public class SV_MAIN {
         SV_MAIN.sv_timedemo = Cvar.Get("timedemo", "0", 0);
         SV_MAIN.sv_enforcetime = Cvar.Get("sv_enforcetime", "0", 0);
 
-        SV_MAIN.allow_download = Cvar.Get("allow_download", "1",
-                Defines.CVAR_ARCHIVE);
-        SV_MAIN.allow_download_players = Cvar.Get("allow_download_players",
-                "0", Defines.CVAR_ARCHIVE);
-        SV_MAIN.allow_download_models = Cvar.Get("allow_download_models", "1",
-                Defines.CVAR_ARCHIVE);
-        SV_MAIN.allow_download_sounds = Cvar.Get("allow_download_sounds", "1",
-                Defines.CVAR_ARCHIVE);
-        SV_MAIN.allow_download_maps = Cvar.Get("allow_download_maps", "1",
-                Defines.CVAR_ARCHIVE);
+        SV_MAIN.allow_download = Cvar.Get("allow_download", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_players = Cvar.Get("allow_download_players","0", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_models = Cvar.Get("allow_download_models", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_sounds = Cvar.Get("allow_download_sounds", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_maps = Cvar.Get("allow_download_maps", "1", TVar.CVAR_FLAG_ARCHIVE);
 
         SV_MAIN.sv_noreload = Cvar.Get("sv_noreload", "0", 0);
-        SV_MAIN.sv_airaccelerate = Cvar.Get("sv_airaccelerate", "0",
-                Defines.CVAR_LATCH);
+        SV_MAIN.sv_airaccelerate = Cvar.Get("sv_airaccelerate", "0", TVar.CVAR_FLAG_LATCH);
         SV_MAIN.public_server = Cvar.Get("public", "0", 0);
-        SV_MAIN.sv_reconnect_limit = Cvar.Get("sv_reconnect_limit", "3",
-                Defines.CVAR_ARCHIVE);
+        SV_MAIN.sv_reconnect_limit = Cvar.Get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        SZ.Init(Globals.net_message, Globals.net_message_buffer,
-                Globals.net_message_buffer.length);
+        SZ.Init(Globals.net_message, Globals.net_message_buffer, Globals.net_message_buffer.length);
     }
 
     /**

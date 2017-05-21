@@ -28,7 +28,7 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
-import jake2.game.cvar_t;
+import jake2.game.TVar;
 import jake2.game.usercmd_t;
 import jake2.qcommon.*;
 import jake2.sys.IN;
@@ -44,7 +44,7 @@ public class CL_input {
 
 	static long old_sys_frame_time;
 
-	static cvar_t cl_nodelta;
+	static TVar cl_nodelta;
 
 	/*
 	 * ===============================================================================
