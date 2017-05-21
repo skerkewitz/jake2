@@ -19,11 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 28.11.2003 by RST.
-// $Id: sfxcache_t.java,v 1.1 2004-07-08 20:56:49 hzi Exp $
+// $Id: TSoundData.java,v 1.1 2004-07-08 20:56:49 hzi Exp $
 
 package jake2.sound;
 
-public class sfxcache_t {
+public class TSoundData {
 	public int length;
 	public int loopstart;
 	public int speed;			// not needed, because converted on load?
@@ -31,7 +31,7 @@ public class sfxcache_t {
 	public int stereo;
 	public byte data[];		// variable sized
 	
-	public sfxcache_t(int size) {
+	public TSoundData(int size) {
 		data = new byte[size];
 	}
 }

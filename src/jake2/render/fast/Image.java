@@ -76,7 +76,7 @@ public abstract class Image extends Main {
 	int gl_filter_max = GL11.GL_LINEAR;
 	
 	Image() {
-		// init the texture cache
+		// init the texture data
 		for (int i = 0; i < gltextures.length; i++)
 		{
 			gltextures[i] = new image_t(i);

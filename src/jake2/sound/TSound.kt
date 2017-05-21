@@ -26,23 +26,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 // Created on 28.11.2003 by RST.
 
-package jake2.sound;
+package jake2.sound
 
-public class sfx_t {
-	public String name;
-	public int registration_sequence;
-	public sfxcache_t cache;
-	public String truename;
-	
-	// is used for AL buffers
-	public int bufferId = -1;
-	public boolean isCached = false;
-	
-	public void clear() {
-		name = truename = null;
-		cache = null;
-		registration_sequence = 0;
-		bufferId = -1; 
-		isCached = false;
-	}
+class TSound {
+    var name: String? = null
+    var registration_sequence: Int = 0
+    var data: TSoundData? = null
+    var truename: String? = null
+
+    // is used for AL buffers
+    var bufferId = -1
+    var isCached = false
+
+    fun clear() {
+        truename = null
+        name = truename
+        data = null
+        registration_sequence = 0
+        bufferId = -1
+        isCached = false
+    }
 }

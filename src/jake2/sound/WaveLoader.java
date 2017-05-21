@@ -37,32 +37,32 @@ public class WaveLoader {
 	 * Since Joal and lwjgl sound drivers support this, we don't need it and the samples
 	 * can keep their original sample rate. Use this switch for reactivating resampling.
 	 */
-	private static boolean DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL = true;
+	private boolean DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL = true;
 	
 	/**
 	 * This is the maximum sample length in bytes which has to be replaced by 
 	 * a configurable variable.
 	 */
-	private static int maxsamplebytes = 2048 * 1024;
+	private int maxsamplebytes = 2048 * 1024;
 	
 	/** 
 	 * Loads a sound from a wav file. 
 	 */
-	public static sfxcache_t LoadSound(sfx_t s) {
-		if (s.name.charAt(0) == '*')
+	public TSoundData LoadSound(TSound s) {
+		if (s.getName().charAt(0) == '*')
 			return null;
 
 		// see if still in memory
-		sfxcache_t sc = s.cache;
+		TSoundData sc = s.getData();
 		if (sc != null)
 			return sc;
 
 		String name;
 		// load it in
-		if (s.truename != null)
-			name = s.truename;
+		if (s.getTruename() != null)
+			name = s.getTruename();
 		else
-			name = s.name;
+			name = s.getName();
 
 		String namebuffer;
 		if (name.charAt(0) == '#')
@@ -79,11 +79,11 @@ public class WaveLoader {
 		
 		int size = data.length;
 
-		wavinfo_t info = GetWavinfo(s.name, data, size);
+		TWavInfo info = GetWavinfo(s.getName(), data, size);
 
 		if (info.channels != 1)
 		{
-			Com.Printf(s.name + " is a stereo sample - ignoring\n");
+			Com.Printf(s.getName() + " is a stereo sample - ignoring\n");
 			return null;
 		}
 
@@ -99,20 +99,20 @@ public class WaveLoader {
 		// TODO: handle max sample bytes with a cvar
 		if (len >= maxsamplebytes)
 		{
-			Com.Printf(s.name + " is too long: " + len + " bytes?! ignoring.\n");
+			Com.Printf(s.getName() + " is too long: " + len + " bytes?! ignoring.\n");
 			return null;
 		}
 
-		sc = s.cache = new sfxcache_t(len);
-		         
+		sc = new TSoundData(len);
         sc.length = info.samples;
         sc.loopstart = info.loopstart;
         sc.speed = info.rate;
         sc.width = info.width;
         sc.stereo = info.channels;
 
+		s.setData(sc);
+
 		ResampleSfx(s, sc.speed, sc.width, data, info.dataofs);
-		data = null;
 
 		return sc;
 	}
@@ -122,15 +122,15 @@ public class WaveLoader {
 	 * Converts sample data with respect to the endianess and adjusts 
 	 * the sample rate of a loaded sample, see flag DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL.
 	 */
-	public static void ResampleSfx (sfx_t sfx, int inrate, int inwidth, byte data[], int offset)
+	public void ResampleSfx (TSound sfx, int inrate, int inwidth, byte data[], int offset)
 	{
         int             outcount;
         int             srcsample;
         int             i;
         int             sample, samplefrac, fracstep;
-        sfxcache_t      sc;
+		TSoundData sc;
         
-        sc = sfx.cache;
+        sc = sfx.getData();
         
         if (sc == null)
         	return;
@@ -252,14 +252,16 @@ public class WaveLoader {
 	GetWavinfo
 	============
 	*/
-	static wavinfo_t GetWavinfo(String name, byte[] wav, int wavlength) {
-		wavinfo_t info = new wavinfo_t();
-		int i;
-		int format;
-		int samples;
+	static TWavInfo GetWavinfo(String name, byte[] wav, int wavlength) {
+
+		TWavInfo info = new TWavInfo();
 
 		if (wav == null)
 			return info;
+
+		int i;
+		int format;
+		int samples;
 
 		iff_data = 0;
 		iff_end = wavlength;
@@ -341,7 +343,7 @@ public class WaveLoader {
 		return info;
 	}
 
-	static class wavinfo_t {
+	static class TWavInfo {
 		int rate;
 		int width;
 		int channels;

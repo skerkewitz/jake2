@@ -11,41 +11,41 @@ import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.cvar_t;
 import jake2.game.entity_state_t;
-import jake2.qcommon.*;
+import jake2.qcommon.Com;
+import jake2.qcommon.Cvar;
+import jake2.qcommon.FS;
+import jake2.qcommon.xcommand_t;
 import jake2.sound.*;
 import jake2.util.Lib;
 import jake2.util.Vargs;
+import org.lwjgl.openal.*;
 
 import java.nio.*;
 import java.util.List;
 
-import org.lwjgl.openal.*;
-
 import static org.lwjgl.openal.ALC10.*;
-import static org.lwjgl.openal.ALC11.ALC_ALL_DEVICES_SPECIFIER;
-import static org.lwjgl.openal.ALC11.ALC_MONO_SOURCES;
-import static org.lwjgl.openal.ALC11.ALC_STEREO_SOURCES;
+import static org.lwjgl.openal.ALC11.*;
 import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 
 
 /**
  * LWJGLSoundDriverImpl
- * 
+ *
  * @author dsanders/cwei
  */
 public final class LWJGLSoundDriverImpl implements SoundDriver {
 
     static {
-	Sound.register(new LWJGLSoundDriverImpl());
+        Sound.register(new LWJGLSoundDriverImpl());
     }
 
     private cvar_t s_volume;
 
     // the last 4 buffers are used for cinematics streaming
     private IntBuffer buffers = Lib.newIntBuffer(MAX_SFX + STREAM_QUEUE);
-	private long device;
+    private long device;
 
-	// singleton
+    // singleton
     private LWJGLSoundDriverImpl() {
     }
 
@@ -54,52 +54,52 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
      */
     public boolean Init() {
 
-	try {
-	    initOpenAL();
-	    checkError();	
-	} catch (Exception e) {
-	    Com.Printf(e.getMessage() + '\n');
-	    return false;
-	}
+        try {
+            initOpenAL();
+            checkError();
+        } catch (Exception e) {
+            Com.Printf(e.getMessage() + '\n');
+            return false;
+        }
 
-	// set the listerner (master) volume
-	s_volume = Cvar.Get("s_volume", "0.7", Defines.CVAR_ARCHIVE);
-	AL10.alGenBuffers(buffers);
-	int count = Channel.init(buffers);
-	Com.Printf("... using " + count + " channels\n");
-	AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
-	Cmd.AddCommand("play", new xcommand_t() {
-	    public void execute() {
-		Play();
-	    }
-	});
-	Cmd.AddCommand("stopsound", new xcommand_t() {
-	    public void execute() {
-		StopAllSounds();
-	    }
-	});
-	Cmd.AddCommand("soundlist", new xcommand_t() {
-	    public void execute() {
-		SoundList();
-	    }
-	});
-	Cmd.AddCommand("soundinfo", new xcommand_t() {
-	    public void execute() {
-		SoundInfo_f();
-	    }
-	});
+        // set the listerner (master) volume
+        s_volume = Cvar.Get("s_volume", "0.7", Defines.CVAR_ARCHIVE);
+        AL10.alGenBuffers(buffers);
+        int count = Channel.init(buffers);
+        Com.Printf("... using " + count + " channels\n");
+        AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
+        Cmd.AddCommand("play", new xcommand_t() {
+            public void execute() {
+                Play();
+            }
+        });
+        Cmd.AddCommand("stopsound", new xcommand_t() {
+            public void execute() {
+                StopAllSounds();
+            }
+        });
+        Cmd.AddCommand("soundlist", new xcommand_t() {
+            public void execute() {
+                SoundList();
+            }
+        });
+        Cmd.AddCommand("soundinfo", new xcommand_t() {
+            public void execute() {
+                SoundInfo_f();
+            }
+        });
 
-	num_sfx = 0;
+        num_sfx = 0;
 
-	Com.Printf("sound sampling rate: 44100Hz\n");
+        Com.Printf("sound sampling rate: 44100Hz\n");
 
-	StopAllSounds();
-	Com.Printf("------------------------------------\n");
-	return true;
+        StopAllSounds();
+        Com.Printf("------------------------------------\n");
+        return true;
     }
 
 
-	private void initOpenAL() {
+    private void initOpenAL() {
 //		device = ALC10.nalcOpenDevice(0);
 //		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 //
@@ -120,125 +120,134 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 //		    Com.DPrintf("Error with SoundDevice");
 //		}
 
-		device = alcOpenDevice((ByteBuffer)null);
-		if (device == 0) {
-			throw new IllegalStateException("Failed to open the default device.");
-		}
+        device = alcOpenDevice((ByteBuffer) null);
+        if (device == 0) {
+            throw new IllegalStateException("Failed to open the default device.");
+        }
 
-		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-		//assertTrue(deviceCaps.OpenALC10);
+        //assertTrue(deviceCaps.OpenALC10);
 
-		System.out.println("OpenALC10: " + deviceCaps.OpenALC10);
-		System.out.println("OpenALC11: " + deviceCaps.OpenALC11);
-		System.out.println("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
+        System.out.println("OpenALC10: " + deviceCaps.OpenALC10);
+        System.out.println("OpenALC11: " + deviceCaps.OpenALC11);
+        System.out.println("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
 
-		if (deviceCaps.OpenALC11) {
-			List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
-			if (devices == null) {
+        if (deviceCaps.OpenALC11) {
+            List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
+            if (devices == null) {
 //				checkALCError(NULL);
-			} else {
-				for (int i = 0; i < devices.size(); i++) {
-					System.out.println(i + ": " + devices.get(i));
-				}
-			}
-		}
+            } else {
+                for (int i = 0; i < devices.size(); i++) {
+                    System.out.println(i + ": " + devices.get(i));
+                }
+            }
+        }
 
-		String defaultDeviceSpecifier = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-		//assertTrue(defaultDeviceSpecifier != null);
-		System.out.println("Default device: " + defaultDeviceSpecifier);
+        String defaultDeviceSpecifier = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
+        //assertTrue(defaultDeviceSpecifier != null);
+        System.out.println("Default device: " + defaultDeviceSpecifier);
 
-		long context = alcCreateContext(device, (IntBuffer)null);
-		alcSetThreadContext(context);
-		AL.createCapabilities(deviceCaps);
+        long context = alcCreateContext(device, (IntBuffer) null);
+        alcSetThreadContext(context);
+        AL.createCapabilities(deviceCaps);
 
-		System.out.println("ALC_FREQUENCY: " + alcGetInteger(device, ALC_FREQUENCY) + "Hz");
-		System.out.println("ALC_REFRESH: " + alcGetInteger(device, ALC_REFRESH) + "Hz");
-		System.out.println("ALC_SYNC: " + (alcGetInteger(device, ALC_SYNC) == ALC_TRUE));
-		System.out.println("ALC_MONO_SOURCES: " + alcGetInteger(device, ALC_MONO_SOURCES));
-		System.out.println("ALC_STEREO_SOURCES: " + alcGetInteger(device, ALC_STEREO_SOURCES));
+        System.out.println("ALC_FREQUENCY: " + alcGetInteger(device, ALC_FREQUENCY) + "Hz");
+        System.out.println("ALC_REFRESH: " + alcGetInteger(device, ALC_REFRESH) + "Hz");
+        System.out.println("ALC_SYNC: " + (alcGetInteger(device, ALC_SYNC) == ALC_TRUE));
+        System.out.println("ALC_MONO_SOURCES: " + alcGetInteger(device, ALC_MONO_SOURCES));
+        System.out.println("ALC_STEREO_SOURCES: " + alcGetInteger(device, ALC_STEREO_SOURCES));
 
 
-  }
+    }
 
     void exitOpenAL() {
-	    ALC10.alcCloseDevice(device);
-		}
+        ALC10.alcCloseDevice(device);
+    }
 
     // TODO check the sfx direct buffer size
     // 2MB sfx buffer
     private ByteBuffer sfxDataBuffer = Lib.newByteBuffer(2 * 1024 * 1024);
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundImpl#RegisterSound(jake2.sound.sfx_t)
+     * @see jake2.sound.SoundImpl#RegisterSound(jake2.sound.TSound)
      */
     private void initBuffer(byte[] samples, int bufferId, int freq) {
-	ByteBuffer data = sfxDataBuffer.slice();
-	data.put(samples).flip();
-	AL10.alBufferData(buffers.get(bufferId), AL10.AL_FORMAT_MONO16,
-		data, freq);
+        ByteBuffer data = sfxDataBuffer.slice();
+        data.put(samples).flip();
+        AL10.alBufferData(buffers.get(bufferId), AL10.AL_FORMAT_MONO16,
+                data, freq);
     }
 
     private void checkError() {
-	Com.DPrintf("AL Error: " + alErrorString() +'\n');
+        Com.DPrintf("AL Error: " + alErrorString() + '\n');
     }
 
-    private String alErrorString(){
-	int error;
-	String message = "";
-	if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
-	    switch(error) {
-	    case AL10.AL_INVALID_OPERATION: message = "invalid operation"; break;
-	    case AL10.AL_INVALID_VALUE: message = "invalid value"; break;
-	    case AL10.AL_INVALID_ENUM: message = "invalid enum"; break;
-	    case AL10.AL_INVALID_NAME: message = "invalid name"; break;
-	    default: message = "" + error;
-	    }
-	}
-	return message; 
+    private String alErrorString() {
+        int error;
+        String message = "";
+        if ((error = AL10.alGetError()) != AL10.AL_NO_ERROR) {
+            switch (error) {
+                case AL10.AL_INVALID_OPERATION:
+                    message = "invalid operation";
+                    break;
+                case AL10.AL_INVALID_VALUE:
+                    message = "invalid value";
+                    break;
+                case AL10.AL_INVALID_ENUM:
+                    message = "invalid enum";
+                    break;
+                case AL10.AL_INVALID_NAME:
+                    message = "invalid name";
+                    break;
+                default:
+                    message = "" + error;
+            }
+        }
+        return message;
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundImpl#Shutdown()
      */
     public void Shutdown() {
-	StopAllSounds();
-	Channel.shutdown();
-	AL10.alDeleteBuffers(buffers);
-	exitOpenAL();
+        StopAllSounds();
+        Channel.shutdown();
+        AL10.alDeleteBuffers(buffers);
+        exitOpenAL();
 
-	Cmd.RemoveCommand("play");
-	Cmd.RemoveCommand("stopsound");
-	Cmd.RemoveCommand("soundlist");
-	Cmd.RemoveCommand("soundinfo");
+        Cmd.RemoveCommand("play");
+        Cmd.RemoveCommand("stopsound");
+        Cmd.RemoveCommand("soundlist");
+        Cmd.RemoveCommand("soundinfo");
 
-	// free all sounds
-	for (int i = 0; i < num_sfx; i++) {
-	    if (known_sfx[i].name == null)
-		continue;
-	    known_sfx[i].clear();
-	}
-	num_sfx = 0;
+        // free all sounds
+        for (int i = 0; i < num_sfx; i++) {
+            if (known_sfx[i].getName() == null)
+                continue;
+            known_sfx[i].clear();
+        }
+        num_sfx = 0;
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundImpl#StartSound(float[], int, int, jake2.sound.sfx_t, float, float, float)
+     * @see jake2.sound.SoundImpl#StartSound(float[], int, int, jake2.sound.TSound, float, float, float)
      */
-    public void StartSound(float[] origin, int entnum, int entchannel, sfx_t sfx, float fvol, float attenuation, float timeofs) {
+    public void StartSound(float[] origin, int entnum, int entchannel, TSound sfx, float fvol, float attenuation, float timeofs) {
 
-	if (sfx == null)
-	    return;
+        if (sfx == null)
+            return;
 
-	if (sfx.name.charAt(0) == '*')
-	    sfx = RegisterSexedSound(Globals.cl_entities[entnum].current, sfx.name);
+        if (sfx.getName().charAt(0) == '*')
+            sfx = RegisterSexedSound(Globals.cl_entities[entnum].current, sfx.getName());
 
-	if (LoadSound(sfx) == null)
-	    return; // can't load sound
+        if (LoadSound(sfx) == null)
+            return; // can't load sound
 
-	if (attenuation != Defines.ATTN_STATIC)
-	    attenuation *= 0.5f;
+        if (attenuation != Defines.ATTN_STATIC)
+            attenuation *= 0.5f;
 
-	PlaySound.allocate(origin, entnum, entchannel, buffers.get(sfx.bufferId), fvol, attenuation, timeofs);
+        PlaySound.allocate(origin, entnum, entchannel, buffers.get(sfx.getBufferId()), fvol, attenuation, timeofs);
     }
 
     private FloatBuffer listenerOrigin = Lib.newFloatBuffer(3);
@@ -249,35 +258,35 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
      */
     public void Update(float[] origin, float[] forward, float[] right, float[] up) {
 
-	Channel.convertVector(origin, listenerOrigin);		
-	AL10.alListenerfv(AL10.AL_POSITION, listenerOrigin);
+        Channel.convertVector(origin, listenerOrigin);
+        AL10.alListenerfv(AL10.AL_POSITION, listenerOrigin);
 
-	Channel.convertOrientation(forward, up, listenerOrientation);		
-	AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation);
+        Channel.convertOrientation(forward, up, listenerOrientation);
+        AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation);
 
-	// set the master volume
-	AL10.alListenerf(AL10.AL_GAIN, s_volume.value);
+        // set the master volume
+        AL10.alListenerf(AL10.AL_GAIN, s_volume.value);
 
-	Channel.addLoopSounds();
-	Channel.addPlaySounds();
-	Channel.playAllSounds(listenerOrigin);
+        Channel.addLoopSounds();
+        Channel.addPlaySounds();
+        Channel.playAllSounds(listenerOrigin);
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundImpl#StopAllSounds()
      */
     public void StopAllSounds() {
-	// mute the listener (master)
-	AL10.alListenerf(AL10.AL_GAIN, 0);
-	PlaySound.reset();
-	Channel.reset();
+        // mute the listener (master)
+        AL10.alListenerf(AL10.AL_GAIN, 0);
+        PlaySound.reset();
+        Channel.reset();
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundDriver#getName()
      */
     public String getName() {
-	return "lwjgl";
+        return "lwjgl";
     }
 
     int s_registration_sequence;
@@ -287,184 +296,184 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
      * @see jake2.sound.SoundDriver#BeginRegistration()
      */
     public void BeginRegistration() {
-	s_registration_sequence++;
-	s_registering = true;
+        s_registration_sequence++;
+        s_registering = true;
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundDriver#RegisterSound(java.lang.String)
      */
-    public sfx_t RegisterSound(String name) {
-	sfx_t sfx = FindName(name, true);
-	sfx.registration_sequence = s_registration_sequence;
+    public TSound RegisterSound(String name) {
+        TSound sfx = FindName(name, true);
+        sfx.setRegistration_sequence(s_registration_sequence);
 
-	if (!s_registering)
-	    LoadSound(sfx);
+        if (!s_registering)
+            LoadSound(sfx);
 
-	return sfx;
+        return sfx;
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundDriver#EndRegistration()
      */
     public void EndRegistration() {
-	int i;
-	sfx_t sfx;
-	// free any sounds not from this registration sequence
-	for (i = 0; i < num_sfx; i++) {
-	    sfx = known_sfx[i];
-	    if (sfx.name == null)
-		continue;
-	    if (sfx.registration_sequence != s_registration_sequence) {
-		// don't need this sound
-		sfx.clear();
-	    }
-	}
+        int i;
+        TSound sfx;
+        // free any sounds not from this registration sequence
+        for (i = 0; i < num_sfx; i++) {
+            sfx = known_sfx[i];
+            if (sfx.getName() == null)
+                continue;
+            if (sfx.getRegistration_sequence() != s_registration_sequence) {
+                // don't need this sound
+                sfx.clear();
+            }
+        }
 
-	// load everything in
-	for (i = 0; i < num_sfx; i++) {
-	    sfx = known_sfx[i];
-	    if (sfx.name == null)
-		continue;
-	    LoadSound(sfx);
-	}
+        // load everything in
+        for (i = 0; i < num_sfx; i++) {
+            sfx = known_sfx[i];
+            if (sfx.getName() == null)
+                continue;
+            LoadSound(sfx);
+        }
 
-	s_registering = false;
+        s_registering = false;
     }
 
-    sfx_t RegisterSexedSound(entity_state_t ent, String base) {
+    TSound RegisterSexedSound(entity_state_t ent, String base) {
 
-	sfx_t sfx = null;
+        TSound sfx = null;
 
-	// determine what model the client is using
-	String model = null;
-	int n = Globals.CS_PLAYERSKINS + ent.number - 1;
-	if (Globals.cl.configstrings[n] != null) {
-	    int p = Globals.cl.configstrings[n].indexOf('\\');
-	    if (p >= 0) {
-		p++;
-		model = Globals.cl.configstrings[n].substring(p);
-		//strcpy(model, p);
-		p = model.indexOf('/');
-		if (p > 0)
-		    model = model.substring(0, p);
-	    }
-	}
-	// if we can't figure it out, they're male
-	if (model == null || model.length() == 0)
-	    model = "male";
+        // determine what model the client is using
+        String model = null;
+        int n = Globals.CS_PLAYERSKINS + ent.number - 1;
+        if (Globals.cl.configstrings[n] != null) {
+            int p = Globals.cl.configstrings[n].indexOf('\\');
+            if (p >= 0) {
+                p++;
+                model = Globals.cl.configstrings[n].substring(p);
+                //strcpy(model, p);
+                p = model.indexOf('/');
+                if (p > 0)
+                    model = model.substring(0, p);
+            }
+        }
+        // if we can't figure it out, they're male
+        if (model == null || model.length() == 0)
+            model = "male";
 
-	// see if we already know of the model specific sound
-	String sexedFilename = "#players/" + model + "/" + base.substring(1);
-	//Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base+1);
-	sfx = FindName(sexedFilename, false);
+        // see if we already know of the model specific sound
+        String sexedFilename = "#players/" + model + "/" + base.substring(1);
+        //Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base+1);
+        sfx = FindName(sexedFilename, false);
 
-	if (sfx != null) return sfx;
+        if (sfx != null) return sfx;
 
-	//
-	// fall back strategies
-	//
-	// not found , so see if it exists
-	if (FS.FileLength(sexedFilename.substring(1)) > 0) {
-	    // yes, register it
-	    return RegisterSound(sexedFilename);
-	}
-	// try it with the female sound in the pak0.pak
-	if (model.equalsIgnoreCase("female")) {
-	    String femaleFilename = "player/female/" + base.substring(1);
-	    if (FS.FileLength("sound/" + femaleFilename) > 0)
-		return AliasName(sexedFilename, femaleFilename);
-	}
-	// no chance, revert to the male sound in the pak0.pak
-	String maleFilename = "player/male/" + base.substring(1);
-	return AliasName(sexedFilename, maleFilename);
+        //
+        // fall back strategies
+        //
+        // not found , so see if it exists
+        if (FS.FileLength(sexedFilename.substring(1)) > 0) {
+            // yes, register it
+            return RegisterSound(sexedFilename);
+        }
+        // try it with the female sound in the pak0.pak
+        if (model.equalsIgnoreCase("female")) {
+            String femaleFilename = "player/female/" + base.substring(1);
+            if (FS.FileLength("sound/" + femaleFilename) > 0)
+                return AliasName(sexedFilename, femaleFilename);
+        }
+        // no chance, revert to the male sound in the pak0.pak
+        String maleFilename = "player/male/" + base.substring(1);
+        return AliasName(sexedFilename, maleFilename);
     }
 
 
-    static sfx_t[] known_sfx = new sfx_t[MAX_SFX];
+    static TSound[] known_sfx = new TSound[MAX_SFX];
+
     static {
-	for (int i = 0; i< known_sfx.length; i++)
-	    known_sfx[i] = new sfx_t();
+        for (int i = 0; i < known_sfx.length; i++)
+            known_sfx[i] = new TSound();
     }
+
     static int num_sfx;
 
-    sfx_t FindName(String name, boolean create) {
-	int i;
-	sfx_t sfx = null;
+    TSound FindName(String name, boolean create) {
+        int i;
 
-	if (name == null)
-	    Com.Error(Defines.ERR_FATAL, "S_FindName: NULL\n");
-	if (name.length() == 0)
-	    Com.Error(Defines.ERR_FATAL, "S_FindName: empty name\n");
 
-	if (name.length() >= Defines.MAX_QPATH)
-	    Com.Error(Defines.ERR_FATAL, "SoundDriver name too long: " + name);
+        if (name == null)
+            Com.Error(Defines.ERR_FATAL, "S_FindName: NULL\n");
+        if (name.length() == 0)
+            Com.Error(Defines.ERR_FATAL, "S_FindName: empty name\n");
 
-	// see if already loaded
-	for (i = 0; i < num_sfx; i++)
-	    if (name.equals(known_sfx[i].name)) {
-		return known_sfx[i];
-	    }
+        if (name.length() >= Defines.MAX_QPATH)
+            Com.Error(Defines.ERR_FATAL, "SoundDriver name too long: " + name);
 
-	if (!create)
-	    return null;
+        // see if already loaded
+        for (i = 0; i < num_sfx; i++)
+            if (name.equals(known_sfx[i].getName())) {
+                return known_sfx[i];
+            }
 
-	// find a free sfx
-	for (i = 0; i < num_sfx; i++)
-	    if (known_sfx[i].name == null)
-		// registration_sequence < s_registration_sequence)
-		break;
+        if (!create)
+            return null;
 
-	if (i == num_sfx) {
-	    if (num_sfx == MAX_SFX)
-		Com.Error(Defines.ERR_FATAL, "S_FindName: out of sfx_t");
-	    num_sfx++;
-	}
+        // find a free sfx
+        for (i = 0; i < num_sfx; i++)
+            if (known_sfx[i].getName() == null)
+                // registration_sequence < s_registration_sequence)
+                break;
 
-	sfx = known_sfx[i];
-	sfx.clear();
-	sfx.name = name;
-	sfx.registration_sequence = s_registration_sequence;
-	sfx.bufferId = i;
+        if (i == num_sfx) {
+            if (num_sfx == MAX_SFX)
+                Com.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
+            num_sfx++;
+        }
 
-	return sfx;
+        TSound sfx = known_sfx[i];
+        sfx.clear();
+        sfx.setName(name);
+        sfx.setRegistration_sequence(s_registration_sequence);
+        sfx.setBufferId(i);
+
+        return sfx;
     }
 
     /*
-	==================
+    ==================
 	S_AliasName
 
 	==================
      */
-    sfx_t AliasName(String aliasname, String truename)
-    {
-	sfx_t sfx = null;
-	String s;
-	int i;
+    TSound AliasName(String aliasname, String truename) {
+        TSound sfx = null;
+        String s;
+        int i;
 
-	s = new String(truename);
+        s = new String(truename);
 
-	// find a free sfx
-	for (i=0 ; i < num_sfx ; i++)
-	    if (known_sfx[i].name == null)
-		break;
+        // find a free sfx
+        for (i = 0; i < num_sfx; i++)
+            if (known_sfx[i].getName() == null)
+                break;
 
-	if (i == num_sfx)
-	{
-	    if (num_sfx == MAX_SFX)
-		Com.Error(Defines.ERR_FATAL, "S_FindName: out of sfx_t");
-	    num_sfx++;
-	}
+        if (i == num_sfx) {
+            if (num_sfx == MAX_SFX)
+                Com.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
+            num_sfx++;
+        }
 
-	sfx = known_sfx[i];
-	sfx.clear();
-	sfx.name = new String(aliasname);
-	sfx.registration_sequence = s_registration_sequence;
-	sfx.truename = s;
-	// set the AL bufferId
-	sfx.bufferId = i;
+        sfx = known_sfx[i];
+        sfx.clear();
+        sfx.setName(new String(aliasname));
+        sfx.setRegistration_sequence(s_registration_sequence);
+        sfx.setTruename(s);
+        // set the AL bufferId
+        sfx.setBufferId(i);
 
-	return sfx;
+        return sfx;
     }
 
     /*
@@ -472,30 +481,31 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 	S_LoadSound
 	==============
      */
-    public sfxcache_t LoadSound(sfx_t s) {
-	if (s.isCached) return s.cache;
-	sfxcache_t sc = WaveLoader.LoadSound(s);
-	if (sc != null) {
-	    initBuffer(sc.data, s.bufferId, sc.speed);
-	    s.isCached = true;
-	    // free samples for GC
-	    s.cache.data = null;
-	}
-	return sc;
+
+    private static WaveLoader waveLoader = new WaveLoader();
+
+    public TSoundData LoadSound(TSound s) {
+        if (s.isCached()) return s.getData();
+        TSoundData sc = waveLoader.LoadSound(s);
+        if (sc != null) {
+            initBuffer(sc.data, s.getBufferId(), sc.speed);
+            s.setCached(true);
+            // free samples for GC
+            s.getData().data = null;
+        }
+        return sc;
     }
 
     /* (non-Javadoc)
      * @see jake2.sound.SoundDriver#StartLocalSound(java.lang.String)
      */
-    public void StartLocalSound(String sound) {
-	sfx_t sfx;
-
-	sfx = RegisterSound(sound);
-	if (sfx == null) {
-	    Com.Printf("S_StartLocalSound: can't cache " + sound + "\n");
-	    return;
-	}
-	StartSound(null, Globals.cl.playernum + 1, 0, sfx, 1, 1, 0);		
+    public void StartLocalSound(String name) {
+        TSound sound = RegisterSound(name);
+        if (sound == null) {
+            Com.Printf("S_StartLocalSound: can't data " + name + "\n");
+            return;
+        }
+        StartSound(null, Globals.cl.playernum + 1, 0, sound, 1, 1, 0);
     }
 
     private ShortBuffer streamBuffer = sfxDataBuffer.slice().order(ByteOrder.BIG_ENDIAN).asShortBuffer();
@@ -504,33 +514,33 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
      * @see jake2.sound.SoundDriver#RawSamples(int, int, int, int, byte[])
      */
     public void RawSamples(int samples, int rate, int width, int channels, ByteBuffer data) {
-	int format;
-	if (channels == 2) {
-	    format = (width == 2) ? AL10.AL_FORMAT_STEREO16
-		    : AL10.AL_FORMAT_STEREO8;
-	} else {
-	    format = (width == 2) ? AL10.AL_FORMAT_MONO16
-		    : AL10.AL_FORMAT_MONO8;
-	}
+        int format;
+        if (channels == 2) {
+            format = (width == 2) ? AL10.AL_FORMAT_STEREO16
+                    : AL10.AL_FORMAT_STEREO8;
+        } else {
+            format = (width == 2) ? AL10.AL_FORMAT_MONO16
+                    : AL10.AL_FORMAT_MONO8;
+        }
 
-	// convert to signed 16 bit samples
-	if (format == AL10.AL_FORMAT_MONO8) {
-	    ShortBuffer sampleData = streamBuffer;
-	    int value;
-	    for (int i = 0; i < samples; i++) {
-		value = (data.get(i) & 0xFF) - 128;
-		sampleData.put(i, (short) value);
-	    }
-	    format = AL10.AL_FORMAT_MONO16;
-	    width = 2;
-	    data = sfxDataBuffer.slice();
-	}
+        // convert to signed 16 bit samples
+        if (format == AL10.AL_FORMAT_MONO8) {
+            ShortBuffer sampleData = streamBuffer;
+            int value;
+            for (int i = 0; i < samples; i++) {
+                value = (data.get(i) & 0xFF) - 128;
+                sampleData.put(i, (short) value);
+            }
+            format = AL10.AL_FORMAT_MONO16;
+            width = 2;
+            data = sfxDataBuffer.slice();
+        }
 
-	Channel.updateStream(data, samples * channels * width, format, rate);
+        Channel.updateStream(data, samples * channels * width, format, rate);
     }
 
     public void disableStreaming() {
-	Channel.disableStreaming();
+        Channel.disableStreaming();
     }
     /*
 	===============================================================================
@@ -541,58 +551,58 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
      */
 
     void Play() {
-	int i;
-	String name;
-	sfx_t sfx;
+        int i;
+        String name;
+        TSound sfx;
 
-	i = 1;
-	while (i < Cmd.Argc()) {
-	    name = new String(Cmd.Argv(i));
-	    if (name.indexOf('.') == -1)
-		name += ".wav";
+        i = 1;
+        while (i < Cmd.Argc()) {
+            name = new String(Cmd.Argv(i));
+            if (name.indexOf('.') == -1)
+                name += ".wav";
 
-	    sfx = RegisterSound(name);
-	    StartSound(null, Globals.cl.playernum + 1, 0, sfx, 1.0f, 1.0f, 0.0f);
-	    i++;
-	}
+            sfx = RegisterSound(name);
+            StartSound(null, Globals.cl.playernum + 1, 0, sfx, 1.0f, 1.0f, 0.0f);
+            i++;
+        }
     }
 
     void SoundList() {
-	int i;
-	sfx_t sfx;
-	sfxcache_t sc;
-	int size, total;
+        int i;
+        TSound sfx;
+        TSoundData sc;
+        int size, total;
 
-	total = 0;
-	for (i = 0; i < num_sfx; i++) {
-	    sfx = known_sfx[i];
-	    if (sfx.registration_sequence == 0)
-		continue;
-	    sc = sfx.cache;
-	    if (sc != null) {
-		size = sc.length * sc.width * (sc.stereo + 1);
-		total += size;
-		if (sc.loopstart >= 0)
-		    Com.Printf("L");
-		else
-		    Com.Printf(" ");
-		Com.Printf("(%2db) %6i : %s\n", new Vargs(3).add(sc.width * 8).add(size).add(sfx.name));
-	    } else {
-		if (sfx.name.charAt(0) == '*')
-		    Com.Printf("  placeholder : " + sfx.name + "\n");
-		else
-		    Com.Printf("  not loaded  : " + sfx.name + "\n");
-	    }
-	}
-	Com.Printf("Total resident: " + total + "\n");
+        total = 0;
+        for (i = 0; i < num_sfx; i++) {
+            sfx = known_sfx[i];
+            if (sfx.getRegistration_sequence() == 0)
+                continue;
+            sc = sfx.getData();
+            if (sc != null) {
+                size = sc.length * sc.width * (sc.stereo + 1);
+                total += size;
+                if (sc.loopstart >= 0)
+                    Com.Printf("L");
+                else
+                    Com.Printf(" ");
+                Com.Printf("(%2db) %6i : %s\n", new Vargs(3).add(sc.width * 8).add(size).add(sfx.getName()));
+            } else {
+                if (sfx.getName().charAt(0) == '*')
+                    Com.Printf("  placeholder : " + sfx.getName() + "\n");
+                else
+                    Com.Printf("  not loaded  : " + sfx.getName() + "\n");
+            }
+        }
+        Com.Printf("Total resident: " + total + "\n");
     }
 
     void SoundInfo_f() {
 
-	Com.Printf("%5d stereo\n", new Vargs(1).add(1));
-	Com.Printf("%5d samples\n", new Vargs(1).add(22050));
-	Com.Printf("%5d samplebits\n", new Vargs(1).add(16));
-	Com.Printf("%5d speed\n", new Vargs(1).add(44100));
+        Com.Printf("%5d stereo\n", new Vargs(1).add(1));
+        Com.Printf("%5d samples\n", new Vargs(1).add(22050));
+        Com.Printf("%5d samplebits\n", new Vargs(1).add(16));
+        Com.Printf("%5d speed\n", new Vargs(1).add(44100));
     }
 
 }

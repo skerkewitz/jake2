@@ -271,7 +271,7 @@ public abstract class Main extends Base {
 		qfiles.dsprite_t psprite;
 
 		// don't even bother culling, because it's just a single
-		// polygon without a surface cache
+		// polygon without a surface data
 
 		psprite = (qfiles.dsprite_t) currentmodel.extradata;
 

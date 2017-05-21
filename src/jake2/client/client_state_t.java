@@ -27,7 +27,7 @@ import jake2.game.cmodel_t;
 import jake2.game.usercmd_t;
 import jake2.render.image_t;
 import jake2.render.model_t;
-import jake2.sound.sfx_t;
+import jake2.sound.TSound;
 
 import java.nio.ByteBuffer;
 
@@ -128,7 +128,7 @@ public class client_state_t {
 	model_t model_draw[] = new model_t[Defines.MAX_MODELS];
 	cmodel_t model_clip[] = new cmodel_t[Defines.MAX_MODELS];
 
-	public sfx_t sound_precache[] = new sfx_t[Defines.MAX_SOUNDS];
+	public TSound sound_precache[] = new TSound[Defines.MAX_SOUNDS];
 	image_t image_precache[] = new image_t[Defines.MAX_IMAGES];
 
 	clientinfo_t clientinfo[] = new clientinfo_t[Defines.MAX_CLIENTS];

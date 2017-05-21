@@ -33,7 +33,6 @@ import jake2.qcommon.Cvar;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * Sound
@@ -145,7 +144,7 @@ public class Sound {
     /**
      * Registers and loads a sound.
      */
-    public static sfx_t RegisterSound(String sample) {
+    public static TSound RegisterSound(String sample) {
         return impl.RegisterSound(sample);
     }
 
@@ -168,7 +167,7 @@ public class Sound {
      * if pos is NULL, the sound will be dynamically sourced from the entity
      * Entchannel 0 will never override a playing sound
      */
-    public static void StartSound(float[] origin, int entnum, int entchannel, sfx_t sfx, float fvol, float attenuation, float timeofs) {
+    public static void StartSound(float[] origin, int entnum, int entchannel, TSound sfx, float fvol, float attenuation, float timeofs) {
         impl.StartSound(origin, entnum, entchannel, sfx, fvol, attenuation, timeofs);
     }
 

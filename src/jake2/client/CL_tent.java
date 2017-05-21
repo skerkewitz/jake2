@@ -32,7 +32,7 @@ import jake2.qcommon.Com;
 import jake2.qcommon.MSG;
 import jake2.render.model_t;
 import jake2.sound.Sound;
-import jake2.sound.sfx_t;
+import jake2.sound.TSound;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -153,32 +153,32 @@ public class CL_tent {
     //	  ROGUE
 
     // all are references;
-    static sfx_t cl_sfx_ric1;
+    static TSound cl_sfx_ric1;
 
-    static sfx_t cl_sfx_ric2;
+    static TSound cl_sfx_ric2;
 
-    static sfx_t cl_sfx_ric3;
+    static TSound cl_sfx_ric3;
 
-    static sfx_t cl_sfx_lashit;
+    static TSound cl_sfx_lashit;
 
-    static sfx_t cl_sfx_spark5;
+    static TSound cl_sfx_spark5;
 
-    static sfx_t cl_sfx_spark6;
+    static TSound cl_sfx_spark6;
 
-    static sfx_t cl_sfx_spark7;
+    static TSound cl_sfx_spark7;
 
-    static sfx_t cl_sfx_railg;
+    static TSound cl_sfx_railg;
 
-    static sfx_t cl_sfx_rockexp;
+    static TSound cl_sfx_rockexp;
 
-    static sfx_t cl_sfx_grenexp;
+    static TSound cl_sfx_grenexp;
 
-    static sfx_t cl_sfx_watrexp;
+    static TSound cl_sfx_watrexp;
 
     // RAFAEL
-    static sfx_t cl_sfx_plasexp;
+    static TSound cl_sfx_plasexp;
 
-    static sfx_t cl_sfx_footsteps[] = new sfx_t[4];
+    static TSound cl_sfx_footsteps[] = new TSound[4];
 
     static model_t cl_mod_explode;
 
@@ -202,9 +202,9 @@ public class CL_tent {
     static model_t cl_mod_plasmaexplo;
 
     //	  ROGUE
-    static sfx_t cl_sfx_lightning;
+    static TSound cl_sfx_lightning;
 
-    static sfx_t cl_sfx_disrexp;
+    static TSound cl_sfx_disrexp;
 
     static model_t cl_mod_lightning;
 

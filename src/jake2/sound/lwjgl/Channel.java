@@ -368,8 +368,8 @@ public class Channel {
 	}
 
 	Channel ch;
-	sfx_t	sfx;
-	sfxcache_t sc;
+	TSound sfx;
+	TSoundData sc;
 	int num;
 	entity_state_t ent;
 	Object key;
@@ -396,12 +396,12 @@ public class Channel {
 	    if (sfx == null)
 		continue;		// bad sound effect
 
-	    sc = sfx.cache;
+	    sc = sfx.getData();
 	    if (sc == null)
 		continue;
 
 	    // allocate a channel
-	    ch = Channel.pickForLoop(buffers.get(sfx.bufferId), 6);
+	    ch = Channel.pickForLoop(buffers.get(sfx.getBufferId()), 6);
 	    if (ch == null)
 		break;
 

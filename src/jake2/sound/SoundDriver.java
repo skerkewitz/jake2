@@ -57,7 +57,7 @@ public interface SoundDriver {
 	S_RegisterSound
 	=====================
 	*/
-	sfx_t RegisterSound(String sample);
+	TSound RegisterSound(String sample);
 	
 	/*
 	=====================
@@ -82,7 +82,7 @@ public interface SoundDriver {
 	Entchannel 0 will never override a playing sound
 	====================
 	*/
-	void StartSound(float[] origin, int entnum, int entchannel, sfx_t sfx, float fvol, float attenuation, float timeofs);
+	void StartSound(float[] origin, int entnum, int entchannel, TSound sfx, float fvol, float attenuation, float timeofs);
 
 	/*
 	============

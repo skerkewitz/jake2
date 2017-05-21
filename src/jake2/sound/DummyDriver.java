@@ -64,7 +64,7 @@ public final class DummyDriver implements SoundDriver {
 	/* (non-Javadoc)
 	 * @see jake2.sound.SoundDriver#RegisterSound(java.lang.String)
 	 */
-	public sfx_t RegisterSound(String sample) {
+	public TSound RegisterSound(String sample) {
 		return null;
 	}
 
@@ -81,9 +81,9 @@ public final class DummyDriver implements SoundDriver {
 	}
 
 	/* (non-Javadoc)
-	 * @see jake2.sound.SoundDriver#StartSound(float[], int, int, jake2.sound.sfx_t, float, float, float)
+	 * @see jake2.sound.SoundDriver#StartSound(float[], int, int, jake2.sound.TSound, float, float, float)
 	 */
-	public void StartSound(float[] origin, int entnum, int entchannel, sfx_t sfx, float fvol, float attenuation, float timeofs) {
+	public void StartSound(float[] origin, int entnum, int entchannel, TSound sfx, float fvol, float attenuation, float timeofs) {
 	}
 
 	/* (non-Javadoc)
