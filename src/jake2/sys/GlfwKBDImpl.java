@@ -17,27 +17,44 @@ public class GlfwKBDImpl extends KBD {
     @Override
     public void Init() {
         long window_ = LwjglDriver.window;
+
+        glfwSetCursorPos(LwjglDriver.window, 320, 240);
+
         glfwSetKeyCallback(window_, (window, key, scancode, action, mods) -> {
-            System.out.println("key " + key);
-            Do_Key_Event(XLateKey(key, scancode), action == GLFW_PRESS);
+//            System.out.println("key " + key);
+            int key1 = XLateKey(key, scancode);
+            if (key1 > 0) {
+                Do_Key_Event(key1, action == GLFW_PRESS || action == GLFW_REPEAT);
+            }
         });
 
-        glfwSetCharCallback(window_, (window, codepoint) -> {
-            System.out.println("codepoint " + codepoint);
-        });
+//        glfwSetCharCallback(window_, (window, codepoint) -> {
+//            System.out.println("codepoint " + codepoint + " " + (char)(codepoint));
+//
+////            int key = codepoint;
+////            if (key >= 'A' && key <= 'Z') {
+////                key = key - 'A' + 'a';
+////            }
+////
+////            if (key > 255) key = 0;
+////
+////            Do_Key_Event(key, true);
+//
+//
+//        });
 
         glfwSetMouseButtonCallback(window_, (window, button, action, mods) -> {
-            System.out.println("mousebutton " + button);
+//            System.out.println("mousebutton " + button);
 
             int key = mouseEventToKey(button);
-            Do_Key_Event(key, true);
+            Do_Key_Event(key, action == GLFW_PRESS);
         });
 
-        glfwSetCursorPosCallback(window_, (window, xpos, ypos) -> {
-            System.out.println("mouse pos " + xpos + " " + ypos);
-            last_mx = (int) xpos;
-            last_my = (int) ypos;
-        });
+//        glfwSetCursorPosCallback(window_, (window, xpos, ypos) -> {
+////            System.out.println("mouse pos " + xpos + " " + ypos);
+//            last_mx = (int) xpos;
+//            last_my = (int) ypos;
+//        });
     }
 
     private final int mouseEventToKey(int button) {
@@ -187,50 +204,57 @@ public class GlfwKBDImpl extends KBD {
 
             case GLFW_KEY_ENTER:
                 return Key.K_ENTER;
-//	00652                 case XK_KP_Enter:return K_KP_ENTER;
 
-//            case KeyEvent.VK_TAB:return Key.K_TAB;
+            case GLFW_KEY_TAB:
+                return Key.K_TAB;
+
+            case GLFW_KEY_F1:return Key.K_F1;
+            case GLFW_KEY_F2:return Key.K_F2;
+            case GLFW_KEY_F3:return Key.K_F3;
+            case GLFW_KEY_F4:return Key.K_F4;
+            case GLFW_KEY_F5:return Key.K_F5;
+            case GLFW_KEY_F6:return Key.K_F6;
+            case GLFW_KEY_F7:return Key.K_F7;
+            case GLFW_KEY_F8:return Key.K_F8;
+            case GLFW_KEY_F9:return Key.K_F9;
+            case GLFW_KEY_F10:return Key.K_F10;
+            case GLFW_KEY_F11:return Key.K_F11;
+            case GLFW_KEY_F12:return Key.K_F12;
+
+            case GLFW_KEY_BACKSPACE:return Key.K_BACKSPACE;
+
+            case GLFW_KEY_DELETE:return Key.K_DEL;
+//	00683                 case XK_KP_Delete:return K_KP_DEL; break;
+
+            case GLFW_KEY_PAUSE:return Key.K_PAUSE;
+
+//            case GLFW_KEY_SHIFT: key = Key.K_SHIFT; break;
+//            case GLFW_KEY_CONTROL: key = Key.K_CTRL; break;
 //
-//            case KeyEvent.VK_F1:return Key.K_F1;
-//            case KeyEvent.VK_F2:return Key.K_F2;
-//            case KeyEvent.VK_F3:return Key.K_F3;
-//            case KeyEvent.VK_F4:return Key.K_F4;
-//            case KeyEvent.VK_F5:return Key.K_F5;
-//            case KeyEvent.VK_F6:return Key.K_F6;
-//            case KeyEvent.VK_F7:return Key.K_F7;
-//            case KeyEvent.VK_F8:return Key.K_F8;
-//            case KeyEvent.VK_F9:return Key.K_F9;
-//            case KeyEvent.VK_F10:return Key.K_F10;
-//            case KeyEvent.VK_F11:return Key.K_F11;
-//            case KeyEvent.VK_F12:return Key.K_F12;
-//
-//            case KeyEvent.VK_BACK_SPACE:return Key.K_BACKSPACE;
-//
-//            case KeyEvent.VK_DELETE:return Key.K_DEL;
-////	00683                 case XK_KP_Delete:return K_KP_DEL; break;
-//
-//            case KeyEvent.VK_PAUSE:return Key.K_PAUSE; break;
-//
-//            case KeyEvent.VK_SHIFT: key = Key.K_SHIFT; break;
-//            case KeyEvent.VK_CONTROL: key = Key.K_CTRL; break;
-//
-//            case KeyEvent.VK_ALT:
-//            case KeyEvent.VK_ALT_GRAPH: key = Key.K_ALT; break;
-//
-////	00700                 case XK_KP_Begin: key = K_KP_5; break;
-////	00701
-//            case KeyEvent.VK_INSERT: key = Key.K_INS; break;
+//            case GLFW_KEY_ALT:
+//            case GLFW_KEY_ALT_GRAPH: key = Key.K_ALT; break;
+
+//	00700                 case XK_KP_Begin: key = K_KP_5; break;
+//	00701
+            case GLFW_KEY_INSERT: return Key.K_INS;
+
 //            // toggle console for DE and US keyboards
-//            case KeyEvent.VK_DEAD_ACUTE:
-//            case KeyEvent.VK_CIRCUMFLEX:
-//            case KeyEvent.VK_DEAD_CIRCUMFLEX: key = '`'; break;
+            case GLFW_KEY_WORLD_1: return '`';
+//            case GLFW_KEY_DEAD_ACUTE:
+//            case GLFW_KEY_CIRCUMFLEX:
+//            case GLFW_KEY_DEAD_CIRCUMFLEX: key = '`'; break;
 
             default:
-                key = scancode;
-                if (key >= 'A' && key <= 'Z')
-                    key = key - 'A' + 'a';
+//                key = scancode;
+
                 break;
         }
+        key = code;
+
+        /* Convert into lower case */
+        if (key >= 'A' && key <= 'Z')
+            key = key - 'A' + 'a';
+
         if (key > 255) key = 0;
 
         return key;
