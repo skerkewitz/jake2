@@ -26,7 +26,7 @@ import net.java.games.joal.util.ALut;
 public final class JOALSoundImpl implements Sound {
 	
 	static {
-		S.register(new JOALSoundImpl());
+	//	S.register(new JOALSoundImpl());
 	};
 
 	static AL al;

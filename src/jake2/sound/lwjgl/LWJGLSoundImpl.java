@@ -17,9 +17,15 @@ import jake2.util.Lib;
 import jake2.util.Vargs;
 
 import java.nio.*;
+import java.util.List;
 
 import org.lwjgl.openal.*;
 
+import static org.lwjgl.openal.ALC10.*;
+import static org.lwjgl.openal.ALC11.ALC_ALL_DEVICES_SPECIFIER;
+import static org.lwjgl.openal.ALC11.ALC_MONO_SOURCES;
+import static org.lwjgl.openal.ALC11.ALC_STEREO_SOURCES;
+import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 
 
 /**
@@ -94,25 +100,65 @@ public final class LWJGLSoundImpl implements Sound {
 
 
 	private void initOpenAL() {
-		device = ALC10.nalcOpenDevice(0);
+//		device = ALC10.nalcOpenDevice(0);
+//		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+//
+//		String deviceName = null;
+//
+//		String os = System.getProperty("os.name");
+//		if (os.startsWith("Windows")) {
+//		    deviceName = "DirectSound3D";
+//		}
+//
+//		String defaultSpecifier = ALC10.alcGetString(device, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
+//
+//		Com.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
+//
+//		// Check for an error.
+//		if (ALC10.alcGetError(device) != ALC10.ALC_NO_ERROR)
+//		{
+//		    Com.DPrintf("Error with SoundDevice");
+//		}
 
-
-		String deviceName = null;
-
-		String os = System.getProperty("os.name");
-		if (os.startsWith("Windows")) {
-		    deviceName = "DirectSound3D";
+		device = alcOpenDevice((ByteBuffer)null);
+		if (device == 0) {
+			throw new IllegalStateException("Failed to open the default device.");
 		}
 
-		String defaultSpecifier = ALC10.alcGetString(device, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
+		ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
-		Com.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
+		//assertTrue(deviceCaps.OpenALC10);
 
-		// Check for an error.
-		if (ALC10.alcGetError(device) != ALC10.ALC_NO_ERROR)
-		{
-		    Com.DPrintf("Error with SoundDevice");
+		System.out.println("OpenALC10: " + deviceCaps.OpenALC10);
+		System.out.println("OpenALC11: " + deviceCaps.OpenALC11);
+		System.out.println("caps.ALC_EXT_EFX = " + deviceCaps.ALC_EXT_EFX);
+
+		if (deviceCaps.OpenALC11) {
+			List<String> devices = ALUtil.getStringList(0, ALC_ALL_DEVICES_SPECIFIER);
+			if (devices == null) {
+//				checkALCError(NULL);
+			} else {
+				for (int i = 0; i < devices.size(); i++) {
+					System.out.println(i + ": " + devices.get(i));
+				}
+			}
 		}
+
+		String defaultDeviceSpecifier = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
+		//assertTrue(defaultDeviceSpecifier != null);
+		System.out.println("Default device: " + defaultDeviceSpecifier);
+
+		long context = alcCreateContext(device, (IntBuffer)null);
+		alcSetThreadContext(context);
+		AL.createCapabilities(deviceCaps);
+
+		System.out.println("ALC_FREQUENCY: " + alcGetInteger(device, ALC_FREQUENCY) + "Hz");
+		System.out.println("ALC_REFRESH: " + alcGetInteger(device, ALC_REFRESH) + "Hz");
+		System.out.println("ALC_SYNC: " + (alcGetInteger(device, ALC_SYNC) == ALC_TRUE));
+		System.out.println("ALC_MONO_SOURCES: " + alcGetInteger(device, ALC_MONO_SOURCES));
+		System.out.println("ALC_STEREO_SOURCES: " + alcGetInteger(device, ALC_STEREO_SOURCES));
+
+
   }
 
     void exitOpenAL() {
