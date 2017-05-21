@@ -48,9 +48,7 @@ public class GameCombat {
                     Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
             if (trace.fraction == 1.0f)
                 return true;
-            if (trace.ent == targ)
-                return true;
-            return false;
+            return trace.ent == targ;
         }
     
         trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
@@ -88,10 +86,8 @@ public class GameCombat {
         dest[1] -= 15.0;
         trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
                 Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
-        if (trace.fraction == 1.0)
-            return true;
-    
-        return false;
+        return trace.fraction == 1.0;
+
     }
 
     /**
@@ -251,7 +247,7 @@ public class GameCombat {
             return 0;
     
         armor = GameItems.GetItemByIndex(index);
-        gitem_armor_t garmor = (gitem_armor_t) armor.info;
+        gitem_armor_t garmor = armor.info;
     
         if (0 != (dflags & Defines.DAMAGE_ENERGY))
             save = (int) Math.ceil(garmor.energy_protection * damage);

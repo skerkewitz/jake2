@@ -428,7 +428,7 @@ public class GameItems {
             int salvagecount;
     
             // get info on new armor
-            newinfo = (gitem_armor_t) ent.item.info;
+            newinfo = ent.item.info;
     
             old_armor_index = ArmorIndex(other);
     

@@ -30,5 +30,5 @@ public class EdictFindFilter
 	boolean matches(edict_t e, String s)
 	{
 		return false;
-	};
+	}
 }

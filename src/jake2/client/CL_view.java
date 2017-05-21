@@ -181,7 +181,7 @@ public class CL_view {
         // see what the latency was on this packet
         in = Globals.cls.netchan.incoming_acknowledged
                 & (Defines.CMD_BACKUP - 1);
-        ping = (int) (Globals.cls.realtime - Globals.cl.cmd_time[in]);
+        ping = Globals.cls.realtime - Globals.cl.cmd_time[in];
         ping /= 30;
         if (ping > 30)
             ping = 30;

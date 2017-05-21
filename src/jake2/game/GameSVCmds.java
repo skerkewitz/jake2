@@ -70,7 +70,7 @@ public class GameSVCmds {
         int mask;
 
         int compare;
-    };
+    }
 
     public static void Svcmd_Test_f() {
         GameBase.gi.cprintf(null, Defines.PRINT_HIGH, "Svcmd_Test_f()\n");
@@ -149,7 +149,7 @@ public class GameSVCmds {
             if ((in & ipfilters[i].mask) == ipfilters[i].compare)
                 return ((int) GameBase.filterban.value) != 0;
 
-        return ((int) 1 - GameBase.filterban.value) != 0;
+        return (1 - GameBase.filterban.value) != 0;
     }
 
     /**

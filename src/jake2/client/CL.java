@@ -696,7 +696,7 @@ public final class CL {
         if (Globals.cl_timedemo != null && Globals.cl_timedemo.value != 0.0f) {
             int time;
 
-            time = (int) (Timer.Milliseconds() - Globals.cl.timedemo_start);
+            time = Timer.Milliseconds() - Globals.cl.timedemo_start;
             if (time > 0)
                 Com.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
                         new Vargs(3).add(Globals.cl.timedemo_frames).add(

@@ -74,8 +74,8 @@ public class S {
 			    Com.DPrintf("could not init joal sound driver class.");
 			}
 		
-	};
-	
+	}
+
 	/**
 	 * Registers a new Sound Implementor.
 	 */

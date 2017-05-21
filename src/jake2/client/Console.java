@@ -414,7 +414,7 @@ public final class Console extends Globals {
 	text = key_lines[edit_line];
 
 	// add the cursor frame
-	text[key_linepos] = (byte) (10 + ((int) (cls.realtime >> 8) & 1));
+	text[key_linepos] = (byte) (10 + (cls.realtime >> 8 & 1));
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con.linewidth; i++)
@@ -457,7 +457,7 @@ public final class Console extends Globals {
 	    if (time == 0)
 		continue;
 
-	    time = (int) (cls.realtime - time);
+	    time = cls.realtime - time;
 	    if (time > con_notifytime.value * 1000)
 		continue;
 
@@ -487,7 +487,7 @@ public final class Console extends Globals {
 		re.DrawChar((x + skip) << 3, v, s.charAt(x));
 	    }
 	    re.DrawChar((x + skip) << 3, v,
-		    (int) (10 + ((cls.realtime >> 8) & 1)));
+                10 + ((cls.realtime >> 8) & 1));
 	    v += 8;
 	}
 
@@ -573,8 +573,7 @@ public final class Console extends Globals {
 	    if (cls.downloadname.length() - text > i) {
 		y = x - i - 11;
 		int end = text + i - 1;
-		;
-		dlbar.append(cls.downloadname.substring(text, end));
+            dlbar.append(cls.downloadname.substring(text, end));
 		dlbar.append("...");
 	    } else {
 		dlbar.append(cls.downloadname.substring(text));

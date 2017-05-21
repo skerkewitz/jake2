@@ -158,9 +158,7 @@ public final class Netchan extends SV_MAIN {
      * Netchan_CanReliable. Returns true if the last reliable message has acked.
      */
     public static boolean Netchan_CanReliable(netchan_t chan) {
-        if (chan.reliable_length != 0)
-            return false; // waiting for ack
-        return true;
+        return chan.reliable_length == 0;
     }
 
     
@@ -168,11 +166,9 @@ public final class Netchan extends SV_MAIN {
         boolean send_reliable;
 
         // if the remote side dropped the last reliable message, resend it
-        send_reliable = false;
 
-        if (chan.incoming_acknowledged > chan.last_reliable_sequence
-                && chan.incoming_reliable_acknowledged != chan.reliable_sequence)
-            send_reliable = true;
+        send_reliable = chan.incoming_acknowledged > chan.last_reliable_sequence
+                && chan.incoming_reliable_acknowledged != chan.reliable_sequence;
 
         // if the reliable transmit buffer is empty, copy the current message
         // out
@@ -220,7 +216,7 @@ public final class Netchan extends SV_MAIN {
                 | (chan.incoming_reliable_sequence << 31);
 
         chan.outgoing_sequence++;
-        chan.last_sent = (int) Globals.curtime;
+        chan.last_sent = Globals.curtime;
 
         MSG.WriteInt(send, w1);
         MSG.WriteInt(send, w2);
@@ -338,7 +334,7 @@ public final class Netchan extends SV_MAIN {
         //
         // the message can now be read from the current message pointer
         //
-        chan.last_received = (int) Globals.curtime;
+        chan.last_received = Globals.curtime;
 
         return true;
     }

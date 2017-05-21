@@ -64,7 +64,7 @@ public class Renderer {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-    };
+    }
 
     public static void register(Ref impl) {
         if (impl == null) {

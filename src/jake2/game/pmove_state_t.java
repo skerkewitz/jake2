@@ -66,23 +66,21 @@ public class pmove_state_t {
 	}
 	
 	public boolean equals(pmove_state_t p2) {
-		if (pm_type == p2.pm_type
-			&& origin[0] == p2.origin[0]
-			&& origin[1] == p2.origin[1]
-			&& origin[2] == p2.origin[2]
-			&& velocity[0] == p2.velocity[0]
-			&& velocity[1] == p2.velocity[1]
-			&& velocity[2] == p2.origin[2]
-			&& pm_flags == p2.pm_flags
-			&& pm_time == p2.pm_time
-			&& gravity == gravity
-			&& delta_angles[0] == p2.delta_angles[0]
-			&& delta_angles[1] == p2.delta_angles[1]
-			&& delta_angles[2] == p2.origin[2])
-			return true;
+        return pm_type == p2.pm_type
+                && origin[0] == p2.origin[0]
+                && origin[1] == p2.origin[1]
+                && origin[2] == p2.origin[2]
+                && velocity[0] == p2.velocity[0]
+                && velocity[1] == p2.velocity[1]
+                && velocity[2] == p2.origin[2]
+                && pm_flags == p2.pm_flags
+                && pm_time == p2.pm_time
+                && gravity == gravity
+                && delta_angles[0] == p2.delta_angles[0]
+                && delta_angles[1] == p2.delta_angles[1]
+                && delta_angles[2] == p2.origin[2];
 
-		return false;
-	}
+    }
 
 	/** Reads the playermove from the file.*/
 	public void load(RandomAccessFile f) throws IOException {

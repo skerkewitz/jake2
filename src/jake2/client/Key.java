@@ -671,7 +671,7 @@ public class Key extends Globals {
 	private static void printCompletions(String type, Vector compl) {
 		Com.Printf(type);
 		for (int i = 0; i < compl.size(); i++) {
-			Com.Printf((String)compl.get(i) + " ");
+			Com.Printf(compl.get(i) + " ");
 		}
 		Com.Printf("\n");
 	}

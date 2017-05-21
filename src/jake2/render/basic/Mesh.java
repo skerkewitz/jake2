@@ -551,11 +551,8 @@ public abstract class Mesh extends Light {
                 aggregatemask &= mask;
             }
 
-            if (aggregatemask != 0) {
-                return true;
-            }
+            return aggregatemask != 0;
 
-            return false;
         }
     }
 

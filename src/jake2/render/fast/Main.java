@@ -1155,10 +1155,7 @@ public abstract class Main extends Base {
 		}
 
 		if ((gl_config.renderer & GL_RENDERER_3DLABS) != 0) {
-			if (gl_3dlabs_broken.value != 0.0f)
-				gl_config.allow_cds = false;
-			else
-				gl_config.allow_cds = true;
+            gl_config.allow_cds = !(gl_3dlabs_broken.value != 0.0f);
 		}
 		else {
 			gl_config.allow_cds = true;
@@ -1176,10 +1173,7 @@ public abstract class Main extends Base {
 			|| gl_config.extensions_string.indexOf("GL_SGI_compiled_vertex_array") >= 0) {
 			VID.Printf(Defines.PRINT_ALL, "...enabling GL_EXT_compiled_vertex_array\n");
 			//		 qgl.glLockArraysEXT = ( void * ) qwglGetProcAddress( "glLockArraysEXT" );
-			if (gl_ext_compiled_vertex_array.value != 0.0f)
-				qglLockArraysEXT = true;
-			else
-				qglLockArraysEXT = false;
+            qglLockArraysEXT = gl_ext_compiled_vertex_array.value != 0.0f;
 			//		 qgl.glUnlockArraysEXT = ( void * ) qwglGetProcAddress( "glUnlockArraysEXT" );
 			//qglUnlockArraysEXT = true;
 		}

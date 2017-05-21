@@ -238,7 +238,7 @@ public class SV_MAIN {
             // overwrite the oldest
             SV_INIT.svs.challenges[oldest].challenge = Lib.rand() & 0x7fff;
             SV_INIT.svs.challenges[oldest].adr = Globals.net_from;
-            SV_INIT.svs.challenges[oldest].time = (int) Globals.curtime;
+            SV_INIT.svs.challenges[oldest].time = Globals.curtime;
             i = oldest;
         }
 

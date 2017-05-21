@@ -866,9 +866,6 @@ public class M_Parasite {
         Math3D.vectoangles(dir, angles);
         if (angles[0] < -180)
             angles[0] += 360;
-        if (Math.abs(angles[0]) > 30)
-            return false;
-
-        return true;
+        return !(Math.abs(angles[0]) > 30);
     }
 }

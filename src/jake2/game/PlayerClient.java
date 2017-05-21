@@ -876,9 +876,7 @@ public class PlayerClient {
     }
 
     private static boolean passwdOK(String i1, String i2) {
-        if (i1.length() != 0 && !i1.equals("none") && !i1.equals(i2))
-            return false;
-        return true;
+        return !(i1.length() != 0 && !i1.equals("none") && !i1.equals(i2));
     }
 
     /**
@@ -1231,10 +1229,7 @@ public class PlayerClient {
         // set spectator
         s = Info.Info_ValueForKey(userinfo, "spectator");
         // spectators are only supported in deathmatch
-        if (GameBase.deathmatch.value != 0 && !s.equals("0"))
-            ent.client.pers.spectator = true;
-        else
-            ent.client.pers.spectator = false;
+        ent.client.pers.spectator = GameBase.deathmatch.value != 0 && !s.equals("0");
 
         // set skin
         s = Info.Info_ValueForKey(userinfo, "skin");
@@ -1481,7 +1476,7 @@ public class PlayerClient {
             }
 
             ent.viewheight = (int) pm.viewheight;
-            ent.waterlevel = (int) pm.waterlevel;
+            ent.waterlevel = pm.waterlevel;
             ent.watertype = pm.watertype;
             ent.groundentity = pm.groundentity;
             if (pm.groundentity != null)
@@ -1626,9 +1621,7 @@ public class PlayerClient {
     
         info = Info.Info_ValueForKey(ent.client.pers.userinfo, "gender")
                 .charAt(0);
-        if (info == 'f' || info == 'F')
-            return true;
-        return false;
+        return info == 'f' || info == 'F';
     }
 
     /**
@@ -1643,10 +1636,8 @@ public class PlayerClient {
     
         info = Info.Info_ValueForKey(ent.client.pers.userinfo, "gender")
                 .charAt(0);
-    
-        if (info != 'f' && info != 'F' && info != 'm' && info != 'M')
-            return true;
-        return false;
+
+        return info != 'f' && info != 'F' && info != 'm' && info != 'M';
     }
 
     /**

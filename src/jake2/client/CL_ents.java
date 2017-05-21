@@ -1118,7 +1118,7 @@ public class CL_ents {
 			}
 
 			// smooth out stair climbing
-			delta = (int) (Globals.cls.realtime - Globals.cl.predicted_step_time);
+			delta = Globals.cls.realtime - Globals.cl.predicted_step_time;
 			if (delta < 100)
 				Globals.cl.refdef.vieworg[2] -= Globals.cl.predicted_step * (100 - delta) * 0.01;
 		} else { // just use interpolated values

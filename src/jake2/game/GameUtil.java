@@ -236,9 +236,7 @@ public class GameUtil {
         if (0 == ((int) (GameBase.dmflags.value) & (Defines.DF_MODELTEAMS | Defines.DF_SKINTEAMS)))
             return false;
 
-        if (ClientTeam(ent1).equals(ClientTeam(ent2)))
-            return true;
-        return false;
+        return ClientTeam(ent1).equals(ClientTeam(ent2));
     }
 
     /** 
@@ -314,9 +312,7 @@ public class GameUtil {
         Math3D.VectorNormalize(vec);
         dot = Math3D.DotProduct(vec, forward);
 
-        if (dot > 0.3)
-            return true;
-        return false;
+        return dot > 0.3;
     }
 
     /**
@@ -334,9 +330,7 @@ public class GameUtil {
         trace = GameBase.gi.trace(spot1, Globals.vec3_origin,
                 Globals.vec3_origin, spot2, self, Defines.MASK_OPAQUE);
 
-        if (trace.fraction == 1.0)
-            return true;
-        return false;
+        return trace.fraction == 1.0;
     }
 
     /**

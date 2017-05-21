@@ -173,10 +173,7 @@ public final class Sys extends Defines {
             // . and .. never match
             String name = dir.getName();
 
-            if (name.equals(".") || name.equals(".."))
-                return false;
-
-            return true;
+            return !(name.equals(".") || name.equals(".."));
         }
 
     }

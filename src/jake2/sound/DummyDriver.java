@@ -37,9 +37,9 @@ public final class DummyDriver implements Sound {
 
 	static {
 		S.register(new DummyDriver());
-	};
-	
-	private DummyDriver() {
+	}
+
+    private DummyDriver() {
 	}
 
 	/* (non-Javadoc)

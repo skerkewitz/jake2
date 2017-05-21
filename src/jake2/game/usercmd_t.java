@@ -37,9 +37,9 @@ public class usercmd_t implements Cloneable {
 	}
 
 	public usercmd_t() {
-	};
+	}
 
-	public usercmd_t(usercmd_t from) {
+    public usercmd_t(usercmd_t from) {
 		msec= from.msec;
 		buttons= from.buttons;
 		angles[0]= from.angles[0];

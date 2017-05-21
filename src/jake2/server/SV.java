@@ -688,10 +688,7 @@ public final class SV {
 
         SV_CheckVelocity(ent);
 
-        if (groundentity != null)
-            wasonground = true;
-        else
-            wasonground = false;
+        wasonground = groundentity != null;
 
         if (ent.avelocity[0] != 0 || ent.avelocity[1] != 0
                 || ent.avelocity[2] != 0)

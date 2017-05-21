@@ -332,7 +332,6 @@ public class PlayerHud {
                                 .soundindex("misc/power2.wav"), 1,
                                 Defines.ATTN_NORM, 0);
                 power_armor_type = 0;
-                ;
             }
         }
 

@@ -399,7 +399,7 @@ public final class M {
                 ent.s.renderfx |= Defines.RF_SHELL_GREEN;
             }
         }
-    };
+    }
 
     //ok
     public static void M_MoveFrame(edict_t self) {

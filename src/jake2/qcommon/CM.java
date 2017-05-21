@@ -1516,11 +1516,8 @@ public class CM {
         Math3D.VectorSubtract(end, origin, end_l);
 
         // rotate start and end into the models frame of reference
-        if (headnode != box_headnode
-                && (angles[0] != 0 || angles[1] != 0 || angles[2] != 0))
-            rotated = true;
-        else
-            rotated = false;
+        rotated = headnode != box_headnode
+                && (angles[0] != 0 || angles[1] != 0 || angles[2] != 0);
 
         if (rotated) {
             Math3D.AngleVectors(angles, forward, right, up);
@@ -1700,10 +1697,8 @@ public class CM {
         if (area1 > numareas || area2 > numareas)
             Com.Error(Defines.ERR_DROP, "area > numareas");
 
-        if (map_areas[area1].floodnum == map_areas[area2].floodnum)
-            return true;
+        return map_areas[area1].floodnum == map_areas[area2].floodnum;
 
-        return false;
     }
 
     /**
@@ -1783,10 +1778,9 @@ public class CM {
             int leafnum = -1 - nodenum;
             int cluster = map_leafs[leafnum].cluster;
             if (cluster == -1) return false;
-            
-            if (0 != (visbits[cluster >>> 3] & (1 << (cluster & 7)))) return true;
-            
-            return false;
+
+            return 0 != (visbits[cluster >>> 3] & (1 << (cluster & 7)));
+
         }
 
         cnode_t node = map_nodes[nodenum];

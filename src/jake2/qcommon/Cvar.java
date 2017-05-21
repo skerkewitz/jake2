@@ -438,8 +438,6 @@ public class Cvar extends Globals {
             return false;
         if (s.indexOf("\"") != -1)
             return false;
-        if (s.indexOf(";") != -1)
-            return false;
-        return true;
+        return s.indexOf(";") == -1;
     }
 }

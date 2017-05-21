@@ -1200,7 +1200,7 @@ public abstract class Image extends Main {
             }
             // label done:
         } catch (longjmpException e) {
-            ; // replaces label done
+            // replaces label done
         }
 
         if (mipmap) {

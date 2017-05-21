@@ -669,7 +669,7 @@ public class CL_input {
 		// save this command off for prediction
 		i = Globals.cls.netchan.outgoing_sequence & (Defines.CMD_BACKUP - 1);
 		cmd = Globals.cl.cmds[i];
-		Globals.cl.cmd_time[i] = (int) Globals.cls.realtime; // for netgraph
+		Globals.cl.cmd_time[i] = Globals.cls.realtime; // for netgraph
 															 // ping calculation
 
 		// fill the cmd

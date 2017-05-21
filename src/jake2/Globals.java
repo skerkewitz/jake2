@@ -365,7 +365,8 @@ public class Globals extends Defines {
 	static {
 		for (int i = 0; i < key_lines.length; i++)
 			key_lines[i] = new byte[Defines.MAXCMDLINE];
-	};
+	}
+
 	public static int edit_line;
 
 	public static cvar_t crosshair;

@@ -58,9 +58,7 @@ public class GameAI {
         float delta;
 
         delta = Math3D.anglemod(self.s.angles[Defines.YAW] - self.ideal_yaw);
-        if (delta > 45 && delta < 315)
-            return false;
-        return true;
+        return !(delta > 45 && delta < 315);
     }
 
     /**
@@ -87,7 +85,7 @@ public class GameAI {
             self.monsterinfo.attack.think(self);
             self.monsterinfo.attack_state = Defines.AS_STRAIGHT;
         }
-    };
+    }
 
     /**
      * Strafe sideways, but stay at aproximately the same range.

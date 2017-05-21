@@ -75,11 +75,8 @@ public class Math3D {
 		a[0] = a[1] = a[2] = 0;
 	}
 	public static boolean VectorEquals(float[] v1, float[] v2) {
-		if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2])
-			return false;
-
-		return true;
-	}
+        return !(v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]);
+    }
 	public static void VectorNegate(float[] from, float[] to) {
 		to[0] = -from[0];
 		to[1] = -from[1];
@@ -408,10 +405,10 @@ public class Math3D {
 	public static void AngleVectors(float[] angles, float[] forward, float[] right, float[] up) {
 
 		float cr = 2.0f * piratio;
-		float angle = (float) (angles[Defines.YAW] * (cr));
+		float angle = angles[Defines.YAW] * (cr);
 		float sy = (float) Math.sin(angle);
 		float cy = (float) Math.cos(angle);
-		angle = (float) (angles[Defines.PITCH] * (cr));
+		angle = angles[Defines.PITCH] * (cr);
 		float sp = (float) Math.sin(angle);
 		float cp = (float) Math.cos(angle);
 
@@ -422,7 +419,7 @@ public class Math3D {
 		}
 
 		if (right != null || up != null) {
-			angle = (float) (angles[Defines.ROLL] * (cr));
+			angle = angles[Defines.ROLL] * (cr);
 			float sr = (float) Math.sin(angle);
 			cr = (float) Math.cos(angle);
 
@@ -466,7 +463,7 @@ public class Math3D {
 		return (in * (float) Math.PI) / 180.0f;
 	}
 	public static float anglemod(float a) {
-		return (float) (shortratio) * ((int) (a / (shortratio)) & 65535);
+		return shortratio * ((int) (a / (shortratio)) & 65535);
 	}
 	public static int ANGLE2SHORT(float x) {
 		return ((int) ((x) / shortratio) & 65535);

@@ -50,7 +50,7 @@ public final class NET {
         byte data[] = new byte[Defines.MAX_MSGLEN];
 
         int datalen;
-    };
+    }
 
     public static class loopback_t {
         public loopback_t() {
@@ -63,7 +63,7 @@ public final class NET {
         loopmsg_t msgs[];
 
         int get, send;
-    };
+    }
 
     public static loopback_t loopbacks[] = new loopback_t[2];
     static {

@@ -74,7 +74,7 @@ public class GameFunc {
      */
     static float AccelerationDistance(float target, float rate) {
         return target * ((target / rate) + 1) / 2;
-    };
+    }
 
     static void plat_CalcAcceleratedMove(moveinfo_t moveinfo) {
         float accel_dist;
@@ -102,7 +102,7 @@ public class GameFunc {
         }
 
         moveinfo.decel_distance = decel_dist;
-    };
+    }
 
     static void plat_Accelerate(moveinfo_t moveinfo) {
         // are we decelerating?
@@ -175,7 +175,7 @@ public class GameFunc {
 
         // we are at constant velocity (move_speed)
         return;
-    };
+    }
 
     static void plat_go_up(edict_t ent) {
         if (0 == (ent.flags & Defines.FL_TEAMSLAVE)) {
@@ -1097,9 +1097,9 @@ public class GameFunc {
                 GameBase.st.lip = 4;
 
             Math3D.VectorCopy(ent.s.origin, ent.pos1);
-            abs_movedir[0] = (float) Math.abs(ent.movedir[0]);
-            abs_movedir[1] = (float) Math.abs(ent.movedir[1]);
-            abs_movedir[2] = (float) Math.abs(ent.movedir[2]);
+            abs_movedir[0] = Math.abs(ent.movedir[0]);
+            abs_movedir[1] = Math.abs(ent.movedir[1]);
+            abs_movedir[2] = Math.abs(ent.movedir[2]);
             dist = abs_movedir[0] * ent.size[0] + abs_movedir[1] * ent.size[1]
                     + abs_movedir[2] * ent.size[2] - GameBase.st.lip;
             Math3D.VectorMA(ent.pos1, dist, ent.movedir, ent.pos2);

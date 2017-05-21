@@ -1297,7 +1297,7 @@ public abstract class Surf extends Draw {
 				continue;
 			if (((vis[cluster>>3] & 0xFF) & (1 << (cluster & 7))) != 0)
 			{
-				node = (mnode_t)leaf;
+				node = leaf;
 				do
 				{
 					if (node.visframe == r_visframecount)

@@ -460,10 +460,7 @@ public final class Cmd {
 
         name = Cmd.Args();
 
-        if (0 == Lib.Q_stricmp(name, "all"))
-            give_all = true;
-        else
-            give_all = false;
+        give_all = 0 == Lib.Q_stricmp(name, "all");
 
         if (give_all || 0 == Lib.Q_stricmp(Cmd.Argv(1), "health")) {
             if (Cmd.Argc() == 3)
@@ -510,7 +507,7 @@ public final class Cmd {
             ent.client.pers.inventory[GameItems.ITEM_INDEX(it)] = 0;
 
             it = GameItems.FindItem("Body Armor");
-            info = (gitem_armor_t) it.info;
+            info = it.info;
             ent.client.pers.inventory[GameItems.ITEM_INDEX(it)] = info.max_count;
 
             if (!give_all)

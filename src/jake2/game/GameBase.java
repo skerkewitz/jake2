@@ -342,7 +342,7 @@ public class GameBase {
         if (ent.prethink != null)
             ent.prethink.think(ent);
 
-        switch ((int) ent.movetype) {
+        switch (ent.movetype) {
         case Defines.MOVETYPE_PUSH:
         case Defines.MOVETYPE_STOP:
             SV.SV_Physics_Pusher(ent);
@@ -363,7 +363,7 @@ public class GameBase {
             SV.SV_Physics_Toss(ent);
             break;
         default:
-            gi.error("SV_Physics: bad movetype " + (int) ent.movetype);
+            gi.error("SV_Physics: bad movetype " + ent.movetype);
         }
     }
 

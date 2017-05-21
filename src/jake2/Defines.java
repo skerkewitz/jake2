@@ -1155,39 +1155,30 @@ public class Defines {
 	// client.h
 	public static final int MAX_PARSE_ENTITIES = 1024;
 	public static final int MAX_CLIENTWEAPONMODELS = 20;
-
-	public static int CMD_BACKUP = 64; // allow a lot of command backups for very fast systems	
-
 	public static final int ca_uninitialized = 0;
 	public static final int ca_disconnected = 1;
 	public static final int ca_connecting = 2;
 	public static final int ca_connected = 3;
 	public static final int ca_active = 4;
-
 	public static final int MAX_ALIAS_NAME = 32;
 	public static final int MAX_NUM_ARGVS = 50;
-
 	public static final int MAX_MSGLEN = 1400;
-
 	// ---------
 	// console.h
 	public static final int NUM_CON_TIMES = 4;
 	public static final int CON_TEXTSIZE = 32768;
-
 	public final static int BSPVERSION = 38;
-
-	// --------
-	// qfiles.h 
-
 	// upper design bounds
 	// leaffaces, leafbrushes, planes, and verts are still bounded by
 	// 16 bit short limits
 	public final static int MAX_MAP_MODELS = 1024;
+
+	// --------
+	// qfiles.h 
 	public final static int MAX_MAP_BRUSHES = 8192;
 	public final static int MAX_MAP_ENTITIES = 2048;
 	public final static int MAX_MAP_ENTSTRING = 0x40000;
 	public final static int MAX_MAP_TEXINFO = 8192;
-
 	public final static int MAX_MAP_AREAS = 256;
 	public final static int MAX_MAP_AREAPORTALS = 1024;
 	public final static int MAX_MAP_PLANES = 65536;
@@ -1203,21 +1194,17 @@ public class Defines {
 	public final static int MAX_MAP_SURFEDGES = 256000;
 	public final static int MAX_MAP_LIGHTING = 0x200000;
 	public final static int MAX_MAP_VISIBILITY = 0x100000;
-
 	// key / value pair sizes
 	public final static int MAX_KEY = 32;
 	public final static int MAX_VALUE = 1024;
-
 	// 0-2 are axial planes
 	public final static int PLANE_X = 0;
 	public final static int PLANE_Y = 1;
 	public final static int PLANE_Z = 2;
-
 	// 3-5 are non-axial planes snapped to the nearest
 	public final static int PLANE_ANYX = 3;
 	public final static int PLANE_ANYY = 4;
 	public final static int PLANE_ANYZ = 5;
-
 	public final static int LUMP_ENTITIES = 0;
 	public final static int LUMP_PLANES = 1;
 	public final static int LUMP_VERTEXES = 2;
@@ -1238,27 +1225,22 @@ public class Defines {
 	public final static int LUMP_AREAS = 17;
 	public final static int LUMP_AREAPORTALS = 18;
 	public final static int HEADER_LUMPS = 19;
-
 	public final static int DTRIVERTX_V0 = 0;
 	public final static int DTRIVERTX_V1 = 1;
 	public final static int DTRIVERTX_V2 = 2;
 	public final static int DTRIVERTX_LNI = 3;
 	public final static int DTRIVERTX_SIZE = 4;
-
 	public final static int ALIAS_VERSION = 8;
 	public static final String GAMEVERSION = "baseq2";
 	public static final int API_VERSION = 3; // ref_library (refexport_t)
-
 	public final static int DVIS_PVS = 0;
 	public final static int DVIS_PHS = 1;
-
 	// ----------------
 	// client/keydest_t
 	public static final int key_game = 0;
 	public static final int key_console = 1;
 	public static final int key_message = 2;
 	public static final int key_menu = 3;
-
 	// ---------------
 	// server/server.h
 	public static final int cs_free = 0; // can be reused for a new connection
@@ -1266,103 +1248,72 @@ public class Defines {
 	// connection for a couple seconds
 	public static final int cs_connected = 2; // has been assigned to a client_t, but not in game yet
 	public static final int cs_spawned = 3;
-
 	public static final int MAX_CHALLENGES = 1024;
-
 	public static final int ss_dead = 0; // no map loaded
 	public static final int ss_loading = 1; // spawning level edicts
 	public static final int ss_game = 2; // actively running
 	public static final int ss_cinematic = 3;
 	public static final int ss_demo = 4;
 	public static final int ss_pic = 5;
-
 	public final static int SV_OUTPUTBUF_LENGTH = (MAX_MSGLEN - 16);
 	public final static int RD_NONE = 0;
 	public final static int RD_CLIENT = 1;
 	public final static int RD_PACKET = 2;
-
 	public final static int RATE_MESSAGES = 10;
-
 	public final static int LATENCY_COUNTS = 16;
-
 	public static final int MAXCMDLINE = 256;
-
 	public static final int MAX_MASTERS = 8;
-
 	//server/sv_world.h
 	public static final int AREA_DEPTH = 4;
 	public static final int AREA_NODES = 32;
-
 	public static final int EXEC_NOW = 0;
 	public static final int EXEC_INSERT = 1;
 	public static final int EXEC_APPEND = 2;
-
 	//client/qmenu.h
 	public final static int MAXMENUITEMS = 64;
-
 	public final static int MTYPE_SLIDER = 0;
 	public final static int MTYPE_LIST = 1;
 	public final static int MTYPE_ACTION = 2;
 	public final static int MTYPE_SPINCONTROL = 3;
 	public final static int MTYPE_SEPARATOR = 4;
 	public final static int MTYPE_FIELD = 5;
-
 	public final static int K_TAB = 9;
 	public final static int K_ENTER = 13;
 	public final static int K_ESCAPE = 27;
 	public final static int K_SPACE = 32;
+	public final static int K_BACKSPACE = 127;
 
 	// normal keys should be passed as lowercased ascii
-
-	public final static int K_BACKSPACE = 127;
 	public final static int K_UPARROW = 128;
 	public final static int K_DOWNARROW = 129;
 	public final static int K_LEFTARROW = 130;
 	public final static int K_RIGHTARROW = 131;
-
 	public final static int QMF_LEFT_JUSTIFY = 0x00000001;
 	public final static int QMF_GRAYED = 0x00000002;
 	public final static int QMF_NUMBERSONLY = 0x00000004;
-
 	public final static int RCOLUMN_OFFSET = 16;
 	public final static int LCOLUMN_OFFSET = -16;
-
 	public final static int MAX_DISPLAYNAME = 16;
 	public final static int MAX_PLAYERMODELS = 1024;
-
 	public final static int MAX_LOCAL_SERVERS = 8;
 	public final static String NO_SERVER_STRING = "<no server>";
 	public final static int NUM_ADDRESSBOOK_ENTRIES = 9;
-
 	public final static int STEPSIZE = 18;
-
-
 	public static final float MOVE_STOP_EPSILON = 0.1f;
-	
 	public final static float MIN_STEP_NORMAL = 0.7f; // can't step up onto very steep slopes
-
-
 	// used by filefinders in Sys
 	public final static int FILEISREADABLE = 1;
-
 	public final static int FILEISWRITABLE = 2;
-
 	public final static int FILEISFILE = 4;
-
 	public final static int FILEISDIRECTORY = 8;
-
 	// datentyp konstanten
 	// groesse in bytes
     public final static boolean LITTLE_ENDIAN = (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN);
-
 	public final static int SIZE_OF_SHORT = 2;
-
 	public final static int SIZE_OF_INT = 4;
-
 	public final static int SIZE_OF_LONG = 8;
-
 	public final static int SIZE_OF_FLOAT = 4;
-
 	public final static int SIZE_OF_DOUBLE = 8;
+	public static int CMD_BACKUP = 64; // allow a lot of command backups for very fast systems
 
 }

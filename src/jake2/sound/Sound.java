@@ -37,8 +37,8 @@ import java.nio.ByteBuffer;
  */
 public interface Sound {
     
-    static final int MAX_SFX = Defines.MAX_SOUNDS * 2;
-    static final int STREAM_QUEUE = 8;
+    int MAX_SFX = Defines.MAX_SOUNDS * 2;
+    int STREAM_QUEUE = 8;
 	
 	String getName();
 	

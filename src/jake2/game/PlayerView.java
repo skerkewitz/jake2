@@ -843,14 +843,8 @@ public class PlayerView {
 
         client = ent.client;
 
-        if ((client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0)
-            duck = true;
-        else
-            duck = false;
-        if (xyspeed != 0)
-            run = true;
-        else
-            run = false;
+        duck = (client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0;
+        run = xyspeed != 0;
 
         boolean skip = false;
         // check for stand/duck and stop/go transitions

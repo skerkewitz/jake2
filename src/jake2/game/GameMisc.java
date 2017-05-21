@@ -58,7 +58,7 @@ public class GameMisc {
         Math3D.VectorSet(self.maxs, 8, 8, 16);
         self.svflags = Defines.SVF_NOCLIENT;
         GameBase.gi.linkentity(self);
-    };
+    }
 
     public static void SP_viewthing(edict_t ent) {
         GameBase.gi.dprintf("viewthing spawned\n");
@@ -82,7 +82,7 @@ public class GameMisc {
      */
     public static void SP_info_null(edict_t self) {
         GameUtil.G_FreeEdict(self);
-    };
+    }
 
     /*
      * QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4) Used as a positional
@@ -91,7 +91,7 @@ public class GameMisc {
     public static void SP_info_notnull(edict_t self) {
         Math3D.VectorCopy(self.s.origin, self.absmin);
         Math3D.VectorCopy(self.s.origin, self.absmax);
-    };
+    }
 
     public static void SP_light(edict_t self) {
         // no targeted lights in deathmatch, because they cause global messages

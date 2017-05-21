@@ -958,7 +958,7 @@ public abstract class Surf extends Draw {
 				continue;
 			if (((vis[cluster>>3] & 0xFF) & (1 << (cluster & 7))) != 0)
 			{
-				node = (mnode_t)leaf;
+				node = leaf;
 				do
 				{
 					if (node.visframe == r_visframecount)
@@ -1302,9 +1302,9 @@ public abstract class Surf extends Draw {
 	 	globalPolygonInterleavedBuf.position(glpoly_t.STRIDE - 2);
 	 	globalPolygonTexCoord1Buf = globalPolygonInterleavedBuf.slice();
 		globalPolygonInterleavedBuf.position(0);
-	 };
+	 }
 
-	//ImageFrame frame;
+    //ImageFrame frame;
 	
 //	void debugLightmap(byte[] buf, int w, int h, float scale) {
 //		IntBuffer pix = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer();

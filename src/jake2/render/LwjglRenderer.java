@@ -53,9 +53,9 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 
 	static {
 		Renderer.register(new LwjglRenderer());
-	};
+	}
 
-	private LwjglRenderer() {
+    private LwjglRenderer() {
 	}
 
 

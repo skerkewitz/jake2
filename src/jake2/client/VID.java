@@ -442,7 +442,7 @@ public class VID extends Globals {
 		Cvar.SetValue( "gl_modulate", modulate);
 		Cvar.SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
 		Cvar.SetValue( "vid_fullscreen", s_fs_box.curvalue );
-		Cvar.SetValue( "gl_swapinterval", (int) s_vsync_box.curvalue);
+		Cvar.SetValue( "gl_swapinterval", s_vsync_box.curvalue);
 		// set always true because of vid_ref or mode changes
 		gl_swapinterval.modified = true;
 		Cvar.SetValue( "gl_ext_palettedtexture", s_paletted_texture_box.curvalue );

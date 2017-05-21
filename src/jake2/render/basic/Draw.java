@@ -357,9 +357,9 @@ public abstract class Draw extends Image {
 		else
 		{
 			image8.clear();
-			int destIndex = 0;;
+			int destIndex = 0;
 
-			for (i=0 ; i<trows ; i++)
+            for (i=0 ; i<trows ; i++)
 			{
 				row = (int)(i*hscale);
 				if (row > rows)

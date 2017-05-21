@@ -37,7 +37,7 @@ public final class LWJGLSoundImpl implements Sound {
 
     static {
 	S.register(new LWJGLSoundImpl());
-    };
+    }
 
     private cvar_t s_volume;
 

@@ -778,9 +778,7 @@ public class M_Mutant {
     static EntThinkAdapter mutant_check_melee = new EntThinkAdapter() {
     	public String getID(){ return "mutant_check_melee"; }
         public boolean think(edict_t self) {
-            if (GameUtil.range(self, self.enemy) == Defines.RANGE_MELEE)
-                return true;
-            return false;
+            return GameUtil.range(self, self.enemy) == Defines.RANGE_MELEE;
 
         }
     };

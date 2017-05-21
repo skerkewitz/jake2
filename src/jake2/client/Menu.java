@@ -241,7 +241,7 @@ public final class Menu extends Key {
         menucommon_s item;
 
         if (m != null) {
-            if ((item = ((menucommon_s) Menu_ItemAtCursor(m))) != null) {
+            if ((item = Menu_ItemAtCursor(m)) != null) {
                 if (item.type == MTYPE_FIELD) {
                     if (Field_Key((menufield_s) item, key))
                         return null;
@@ -466,7 +466,7 @@ public final class Menu extends Key {
         Globals.re.DrawPic(xoffset, ystart + m_main_cursor * 40 + 13, litname);
 
         DrawCursor(xoffset - 25, ystart + m_main_cursor * 40 + 11,
-                (int) ((Globals.cls.realtime / 100)) % NUM_CURSOR_FRAMES);
+                (Globals.cls.realtime / 100) % NUM_CURSOR_FRAMES);
 
         Globals.re.DrawGetPicSize(dim, "m_main_plaque");
         w = dim.width;
@@ -596,7 +596,7 @@ public final class Menu extends Key {
         s_join_network_server_action.callback = new mcallback() {
             public void execute(Object o) {
                 JoinNetworkServerFunc(o);
-            };
+            }
         };
 
         s_start_network_server_action.type = MTYPE_ACTION;
@@ -767,8 +767,8 @@ public final class Menu extends Key {
         if (bind_grab)
             re.DrawChar(menu.x, menu.y + menu.cursor * 9, '=');
         else
-            re.DrawChar(menu.x, menu.y + menu.cursor * 9, 12 + ((int) (Timer
-                    .Milliseconds() / 250) & 1));
+            re.DrawChar(menu.x, menu.y + menu.cursor * 9, 12 + (Timer
+                    .Milliseconds() / 250 & 1));
     }
 
     static void DrawKeyBindingFunc(Object self) {
@@ -1478,7 +1478,6 @@ public final class Menu extends Key {
         s_options_quality_list.type = MTYPE_SPINCONTROL;
         s_options_quality_list.x = 0;
         s_options_quality_list.y = 20;
-        ;
         s_options_quality_list.name = "sound";
         s_options_quality_list.callback = new mcallback() {
             public void execute(Object o) {
@@ -2178,7 +2177,6 @@ public final class Menu extends Key {
                 m_savestrings[i] = "<EMPTY>";
                 m_savevalid[i] = false;
             }
-            ;
         }
     }
 
@@ -2634,7 +2632,7 @@ public final class Menu extends Key {
 
         //	  PGM
         if ((s_rules_box.curvalue < 2) || (FS.Developer_searchpath(2) != 2)) {
-            Cvar.SetValue("deathmatch", 1 - (int) (s_rules_box.curvalue));
+            Cvar.SetValue("deathmatch", 1 - s_rules_box.curvalue);
             Cvar.SetValue("coop", s_rules_box.curvalue);
             Cvar.SetValue("gamerules", 0);
         } else {
@@ -3673,7 +3671,7 @@ public final class Menu extends Key {
 
         //char directory[MAX_QPATH];
         String directory;
-    };
+    }
 
     static playermodelinfo_s s_pmi[] = new playermodelinfo_s[MAX_PLAYERMODELS];
 
@@ -4393,7 +4391,7 @@ public final class Menu extends Key {
             else
                 offset = f.cursor;
 
-            if ((((int) (Timer.Milliseconds() / 250)) & 1) != 0) {
+            if ((Timer.Milliseconds() / 250 & 1) != 0) {
                 re.DrawChar(f.x + f.parent.x + (offset + 2) * 8 + 8, f.y
                         + f.parent.y, 11);
             } else {
@@ -4536,7 +4534,7 @@ public final class Menu extends Key {
 
         if (menu.nitems < MAXMENUITEMS) {
             menu.items[menu.nitems] = item;
-            ((menucommon_s) menu.items[menu.nitems]).parent = menu;
+            menu.items[menu.nitems].parent = menu;
             menu.nitems++;
         }
 
@@ -4591,7 +4589,7 @@ public final class Menu extends Key {
     public static void Menu_Center(menuframework_s menu) {
         int height;
 
-        height = ((menucommon_s) menu.items[menu.nitems - 1]).y;
+        height = menu.items[menu.nitems - 1].y;
         height += 10;
 
         menu.y = (viddef.getHeight() - height) / 2;
@@ -4605,7 +4603,7 @@ public final class Menu extends Key {
          * * draw contents
          */
         for (i = 0; i < menu.nitems; i++) {
-            switch (((menucommon_s) menu.items[i]).type) {
+            switch (menu.items[i].type) {
             case MTYPE_FIELD:
                 Field_Draw((menufield_s) menu.items[i]);
                 break;
@@ -4636,10 +4634,10 @@ public final class Menu extends Key {
         } else if (item != null && item.type != MTYPE_FIELD) {
             if ((item.flags & QMF_LEFT_JUSTIFY) != 0) {
                 re.DrawChar(menu.x + item.x - 24 + item.cursor_offset, menu.y
-                        + item.y, 12 + ((int) (Timer.Milliseconds() / 250) & 1));
+                        + item.y, 12 + (Timer.Milliseconds() / 250 & 1));
             } else {
                 re.DrawChar(menu.x + item.cursor_offset, menu.y + item.y,
-                        12 + ((int) (Timer.Milliseconds() / 250) & 1));
+                        12 + (Timer.Milliseconds() / 250 & 1));
             }
         }
 
@@ -4708,7 +4706,7 @@ public final class Menu extends Key {
         if (m.cursor < 0 || m.cursor >= m.nitems)
             return null;
 
-        return (menucommon_s) m.items[m.cursor];
+        return m.items[m.cursor];
     }
 
     static boolean Menu_SelectItem(menuframework_s s) {
@@ -4737,7 +4735,7 @@ public final class Menu extends Key {
     }
 
     public static void Menu_SlideItem(menuframework_s s, int dir) {
-        menucommon_s item = (menucommon_s) Menu_ItemAtCursor(s);
+        menucommon_s item = Menu_ItemAtCursor(s);
 
         if (item != null) {
             switch (item.type) {
@@ -4756,7 +4754,7 @@ public final class Menu extends Key {
         int total = 0;
 
         for (i = 0; i < menu.nitems; i++) {
-            if (((menucommon_s) menu.items[i]).type == MTYPE_LIST) {
+            if (menu.items[i].type == MTYPE_LIST) {
                 int nitems = 0;
                 String n[] = ((menulist_s) menu.items[i]).itemnames;
 
@@ -4830,7 +4828,7 @@ public final class Menu extends Key {
         Menu_DrawStringR2LDark(s.x + s.parent.x + LCOLUMN_OFFSET, s.y
                 + s.parent.y, s.name);
 
-        s.range = (s.curvalue - s.minvalue) / (float) (s.maxvalue - s.minvalue);
+        s.range = (s.curvalue - s.minvalue) / (s.maxvalue - s.minvalue);
 
         if (s.range < 0)
             s.range = 0;
