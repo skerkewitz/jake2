@@ -27,16 +27,16 @@ import jake2.client.viddef_t;
 import jake2.game.cvar_t;
 import jake2.render.opengl.GLDriver;
 import jake2.render.opengl.QGL;
-import jake2.render.opengl.QGLConst;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Base
  * 
  * @author dsanders/cwei
  */
-public abstract class Base implements QGLConst, RenderAPI {
+public abstract class Base implements RenderAPI {
 
-    public static final int GL_COLOR_INDEX8_EXT = Companion.getGL_COLOR_INDEX();
+    public static final int GL_COLOR_INDEX8_EXT = GL11.GL_COLOR_INDEX;
 
     public static final String REF_VERSION = "GL 0.01";
 

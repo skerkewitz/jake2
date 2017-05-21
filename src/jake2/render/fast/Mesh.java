@@ -33,6 +33,7 @@ import jake2.render.Anorms;
 import jake2.render.image_t;
 import jake2.util.Lib;
 import jake2.util.Math3D;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -166,7 +167,7 @@ public abstract class Mesh extends Light {
 	if ((currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
-	    gl.glDisable(Companion.getGL_TEXTURE_2D());
+	    gl.glDisable(GL11.GL_TEXTURE_2D);
 
 	float frontlerp = 1.0f - backlerp;
 
@@ -201,7 +202,7 @@ public abstract class Mesh extends Light {
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0) {
 	    gl.glColor4f(shadelight[0], shadelight[1], shadelight[2], alpha);
 	} else {
-	    gl.glEnableClientState(Companion.getGL_COLOR_ARRAY());
+	    gl.glEnableClientState(GL11.GL_COLOR_ARRAY);
 	    gl.glColorPointer(4, 0, colorArrayBuf);
 
 	    //
@@ -247,9 +248,9 @@ public abstract class Mesh extends Light {
 
 	    srcIndexBuf = paliashdr.indexElements[j];
 
-	    mode = Companion.getGL_TRIANGLE_STRIP();
+	    mode = GL11.GL_TRIANGLE_STRIP;
 	    if (count < 0) {
-		mode = Companion.getGL_TRIANGLE_FAN();
+		mode = GL11.GL_TRIANGLE_FAN;
 		count = -count;
 	    }
 	    srcIndex = pos << 1;
@@ -270,9 +271,9 @@ public abstract class Mesh extends Light {
 	if ((currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
-	    gl.glEnable(Companion.getGL_TEXTURE_2D());
+	    gl.glEnable(GL11.GL_TEXTURE_2D);
 
-	gl.glDisableClientState(Companion.getGL_COLOR_ARRAY());
+	gl.glDisableClientState(GL11.GL_COLOR_ARRAY);
     }
 
     private final float[] point = { 0, 0, 0 };
@@ -298,9 +299,9 @@ public abstract class Mesh extends Light {
 		break; // done
 	    if (count < 0) {
 		count = -count;
-		gl.glBegin(Companion.getGL_TRIANGLE_FAN());
+		gl.glBegin(GL11.GL_TRIANGLE_FAN);
 	    } else
-		gl.glBegin(Companion.getGL_TRIANGLE_STRIP());
+		gl.glBegin(GL11.GL_TRIANGLE_STRIP);
 
 	    do {
 		index = order[orderIndex + 2] * 3;
@@ -590,15 +591,15 @@ public abstract class Mesh extends Light {
 
 	if ((currententity.flags & Defines.RF_WEAPONMODEL) != 0
 		&& (r_lefthand.value == 1.0f)) {
-	    gl.glMatrixMode(Companion.getGL_PROJECTION());
+	    gl.glMatrixMode(GL11.GL_PROJECTION);
 	    gl.glPushMatrix();
 	    gl.glLoadIdentity();
 	    gl.glScalef(-1, 1, 1);
 	    MYgluPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width
 		    / r_newrefdef.height, 4, 4096);
-	    gl.glMatrixMode(Companion.getGL_MODELVIEW());
+	    gl.glMatrixMode(GL11.GL_MODELVIEW);
 
-	    gl.glCullFace(Companion.getGL_BACK());
+	    gl.glCullFace(GL11.GL_BACK);
 	}
 
 	gl.glPushMatrix();
@@ -625,11 +626,11 @@ public abstract class Mesh extends Light {
 
 	// draw it
 
-	gl.glShadeModel(Companion.getGL_SMOOTH());
+	gl.glShadeModel(GL11.GL_SMOOTH);
 
-	GL_TexEnv(Companion.getGL_MODULATE());
+	GL_TexEnv(GL11.GL_MODULATE);
 	if ((currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
-	    gl.glEnable(Companion.getGL_BLEND());
+	    gl.glEnable(GL11.GL_BLEND);
 	}
 
 	if ((currententity.frame >= paliashdr.num_frames)
@@ -655,21 +656,21 @@ public abstract class Mesh extends Light {
 
 	GL_DrawAliasFrameLerp(paliashdr, currententity.backlerp);
 
-	GL_TexEnv(Companion.getGL_REPLACE());
-	gl.glShadeModel(Companion.getGL_FLAT());
+	GL_TexEnv(GL11.GL_REPLACE);
+	gl.glShadeModel(GL11.GL_FLAT);
 
 	gl.glPopMatrix();
 
 	if ((currententity.flags & Defines.RF_WEAPONMODEL) != 0
 		&& (r_lefthand.value == 1.0F)) {
-	    gl.glMatrixMode(Companion.getGL_PROJECTION());
+	    gl.glMatrixMode(GL11.GL_PROJECTION);
 	    gl.glPopMatrix();
-	    gl.glMatrixMode(Companion.getGL_MODELVIEW());
-	    gl.glCullFace(Companion.getGL_FRONT());
+	    gl.glMatrixMode(GL11.GL_MODELVIEW);
+	    gl.glCullFace(GL11.GL_FRONT);
 	}
 
 	if ((currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
-	    gl.glDisable(Companion.getGL_BLEND());
+	    gl.glDisable(GL11.GL_BLEND);
 	}
 
 	if ((currententity.flags & Defines.RF_DEPTHHACK) != 0)
@@ -679,12 +680,12 @@ public abstract class Mesh extends Light {
 		&& (currententity.flags & (Defines.RF_TRANSLUCENT | Defines.RF_WEAPONMODEL)) == 0) {
 	    gl.glPushMatrix();
 	    R_RotateForEntity(e);
-	    gl.glDisable(Companion.getGL_TEXTURE_2D());
-	    gl.glEnable(Companion.getGL_BLEND());
+	    gl.glDisable(GL11.GL_TEXTURE_2D);
+	    gl.glEnable(GL11.GL_BLEND);
 	    gl.glColor4f(0, 0, 0, 0.5f);
 	    GL_DrawAliasShadow(paliashdr, currententity.frame);
-	    gl.glEnable(Companion.getGL_TEXTURE_2D());
-	    gl.glDisable(Companion.getGL_BLEND());
+	    gl.glEnable(GL11.GL_TEXTURE_2D);
+	    gl.glDisable(GL11.GL_BLEND);
 	    gl.glPopMatrix();
 	}
 	gl.glColor4f(1, 1, 1, 1);

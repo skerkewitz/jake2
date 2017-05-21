@@ -32,6 +32,8 @@ import jake2.qcommon.*;
 import jake2.render.image_t;
 import jake2.util.Lib;
 import jake2.util.Vargs;
+import org.lwjgl.opengl.EXTSharedTexturePalette;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -70,8 +72,8 @@ public abstract class Image extends Main {
 	int gl_tex_solid_format = 3;
 	int gl_tex_alpha_format = 4;
 
-	int gl_filter_min = Companion.getGL_LINEAR_MIPMAP_NEAREST();
-	int gl_filter_max = Companion.getGL_LINEAR();
+	int gl_filter_min = GL11.GL_LINEAR_MIPMAP_NEAREST;
+	int gl_filter_max = GL11.GL_LINEAR;
 	
 	Image() {
 		// init the texture cache
@@ -98,23 +100,23 @@ public abstract class Image extends Main {
 				temptable.put(i * 3 + 2, (byte) ((palette[i] >> 16) & 0xff));
 			}
 
-			gl.glColorTable(Companion.getGL_SHARED_TEXTURE_PALETTE_EXT(), Companion.getGL_RGB(), 256, Companion.getGL_RGB(), Companion.getGL_UNSIGNED_BYTE(), temptable);
+			gl.glColorTable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT, GL11.GL_RGB, 256, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, temptable);
 		}
 	}
 
 	void GL_EnableMultitexture(boolean enable) {
 		if (enable) {
 			GL_SelectTexture(TEXTURE1);
-			gl.glEnable(Companion.getGL_TEXTURE_2D());
-			GL_TexEnv(Companion.getGL_REPLACE());
+			gl.glEnable(GL11.GL_TEXTURE_2D);
+			GL_TexEnv(GL11.GL_REPLACE);
 		}
 		else {
 			GL_SelectTexture(TEXTURE1);
-			gl.glDisable(Companion.getGL_TEXTURE_2D());
-			GL_TexEnv(Companion.getGL_REPLACE());
+			gl.glDisable(GL11.GL_TEXTURE_2D);
+			GL_TexEnv(GL11.GL_REPLACE);
 		}
 		GL_SelectTexture(TEXTURE0);
-		GL_TexEnv(Companion.getGL_REPLACE());
+		GL_TexEnv(GL11.GL_REPLACE);
 	}
 
 	void GL_SelectTexture(int texture /* GLenum */) {
@@ -134,7 +136,7 @@ public abstract class Image extends Main {
 	) {
 
 		if (mode != lastmodes[gl_state.currenttmu]) {
-			gl.glTexEnvi(Companion.getGL_TEXTURE_ENV(), Companion.getGL_TEXTURE_ENV_MODE(), mode);
+			gl.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
 			lastmodes[gl_state.currenttmu] = mode;
 		}
 	}
@@ -149,7 +151,7 @@ public abstract class Image extends Main {
 			return;
 
 		gl_state.currenttextures[gl_state.currenttmu] = texnum;
-		gl.glBindTexture(Companion.getGL_TEXTURE_2D(), texnum);
+		gl.glBindTexture(GL11.GL_TEXTURE_2D, texnum);
 	}
 
 	void GL_MBind(int target /* GLenum */, int texnum) {
@@ -179,12 +181,12 @@ public abstract class Image extends Main {
 
 	static final glmode_t modes[] =
 		{
-			new glmode_t("GL_NEAREST", Companion.getGL_NEAREST(), Companion.getGL_NEAREST()),
-			new glmode_t("GL_LINEAR", Companion.getGL_LINEAR(), Companion.getGL_LINEAR()),
-			new glmode_t("GL_NEAREST_MIPMAP_NEAREST", Companion.getGL_NEAREST_MIPMAP_NEAREST(), Companion.getGL_NEAREST()),
-			new glmode_t("GL_LINEAR_MIPMAP_NEAREST", Companion.getGL_LINEAR_MIPMAP_NEAREST(), Companion.getGL_LINEAR()),
-			new glmode_t("GL_NEAREST_MIPMAP_LINEAR", Companion.getGL_NEAREST_MIPMAP_LINEAR(), Companion.getGL_NEAREST()),
-			new glmode_t("GL_LINEAR_MIPMAP_LINEAR", Companion.getGL_LINEAR_MIPMAP_LINEAR(), Companion.getGL_LINEAR())};
+			new glmode_t("GL_NEAREST", GL11.GL_NEAREST, GL11.GL_NEAREST),
+			new glmode_t("GL_LINEAR", GL11.GL_LINEAR, GL11.GL_LINEAR),
+			new glmode_t("GL_NEAREST_MIPMAP_NEAREST", GL11.GL_NEAREST_MIPMAP_NEAREST, GL11.GL_NEAREST),
+			new glmode_t("GL_LINEAR_MIPMAP_NEAREST", GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR),
+			new glmode_t("GL_NEAREST_MIPMAP_LINEAR", GL11.GL_NEAREST_MIPMAP_LINEAR, GL11.GL_NEAREST),
+			new glmode_t("GL_LINEAR_MIPMAP_LINEAR", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)};
 
 	static final int NUM_GL_MODES = modes.length;
 
@@ -202,11 +204,11 @@ public abstract class Image extends Main {
 	static final gltmode_t[] gl_alpha_modes =
 		{
 			new gltmode_t("default", 4),
-			new gltmode_t("GL_RGBA", Companion.getGL_RGBA()),
-			new gltmode_t("GL_RGBA8", Companion.getGL_RGBA8()),
-			new gltmode_t("GL_RGB5_A1", Companion.getGL_RGB5_A1()),
-			new gltmode_t("GL_RGBA4", Companion.getGL_RGBA4()),
-			new gltmode_t("GL_RGBA2", Companion.getGL_RGBA2()),
+			new gltmode_t("GL_RGBA", GL11.GL_RGBA),
+			new gltmode_t("GL_RGBA8", GL11.GL_RGBA8),
+			new gltmode_t("GL_RGB5_A1", GL11.GL_RGB5_A1),
+			new gltmode_t("GL_RGBA4", GL11.GL_RGBA4),
+			new gltmode_t("GL_RGBA2", GL11.GL_RGBA2),
 			};
 
 	static final int NUM_GL_ALPHA_MODES = gl_alpha_modes.length;
@@ -214,11 +216,11 @@ public abstract class Image extends Main {
 	static final gltmode_t[] gl_solid_modes =
 		{
 			new gltmode_t("default", 3),
-			new gltmode_t("GL_RGB", Companion.getGL_RGB()),
-			new gltmode_t("GL_RGB8", Companion.getGL_RGB8()),
-			new gltmode_t("GL_RGB5", Companion.getGL_RGB5()),
-			new gltmode_t("GL_RGB4", Companion.getGL_RGB4()),
-			new gltmode_t("GL_R3_G3_B2", Companion.getGL_R3_G3_B2()),
+			new gltmode_t("GL_RGB", GL11.GL_RGB),
+			new gltmode_t("GL_RGB8", GL11.GL_RGB8),
+			new gltmode_t("GL_RGB5", GL11.GL_RGB5),
+			new gltmode_t("GL_RGB4", GL11.GL_RGB4),
+			new gltmode_t("GL_R3_G3_B2", GL11.GL_R3_G3_B2),
 	};
 
 	static final int NUM_GL_SOLID_MODES = gl_solid_modes.length;
@@ -251,8 +253,8 @@ public abstract class Image extends Main {
 
 			if (glt.type != it_pic && glt.type != it_sky) {
 				GL_Bind(glt.texnum);
-				gl.glTexParameteri(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MIN_FILTER(), gl_filter_min);
-				gl.glTexParameteri(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MAG_FILTER(), gl_filter_max);
+				gl.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+				gl.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 			}
 		}
 	}
@@ -1105,27 +1107,27 @@ public abstract class Image extends Main {
 						uploaded_paletted = true;
 						GL_BuildPalettedTexture(paletted_texture, data, scaled_width, scaled_height);
 						gl.glTexImage2D(
-                                Companion.getGL_TEXTURE_2D(),
+                                GL11.GL_TEXTURE_2D,
 							0,
 							GL_COLOR_INDEX8_EXT,
 							scaled_width,
 							scaled_height,
 							0,
-                                Companion.getGL_COLOR_INDEX(),
-                                Companion.getGL_UNSIGNED_BYTE(),
+                                GL11.GL_COLOR_INDEX,
+                                GL11.GL_UNSIGNED_BYTE,
 							paletted_texture);
 					}
 					else {
 						tex.rewind(); tex.put(data); tex.rewind();
 						gl.glTexImage2D(
-                                Companion.getGL_TEXTURE_2D(),
+                                GL11.GL_TEXTURE_2D,
 							0,
 							comp,
 							scaled_width,
 							scaled_height,
 							0,
-                                Companion.getGL_RGBA(),
-                                Companion.getGL_UNSIGNED_BYTE(),
+                                GL11.GL_RGBA,
+                                GL11.GL_UNSIGNED_BYTE,
 							tex);
 					}
 					//goto done;
@@ -1143,19 +1145,19 @@ public abstract class Image extends Main {
 				uploaded_paletted = true;
 				GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
 				gl.glTexImage2D(
-                        Companion.getGL_TEXTURE_2D(),
+                        GL11.GL_TEXTURE_2D,
 					0,
 					GL_COLOR_INDEX8_EXT,
 					scaled_width,
 					scaled_height,
 					0,
-                        Companion.getGL_COLOR_INDEX(),
-                        Companion.getGL_UNSIGNED_BYTE(),
+                        GL11.GL_COLOR_INDEX,
+                        GL11.GL_UNSIGNED_BYTE,
 					paletted_texture);
 			}
 			else {
 				tex.rewind(); tex.put(scaled); tex.rewind();
-				gl.glTexImage2D(Companion.getGL_TEXTURE_2D(), 0, comp, scaled_width, scaled_height, 0, Companion.getGL_RGBA(), Companion.getGL_UNSIGNED_BYTE(), tex);
+				gl.glTexImage2D(GL11.GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, tex);
 			}
 
 			if (mipmap) {
@@ -1175,27 +1177,27 @@ public abstract class Image extends Main {
 						uploaded_paletted = true;
 						GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
 						gl.glTexImage2D(
-                                Companion.getGL_TEXTURE_2D(),
+                                GL11.GL_TEXTURE_2D,
 							miplevel,
 							GL_COLOR_INDEX8_EXT,
 							scaled_width,
 							scaled_height,
 							0,
-                                Companion.getGL_COLOR_INDEX(),
-                                Companion.getGL_UNSIGNED_BYTE(),
+                                GL11.GL_COLOR_INDEX,
+                                GL11.GL_UNSIGNED_BYTE,
 							paletted_texture);
 					}
 					else {
 						tex.rewind(); tex.put(scaled); tex.rewind();
 						gl.glTexImage2D(
-                                Companion.getGL_TEXTURE_2D(),
+                                GL11.GL_TEXTURE_2D,
 							miplevel,
 							comp,
 							scaled_width,
 							scaled_height,
 							0,
-                                Companion.getGL_RGBA(),
-                                Companion.getGL_UNSIGNED_BYTE(),
+                                GL11.GL_RGBA,
+                                GL11.GL_UNSIGNED_BYTE,
 							tex);
 					}
 				}
@@ -1207,12 +1209,12 @@ public abstract class Image extends Main {
 		}
 
 		if (mipmap) {
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MIN_FILTER(), gl_filter_min);
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MAG_FILTER(), gl_filter_max);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 		}
 		else {
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MIN_FILTER(), gl_filter_max);
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MAG_FILTER(), gl_filter_max);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 		}
 
 		return (samples == gl_alpha_format);
@@ -1238,10 +1240,10 @@ public abstract class Image extends Main {
 			Com.Error(Defines.ERR_DROP, "GL_Upload8: too large");
 
 		if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
-			gl.glTexImage2D(Companion.getGL_TEXTURE_2D(), 0, GL_COLOR_INDEX8_EXT, width, height, 0, Companion.getGL_COLOR_INDEX(), Companion.getGL_UNSIGNED_BYTE(), ByteBuffer.wrap(data));
+			gl.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
 
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MIN_FILTER(), gl_filter_max);
-			gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MAG_FILTER(), gl_filter_max);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 			// TODO check this
 			return false;

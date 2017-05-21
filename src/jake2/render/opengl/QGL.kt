@@ -2,7 +2,7 @@ package jake2.render.opengl
 
 import java.nio.*
 
-interface QGL : QGLConst {
+interface QGL {
 
     /*
      * a sub set of OpenGL for Jake2

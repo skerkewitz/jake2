@@ -33,6 +33,7 @@ import jake2.qcommon.Com;
 import jake2.render.*;
 import jake2.util.Math3D;
 import jake2.util.Vec3Cache;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
@@ -69,7 +70,7 @@ public abstract class Light extends Warp {
 
 		Math3D.VectorSubtract (light.origin, r_origin, v);
 
-		gl.glBegin (Companion.getGL_TRIANGLE_FAN());
+		gl.glBegin (GL11.GL_TRIANGLE_FAN);
 		gl.glColor3f (light.color[0]*0.2f, light.color[1]*0.2f, light.color[2]*0.2f);
 		int i;
 		for (i=0 ; i<3 ; i++)
@@ -102,10 +103,10 @@ public abstract class Light extends Warp {
 		r_dlightframecount = r_framecount + 1;	// because the count hasn't
 												//  advanced yet for this frame
 		gl.glDepthMask(false);
-		gl.glDisable(Companion.getGL_TEXTURE_2D());
-		gl.glShadeModel (Companion.getGL_SMOOTH());
-		gl.glEnable (Companion.getGL_BLEND());
-		gl.glBlendFunc (Companion.getGL_ONE(), Companion.getGL_ONE());
+		gl.glDisable(GL11.GL_TEXTURE_2D);
+		gl.glShadeModel (GL11.GL_SMOOTH);
+		gl.glEnable (GL11.GL_BLEND);
+		gl.glBlendFunc (GL11.GL_ONE, GL11.GL_ONE);
 
 		for (int i=0 ; i<r_newrefdef.num_dlights ; i++)
 		{
@@ -113,9 +114,9 @@ public abstract class Light extends Warp {
 		}
 
 		gl.glColor3f (1,1,1);
-		gl.glDisable(Companion.getGL_BLEND());
-		gl.glEnable(Companion.getGL_TEXTURE_2D());
-		gl.glBlendFunc(Companion.getGL_SRC_ALPHA(), Companion.getGL_ONE_MINUS_SRC_ALPHA());
+		gl.glDisable(GL11.GL_BLEND);
+		gl.glEnable(GL11.GL_TEXTURE_2D);
+		gl.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 		gl.glDepthMask(true);
 	}
 

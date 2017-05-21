@@ -39,6 +39,7 @@ import org.lwjgl.glfw.GLFWWindowFocusCallbackI
 import org.lwjgl.opengl.GL
 
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.opengl.GL11
 
 //import org.lwjgl.opengl.Display;
 //import org.lwjgl.opengl.DisplayMode;
@@ -218,7 +219,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
             throw IllegalStateException("Unable to initialize GLFW")
 
         glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_RESIZABLE, QGLConst.GL_TRUE)
+        glfwWindowHint(GLFW_RESIZABLE, GL11.GL_TRUE)
 //        glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 2)
 //        glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1)
         dim = Dimension(640, 480)
