@@ -31,8 +31,6 @@ import jake2.sys.Timer;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.Configuration;
 
-
-import static jake2.render.opengl.QGLConst.GL_FALSE;
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
@@ -51,41 +49,41 @@ public final class Jake2 {
      * @param args
      */
     public static void main(String[] args) {
-    	
-    	boolean dedicated = false;
 
-    	Configuration.DEBUG.set(true);
+        boolean dedicated = false;
 
-    	// check if we are in dedicated mode to hide the java dialog.
-    	for (int n = 0; n <  args.length; n++)
-    	{
-    		if (args[n].equals("+set"))
-    		{
-    			if (n++ >= args.length)
-    				break;
-    			
-    			if (!args[n].equals("dedicated"))
-    				continue;
+//    	Configuration.DEBUG.set(true);
 
-    			if (n++ >= args.length)
-    				break;
+        // check if we are in dedicated mode to hide the java dialog.
+        for (int n = 0; n <  args.length; n++)
+        {
+            if (args[n].equals("+set"))
+            {
+                if (n++ >= args.length)
+                    break;
 
-    			if (args[n].equals("1") || args[n].equals("\"1\""))
-    			{
-    				Com.Printf("Starting in dedicated mode.\n");
-    				dedicated = true;
-    			}
-    		}    		
-    	}
-    	
-    	// TODO: check if dedicated is set in config file
-    	
-		Globals.dedicated= Cvar.Get("dedicated", "0", Qcommon.CVAR_NOSET);
+                if (!args[n].equals("dedicated"))
+                    continue;
+
+                if (n++ >= args.length)
+                    break;
+
+                if (args[n].equals("1") || args[n].equals("\"1\""))
+                {
+                    Com.Printf("Starting in dedicated mode.\n");
+                    dedicated = true;
+                }
+            }
+        }
+
+        // TODO: check if dedicated is set in config file
+
+        Globals.dedicated= Cvar.Get("dedicated", "0", Qcommon.CVAR_NOSET);
     
-    	if (dedicated)
-    		Globals.dedicated.value = 1.0f;
-    	    	
-    	
+        if (dedicated)
+            Globals.dedicated.value = 1.0f;
+
+
 //    	// open the q2dialog, if we are not in dedicated mode.
 //    	if (Globals.dedicated.value != 1.0f)
 //    	{
@@ -110,15 +108,15 @@ public final class Jake2 {
         int time;
         while (!glfwWindowShouldClose(LwjglDriver.window)) {
 
-			GL.createCapabilities();
+            GL.createCapabilities();
 
-        	// find time spending rendering last frame
+            // find time spending rendering last frame
             newtime = Timer.Milliseconds();
             time = newtime - oldtime;
 
             if (time > 0) {
-				Qcommon.Companion.Frame(time);
-			}
+                Qcommon.Companion.Frame(time);
+            }
 
             oldtime = newtime;
             glfwPollEvents();
