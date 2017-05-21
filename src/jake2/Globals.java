@@ -385,14 +385,4 @@ public class Globals extends Defines {
 	public static int vidref_val = VIDREF_GL;
 	
 	public static Random rnd = new Random();
-
-	//=============================================================================
-
-        // Information used when we're running as an applet
-        // Whether we're running as an applet
-        public static boolean appletMode;
-        // The applet, represented as an Object to avoid an AWT dependency here
-        public static Object applet;
-        // A listener to receive video mode changes
-        public static SizeChangeListener sizeChangeListener;
 }

@@ -24,6 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render.fast;
 
 import jake2.Defines;
+import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.client.particle_t;
 import jake2.game.cvar_t;
@@ -32,7 +33,6 @@ import jake2.render.image_t;
 import jake2.util.Lib;
 import jake2.util.Vargs;
 
-import java.awt.Dimension;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;

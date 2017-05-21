@@ -35,7 +35,6 @@ import jake2.sys.NET;
 import jake2.sys.Sys;
 import jake2.util.*;
 
-import java.awt.Dimension;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Comparator;

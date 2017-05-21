@@ -32,7 +32,6 @@ import jake2.qcommon.*;
 import jake2.render.*;
 import jake2.util.*;
 
-import java.awt.Dimension;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 

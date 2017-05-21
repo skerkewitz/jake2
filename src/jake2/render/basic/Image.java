@@ -24,6 +24,7 @@
 package jake2.render.basic;
 
 import jake2.Defines;
+import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.client.particle_t;
 import jake2.game.cvar_t;
@@ -32,10 +33,6 @@ import jake2.render.image_t;
 import jake2.util.Lib;
 import jake2.util.Vargs;
 
-import java.awt.Dimension;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -874,8 +871,7 @@ public abstract class Image extends Main {
      * ================ GL_ResampleTexture ================
      */
     // cwei :-)
-    void GL_ResampleTexture(int[] in, int inwidth, int inheight, int[] out,
-            int outwidth, int outheight) {
+    void GL_ResampleTexture(int[] in, int inwidth, int inheight, int[] out, int outwidth, int outheight) {
         //		int i, j;
         //		unsigned *inrow, *inrow2;
         //		int frac, fracstep;
@@ -883,18 +879,18 @@ public abstract class Image extends Main {
         //		int[] p2 = new int[1024];
         //		
 
-        // *** this source do the same ***
-        BufferedImage image = new BufferedImage(inwidth, inheight,
-                BufferedImage.TYPE_INT_ARGB);
-
-        image.setRGB(0, 0, inwidth, inheight, in, 0, inwidth);
-
-        AffineTransformOp op = new AffineTransformOp(AffineTransform
-                .getScaleInstance(outwidth * 1.0 / inwidth, outheight * 1.0
-                        / inheight), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        BufferedImage tmp = op.filter(image, null);
-
-        tmp.getRGB(0, 0, outwidth, outheight, out, 0, outwidth);
+        throw new RuntimeException("Implement me");
+//
+//        // *** this source do the same ***
+//        BufferedImage image = new BufferedImage(inwidth, inheight, BufferedImage.TYPE_INT_ARGB);
+//
+//        image.setRGB(0, 0, inwidth, inheight, in, 0, inwidth);
+//
+//        AffineTransformOp op = new AffineTransformOp(AffineTransform.getScaleInstance(outwidth * 1.0 / inwidth, outheight * 1.0
+//                        / inheight), AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+//        BufferedImage tmp = op.filter(image, null);
+//
+//        tmp.getRGB(0, 0, outwidth, outheight, out, 0, outwidth);
 
         // *** end ***
 

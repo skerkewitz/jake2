@@ -35,7 +35,6 @@ import jake2.sys.KBD;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
-import java.awt.Dimension;
 import java.nio.FloatBuffer;
 import java.util.*;
 

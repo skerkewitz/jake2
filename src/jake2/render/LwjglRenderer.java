@@ -26,13 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render;
 
 import jake2.Defines;
+import jake2.client.Dimension;
+import jake2.client.DisplayMode;
 import jake2.client.refdef_t;
 import jake2.client.refexport_t;
 import jake2.render.opengl.LwjglDriver;
-import jake2.sys.DummyKBDImpl;
+import jake2.sys.GlfwKBDImpl;
 import jake2.sys.KBD;
 
-import java.awt.*;
 
 /**
  * LwjglRenderer
@@ -45,7 +46,7 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 
     	// FIX ME SKerkewitzas
 //    	private KBD kbd = null; //new LWJGLKBD();
-    	private KBD kbd = new DummyKBDImpl(); //new LWJGLKBD();
+    	private KBD kbd = new GlfwKBDImpl(); //new LWJGLKBD();
 
     	// is set from Renderer factory
     	private RenderAPI impl;
@@ -133,9 +134,7 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 		impl.R_RenderFrame(fd);
 	}
 
-	/**
-	 * @see jake2.client.refexport_t#DrawGetPicSize(java.awt.Dimension, java.lang.String)
-	 */
+
 	public final void DrawGetPicSize(Dimension dim, String name) {
 		impl.Draw_GetPicSize(dim, name);
 	}

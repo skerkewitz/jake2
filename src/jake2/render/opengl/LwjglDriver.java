@@ -26,16 +26,19 @@
 package jake2.render.opengl;
 
 import jake2.Defines;
+import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.qcommon.Com;
 import jake2.qcommon.xcommand_t;
 import jake2.render.Base;
 
-import java.awt.Dimension;
 import java.util.LinkedList;
 
+import jake2.sys.GlfwKBDImpl;
+import jake2.sys.KBD;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWWindowFocusCallbackI;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -49,7 +52,11 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public abstract class LwjglDriver extends LwjglGL implements GLDriver {
 
-	private long window;
+	public static long window;
+
+	protected KBD kbd = new GlfwKBDImpl(); //new LWJGLKBD();
+
+	static GLFWWindowFocusCallbackI glfwWindowFocusCallbackI;
 
 	protected LwjglDriver() {
 		// see LwjglRenderer
@@ -225,9 +232,15 @@ public abstract class LwjglDriver extends LwjglGL implements GLDriver {
 			throw new RuntimeException("Failed to create the GLFW window");
 
 
+		glfwWindowFocusCallbackI = (window1, focused) -> System.out.println("Window has focus " + focused);
+		glfwSetWindowFocusCallback(window, glfwWindowFocusCallbackI);
+
 		glfwSetWindowPos(window, 100, 100);
 
+		glfwFocusWindow(window);
 		glfwMakeContextCurrent(window);
+
+		glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE);
 
 		// Make the window visible
 		glfwShowWindow(window);
@@ -376,3 +389,4 @@ public abstract class LwjglDriver extends LwjglGL implements GLDriver {
 	}
 
 }
+

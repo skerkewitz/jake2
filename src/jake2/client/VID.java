@@ -36,8 +36,6 @@ import jake2.sys.IN;
 import jake2.sys.KBD;
 import jake2.util.Vargs;
 
-import java.awt.Dimension;
-import java.awt.DisplayMode;
 
 /**
  * VID is a video driver.
@@ -223,7 +221,7 @@ public class VID extends Globals {
 		}
 
 		/* Init KBD */
-//		Globals.re.getKeyboardHandler().Init();
+		Globals.re.getKeyboardHandler().Init();
 
 		Com.Printf( "------------------------------------\n");
 		reflib_active = true;

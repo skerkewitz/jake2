@@ -33,7 +33,6 @@ import jake2.sound.S;
 import jake2.sys.Timer;
 import jake2.util.Vargs;
 
-import java.awt.Dimension;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;

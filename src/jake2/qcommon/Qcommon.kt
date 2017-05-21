@@ -176,7 +176,6 @@ class Qcommon : Globals() {
          */
         fun Frame(msec: Int) {
             var msec = msec
-            glfwPollEvents()
             try {
 
                 if (Globals.log_stats.modified) {

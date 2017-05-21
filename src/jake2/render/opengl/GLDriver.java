@@ -1,8 +1,7 @@
 package jake2.render.opengl;
 
+import jake2.client.Dimension;
 import jake2.qcommon.xcommand_t;
-
-import java.awt.Dimension;
 
 public interface GLDriver {
     

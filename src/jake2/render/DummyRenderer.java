@@ -7,9 +7,9 @@
  
 package jake2.render;
 
-import java.awt.Dimension;
-import java.awt.DisplayMode;
 
+import jake2.client.Dimension;
+import jake2.client.DisplayMode;
 import jake2.client.refdef_t;
 import jake2.client.refexport_t;
 import jake2.qcommon.xcommand_t;
@@ -80,9 +80,6 @@ public class DummyRenderer implements refexport_t {
 	public void RenderFrame(refdef_t fd) {
 	}
 
-	/* (non-Javadoc)
-	 * @see jake2.client.refexport_t#DrawGetPicSize(java.awt.Dimension, java.lang.String)
-	 */
 	public void DrawGetPicSize(Dimension dim, String name) {
 	}
 

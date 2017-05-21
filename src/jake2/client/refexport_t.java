@@ -31,8 +31,6 @@ import jake2.render.image_t;
 import jake2.render.model_t;
 import jake2.sys.KBD;
 
-import java.awt.Dimension;
-import java.awt.DisplayMode;
 
 /**
  * refexport_t

@@ -26,9 +26,16 @@
 package jake2;
 
 import jake2.qcommon.*;
+import jake2.render.opengl.LwjglDriver;
 import jake2.sys.Timer;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.system.Configuration;
 
-import java.util.Locale;
+
+import static jake2.render.opengl.QGLConst.GL_FALSE;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+
 
 /**
  * Jake2 is the main class of Quake2 for Java.
@@ -46,6 +53,8 @@ public final class Jake2 {
     public static void main(String[] args) {
     	
     	boolean dedicated = false;
+
+    	Configuration.DEBUG.set(true);
 
     	// check if we are in dedicated mode to hide the java dialog.
     	for (int n = 0; n <  args.length; n++)
@@ -99,15 +108,20 @@ public final class Jake2 {
         int oldtime = Timer.Milliseconds();
         int newtime;
         int time;
-        while (true) {
-            // find time spending rendering last frame
+        while (!glfwWindowShouldClose(LwjglDriver.window)) {
+
+			GL.createCapabilities();
+
+        	// find time spending rendering last frame
             newtime = Timer.Milliseconds();
             time = newtime - oldtime;
 
-            if (time > 0)
+            if (time > 0) {
+				Qcommon.Companion.Frame(time);
+			}
 
-                Qcommon.Companion.Frame(time);
             oldtime = newtime;
+            glfwPollEvents();
         }
     }
 }

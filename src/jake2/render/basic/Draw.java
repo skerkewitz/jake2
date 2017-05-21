@@ -26,12 +26,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render.basic;
 
 import jake2.Defines;
+import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.qcommon.Com;
 import jake2.render.image_t;
 import jake2.util.Lib;
 
-import java.awt.Dimension;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 

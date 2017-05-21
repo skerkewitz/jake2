@@ -1,9 +1,9 @@
 package jake2.render;
 
+import jake2.client.Dimension;
 import jake2.client.refdef_t;
 import jake2.render.opengl.GLDriver;
 
-import java.awt.Dimension;
 
 public interface RenderAPI {
 
