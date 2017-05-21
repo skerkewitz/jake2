@@ -57,7 +57,7 @@ class Qcommon : Globals() {
          * was replaced with exceptions.
          * @param args the original unmodified command line arguments
          */
-        @JvmStatic fun Init(args: Array<String>) {
+        @JvmStatic fun Init(args: Array<String?>) {
             try {
 
                 // prepare enough of the subsystems to handle
