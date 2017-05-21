@@ -36,22 +36,22 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Sys
+ * QSystem
  */
-public final class Sys extends Defines {
+public final class QSystem implements Defines {
 
     public static void Error(String error) {
 
         CL.Shutdown();
         //StackTrace();
         new Exception(error).printStackTrace();
-        System.exit(1);
+        java.lang.System.exit(1);
     }
 
     public static void Quit() {
         CL.Shutdown();
 
-        System.exit(0);
+        java.lang.System.exit(0);
     }
 
     //ok!
@@ -193,7 +193,7 @@ public final class Sys extends Defines {
     public static File FindFirst(String path, int musthave, int canthave) {
 
         if (fdir != null)
-            Sys.Error("Sys_BeginFind without close");
+            QSystem.Error("Sys_BeginFind without close");
 
         //	COM_FilePath (path, findbase);
 
@@ -234,7 +234,7 @@ public final class Sys extends Defines {
         if (Globals.nostdout != null && Globals.nostdout.value != 0)
             return;
 
-        System.out.print(msg);
+        java.lang.System.out.print(msg);
     }
 
 }

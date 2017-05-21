@@ -27,7 +27,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.cvar_t;
-import jake2.sys.Sys;
+import jake2.sys.QSystem;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -666,7 +666,7 @@ public final class FS extends Globals {
         int canthave = Defines.SFF_SUBDIR | Defines.SFF_HIDDEN
                 | Defines.SFF_SYSTEM;
 
-        if (Sys.FindAll(name, 0, canthave) != null) {
+        if (QSystem.FindAll(name, 0, canthave) != null) {
             Cbuf.AddText("exec autoexec.cfg\n");
         }
     }
@@ -769,7 +769,7 @@ public final class FS extends Globals {
     public static String[] ListFiles(String findname, int musthave, int canthave) {
         String[] list = null;
 
-        File[] files = Sys.FindAll(findname, musthave, canthave);
+        File[] files = QSystem.FindAll(findname, musthave, canthave);
 
         if (files != null) {
             list = new String[files.length];
@@ -895,7 +895,7 @@ public final class FS extends Globals {
             }
         });
 
-        fs_userdir = System.getProperty("user.home") + "/.jake2";
+        fs_userdir = java.lang.System.getProperty("user.home") + "/.jake2";
         FS.CreatePath(fs_userdir + "/");
         FS.AddGameDirectory(fs_userdir);
 

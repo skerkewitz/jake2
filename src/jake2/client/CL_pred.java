@@ -255,7 +255,7 @@ public class CL_pred {
         PMove.pm_airaccelerate = Lib.atof(Globals.cl.configstrings[Defines.CS_AIRACCEL]);
 
         // bugfix (rst) yeah !!!!!!!! found the solution to the B E W E G U N G
-        // S P R O B L E M.
+        // Sound P R O B L E M.
         pm.s.set(Globals.cl.frame.playerstate.pmove);
 
         // SCR_DebugGraph (current - ack - 1, 0);

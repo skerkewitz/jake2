@@ -42,7 +42,7 @@ import jake2.qcommon.netadr_t;
 import jake2.qcommon.sizebuf_t;
 import jake2.qcommon.xcommand_t;
 import jake2.sys.NET;
-import jake2.sys.Sys;
+import jake2.sys.QSystem;
 import jake2.util.Lib;
 import jake2.util.QuakeFile;
 import jake2.util.Vargs;
@@ -187,22 +187,22 @@ public class SV_CCMDS {
 
 		name = FS.Gamedir() + "/save/" + savename + "/*.sav";
 
-		File f = Sys.FindFirst(name, 0, 0);
+		File f = QSystem.FindFirst(name, 0, 0);
 		while (f != null) {
 			f.delete();
-			f = Sys.FindNext();
+			f = QSystem.FindNext();
 		}
-		Sys.FindClose();
+		QSystem.FindClose();
 
 		name = FS.Gamedir() + "/save/" + savename + "/*.sv2";
 
-		f = Sys.FindFirst(name, 0, 0);
+		f = QSystem.FindFirst(name, 0, 0);
 
 		while (f != null) {
 			f.delete();
-			f = Sys.FindNext();
+			f = QSystem.FindNext();
 		}
-		Sys.FindClose();
+		QSystem.FindClose();
 	}
 	/*
 	================
@@ -293,7 +293,7 @@ public class SV_CCMDS {
 		String name1 = FS.Gamedir() + "/save/" + src + "/";
 		name = FS.Gamedir() + "/save/" + src + "/*.sav";
 
-		File found = Sys.FindFirst(name, 0, 0);
+		File found = QSystem.FindFirst(name, 0, 0);
 
 		while (found != null) {
 			name = name1 + found.getName();
@@ -307,9 +307,9 @@ public class SV_CCMDS {
 
 			CopyFile(name, name2);
 
-			found = Sys.FindNext();
+			found = QSystem.FindNext();
 		}
-		Sys.FindClose();
+		QSystem.FindClose();
 	}
 	/*
 	==============

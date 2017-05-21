@@ -43,7 +43,7 @@ import java.util.Random;
  * 
  * As consequence you dont have to touch that much code this time. 
  */
-public class Globals extends Defines {
+public class Globals implements Defines {
 
 	public static final String __DATE__ = "2003";
 

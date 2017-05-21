@@ -29,8 +29,8 @@ import jake2.game.Cmd;
 import jake2.game.entity_state_t;
 import jake2.qcommon.*;
 import jake2.render.model_t;
-import jake2.sound.S;
-import jake2.sys.Sys;
+import jake2.sound.Sound;
+import jake2.sys.QSystem;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -170,7 +170,7 @@ public class CL_parse {
      * ====================== CL_RegisterSounds ======================
      */
     public static void RegisterSounds() {
-        S.BeginRegistration();
+        Sound.BeginRegistration();
         CL_tent.RegisterTEntSounds();
         for (int i = 1; i < Defines.MAX_SOUNDS; i++) {
             if (Globals.cl.configstrings[Defines.CS_SOUNDS + i] == null
@@ -179,12 +179,12 @@ public class CL_parse {
                     || Globals.cl.configstrings[Defines.CS_SOUNDS + i]
                             .equals("\0"))
                 break;
-            Globals.cl.sound_precache[i] = S
+            Globals.cl.sound_precache[i] = Sound
                     .RegisterSound(Globals.cl.configstrings[Defines.CS_SOUNDS
                             + i]);
-            Sys.SendKeyEvents(); // pump message loop
+            QSystem.SendKeyEvents(); // pump message loop
         }
-        S.EndRegistration();
+        Sound.EndRegistration();
     }
 
     /*
@@ -525,7 +525,7 @@ public class CL_parse {
         } else if (i >= Defines.CS_SOUNDS
                 && i < Defines.CS_SOUNDS + Defines.MAX_MODELS) {
             if (Globals.cl.refresh_prepped)
-                Globals.cl.sound_precache[i - Defines.CS_SOUNDS] = S
+                Globals.cl.sound_precache[i - Defines.CS_SOUNDS] = Sound
                         .RegisterSound(Globals.cl.configstrings[i]);
         } else if (i >= Defines.CS_IMAGES
                 && i < Defines.CS_IMAGES + Defines.MAX_MODELS) {
@@ -600,7 +600,7 @@ public class CL_parse {
         if (null == Globals.cl.sound_precache[sound_num])
             return;
 
-        S.StartSound(pos, ent, channel, Globals.cl.sound_precache[sound_num],
+        Sound.StartSound(pos, ent, channel, Globals.cl.sound_precache[sound_num],
                 volume, attenuation, ofs);
     }
 
@@ -679,7 +679,7 @@ public class CL_parse {
             case Defines.svc_print:
                 int i = MSG.ReadByte(Globals.net_message);
                 if (i == Defines.PRINT_CHAT) {
-                    S.StartLocalSound("misc/talk.wav");
+                    Sound.StartLocalSound("misc/talk.wav");
                     Globals.con.ormask = 128;
                 }
                 Com.Printf(MSG.ReadString(Globals.net_message));

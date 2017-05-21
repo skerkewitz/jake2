@@ -29,7 +29,7 @@ import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.cvar_t;
 import jake2.qcommon.*;
-import jake2.sound.S;
+import jake2.sound.Sound;
 import jake2.sys.Timer;
 import jake2.util.Vargs;
 
@@ -569,7 +569,7 @@ public final class SCR extends Globals {
      * ================ SCR_BeginLoadingPlaque ================
      */
     public static void BeginLoadingPlaque() {
-        S.StopAllSounds();
+        Sound.StopAllSounds();
         cl.sound_prepped = false; // don't play ambients
 
         if (cls.disable_screen != 0)
@@ -1482,7 +1482,7 @@ public final class SCR extends Globals {
                 cin.hnodes1 = null;
             }
             
-            S.disableStreaming();
+            Sound.disableStreaming();
             cin.restart_sound = false;
         }
     }
@@ -1721,7 +1721,7 @@ public final class SCR extends Globals {
         int end = (cl.cinematicframe + 1) * cin.s_rate / 14;
         int count = end - start;
 
-        S.RawSamples(count, cin.s_rate, cin.s_width, cin.s_channels, file.slice());
+        Sound.RawSamples(count, cin.s_rate, cin.s_width, cin.s_channels, file.slice());
         // skip the sound samples
         file.position(file.position() + count * cin.s_width * cin.s_channels);
         

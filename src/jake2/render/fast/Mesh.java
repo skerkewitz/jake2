@@ -166,7 +166,7 @@ public abstract class Mesh extends Light {
 	if ((currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
-	    gl.glDisable(GL_TEXTURE_2D);
+	    gl.glDisable(Companion.getGL_TEXTURE_2D());
 
 	float frontlerp = 1.0f - backlerp;
 
@@ -201,7 +201,7 @@ public abstract class Mesh extends Light {
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0) {
 	    gl.glColor4f(shadelight[0], shadelight[1], shadelight[2], alpha);
 	} else {
-	    gl.glEnableClientState(GL_COLOR_ARRAY);
+	    gl.glEnableClientState(Companion.getGL_COLOR_ARRAY());
 	    gl.glColorPointer(4, 0, colorArrayBuf);
 
 	    //
@@ -247,9 +247,9 @@ public abstract class Mesh extends Light {
 
 	    srcIndexBuf = paliashdr.indexElements[j];
 
-	    mode = GL_TRIANGLE_STRIP;
+	    mode = Companion.getGL_TRIANGLE_STRIP();
 	    if (count < 0) {
-		mode = GL_TRIANGLE_FAN;
+		mode = Companion.getGL_TRIANGLE_FAN();
 		count = -count;
 	    }
 	    srcIndex = pos << 1;
@@ -270,9 +270,9 @@ public abstract class Mesh extends Light {
 	if ((currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
-	    gl.glEnable(GL_TEXTURE_2D);
+	    gl.glEnable(Companion.getGL_TEXTURE_2D());
 
-	gl.glDisableClientState(GL_COLOR_ARRAY);
+	gl.glDisableClientState(Companion.getGL_COLOR_ARRAY());
     }
 
     private final float[] point = { 0, 0, 0 };
@@ -298,9 +298,9 @@ public abstract class Mesh extends Light {
 		break; // done
 	    if (count < 0) {
 		count = -count;
-		gl.glBegin(GL_TRIANGLE_FAN);
+		gl.glBegin(Companion.getGL_TRIANGLE_FAN());
 	    } else
-		gl.glBegin(GL_TRIANGLE_STRIP);
+		gl.glBegin(Companion.getGL_TRIANGLE_STRIP());
 
 	    do {
 		index = order[orderIndex + 2] * 3;
@@ -590,15 +590,15 @@ public abstract class Mesh extends Light {
 
 	if ((currententity.flags & Defines.RF_WEAPONMODEL) != 0
 		&& (r_lefthand.value == 1.0f)) {
-	    gl.glMatrixMode(GL_PROJECTION);
+	    gl.glMatrixMode(Companion.getGL_PROJECTION());
 	    gl.glPushMatrix();
 	    gl.glLoadIdentity();
 	    gl.glScalef(-1, 1, 1);
 	    MYgluPerspective(r_newrefdef.fov_y, (float) r_newrefdef.width
 		    / r_newrefdef.height, 4, 4096);
-	    gl.glMatrixMode(GL_MODELVIEW);
+	    gl.glMatrixMode(Companion.getGL_MODELVIEW());
 
-	    gl.glCullFace(GL_BACK);
+	    gl.glCullFace(Companion.getGL_BACK());
 	}
 
 	gl.glPushMatrix();
@@ -625,11 +625,11 @@ public abstract class Mesh extends Light {
 
 	// draw it
 
-	gl.glShadeModel(GL_SMOOTH);
+	gl.glShadeModel(Companion.getGL_SMOOTH());
 
-	GL_TexEnv(GL_MODULATE);
+	GL_TexEnv(Companion.getGL_MODULATE());
 	if ((currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
-	    gl.glEnable(GL_BLEND);
+	    gl.glEnable(Companion.getGL_BLEND());
 	}
 
 	if ((currententity.frame >= paliashdr.num_frames)
@@ -655,21 +655,21 @@ public abstract class Mesh extends Light {
 
 	GL_DrawAliasFrameLerp(paliashdr, currententity.backlerp);
 
-	GL_TexEnv(GL_REPLACE);
-	gl.glShadeModel(GL_FLAT);
+	GL_TexEnv(Companion.getGL_REPLACE());
+	gl.glShadeModel(Companion.getGL_FLAT());
 
 	gl.glPopMatrix();
 
 	if ((currententity.flags & Defines.RF_WEAPONMODEL) != 0
 		&& (r_lefthand.value == 1.0F)) {
-	    gl.glMatrixMode(GL_PROJECTION);
+	    gl.glMatrixMode(Companion.getGL_PROJECTION());
 	    gl.glPopMatrix();
-	    gl.glMatrixMode(GL_MODELVIEW);
-	    gl.glCullFace(GL_FRONT);
+	    gl.glMatrixMode(Companion.getGL_MODELVIEW());
+	    gl.glCullFace(Companion.getGL_FRONT());
 	}
 
 	if ((currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
-	    gl.glDisable(GL_BLEND);
+	    gl.glDisable(Companion.getGL_BLEND());
 	}
 
 	if ((currententity.flags & Defines.RF_DEPTHHACK) != 0)
@@ -679,12 +679,12 @@ public abstract class Mesh extends Light {
 		&& (currententity.flags & (Defines.RF_TRANSLUCENT | Defines.RF_WEAPONMODEL)) == 0) {
 	    gl.glPushMatrix();
 	    R_RotateForEntity(e);
-	    gl.glDisable(GL_TEXTURE_2D);
-	    gl.glEnable(GL_BLEND);
+	    gl.glDisable(Companion.getGL_TEXTURE_2D());
+	    gl.glEnable(Companion.getGL_BLEND());
 	    gl.glColor4f(0, 0, 0, 0.5f);
 	    GL_DrawAliasShadow(paliashdr, currententity.frame);
-	    gl.glEnable(GL_TEXTURE_2D);
-	    gl.glDisable(GL_BLEND);
+	    gl.glEnable(Companion.getGL_TEXTURE_2D());
+	    gl.glDisable(Companion.getGL_BLEND());
 	    gl.glPopMatrix();
 	}
 	gl.glColor4f(1, 1, 1, 1);

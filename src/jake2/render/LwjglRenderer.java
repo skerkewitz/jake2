@@ -31,8 +31,8 @@ import jake2.client.DisplayMode;
 import jake2.client.refdef_t;
 import jake2.client.refexport_t;
 import jake2.render.opengl.LwjglDriver;
-import jake2.sys.GlfwKBDImpl;
-import jake2.sys.KBD;
+import jake2.sys.GlfwKeyboardImpl;
+import jake2.sys.Keyboard;
 
 
 /**
@@ -45,8 +45,8 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
     	public static final String DRIVER_NAME = "lwjgl";
 
     	// FIX ME SKerkewitzas
-//    	private KBD kbd = null; //new LWJGLKBD();
-    	private KBD kbd = new GlfwKBDImpl(); //new LWJGLKBD();
+//    	private Keyboard keyboard = null; //new LWJGLKBD();
+    	private Keyboard keyboard = new GlfwKeyboardImpl(); //new LWJGLKBD();
 
     	// is set from Renderer factory
     	private RenderAPI impl;
@@ -229,8 +229,8 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 		return new DisplayMode[0];
 	}
 
-	public KBD getKeyboardHandler() {
-		return kbd;
+	public Keyboard getKeyboardHandler() {
+		return keyboard;
 	}
 
 	// ============================================================================

@@ -29,14 +29,14 @@ import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
 
 
 /**
- * LWJGLSoundImpl
+ * LWJGLSoundDriverImpl
  * 
  * @author dsanders/cwei
  */
-public final class LWJGLSoundImpl implements Sound {
+public final class LWJGLSoundDriverImpl implements SoundDriver {
 
     static {
-	S.register(new LWJGLSoundImpl());
+	Sound.register(new LWJGLSoundDriverImpl());
     }
 
     private cvar_t s_volume;
@@ -46,7 +46,7 @@ public final class LWJGLSoundImpl implements Sound {
 	private long device;
 
 	// singleton
-    private LWJGLSoundImpl() {
+    private LWJGLSoundDriverImpl() {
     }
 
     /* (non-Javadoc)
@@ -105,7 +105,7 @@ public final class LWJGLSoundImpl implements Sound {
 //
 //		String deviceName = null;
 //
-//		String os = System.getProperty("os.name");
+//		String os = QSystem.getProperty("os.name");
 //		if (os.startsWith("Windows")) {
 //		    deviceName = "DirectSound3D";
 //		}
@@ -274,7 +274,7 @@ public final class LWJGLSoundImpl implements Sound {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#getName()
+     * @see jake2.sound.SoundDriver#getName()
      */
     public String getName() {
 	return "lwjgl";
@@ -284,7 +284,7 @@ public final class LWJGLSoundImpl implements Sound {
     boolean s_registering;
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#BeginRegistration()
+     * @see jake2.sound.SoundDriver#BeginRegistration()
      */
     public void BeginRegistration() {
 	s_registration_sequence++;
@@ -292,7 +292,7 @@ public final class LWJGLSoundImpl implements Sound {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#RegisterSound(java.lang.String)
+     * @see jake2.sound.SoundDriver#RegisterSound(java.lang.String)
      */
     public sfx_t RegisterSound(String name) {
 	sfx_t sfx = FindName(name, true);
@@ -305,7 +305,7 @@ public final class LWJGLSoundImpl implements Sound {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#EndRegistration()
+     * @see jake2.sound.SoundDriver#EndRegistration()
      */
     public void EndRegistration() {
 	int i;
@@ -398,7 +398,7 @@ public final class LWJGLSoundImpl implements Sound {
 	    Com.Error(Defines.ERR_FATAL, "S_FindName: empty name\n");
 
 	if (name.length() >= Defines.MAX_QPATH)
-	    Com.Error(Defines.ERR_FATAL, "Sound name too long: " + name);
+	    Com.Error(Defines.ERR_FATAL, "SoundDriver name too long: " + name);
 
 	// see if already loaded
 	for (i = 0; i < num_sfx; i++)
@@ -485,7 +485,7 @@ public final class LWJGLSoundImpl implements Sound {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#StartLocalSound(java.lang.String)
+     * @see jake2.sound.SoundDriver#StartLocalSound(java.lang.String)
      */
     public void StartLocalSound(String sound) {
 	sfx_t sfx;
@@ -501,7 +501,7 @@ public final class LWJGLSoundImpl implements Sound {
     private ShortBuffer streamBuffer = sfxDataBuffer.slice().order(ByteOrder.BIG_ENDIAN).asShortBuffer();
 
     /* (non-Javadoc)
-     * @see jake2.sound.Sound#RawSamples(int, int, int, int, byte[])
+     * @see jake2.sound.SoundDriver#RawSamples(int, int, int, int, byte[])
      */
     public void RawSamples(int samples, int rate, int width, int channels, ByteBuffer data) {
 	int format;

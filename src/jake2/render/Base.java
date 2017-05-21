@@ -36,7 +36,7 @@ import jake2.render.opengl.QGLConst;
  */
 public abstract class Base implements QGLConst, RenderAPI {
 
-    public static final int GL_COLOR_INDEX8_EXT = GL_COLOR_INDEX;
+    public static final int GL_COLOR_INDEX8_EXT = Companion.getGL_COLOR_INDEX();
 
     public static final String REF_VERSION = "GL 0.01";
 

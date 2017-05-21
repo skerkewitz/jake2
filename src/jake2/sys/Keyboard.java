@@ -27,9 +27,9 @@ package jake2.sys;
 
 
 /**
- * KBD
+ * Keyboard
  */
-abstract public class KBD {
+abstract public class Keyboard {
 	
 	static int win_x = 0;
 	static int win_y = 0;

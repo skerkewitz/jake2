@@ -27,19 +27,16 @@ package jake2.qcommon
 
 import jake2.Defines
 import jake2.Globals
-import jake2.Jake2
 import jake2.client.*
 import jake2.game.Cmd
 import jake2.server.SV_MAIN
 import jake2.sys.*
 import jake2.sys.NET
-import jake2.sys.Sys
+import jake2.sys.QSystem
 import jake2.util.Vargs
 
 import java.io.FileWriter
 import java.io.IOException
-
-import org.lwjgl.glfw.GLFW.glfwPollEvents
 
 /**
  * Qcommon contains some  basic routines for the game engine
@@ -164,7 +161,7 @@ class Qcommon : Globals() {
                 //				Jake2.Q2Dialog.dispose();
 
             } catch (e: longjmpException) {
-                Sys.Error("Error during initialization")
+                QSystem.Error("Error during initialization")
             }
 
         }

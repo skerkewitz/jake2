@@ -28,7 +28,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.qcommon.CM;
 import jake2.qcommon.Com;
-import jake2.sys.Sys;
+import jake2.sys.QSystem;
 
 import java.util.StringTokenizer;
 
@@ -91,7 +91,7 @@ public class CL_view {
                 Com.Printf(name + "\r");
 
             SCR.UpdateScreen();
-            Sys.SendKeyEvents(); // pump message loop
+            QSystem.SendKeyEvents(); // pump message loop
             if (name.charAt(0) == '#') {
                 // special player weapon model
                 if (num_cl_weaponmodels < Defines.MAX_CLIENTWEAPONMODELS) {
@@ -120,7 +120,7 @@ public class CL_view {
                 && Globals.cl.configstrings[Defines.CS_IMAGES + i].length() > 0; i++) {
             Globals.cl.image_precache[i] = Globals.re
                     .RegisterPic(Globals.cl.configstrings[Defines.CS_IMAGES + i]);
-            Sys.SendKeyEvents(); // pump message loop
+            QSystem.SendKeyEvents(); // pump message loop
         }
 
         Com.Printf("                                     \r");
@@ -129,7 +129,7 @@ public class CL_view {
                 continue;
             Com.Printf("client " + i + '\r');
             SCR.UpdateScreen();
-            Sys.SendKeyEvents(); // pump message loop
+            QSystem.SendKeyEvents(); // pump message loop
             CL_parse.ParseClientinfo(i);
             Com.Printf("                                     \r");
         }

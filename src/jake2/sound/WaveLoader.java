@@ -91,7 +91,7 @@ public class WaveLoader {
 		if (DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL)
 			stepscale = 1; 
 		else
-			stepscale = (float)info.rate / S.getDefaultSampleRate();
+			stepscale = (float)info.rate / Sound.getDefaultSampleRate();
 		
 		int len = (int) (info.samples / stepscale);
 		len = len * info.width * info.channels;
@@ -142,7 +142,7 @@ public class WaveLoader {
         if (DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL)
         	stepscale = 1;
         else
-        	stepscale = (float)inrate / S.getDefaultSampleRate();  
+        	stepscale = (float)inrate / Sound.getDefaultSampleRate();
         outcount = (int) (sc.length/stepscale);
         sc.length = outcount;
         
@@ -151,7 +151,7 @@ public class WaveLoader {
 
         // if resampled, sample has now the default sample rate
         if (DONT_DO_A_RESAMPLING_FOR_JOAL_AND_LWJGL == false)
-        	sc.speed = S.getDefaultSampleRate();
+        	sc.speed = Sound.getDefaultSampleRate();
 
         sc.width = inwidth;
         sc.stereo = 0;
@@ -330,7 +330,7 @@ public class WaveLoader {
 
 		if (info.samples != 0) {
 			if (samples < info.samples)
-				Com.Error(Defines.ERR_DROP, "Sound " + name + " has a bad loop length");
+				Com.Error(Defines.ERR_DROP, "SoundDriver " + name + " has a bad loop length");
 		} else {
 			info.samples = samples;
 			if (info.loopstart > 0) info.samples -= info.loopstart;

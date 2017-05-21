@@ -203,12 +203,12 @@ public class Channel {
 	IntBuffer buffer = tmp;
 	if (interupted) {
 	    unqueueStreams();
-	    buffer.put(0, buffers.get(Sound.MAX_SFX + streamQueue++));
+	    buffer.put(0, buffers.get(SoundDriver.MAX_SFX + streamQueue++));
 	    Com.DPrintf("queue " + (streamQueue - 1) + '\n');
 	} else if (processed < 2) {
 	    // check queue overrun
-	    if (streamQueue >= Sound.STREAM_QUEUE) return;
-	    buffer.put(0, buffers.get(Sound.MAX_SFX + streamQueue++));
+	    if (streamQueue >= SoundDriver.STREAM_QUEUE) return;
+	    buffer.put(0, buffers.get(SoundDriver.MAX_SFX + streamQueue++));
 	    Com.DPrintf("queue " + (streamQueue - 1) + '\n');
 	} else {
 	    // reuse the buffer

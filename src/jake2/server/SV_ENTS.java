@@ -514,7 +514,7 @@ public class SV_ENTS {
                     % SV_INIT.svs.num_client_entities;
             state = SV_INIT.svs.client_entities[ix];
             if (ent.s.number != e) {
-                Com.DPrintf("FIXING ENT.S.NUMBER!!!\n");
+                Com.DPrintf("FIXING ENT.Sound.NUMBER!!!\n");
                 ent.s.number = e;
             }
 

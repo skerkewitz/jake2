@@ -36,30 +36,17 @@ import java.util.Vector;
  */
 public class Renderer {
 
-    static RenderAPI fastRenderer = new jake2.render.fast.Misc();
-    static RenderAPI basicRenderer = new jake2.render.basic.Misc();
+    static RenderAPI renderer = new jake2.render.fast.Misc();
 
     static Vector drivers = new Vector(3);
 
     static {
         try {
             try {
-                Class.forName("net.java.games.jogl.GL");
-                Class.forName("jake2.render.JoglRenderer");
-            } catch (ClassNotFoundException e) {
-                // ignore the old jogl driver if runtime not in classpath
-            }
-            try {
                 Class.forName("org.lwjgl.opengl.GL11");
                 Class.forName("jake2.render.LwjglRenderer");
             } catch (ClassNotFoundException e) {
                 // ignore the lwjgl driver if runtime not in classpath
-            }
-            try {
-                Class.forName("javax.media.opengl.GL");
-                Class.forName("jake2.render.Jsr231Renderer");
-            } catch (ClassNotFoundException e) {
-                // ignore the new jogl driver if runtime not in classpath
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -92,12 +79,12 @@ public class Renderer {
      */
     public static refexport_t getDriver(String driverName, boolean fast) {
         // find a driver
-        Ref driver = null;
+
         int count = drivers.size();
         for (int i = 0; i < count; i++) {
-            driver = (Ref) drivers.get(i);
+            Ref driver = (Ref) drivers.get(i);
             if (driver.getName().equals(driverName)) {
-                return driver.GetRefAPI((fast) ? fastRenderer : basicRenderer);
+                return driver.GetRefAPI(renderer);
             }
         }
         // null if driver not found

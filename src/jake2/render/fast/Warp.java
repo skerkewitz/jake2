@@ -288,7 +288,7 @@ public abstract class Warp extends Model {
         for (bp = fa.polys; bp != null; bp = bp.next) {
             p = bp;
 
-            gl.glBegin(GL_TRIANGLE_FAN);
+            gl.glBegin(Companion.getGL_TRIANGLE_FAN());
             for (i = 0; i < p.numverts; i++) {
                 os = p.s1(i);
                 ot = p.t1(i);
@@ -653,7 +653,7 @@ public abstract class Warp extends Model {
 
 			GL_Bind(sky_images[skytexorder[i]].texnum);
 
-			gl.glBegin(GL_QUADS);
+			gl.glBegin(Companion.getGL_QUADS());
 			MakeSkyVec(skymins[0][i], skymins[1][i], i);
 			MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
 			MakeSkyVec(skymaxs[0][i], skymaxs[1][i], i);

@@ -29,7 +29,7 @@ package jake2.client;
 import jake2.qcommon.xcommand_t;
 import jake2.render.image_t;
 import jake2.render.model_t;
-import jake2.sys.KBD;
+import jake2.sys.Keyboard;
 
 
 /**
@@ -107,5 +107,5 @@ public interface refexport_t {
 	
 	DisplayMode[] getModeList();
 	
-	KBD getKeyboardHandler();
+	Keyboard getKeyboardHandler();
 }

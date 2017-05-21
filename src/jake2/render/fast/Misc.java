@@ -156,7 +156,7 @@ public final class Misc extends Mesh {
 	        
 	        // change pixel alignment for reading
 	        if (vid.getWidth() % 4 != 0) {
-	            gl.glPixelStorei(GL_PACK_ALIGNMENT, 1); 
+	            gl.glPixelStorei(Companion.getGL_PACK_ALIGNMENT(), 1);
 	        }
 	        
 	        // OpenGL 1.2+ supports the GL_BGR color format
@@ -164,10 +164,10 @@ public final class Misc extends Mesh {
 	        // e.g.: 1.5.2 NVIDIA 66.29
 	        if (gl_config.getOpenGLVersion() >= 1.2f) {
 	            // read the BGR values into the image buffer
-	            gl.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), GL_BGR, GL_UNSIGNED_BYTE, image);
+	            gl.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), Companion.getGL_BGR(), Companion.getGL_UNSIGNED_BYTE(), image);
 	        } else {
 	            // read the RGB values into the image buffer
-	            gl.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, image);
+	            gl.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), Companion.getGL_RGB(), Companion.getGL_UNSIGNED_BYTE(), image);
 		        // flip RGB to BGR
 		        byte tmp;
 		        for (i = TGA_HEADER_SIZE; i < fileLength; i += 3) {
@@ -177,7 +177,7 @@ public final class Misc extends Mesh {
 		        }
 	        }
 	        // reset to default alignment
-	        gl.glPixelStorei(GL_PACK_ALIGNMENT, 4); 
+	        gl.glPixelStorei(Companion.getGL_PACK_ALIGNMENT(), 4);
 	        // close the file channel
 	        ch.close();
 	    } catch (IOException e) {
@@ -204,34 +204,34 @@ public final class Misc extends Mesh {
 	{
 		gl.glClearColor(1f,0f, 0.5f , 0.5f); // original quake2
 		//gl.gl.glClearColor(0, 0, 0, 0); // replaced with black
-		gl.glCullFace(GL_FRONT);
-		gl.glEnable(GL_TEXTURE_2D);
+		gl.glCullFace(Companion.getGL_FRONT());
+		gl.glEnable(Companion.getGL_TEXTURE_2D());
 
-		gl.glEnable(GL_ALPHA_TEST);
-		gl.glAlphaFunc(GL_GREATER, 0.666f);
+		gl.glEnable(Companion.getGL_ALPHA_TEST());
+		gl.glAlphaFunc(Companion.getGL_GREATER(), 0.666f);
 
-		gl.glDisable (GL_DEPTH_TEST);
-		gl.glDisable (GL_CULL_FACE);
-		gl.glDisable (GL_BLEND);
+		gl.glDisable (Companion.getGL_DEPTH_TEST());
+		gl.glDisable (Companion.getGL_CULL_FACE());
+		gl.glDisable (Companion.getGL_BLEND());
 
 		gl.glColor4f (1,1,1,1);
 
-		gl.glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-		gl.glShadeModel (GL_FLAT);
+		gl.glPolygonMode (Companion.getGL_FRONT_AND_BACK(), Companion.getGL_FILL());
+		gl.glShadeModel (Companion.getGL_FLAT());
 
 		GL_TextureMode( gl_texturemode.string );
 		GL_TextureAlphaMode( gl_texturealphamode.string );
 		GL_TextureSolidMode( gl_texturesolidmode.string );
 
-		gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MIN_FILTER(), gl_filter_min);
+		gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_MAG_FILTER(), gl_filter_max);
 
-		gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_WRAP_S(), Companion.getGL_REPEAT());
+		gl.glTexParameterf(Companion.getGL_TEXTURE_2D(), Companion.getGL_TEXTURE_WRAP_T(), Companion.getGL_REPEAT());
 
-		gl.glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gl.glBlendFunc (Companion.getGL_SRC_ALPHA(), Companion.getGL_ONE_MINUS_SRC_ALPHA());
 
-		GL_TexEnv( GL_REPLACE );
+		GL_TexEnv(Companion.getGL_REPLACE());
 
 		if ( qglPointParameterfEXT )
 		{
@@ -241,15 +241,15 @@ public final class Misc extends Mesh {
 			att_buffer.put(1,gl_particle_att_b.value);
 			att_buffer.put(2,gl_particle_att_c.value);
 			
-			gl.glEnable( GL_POINT_SMOOTH );
-			gl.glPointParameterfEXT(GL_POINT_SIZE_MIN_EXT, gl_particle_min_size.value );
-			gl.glPointParameterfEXT(GL_POINT_SIZE_MAX_EXT, gl_particle_max_size.value );
-			gl.glPointParameterEXT(GL_DISTANCE_ATTENUATION_EXT, att_buffer );
+			gl.glEnable(Companion.getGL_POINT_SMOOTH());
+			gl.glPointParameterfEXT(Companion.getGL_POINT_SIZE_MIN_EXT(), gl_particle_min_size.value );
+			gl.glPointParameterfEXT(Companion.getGL_POINT_SIZE_MAX_EXT(), gl_particle_max_size.value );
+			gl.glPointParameterEXT(Companion.getGL_DISTANCE_ATTENUATION_EXT(), att_buffer );
 		}
 
 		if ( qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f )
 		{
-			gl.glEnable(GL_SHARED_TEXTURE_PALETTE_EXT );
+			gl.glEnable(Companion.getGL_SHARED_TEXTURE_PALETTE_EXT());
 
 			GL_SetTexturePalette( d_8to24table );
 		}
@@ -259,9 +259,9 @@ public final class Misc extends Mesh {
 		/*
 		 * vertex array extension
 		 */
-		gl.glEnableClientState(GL_VERTEX_ARRAY);
+		gl.glEnableClientState(Companion.getGL_VERTEX_ARRAY());
 		gl.glClientActiveTextureARB(TEXTURE0);
-		gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		gl.glEnableClientState(Companion.getGL_TEXTURE_COORD_ARRAY());
 		
 		/*
 		 * perspective correction

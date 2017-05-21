@@ -31,9 +31,9 @@ import jake2.game.Cmd;
 import jake2.game.cvar_t;
 import jake2.qcommon.*;
 import jake2.render.Renderer;
-import jake2.sound.S;
+import jake2.sound.Sound;
 import jake2.sys.IN;
-import jake2.sys.KBD;
+import jake2.sys.Keyboard;
 import jake2.util.Vargs;
 
 
@@ -152,7 +152,7 @@ public class VID extends Globals {
 	static void FreeReflib()
 	{
 		if (Globals.re != null) {
-			KBD keyboardHandler = Globals.re.getKeyboardHandler();
+			Keyboard keyboardHandler = Globals.re.getKeyboardHandler();
 			if (keyboardHandler != null) {
 				keyboardHandler.Close();
 			}
@@ -220,7 +220,7 @@ public class VID extends Globals {
 			return false;
 		}
 
-		/* Init KBD */
+		/* Init Keyboard */
 		Globals.re.getKeyboardHandler().Init();
 
 		Com.Printf( "------------------------------------\n");
@@ -243,7 +243,7 @@ public class VID extends Globals {
 	    
 		if ( vid_ref.modified )
 		{
-			S.StopAllSounds();
+			Sound.StopAllSounds();
 		}
 
 		while (vid_ref.modified)

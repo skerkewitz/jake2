@@ -69,7 +69,7 @@ public abstract class Light extends Warp {
 
 		Math3D.VectorSubtract (light.origin, r_origin, v);
 
-		gl.glBegin (GL_TRIANGLE_FAN);
+		gl.glBegin (Companion.getGL_TRIANGLE_FAN());
 		gl.glColor3f (light.color[0]*0.2f, light.color[1]*0.2f, light.color[2]*0.2f);
 		int i;
 		for (i=0 ; i<3 ; i++)
@@ -102,10 +102,10 @@ public abstract class Light extends Warp {
 		r_dlightframecount = r_framecount + 1;	// because the count hasn't
 												//  advanced yet for this frame
 		gl.glDepthMask(false);
-		gl.glDisable(GL_TEXTURE_2D);
-		gl.glShadeModel (GL_SMOOTH);
-		gl.glEnable (GL_BLEND);
-		gl.glBlendFunc (GL_ONE, GL_ONE);
+		gl.glDisable(Companion.getGL_TEXTURE_2D());
+		gl.glShadeModel (Companion.getGL_SMOOTH());
+		gl.glEnable (Companion.getGL_BLEND());
+		gl.glBlendFunc (Companion.getGL_ONE(), Companion.getGL_ONE());
 
 		for (int i=0 ; i<r_newrefdef.num_dlights ; i++)
 		{
@@ -113,9 +113,9 @@ public abstract class Light extends Warp {
 		}
 
 		gl.glColor3f (1,1,1);
-		gl.glDisable(GL_BLEND);
-		gl.glEnable(GL_TEXTURE_2D);
-		gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gl.glDisable(Companion.getGL_BLEND());
+		gl.glEnable(Companion.getGL_TEXTURE_2D());
+		gl.glBlendFunc(Companion.getGL_SRC_ALPHA(), Companion.getGL_ONE_MINUS_SRC_ALPHA());
 		gl.glDepthMask(true);
 	}
 

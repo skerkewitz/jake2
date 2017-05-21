@@ -269,7 +269,7 @@ public class Cvar extends Globals {
                 else
                     Com.Printf(" ");
                 if ((var.flags & CVAR_SERVERINFO) != 0)
-                    Com.Printf("S");
+                    Com.Printf("Sound");
                 else
                     Com.Printf(" ");
                 if ((var.flags & CVAR_NOSET) != 0)

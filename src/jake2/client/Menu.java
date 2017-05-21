@@ -29,10 +29,10 @@ import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.cvar_t;
 import jake2.qcommon.*;
-import jake2.sound.S;
+import jake2.sound.Sound;
 import jake2.sys.*;
 import jake2.sys.NET;
-import jake2.sys.Sys;
+import jake2.sys.QSystem;
 import jake2.util.*;
 
 import java.io.RandomAccessFile;
@@ -220,7 +220,7 @@ public final class Menu extends Key {
     }
 
     static void PopMenu() {
-        S.StartLocalSound(menu_out_sound);
+        Sound.StartLocalSound(menu_out_sound);
         m_menudepth--;
         if (m_menudepth < 0)
             Com.Error(ERR_FATAL, "PopMenu: depth < 1");
@@ -1383,16 +1383,16 @@ public final class Menu extends Key {
     static void UpdateSoundQualityFunc(Object unused) {
         boolean driverNotChanged = false;
         String current = s_drivers[s_options_quality_list.curvalue];
-        driverNotChanged = S.getDriverName().equals(current);
+        driverNotChanged = Sound.getDriverName().equals(current);
 //        if (s_options_quality_list.curvalue != 0) {
 //            //			Cvar.SetValue("s_khz", 22);
 //            //			Cvar.SetValue("s_loadas8bit", 0);
-//            driverNotChanged = S.getDriverName().equals("dummy");
+//            driverNotChanged = Sound.getDriverName().equals("dummy");
 //            Cvar.Set("s_impl", "dummy");
 //        } else {
 //            //			Cvar.SetValue("s_khz", 11);
 //            //			Cvar.SetValue("s_loadas8bit", 1);
-//            driverNotChanged = S.getDriverName().equals("joal");
+//            driverNotChanged = Sound.getDriverName().equals("joal");
 //            Cvar.Set("s_impl", "joal");
 //        }
 
@@ -1430,7 +1430,7 @@ public final class Menu extends Key {
     
     static void Options_MenuInit() {
 
-    	s_drivers = S.getDriverNames();
+    	s_drivers = Sound.getDriverNames();
     	s_labels = new String[s_drivers.length];
     	for (int i = 0; i < s_drivers.length; i++) {
     		if ("dummy".equals(s_drivers[i])) {
@@ -1715,7 +1715,7 @@ public final class Menu extends Key {
             "Cinematic by Karl Dolgener", "",
             "Assistance with environment design", "by Cliff Iwai", "",
             "+SOUND EFFECTS AND MUSIC",
-            "Sound Design by Soundelux Media Labs.",
+            "SoundDriver Design by Soundelux Media Labs.",
             "Music Composed and Produced by",
             "Soundelux Media Labs.  Special thanks",
             "to Bill Brown, Tom Ozanich, Brian",
@@ -3781,13 +3781,13 @@ public final class Menu extends Key {
             // verify the existence of tris.md2
             scratch = dirnames[i];
             scratch += "/tris.md2";
-            if (Sys.FindFirst(scratch, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM) == null) {
+            if (QSystem.FindFirst(scratch, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM) == null) {
                 //free(dirnames[i]);
                 dirnames[i] = null;
-                Sys.FindClose();
+                QSystem.FindClose();
                 continue;
             }
-            Sys.FindClose();
+            QSystem.FindClose();
 
             // verify the existence of at least one pcx skin
             scratch = dirnames[i] + "/*.pcx";
@@ -4303,7 +4303,7 @@ public final class Menu extends Key {
         // menu has been drawn, to avoid delay while
         // caching images
         if (m_entersound) {
-            S.StartLocalSound(menu_in_sound);
+            Sound.StartLocalSound(menu_in_sound);
             m_entersound = false;
         }
     }
@@ -4316,7 +4316,7 @@ public final class Menu extends Key {
 
         if (m_keyfunc != null)
             if ((s = m_keyfunc.execute(key)) != null)
-                S.StartLocalSound(s);
+                Sound.StartLocalSound(s);
     }
 
     public static void Action_DoEnter(menuaction_s a) {
@@ -4464,7 +4464,7 @@ public final class Menu extends Key {
                 || (((key == K_INS) || (key == K_KP_INS)) && keydown[K_SHIFT])) {
             String cbd;
 
-            if ((cbd = Sys.GetClipboardData()) != null) {
+            if ((cbd = QSystem.GetClipboardData()) != null) {
                 //strtok(cbd, "\n\r\b");
                 String lines[] = cbd.split("\r\n");
                 if (lines.length > 0 && lines[0].length() != 0) {

@@ -13,7 +13,7 @@ import jake2.client.DisplayMode;
 import jake2.client.refdef_t;
 import jake2.client.refexport_t;
 import jake2.qcommon.xcommand_t;
-import jake2.sys.KBD;
+import jake2.sys.Keyboard;
 
 /**
  * DummyRenderer
@@ -173,7 +173,7 @@ public class DummyRenderer implements refexport_t {
 	/* (non-Javadoc)
 	 * @see jake2.client.refexport_t#getKeyboardHandler()
 	 */
-	public KBD getKeyboardHandler() {
+	public Keyboard getKeyboardHandler() {
 		return null;
 	}
 

@@ -31,7 +31,7 @@ import jake2.client.CL;
 import jake2.client.Console;
 import jake2.game.Cmd;
 import jake2.server.SV_MAIN;
-import jake2.sys.Sys;
+import jake2.sys.QSystem;
 import jake2.util.*;
 
 import java.io.*;
@@ -265,7 +265,7 @@ public final class Com
 
 		if (recursive)
 		{
-			Sys.Error("recursive error after: " + msg);
+			QSystem.Error("recursive error after: " + msg);
 		}
 		recursive= true;
 
@@ -291,7 +291,7 @@ public final class Com
 			CL.Shutdown();
 		}
 
-		Sys.Error(msg);
+		QSystem.Error(msg);
 	}
 
 	/**
@@ -360,7 +360,7 @@ public final class Com
 		Console.Print(msg);
 
 		// also echo to debugging console
-		Sys.ConsoleOutput(msg);
+		QSystem.ConsoleOutput(msg);
 
 		// logfile
 		if (Globals.logfile_active != null && Globals.logfile_active.value != 0)
@@ -462,7 +462,7 @@ public final class Com
 			Globals.logfile= null;
 		}
 
-		Sys.Quit();
+		QSystem.Quit();
 	}
 
 	public static void SetServerState(int i)
@@ -690,14 +690,14 @@ public final class Com
 	public static byte BlockSequenceCRCByte(byte base[], int offset, int length, int sequence)
 	{
 		if (sequence < 0)
-			Sys.Error("sequence < 0, this shouldn't happen\n");
+			QSystem.Error("sequence < 0, this shouldn't happen\n");
 
 		//p_ndx = (sequence % (sizeof(chktbl) - 4));
 		int p_ndx = (sequence % (1024 - 4));
 		
 		//memcpy(chkb, base, length);
 		length = Math.min(60, length);
-		System.arraycopy(base, offset , chkb, 0, length);
+		java.lang.System.arraycopy(base, offset , chkb, 0, length);
 		
 		chkb[length] = chktbl[p_ndx + 0];
 		chkb[length + 1] = chktbl[p_ndx + 1];

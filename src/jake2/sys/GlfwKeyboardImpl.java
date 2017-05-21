@@ -2,26 +2,25 @@ package jake2.sys;
 
 import jake2.client.Key;
 import jake2.render.opengl.LwjglDriver;
-import org.lwjgl.glfw.GLFWKeyCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Created by tropper on 18.05.17.
  */
-public class GlfwKBDImpl extends KBD {
+public class GlfwKeyboardImpl extends Keyboard {
 
     private int last_mx;
     private int last_my;
 
     @Override
     public void Init() {
-        long window_ = LwjglDriver.window;
+        long window_ = LwjglDriver.Companion.getWindow();
 
-        glfwSetCursorPos(LwjglDriver.window, 320, 240);
+        glfwSetCursorPos(LwjglDriver.Companion.getWindow(), 320, 240);
 
         glfwSetKeyCallback(window_, (window, key, scancode, action, mods) -> {
-//            System.out.println("key " + key);
+//            QSystem.out.println("key " + key);
             int key1 = XLateKey(key, scancode);
             if (key1 > 0) {
                 Do_Key_Event(key1, action == GLFW_PRESS || action == GLFW_REPEAT);
@@ -29,7 +28,7 @@ public class GlfwKBDImpl extends KBD {
         });
 
 //        glfwSetCharCallback(window_, (window, codepoint) -> {
-//            System.out.println("codepoint " + codepoint + " " + (char)(codepoint));
+//            QSystem.out.println("codepoint " + codepoint + " " + (char)(codepoint));
 //
 ////            int key = codepoint;
 ////            if (key >= 'A' && key <= 'Z') {
@@ -44,14 +43,14 @@ public class GlfwKBDImpl extends KBD {
 //        });
 
         glfwSetMouseButtonCallback(window_, (window, button, action, mods) -> {
-//            System.out.println("mousebutton " + button);
+//            QSystem.out.println("mousebutton " + button);
 
             int key = mouseEventToKey(button);
             Do_Key_Event(key, action == GLFW_PRESS);
         });
 
 //        glfwSetCursorPosCallback(window_, (window, xpos, ypos) -> {
-////            System.out.println("mouse pos " + xpos + " " + ypos);
+////            QSystem.out.println("mouse pos " + xpos + " " + ypos);
 //            last_mx = (int) xpos;
 //            last_my = (int) ypos;
 //        });
@@ -75,7 +74,7 @@ public class GlfwKBDImpl extends KBD {
         double[] l_mx = new double[1];
         double[] l_my = new double[1];
 
-        glfwGetCursorPos(LwjglDriver.window, l_mx, l_my);
+        glfwGetCursorPos(LwjglDriver.Companion.getWindow(), l_mx, l_my);
 
         if (IN.mouse_active) {
             mx = (int) ((l_mx[0] - 640 / 2) * 2);
@@ -85,7 +84,7 @@ public class GlfwKBDImpl extends KBD {
             my = 0;
         }
 
-        glfwSetCursorPos(LwjglDriver.window, 320, 240);
+        glfwSetCursorPos(LwjglDriver.Companion.getWindow(), 320, 240);
     }
 
 //    private void HandleEvents() {
@@ -159,12 +158,12 @@ public class GlfwKBDImpl extends KBD {
 
     @Override
     public void installGrabs() {
-        glfwSetInputMode(LwjglDriver.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(LwjglDriver.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     @Override
     public void uninstallGrabs() {
-        glfwSetInputMode(LwjglDriver.window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(LwjglDriver.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     private static int XLateKey(int code, int scancode) {
@@ -265,7 +264,7 @@ public class GlfwKBDImpl extends KBD {
 //
 //
 //
-//final public class JOGLKBD extends KBD
+//final public class JOGLKBD extends Keyboard
 //{
 //
 //

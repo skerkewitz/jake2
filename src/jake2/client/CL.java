@@ -30,8 +30,9 @@ import jake2.Globals;
 import jake2.game.*;
 import jake2.qcommon.*;
 import jake2.server.SV_MAIN;
-import jake2.sound.S;
+import jake2.sound.Sound;
 import jake2.sys.*;
+import jake2.sys.QSystem;
 import jake2.util.*;
 
 import java.io.IOException;
@@ -398,7 +399,7 @@ public final class CL {
             if (Globals.cls.download != null)
                 return;
 
-            S.StopAllSounds();
+            Sound.StopAllSounds();
             if (Globals.cls.state == Defines.ca_connected) {
                 Com.Printf("reconnecting...\n");
                 Globals.cls.state = Defines.ca_connected;
@@ -496,7 +497,7 @@ public final class CL {
                         + Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                         + "\n");
                 SCR.UpdateScreen();
-                Sys.SendKeyEvents(); // pump message loop
+                QSystem.SendKeyEvents(); // pump message loop
                 CL_parse.ParseClientinfo(i);
             }
         }
@@ -520,8 +521,8 @@ public final class CL {
      */
     static xcommand_t Snd_Restart_f = new xcommand_t() {
         public void execute() {
-            S.Shutdown();
-            S.Init();
+            Sound.Shutdown();
+            Sound.Init();
             CL_parse.RegisterSounds();
         }
     };
@@ -665,7 +666,7 @@ public final class CL {
      * 
      */
     static void ClearState() {
-        S.StopAllSounds();
+        Sound.StopAllSounds();
         CL_fx.ClearEffects();
         CL_tent.ClearTEnts();
 
@@ -1456,7 +1457,7 @@ public final class CL {
      */
     public static void SendCommand() {
         // get new key events
-        Sys.SendKeyEvents();
+        QSystem.SendKeyEvents();
 
         // allow mice or other external controllers to add commands
         IN.Commands();
@@ -1528,13 +1529,13 @@ public final class CL {
             CL_view.PrepRefresh();
             // force GC after level loading
             // but not on playing a cinematic
-            if (Globals.cl.cinematictime == 0) System.gc();
+            if (Globals.cl.cinematictime == 0) java.lang.System.gc();
         }
 
         SCR.UpdateScreen();
 
         // update audio
-        S.Update(Globals.cl.refdef.vieworg, Globals.cl.v_forward,
+        Sound.Update(Globals.cl.refdef.vieworg, Globals.cl.v_forward,
                 Globals.cl.v_right, Globals.cl.v_up);
 
         // advance local effects for next frame
@@ -1559,14 +1560,14 @@ public final class CL {
     public static void Shutdown() {
 
         if (isdown) {
-            System.out.print("recursive shutdown\n");
+            java.lang.System.out.print("recursive shutdown\n");
             return;
         }
         isdown = true;
 
         WriteConfiguration();
 
-        S.Shutdown();
+        Sound.Shutdown();
         IN.Shutdown();
         VID.Shutdown();
     }
@@ -1582,7 +1583,7 @@ public final class CL {
 
         Console.Init(); //ok
 
-        S.Init(); //empty
+        Sound.Init(); //empty
         VID.Init();
 
         V.Init();

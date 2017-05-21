@@ -59,7 +59,7 @@ public final class IN extends Globals {
         if (!mouse_avail)
             return;
         if (!mouse_active) {
-            KBD.mx = KBD.my = 0; // don't spazz
+            Keyboard.mx = Keyboard.my = 0; // don't spazz
             install_grabs();
             mouse_active = true;
         }
@@ -145,13 +145,13 @@ public final class IN extends Globals {
 		if (!IN.mouse_avail) 
 			return;
 	
-		KBD kbd=Globals.re.getKeyboardHandler();
+		Keyboard keyboard =Globals.re.getKeyboardHandler();
 		for (i=0 ; i<3 ; i++) {
 			if ( (IN.mouse_buttonstate & (1<<i)) != 0 && (IN.mouse_oldbuttonstate & (1<<i)) == 0 )
-				kbd.Do_Key_Event(Key.K_MOUSE1 + i, true);
+				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, true);
 	
 			if ( (IN.mouse_buttonstate & (1<<i)) == 0 && (IN.mouse_oldbuttonstate & (1<<i)) != 0 )
-				kbd.Do_Key_Event(Key.K_MOUSE1 + i, false);
+				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, false);
 		}
 		IN.mouse_oldbuttonstate = IN.mouse_buttonstate;		
     }
@@ -175,31 +175,31 @@ public final class IN extends Globals {
             return;
 
         if (Globals.m_filter.value != 0.0f) {
-            KBD.mx = (KBD.mx + IN.old_mouse_x) / 2;
-            KBD.my = (KBD.my + IN.old_mouse_y) / 2;
+            Keyboard.mx = (Keyboard.mx + IN.old_mouse_x) / 2;
+            Keyboard.my = (Keyboard.my + IN.old_mouse_y) / 2;
         }
 
-        IN.old_mouse_x = KBD.mx;
-        IN.old_mouse_y = KBD.my;
+        IN.old_mouse_x = Keyboard.mx;
+        IN.old_mouse_y = Keyboard.my;
 
-        KBD.mx = (int) (KBD.mx * Globals.sensitivity.value);
-        KBD.my = (int) (KBD.my * Globals.sensitivity.value);
+        Keyboard.mx = (int) (Keyboard.mx * Globals.sensitivity.value);
+        Keyboard.my = (int) (Keyboard.my * Globals.sensitivity.value);
 
         // add mouse X/Y movement to cmd
         if ((CL_input.in_strafe.state & 1) != 0
                 || ((Globals.lookstrafe.value != 0) && IN.mlooking)) {
-            cmd.sidemove += Globals.m_side.value * KBD.mx;
+            cmd.sidemove += Globals.m_side.value * Keyboard.mx;
         } else {
-            Globals.cl.viewangles[YAW] -= Globals.m_yaw.value * KBD.mx;
+            Globals.cl.viewangles[YAW] -= Globals.m_yaw.value * Keyboard.mx;
         }
 
         if ((IN.mlooking || Globals.freelook.value != 0.0f)
                 && (CL_input.in_strafe.state & 1) == 0) {
-            Globals.cl.viewangles[PITCH] += Globals.m_pitch.value * KBD.my;
+            Globals.cl.viewangles[PITCH] += Globals.m_pitch.value * Keyboard.my;
         } else {
-            cmd.forwardmove -= Globals.m_forward.value * KBD.my;
+            cmd.forwardmove -= Globals.m_forward.value * Keyboard.my;
         }
-        KBD.mx = KBD.my = 0;
+        Keyboard.mx = Keyboard.my = 0;
     }
 
     static void MLookDown() {
