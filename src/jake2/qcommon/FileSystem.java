@@ -127,7 +127,7 @@ public final class FileSystem {
         // basedir <path>
         // allows the game to run from outside the data tree
         //
-        fs_basedir = Cvar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
+        fs_basedir = ConsoleVar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
 
         //
         // cddir <path>
@@ -146,7 +146,7 @@ public final class FileSystem {
         markBaseSearchPaths();
 
         // check for game override
-        fs_gamedirvar = Cvar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
+        fs_gamedirvar = ConsoleVar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
 
         if (fs_gamedirvar.string.length() > 0)
             SetGamedir(fs_gamedirvar.string);
@@ -737,10 +737,10 @@ public final class FileSystem {
         fs_gamedir = fs_basedir.string + '/' + dir;
 
         if (dir.equals(Globals.BASEDIRNAME) || (dir.length() == 0)) {
-            Cvar.FullSet("gamedir", "", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
-            Cvar.FullSet("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
+            ConsoleVar.FullSet("gamedir", "", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+            ConsoleVar.FullSet("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
         } else {
-            Cvar.FullSet("gamedir", dir, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+            ConsoleVar.FullSet("gamedir", dir, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
             if (fs_cddir.string != null && fs_cddir.string.length() > 0)
                 AddGameDirectory(fs_cddir.string + '/' + dir);
 
@@ -902,7 +902,7 @@ public final class FileSystem {
      * set baseq2 directory
      */
     void setCDDir() {
-        fs_cddir = Cvar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
+        fs_cddir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
         if (fs_cddir.string.length() > 0)
             AddGameDirectory(fs_cddir.string);
     }

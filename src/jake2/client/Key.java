@@ -688,7 +688,7 @@ public class Key extends Globals {
 		String s = new String(key_lines[edit_line], start, end-start);
 		
 		Vector cmds = Cmd.CompleteCommand(s);
-		Vector vars = Cvar.CompleteVariable(s);
+		Vector vars = ConsoleVar.CompleteVariable(s);
 		
 		int c = cmds.size();
 		int v = vars.size();

@@ -28,15 +28,13 @@ package jake2;
 import jake2.client.*;
 import jake2.game.*;
 import jake2.qcommon.FileSystem;
+import jake2.qcommon.TSizeBuffer;
 import jake2.qcommon.netadr_t;
-import jake2.qcommon.sizebuf_t;
 import jake2.render.DummyRenderer;
 import jake2.render.model_t;
 
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -106,7 +104,7 @@ public class Globals implements Defines {
 	public static TVar in_joystick;
 
 
-	public static sizebuf_t net_message = new sizebuf_t();
+	public static TSizeBuffer net_message = new TSizeBuffer();
 
 	/*
 	=============================================================================
@@ -116,11 +114,8 @@ public class Globals implements Defines {
 	=============================================================================
 	*/
 
-	public static sizebuf_t cmd_text = new sizebuf_t();
-
 	public static byte defer_text_buf[] = new byte[8192];
 
-	public static byte cmd_text_buf[] = new byte[8192];
 	public static cmdalias_t cmd_alias;
 
 	//=============================================================================

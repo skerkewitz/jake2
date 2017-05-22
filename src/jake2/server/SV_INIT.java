@@ -61,10 +61,10 @@ public class SV_INIT {
 
         if (sv.state != Defines.ss_loading) { 
             // send the update to everyone
-            SZ.Clear(sv.multicast);
-            MSG.WriteChar(sv.multicast, Defines.svc_configstring);
-            MSG.WriteShort(sv.multicast, start + i);
-            MSG.WriteString(sv.multicast, name);
+            sv.multicast.clear();
+            sv.multicast.writeChar(Defines.svc_configstring);
+            sv.multicast.writeShort(start + i);
+            sv.multicast.writeString(name);
             SV_SEND.SV_Multicast(Globals.vec3_origin, Defines.MULTICAST_ALL_R);
         }
 
@@ -123,7 +123,7 @@ public class SV_INIT {
         if (SV_MAIN.sv_noreload.value != 0)
             return;
 
-        if (Cvar.VariableValue("deathmatch") != 0)
+        if (ConsoleVar.VariableValue("deathmatch") != 0)
             return;
 
         name = FileSystem.Gamedir() + "/save/current/" + sv.name + ".sav";
@@ -176,7 +176,7 @@ public class SV_INIT {
         int checksum = 0;
 
         if (attractloop)
-            Cvar.Set("paused", "0");
+            ConsoleVar.Set("paused", "0");
 
         Com.Printf("------- Server Initialization -------\n");
 
@@ -205,7 +205,7 @@ public class SV_INIT {
         // save name for levels that don't set message
         sv.configstrings[Defines.CS_NAME] = server;
 
-        if (Cvar.VariableValue("deathmatch") != 0) {
+        if (ConsoleVar.VariableValue("deathmatch") != 0) {
             sv.configstrings[Defines.CS_AIRACCEL] = ""
                     + SV_MAIN.sv_airaccelerate.value;
             PMove.pm_airaccelerate = SV_MAIN.sv_airaccelerate.value;
@@ -214,7 +214,7 @@ public class SV_INIT {
             PMove.pm_airaccelerate = 0;
         }
 
-        SZ.Init(sv.multicast, sv.multicast_buf, sv.multicast_buf.length);
+        sv.multicast.init(sv.multicast_buf, sv.multicast_buf.length);
 
         sv.name = server;
 
@@ -282,7 +282,7 @@ public class SV_INIT {
         SV_CheckForSavegame();
 
         // set serverinfo variable
-        Cvar.FullSet("mapname", sv.name, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+        ConsoleVar.FullSet("mapname", sv.name, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
     }
 
     /**
@@ -306,41 +306,41 @@ public class SV_INIT {
         }
 
         // get any latched variable changes (maxclients, etc)
-        Cvar.GetLatchedVars();
+        ConsoleVar.GetLatchedVars();
 
         svs.initialized = true;
 
-        if (Cvar.VariableValue("coop") != 0
-                && Cvar.VariableValue("deathmatch") != 0) {
+        if (ConsoleVar.VariableValue("coop") != 0
+                && ConsoleVar.VariableValue("deathmatch") != 0) {
             Com.Printf("Deathmatch and Coop both set, disabling Coop\n");
-            Cvar.FullSet("coop", "0", TVar.CVAR_FLAG_SERVERINFO
+            ConsoleVar.FullSet("coop", "0", TVar.CVAR_FLAG_SERVERINFO
                     | TVar.CVAR_FLAG_LATCH);
         }
 
         // dedicated servers are can't be single player and are usually DM
         // so unless they explicity set coop, force it to deathmatch
         if (Globals.dedicated.value != 0) {
-            if (0 == Cvar.VariableValue("coop"))
-                Cvar.FullSet("deathmatch", "1", TVar.CVAR_FLAG_SERVERINFO
+            if (0 == ConsoleVar.VariableValue("coop"))
+                ConsoleVar.FullSet("deathmatch", "1", TVar.CVAR_FLAG_SERVERINFO
                         | TVar.CVAR_FLAG_LATCH);
         }
 
         // init clients
-        if (Cvar.VariableValue("deathmatch") != 0) {
+        if (ConsoleVar.VariableValue("deathmatch") != 0) {
             if (SV_MAIN.maxclients.value <= 1)
-                Cvar.FullSet("maxclients", "8", TVar.CVAR_FLAG_SERVERINFO
+                ConsoleVar.FullSet("maxclients", "8", TVar.CVAR_FLAG_SERVERINFO
                         | TVar.CVAR_FLAG_LATCH);
             else if (SV_MAIN.maxclients.value > Defines.MAX_CLIENTS)
-                Cvar.FullSet("maxclients", "" + Defines.MAX_CLIENTS,
+                ConsoleVar.FullSet("maxclients", "" + Defines.MAX_CLIENTS,
                         TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        } else if (Cvar.VariableValue("coop") != 0) {
+        } else if (ConsoleVar.VariableValue("coop") != 0) {
             if (SV_MAIN.maxclients.value <= 1 || SV_MAIN.maxclients.value > 4)
-                Cvar.FullSet("maxclients", "4", TVar.CVAR_FLAG_SERVERINFO
+                ConsoleVar.FullSet("maxclients", "4", TVar.CVAR_FLAG_SERVERINFO
                         | TVar.CVAR_FLAG_LATCH);
 
         } else // non-deathmatch, non-coop is one player
         {
-            Cvar.FullSet("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO
+            ConsoleVar.FullSet("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO
                     | TVar.CVAR_FLAG_LATCH);
         }
 
@@ -408,10 +408,10 @@ public class SV_INIT {
 
         int c = level.indexOf('+');
         if (c != -1) {
-            Cvar.Set("nextserver", "gamemap \"" + level.substring(c + 1) + "\"");
+            ConsoleVar.Set("nextserver", "gamemap \"" + level.substring(c + 1) + "\"");
             level = level.substring(0, c);
         } else {
-            Cvar.Set("nextserver", "");
+            ConsoleVar.Set("nextserver", "");
         }
         
         // rst: base1 works for full, damo1 works for demo, so we need to store first map.
@@ -425,8 +425,8 @@ public class SV_INIT {
         }
 
         // ZOID: special hack for end game screen in coop mode
-        if (Cvar.VariableValue("coop") != 0 && level.equals("victory.pcx"))
-            Cvar.Set("nextserver", "gamemap \"*" + firstmap + "\"");
+        if (ConsoleVar.VariableValue("coop") != 0 && level.equals("victory.pcx"))
+            ConsoleVar.Set("nextserver", "gamemap \"*" + firstmap + "\"");
 
         // if there is a $, use the remainder as a spawnpoint
         int pos = level.indexOf('$');

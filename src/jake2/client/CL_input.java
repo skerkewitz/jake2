@@ -650,10 +650,10 @@ public class CL_input {
 			}
 		});
 
-		cl_nodelta = Cvar.Get("cl_nodelta", "0", 0);
+		cl_nodelta = ConsoleVar.Get("cl_nodelta", "0", 0);
 	}
 
-	private static final sizebuf_t buf = new sizebuf_t();
+	private static final TSizeBuffer buf = new TSizeBuffer();
 	private static final byte[] data = new byte[128];
 	private static final usercmd_t nullcmd = new usercmd_t();
 	/*
@@ -690,11 +690,11 @@ public class CL_input {
 		if (Globals.userinfo_modified) {
 			CL.FixUpGender();
 			Globals.userinfo_modified = false;
-			MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_userinfo);
-			MSG.WriteString(Globals.cls.netchan.message, Cvar.Userinfo());
+			Globals.cls.netchan.message.writeByte(Defines.clc_userinfo);
+			Globals.cls.netchan.message.writeString(ConsoleVar.Userinfo());
 		}
 
-		SZ.Init(buf, data, data.length);
+		buf.init(data, data.length);
 
 		if (cmd.buttons != 0 && Globals.cl.cinematictime > 0 && !Globals.cl.attractloop
 				&& Globals.cls.realtime - Globals.cl.cinematictime > 1000) { // skip
@@ -707,18 +707,18 @@ public class CL_input {
 		}
 
 		// begin a client move command
-		MSG.WriteByte(buf, Defines.clc_move);
+		buf.writeByte(Defines.clc_move);
 
 		// save the position for a checksum byte
 		checksumIndex = buf.cursize;
-		MSG.WriteByte(buf, 0);
+		buf.writeByte(0);
 
 		// let the server know what the last frame we
 		// got was, so the next message can be delta compressed
 		if (cl_nodelta.value != 0.0f || !Globals.cl.frame.valid || Globals.cls.demowaiting)
-			MSG.WriteLong(buf, -1); // no compression
+			buf.writeLong(-1);
 		else
-			MSG.WriteLong(buf, Globals.cl.frame.serverframe);
+			buf.writeLong(Globals.cl.frame.serverframe);
 
 		// send this and the previous cmds in the message, so
 		// if the last packet was dropped, it can be recovered
@@ -727,19 +727,19 @@ public class CL_input {
 		//memset (nullcmd, 0, sizeof(nullcmd));
 		nullcmd.clear();
 
-		MSG.WriteDeltaUsercmd(buf, nullcmd, cmd);
+		TSizeBuffer.WriteDeltaUsercmd(buf, nullcmd, cmd);
 		oldcmd = cmd;
 
 		i = (Globals.cls.netchan.outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
 		cmd = Globals.cl.cmds[i];
 
-		MSG.WriteDeltaUsercmd(buf, oldcmd, cmd);
+		TSizeBuffer.WriteDeltaUsercmd(buf, oldcmd, cmd);
 		oldcmd = cmd;
 
 		i = (Globals.cls.netchan.outgoing_sequence) & (Defines.CMD_BACKUP - 1);
 		cmd = Globals.cl.cmds[i];
 
-		MSG.WriteDeltaUsercmd(buf, oldcmd, cmd);
+		TSizeBuffer.WriteDeltaUsercmd(buf, oldcmd, cmd);
 
 		// calculate a checksum over the move commands
 		buf.data[checksumIndex] = Com.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,

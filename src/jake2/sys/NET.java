@@ -26,9 +26,9 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.TVar;
 import jake2.qcommon.Com;
-import jake2.qcommon.Cvar;
+import jake2.qcommon.ConsoleVar;
+import jake2.qcommon.TSizeBuffer;
 import jake2.qcommon.netadr_t;
-import jake2.qcommon.sizebuf_t;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -164,7 +164,7 @@ public final class NET {
      * Gets a packet from internal loopback.
      */
     public static boolean GetLoopPacket(int sock, netadr_t net_from,
-            sizebuf_t net_message) {
+            TSizeBuffer net_message) {
 	
         loopback_t loop = loopbacks[sock];
 
@@ -207,7 +207,7 @@ public final class NET {
      * Gets a packet from a network channel
      */
     public static boolean GetPacket(int sock, netadr_t net_from,
-            sizebuf_t net_message) {
+            TSizeBuffer net_message) {
 
         if (GetLoopPacket(sock, net_from, net_message)) {
             return true;
@@ -279,9 +279,9 @@ public final class NET {
     public static void OpenIP() {
         TVar port, ip, clientport;
 
-        port = Cvar.Get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
-        ip = Cvar.Get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
-        clientport = Cvar.Get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
+        port = ConsoleVar.Get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
+        ip = ConsoleVar.Get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
+        clientport = ConsoleVar.Get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
         
         if (ip_sockets[Defines.NS_SERVER] == null)
             ip_sockets[Defines.NS_SERVER] = Socket(Defines.NS_SERVER,
@@ -314,7 +314,7 @@ public final class NET {
     }
 
     /**
-     * Init
+     * init
      */
     public static void Init() {
         // nothing to do

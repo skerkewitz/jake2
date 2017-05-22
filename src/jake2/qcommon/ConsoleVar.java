@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Cvar implements console variables. The original code is located in cvar.c
+ * ConsoleVar implements console variables. The original code is located in cvar.c
  */
-public class Cvar {
+public class ConsoleVar {
 
     public static List<TVar> cvar_vars = new LinkedList<>();
 
@@ -60,7 +60,7 @@ public class Cvar {
             }
         }
 
-        TVar var = Cvar.FindVar(name);
+        TVar var = ConsoleVar.FindVar(name);
         if (var != null) {
             var.flags |= flags;
             return var;
@@ -115,9 +115,9 @@ public class Cvar {
     public static TVar FullSet(String var_name, String value, int flags) {
         TVar var;
 
-        var = Cvar.FindVar(var_name);
+        var = ConsoleVar.FindVar(var_name);
         if (null == var) { // create it
-            return Cvar.Get(var_name, value, flags);
+            return ConsoleVar.Get(var_name, value, flags);
         }
 
         var.modified = true;
@@ -143,7 +143,7 @@ public class Cvar {
      * Sets the value of the variable with forcing. 
      */
     public static TVar ForceSet(String var_name, String value) {
-        return Cvar.Set2(var_name, value, true);
+        return ConsoleVar.Set2(var_name, value, true);
     }
     
     /**
@@ -152,10 +152,10 @@ public class Cvar {
      */
     static TVar Set2(String var_name, String value, boolean force) {
 
-        TVar var = Cvar.FindVar(var_name);
+        TVar var = ConsoleVar.FindVar(var_name);
         if (var == null) { 
         	// create it
-            return Cvar.Get(var_name, value, 0);
+            return ConsoleVar.Get(var_name, value, 0);
         }
 
         if ((var.flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
@@ -242,9 +242,9 @@ public class Cvar {
                     Com.Printf("flags can only be 'u' or 's'\n");
                     return;
                 }
-                Cvar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
+                ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
             } else
-                Cvar.Set(Cmd.Argv(1), Cmd.Argv(2));
+                ConsoleVar.Set(Cmd.Argv(1), Cmd.Argv(2));
 
         }
 
@@ -292,14 +292,14 @@ public class Cvar {
      * networt "rate" string --> 10000 became "10000.0" and that wasn't right.
      */
     public static void SetValue(String var_name, int value) {
-        Cvar.Set(var_name, "" + value);
+        ConsoleVar.Set(var_name, "" + value);
     }
 
     public static void SetValue(String var_name, float value) {
         if (value == (int)value) {
-            Cvar.Set(var_name, "" + (int)value);
+            ConsoleVar.Set(var_name, "" + (int)value);
         } else {
-            Cvar.Set(var_name, "" + value);
+            ConsoleVar.Set(var_name, "" + value);
         }
     }
 
@@ -307,7 +307,7 @@ public class Cvar {
      * Returns the float value of a variable.
      */
     public static float VariableValue(String var_name) {
-        TVar var = Cvar.FindVar(var_name);
+        TVar var = ConsoleVar.FindVar(var_name);
         if (var == null)
             return 0;
         
@@ -321,7 +321,7 @@ public class Cvar {
         TVar v;
 
         // check variables
-        v = Cvar.FindVar(Cmd.Argv(0));
+        v = ConsoleVar.FindVar(Cmd.Argv(0));
         if (v == null)
             return false;
 
@@ -331,7 +331,7 @@ public class Cvar {
             return true;
         }
 
-        Cvar.Set(v.name, Cmd.Argv(1));
+        ConsoleVar.Set(v.name, Cmd.Argv(1));
         return true;
     }
 

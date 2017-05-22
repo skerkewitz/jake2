@@ -1598,10 +1598,10 @@ public abstract class Image extends Main {
 		registration_sequence = 1;
 
 		// init intensity conversions
-		intensity = Cvar.Get("intensity", "2", 0);
+		intensity = ConsoleVar.Get("intensity", "2", 0);
 
 		if (intensity.value <= 1)
-			Cvar.Set("intensity", "1");
+			ConsoleVar.Set("intensity", "1");
 
 		gl_state.inverse_intensity = 1 / intensity.value;
 

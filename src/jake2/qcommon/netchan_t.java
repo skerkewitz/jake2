@@ -57,7 +57,7 @@ public class netchan_t {
     public int last_reliable_sequence; // sequence number of last send
 
     //	   reliable staging and holding areas
-    public sizebuf_t message = new sizebuf_t(); // writing buffer to send to
+    public TSizeBuffer message = new TSizeBuffer(); // writing buffer to send to
                                                 // server
 
     public byte message_buf[] = new byte[Defines.MAX_MSGLEN - 16]; // leave
@@ -76,7 +76,7 @@ public class netchan_t {
         sock = dropped = last_received = last_sent = 0;
         remote_address = new netadr_t();
         qport = incoming_sequence = incoming_acknowledged = incoming_reliable_acknowledged = incoming_reliable_sequence = outgoing_sequence = reliable_sequence = last_reliable_sequence = 0;
-        message = new sizebuf_t();
+        message = new TSizeBuffer();
 
         message_buf = new byte[Defines.MAX_MSGLEN - 16];
 

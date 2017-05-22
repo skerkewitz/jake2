@@ -73,7 +73,7 @@ public class SV_CCMDS {
 		}
 
 		// make sure the server is listed public
-		Cvar.Set("public", "1");
+		ConsoleVar.Set("public", "1");
 
 		for (i = 1; i < Defines.MAX_MASTERS; i++)
 			SV_MAIN.master_adr[i] = new netadr_t();
@@ -404,11 +404,11 @@ public class SV_CCMDS {
 
 			// write all CVAR_FLAG_LATCH cvars
 			// these will be things like coop, skill, deathmatch, etc
-			for(TVar var : Cvar.cvar_vars) {
+			for(TVar var : ConsoleVar.cvar_vars) {
 				if (0 == (var.flags & TVar.CVAR_FLAG_LATCH))
 					continue;
 				if (var.name.length() >= Defines.MAX_OSPATH - 1 || var.string.length() >= 128 - 1) {
-					Com.Printf("Cvar too long: " + var.name + " = " + var.string + "\n");
+					Com.Printf("ConsoleVar too long: " + var.name + " = " + var.string + "\n");
 					continue;
 				}
 
@@ -468,7 +468,7 @@ public class SV_CCMDS {
 				string = f.readString();
 
 				Com.DPrintf("Set " + name + " = " + string + "\n");
-				Cvar.ForceSet(name, string);
+				ConsoleVar.ForceSet(name, string);
 			}
 
 			f.close();
@@ -672,7 +672,7 @@ public class SV_CCMDS {
 			return;
 		}
 
-		if (Cvar.VariableValue("deathmatch") != 0) {
+		if (ConsoleVar.VariableValue("deathmatch") != 0) {
 			Com.Printf("Can't savegame in a deathmatch\n");
 			return;
 		}
@@ -841,7 +841,7 @@ public class SV_CCMDS {
 	*/
 	public static void SV_Serverinfo_f() {
 		Com.Printf("Server info settings:\n");
-		Info.Print(Cvar.Serverinfo());
+		Info.Print(ConsoleVar.Serverinfo());
 	}
 	/*
 	===========
@@ -876,7 +876,7 @@ public class SV_CCMDS {
 		//char	name[MAX_OSPATH];
 		String name;
 		byte buf_data[] = new byte[32768];
-		sizebuf_t buf = new sizebuf_t();
+		TSizeBuffer buf = new TSizeBuffer();
 		int len;
 		int i;
 
@@ -911,33 +911,33 @@ public class SV_CCMDS {
 		}
 
 		// setup a buffer to catch all multicasts
-		SZ.Init(SV_INIT.svs.demo_multicast, SV_INIT.svs.demo_multicast_buf, SV_INIT.svs.demo_multicast_buf.length);
+		SV_INIT.svs.demo_multicast.init(SV_INIT.svs.demo_multicast_buf, SV_INIT.svs.demo_multicast_buf.length);
 
 		//
 		// write a single giant fake message with all the startup info
 		//
-		SZ.Init(buf, buf_data, buf_data.length);
+		buf.init(buf_data, buf_data.length);
 
 		//
 		// serverdata needs to go over for all types of servers
 		// to make sure the protocol is right, and to set the gamedir
 		//
 		// send the serverdata
-		MSG.WriteByte(buf, Defines.svc_serverdata);
-		MSG.WriteLong(buf, Defines.PROTOCOL_VERSION);
-		MSG.WriteLong(buf, SV_INIT.svs.spawncount);
+		buf.writeByte(Defines.svc_serverdata);
+		buf.writeLong(Defines.PROTOCOL_VERSION);
+		buf.writeLong(SV_INIT.svs.spawncount);
 		// 2 means server demo
-		MSG.WriteByte(buf, 2); // demos are always attract loops
-		MSG.WriteString(buf, Cvar.VariableString("gamedir"));
-		MSG.WriteShort(buf, -1);
+		buf.writeByte(2); // demos are always attract loops
+		buf.writeString(ConsoleVar.VariableString("gamedir"));
+		buf.writeShort(-1);
 		// send full levelname
-		MSG.WriteString(buf, SV_INIT.sv.configstrings[Defines.CS_NAME]);
+		buf.writeString(SV_INIT.sv.configstrings[Defines.CS_NAME]);
 
 		for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++)
 			if (SV_INIT.sv.configstrings[i].length() == 0) {
-				MSG.WriteByte(buf, Defines.svc_configstring);
-				MSG.WriteShort(buf, i);
-				MSG.WriteString(buf, SV_INIT.sv.configstrings[i]);
+				buf.writeByte(Defines.svc_configstring);
+				buf.writeShort(i);
+				buf.writeString(SV_INIT.sv.configstrings[i]);
 			}
 
 		// write it to the demo file

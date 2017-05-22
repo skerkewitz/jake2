@@ -23,7 +23,7 @@ import jake2.sys.Keyboard;
 public class DummyRenderer implements refexport_t {
 
 	/* (non-Javadoc)
-	 * @see jake2.client.refexport_t#Init(int, int)
+	 * @see jake2.client.refexport_t#init(int, int)
 	 */
 	public boolean Init(int vid_xpos, int vid_ypos) {
 		return false;

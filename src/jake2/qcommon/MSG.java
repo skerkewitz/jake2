@@ -32,162 +32,8 @@ public class MSG extends Globals {
     // writing functions
     //
 
-    //ok.
-    public static void WriteChar(sizebuf_t sb, int c) {
-        sb.data[SZ.GetSpace(sb, 1)] = (byte) (c & 0xFF);
-    }
-
-    //ok.
-    public static void WriteChar(sizebuf_t sb, float c) {
-
-        WriteChar(sb, (int) c);
-    }
-
-    //ok.
-    public static void WriteByte(sizebuf_t sb, int c) {
-        sb.data[SZ.GetSpace(sb, 1)] = (byte) (c & 0xFF);
-    }
-
-    //ok.
-    public static void WriteByte(sizebuf_t sb, float c) {
-        WriteByte(sb, (int) c);
-    }
-
-    public static void WriteShort(sizebuf_t sb, int c) {
-        int i = SZ.GetSpace(sb, 2);
-        sb.data[i++] = (byte) (c & 0xff);
-        sb.data[i] = (byte) ((c >>> 8) & 0xFF);
-    }
-
-    //ok.
-    public static void WriteInt(sizebuf_t sb, int c) {
-        int i = SZ.GetSpace(sb, 4);
-        sb.data[i++] = (byte) ((c & 0xff));
-        sb.data[i++] = (byte) ((c >>> 8) & 0xff);
-        sb.data[i++] = (byte) ((c >>> 16) & 0xff);
-        sb.data[i++] = (byte) ((c >>> 24) & 0xff);
-    }
-
-    //ok.
-    public static void WriteLong(sizebuf_t sb, int c) {
-        WriteInt(sb, c);
-    }
-
-    //ok.
-    public static void WriteFloat(sizebuf_t sb, float f) {
-        WriteInt(sb, Float.floatToIntBits(f));
-    }
-
-    // had a bug, now its ok.
-    public static void WriteString(sizebuf_t sb, String s) {
-        String x = s;
-
-        if (s == null)
-            x = "";
-
-        SZ.Write(sb, Lib.stringToBytes(x));
-        WriteByte(sb, 0);
-        //Com.dprintln("MSG.WriteString:" + s.replace('\0', '@'));
-    }
-
-    //ok.
-    public static void WriteString(sizebuf_t sb, byte s[]) {
-        WriteString(sb, new String(s).trim());
-    }
-
-    public static void WriteCoord(sizebuf_t sb, float f) {
-        WriteShort(sb, (int) (f * 8));
-    }
-
-    public static void WritePos(sizebuf_t sb, float[] pos) {
-        assert (pos.length == 3) : "vec3_t bug";
-        WriteShort(sb, (int) (pos[0] * 8));
-        WriteShort(sb, (int) (pos[1] * 8));
-        WriteShort(sb, (int) (pos[2] * 8));
-    }
-
-    public static void WriteAngle(sizebuf_t sb, float f) {
-        WriteByte(sb, (int) (f * 256 / 360) & 255);
-    }
-
-    public static void WriteAngle16(sizebuf_t sb, float f) {
-        WriteShort(sb, Math3D.ANGLE2SHORT(f));
-    }
-
-    public static void WriteDeltaUsercmd(sizebuf_t buf, usercmd_t from,
-            usercmd_t cmd) {
-        int bits;
-
-        //
-        // send the movement message
-        //
-        bits = 0;
-        if (cmd.angles[0] != from.angles[0])
-            bits |= CM_ANGLE1;
-        if (cmd.angles[1] != from.angles[1])
-            bits |= CM_ANGLE2;
-        if (cmd.angles[2] != from.angles[2])
-            bits |= CM_ANGLE3;
-        if (cmd.forwardmove != from.forwardmove)
-            bits |= CM_FORWARD;
-        if (cmd.sidemove != from.sidemove)
-            bits |= CM_SIDE;
-        if (cmd.upmove != from.upmove)
-            bits |= CM_UP;
-        if (cmd.buttons != from.buttons)
-            bits |= CM_BUTTONS;
-        if (cmd.impulse != from.impulse)
-            bits |= CM_IMPULSE;
-
-        WriteByte(buf, bits);
-
-        if ((bits & CM_ANGLE1) != 0)
-            WriteShort(buf, cmd.angles[0]);
-        if ((bits & CM_ANGLE2) != 0)
-            WriteShort(buf, cmd.angles[1]);
-        if ((bits & CM_ANGLE3) != 0)
-            WriteShort(buf, cmd.angles[2]);
-
-        if ((bits & CM_FORWARD) != 0)
-            WriteShort(buf, cmd.forwardmove);
-        if ((bits & CM_SIDE) != 0)
-            WriteShort(buf, cmd.sidemove);
-        if ((bits & CM_UP) != 0)
-            WriteShort(buf, cmd.upmove);
-
-        if ((bits & CM_BUTTONS) != 0)
-            WriteByte(buf, cmd.buttons);
-        if ((bits & CM_IMPULSE) != 0)
-            WriteByte(buf, cmd.impulse);
-
-        WriteByte(buf, cmd.msec);
-        WriteByte(buf, cmd.lightlevel);
-    }
-
     //should be ok.
-    public static void WriteDir(sizebuf_t sb, float[] dir) {
-        int i, best;
-        float d, bestd;
-
-        if (dir == null) {
-            WriteByte(sb, 0);
-            return;
-        }
-
-        bestd = 0;
-        best = 0;
-        for (i = 0; i < NUMVERTEXNORMALS; i++) {
-            d = Math3D.DotProduct(dir, bytedirs[i]);
-            if (d > bestd) {
-                bestd = d;
-                best = i;
-            }
-        }
-        WriteByte(sb, best);
-    }
-
-    //should be ok.
-    public static void ReadDir(sizebuf_t sb, float[] dir) {
+    public static void ReadDir(TSizeBuffer sb, float[] dir) {
         int b;
 
         b = ReadByte(sb);
@@ -196,208 +42,18 @@ public class MSG extends Globals {
         Math3D.VectorCopy(bytedirs[b], dir);
     }
 
-    /*
-     * ================== WriteDeltaEntity
-     * 
-     * Writes part of a packetentities message. Can delta from either a baseline
-     * or a previous packet_entity ==================
-     */
-    public static void WriteDeltaEntity(entity_state_t from, entity_state_t to,
-            sizebuf_t msg, boolean force, boolean newentity) {
-        int bits;
-
-        if (0 == to.number)
-            Com.Error(ERR_FATAL, "Unset entity number");
-        if (to.number >= MAX_EDICTS)
-            Com.Error(ERR_FATAL, "Entity number >= MAX_EDICTS");
-
-        // send an update
-        bits = 0;
-
-        if (to.number >= 256)
-            bits |= U_NUMBER16; // number8 is implicit otherwise
-
-        if (to.origin[0] != from.origin[0])
-            bits |= U_ORIGIN1;
-        if (to.origin[1] != from.origin[1])
-            bits |= U_ORIGIN2;
-        if (to.origin[2] != from.origin[2])
-            bits |= U_ORIGIN3;
-
-        if (to.angles[0] != from.angles[0])
-            bits |= U_ANGLE1;
-        if (to.angles[1] != from.angles[1])
-            bits |= U_ANGLE2;
-        if (to.angles[2] != from.angles[2])
-            bits |= U_ANGLE3;
-
-        if (to.skinnum != from.skinnum) {
-            if (to.skinnum < 256)
-                bits |= U_SKIN8;
-            else if (to.skinnum < 0x10000)
-                bits |= U_SKIN16;
-            else
-                bits |= (U_SKIN8 | U_SKIN16);
-        }
-
-        if (to.frame != from.frame) {
-            if (to.frame < 256)
-                bits |= U_FRAME8;
-            else
-                bits |= U_FRAME16;
-        }
-
-        if (to.effects != from.effects) {
-            if (to.effects < 256)
-                bits |= U_EFFECTS8;
-            else if (to.effects < 0x8000)
-                bits |= U_EFFECTS16;
-            else
-                bits |= U_EFFECTS8 | U_EFFECTS16;
-        }
-
-        if (to.renderfx != from.renderfx) {
-            if (to.renderfx < 256)
-                bits |= U_RENDERFX8;
-            else if (to.renderfx < 0x8000)
-                bits |= U_RENDERFX16;
-            else
-                bits |= U_RENDERFX8 | U_RENDERFX16;
-        }
-
-        if (to.solid != from.solid)
-            bits |= U_SOLID;
-
-        // event is not delta compressed, just 0 compressed
-        if (to.event != 0)
-            bits |= U_EVENT;
-
-        if (to.modelindex != from.modelindex)
-            bits |= U_MODEL;
-        if (to.modelindex2 != from.modelindex2)
-            bits |= U_MODEL2;
-        if (to.modelindex3 != from.modelindex3)
-            bits |= U_MODEL3;
-        if (to.modelindex4 != from.modelindex4)
-            bits |= U_MODEL4;
-
-        if (to.sound != from.sound)
-            bits |= U_SOUND;
-
-        if (newentity || (to.renderfx & RF_BEAM) != 0)
-            bits |= U_OLDORIGIN;
-
-        //
-        // write the message
-        //
-        if (bits == 0 && !force)
-            return; // nothing to send!
-
-        //----------
-
-        if ((bits & 0xff000000) != 0)
-            bits |= U_MOREBITS3 | U_MOREBITS2 | U_MOREBITS1;
-        else if ((bits & 0x00ff0000) != 0)
-            bits |= U_MOREBITS2 | U_MOREBITS1;
-        else if ((bits & 0x0000ff00) != 0)
-            bits |= U_MOREBITS1;
-
-        WriteByte(msg, bits & 255);
-
-        if ((bits & 0xff000000) != 0) {
-            WriteByte(msg, (bits >>> 8) & 255);
-            WriteByte(msg, (bits >>> 16) & 255);
-            WriteByte(msg, (bits >>> 24) & 255);
-        } else if ((bits & 0x00ff0000) != 0) {
-            WriteByte(msg, (bits >>> 8) & 255);
-            WriteByte(msg, (bits >>> 16) & 255);
-        } else if ((bits & 0x0000ff00) != 0) {
-            WriteByte(msg, (bits >>> 8) & 255);
-        }
-
-        //----------
-
-        if ((bits & U_NUMBER16) != 0)
-            WriteShort(msg, to.number);
-        else
-            WriteByte(msg, to.number);
-
-        if ((bits & U_MODEL) != 0)
-            WriteByte(msg, to.modelindex);
-        if ((bits & U_MODEL2) != 0)
-            WriteByte(msg, to.modelindex2);
-        if ((bits & U_MODEL3) != 0)
-            WriteByte(msg, to.modelindex3);
-        if ((bits & U_MODEL4) != 0)
-            WriteByte(msg, to.modelindex4);
-
-        if ((bits & U_FRAME8) != 0)
-            WriteByte(msg, to.frame);
-        if ((bits & U_FRAME16) != 0)
-            WriteShort(msg, to.frame);
-
-        if ((bits & U_SKIN8) != 0 && (bits & U_SKIN16) != 0) //used for laser
-                                                             // colors
-            WriteInt(msg, to.skinnum);
-        else if ((bits & U_SKIN8) != 0)
-            WriteByte(msg, to.skinnum);
-        else if ((bits & U_SKIN16) != 0)
-            WriteShort(msg, to.skinnum);
-
-        if ((bits & (U_EFFECTS8 | U_EFFECTS16)) == (U_EFFECTS8 | U_EFFECTS16))
-            WriteInt(msg, to.effects);
-        else if ((bits & U_EFFECTS8) != 0)
-            WriteByte(msg, to.effects);
-        else if ((bits & U_EFFECTS16) != 0)
-            WriteShort(msg, to.effects);
-
-        if ((bits & (U_RENDERFX8 | U_RENDERFX16)) == (U_RENDERFX8 | U_RENDERFX16))
-            WriteInt(msg, to.renderfx);
-        else if ((bits & U_RENDERFX8) != 0)
-            WriteByte(msg, to.renderfx);
-        else if ((bits & U_RENDERFX16) != 0)
-            WriteShort(msg, to.renderfx);
-
-        if ((bits & U_ORIGIN1) != 0)
-            WriteCoord(msg, to.origin[0]);
-        if ((bits & U_ORIGIN2) != 0)
-            WriteCoord(msg, to.origin[1]);
-        if ((bits & U_ORIGIN3) != 0)
-            WriteCoord(msg, to.origin[2]);
-
-        if ((bits & U_ANGLE1) != 0)
-            WriteAngle(msg, to.angles[0]);
-        if ((bits & U_ANGLE2) != 0)
-            WriteAngle(msg, to.angles[1]);
-        if ((bits & U_ANGLE3) != 0)
-            WriteAngle(msg, to.angles[2]);
-
-        if ((bits & U_OLDORIGIN) != 0) {
-            WriteCoord(msg, to.old_origin[0]);
-            WriteCoord(msg, to.old_origin[1]);
-            WriteCoord(msg, to.old_origin[2]);
-        }
-
-        if ((bits & U_SOUND) != 0)
-            WriteByte(msg, to.sound);
-        if ((bits & U_EVENT) != 0)
-            WriteByte(msg, to.event);
-        if ((bits & U_SOLID) != 0)
-            WriteShort(msg, to.solid);
-    }
-
     //============================================================
 
     //
     // reading functions
     //
 
-    public static void BeginReading(sizebuf_t msg) {
+    public static void BeginReading(TSizeBuffer msg) {
         msg.readcount = 0;
     }
 
     // returns -1 if no more characters are available, but also [-128 , 127]
-    public static int ReadChar(sizebuf_t msg_read) {
+    public static int ReadChar(TSizeBuffer msg_read) {
         int c;
 
         if (msg_read.readcount + 1 > msg_read.cursize)
@@ -409,7 +65,7 @@ public class MSG extends Globals {
         return c;
     }
 
-    public static int ReadByte(sizebuf_t msg_read) {
+    public static int ReadByte(TSizeBuffer msg_read) {
         int c;
 
         if (msg_read.readcount + 1 > msg_read.cursize)
@@ -422,7 +78,7 @@ public class MSG extends Globals {
         return c;
     }
 
-    public static short ReadShort(sizebuf_t msg_read) {
+    public static short ReadShort(TSizeBuffer msg_read) {
         int c;
 
         if (msg_read.readcount + 2 > msg_read.cursize)
@@ -435,7 +91,7 @@ public class MSG extends Globals {
         return (short) c;
     }
 
-    public static int ReadLong(sizebuf_t msg_read) {
+    public static int ReadLong(TSizeBuffer msg_read) {
         int c;
 
         if (msg_read.readcount + 4 > msg_read.cursize) {
@@ -454,7 +110,7 @@ public class MSG extends Globals {
         return c;
     }
 
-    public static float ReadFloat(sizebuf_t msg_read) {
+    public static float ReadFloat(TSizeBuffer msg_read) {
         int n = ReadLong(msg_read);
         return Float.intBitsToFloat(n);
     }
@@ -462,7 +118,7 @@ public class MSG extends Globals {
     // 2k read buffer.
     public static byte readbuf[] = new byte[2048];
 
-    public static String ReadString(sizebuf_t msg_read) {
+    public static String ReadString(TSizeBuffer msg_read) {
 
         byte c;
         int l = 0;
@@ -480,7 +136,7 @@ public class MSG extends Globals {
         return ret;
     }
 
-    public static String ReadStringLine(sizebuf_t msg_read) {
+    public static String ReadStringLine(TSizeBuffer msg_read) {
 
         int l;
         byte c;
@@ -499,27 +155,27 @@ public class MSG extends Globals {
         return ret;
     }
 
-    public static float ReadCoord(sizebuf_t msg_read) {
+    public static float ReadCoord(TSizeBuffer msg_read) {
         return ReadShort(msg_read) * (1.0f / 8);
     }
 
-    public static void ReadPos(sizebuf_t msg_read, float pos[]) {
+    public static void ReadPos(TSizeBuffer msg_read, float pos[]) {
         assert (pos.length == 3) : "vec3_t bug";
         pos[0] = ReadShort(msg_read) * (1.0f / 8);
         pos[1] = ReadShort(msg_read) * (1.0f / 8);
         pos[2] = ReadShort(msg_read) * (1.0f / 8);
     }
 
-    public static float ReadAngle(sizebuf_t msg_read) {
+    public static float ReadAngle(TSizeBuffer msg_read) {
         return ReadChar(msg_read) * (360.0f / 256);
     }
 
-    public static float ReadAngle16(sizebuf_t msg_read) {
+    public static float ReadAngle16(TSizeBuffer msg_read) {
         return Math3D.SHORT2ANGLE(ReadShort(msg_read));
     }
 
-    public static void ReadDeltaUsercmd(sizebuf_t msg_read, usercmd_t from,
-            usercmd_t move) {
+    public static void ReadDeltaUsercmd(TSizeBuffer msg_read, usercmd_t from,
+                                        usercmd_t move) {
         int bits;
 
         //memcpy(move, from, sizeof(* move));
@@ -558,7 +214,7 @@ public class MSG extends Globals {
 
     }
 
-    public static void ReadData(sizebuf_t msg_read, byte data[], int len) {
+    public static void ReadData(TSizeBuffer msg_read, byte data[], int len) {
         for (int i = 0; i < len; i++)
             data[i] = (byte) ReadByte(msg_read);
     }    

@@ -25,10 +25,7 @@ package jake2.server;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
-import jake2.qcommon.CM;
-import jake2.qcommon.Com;
-import jake2.qcommon.MSG;
-import jake2.qcommon.SZ;
+import jake2.qcommon.*;
 import jake2.util.Math3D;
 
 public class SV_GAME {
@@ -51,14 +48,13 @@ public class SV_GAME {
 
         client = SV_INIT.svs.clients[p - 1];
 
-        if (reliable)
-            SZ.Write(client.netchan.message, SV_INIT.sv.multicast.data,
-                    SV_INIT.sv.multicast.cursize);
-        else
-            SZ.Write(client.datagram, SV_INIT.sv.multicast.data,
-                    SV_INIT.sv.multicast.cursize);
+        if (reliable) {
+            client.netchan.message.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+        } else {
+            client.datagram.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+        }
 
-        SZ.Clear(SV_INIT.sv.multicast);
+        SV_INIT.sv.multicast.clear();
     }
 
     /**
@@ -81,7 +77,7 @@ public class SV_GAME {
     /**
      * PF_cprintf
      * <p>
-     * Print to a single client.
+     * print to a single client.
      */
     public static void PF_cprintf(edict_t ent, int level, String fmt) {
 
@@ -111,8 +107,8 @@ public class SV_GAME {
         if (n < 1 || n > SV_MAIN.maxclients.value)
             return; // Com_Error (ERR_DROP, "centerprintf to a non-client");
 
-        MSG.WriteByte(SV_INIT.sv.multicast, Defines.svc_centerprint);
-        MSG.WriteString(SV_INIT.sv.multicast, fmt);
+        SV_INIT.sv.multicast.writeByte(Defines.svc_centerprint);
+        SV_INIT.sv.multicast.writeString(fmt);
         PF_Unicast(ent, true);
     }
 
@@ -170,49 +166,49 @@ public class SV_GAME {
 
         if (SV_INIT.sv.state != Defines.ss_loading) { // send the update to
             // everyone
-            SZ.Clear(SV_INIT.sv.multicast);
-            MSG.WriteChar(SV_INIT.sv.multicast, Defines.svc_configstring);
-            MSG.WriteShort(SV_INIT.sv.multicast, index);
-            MSG.WriteString(SV_INIT.sv.multicast, val);
+            SV_INIT.sv.multicast.clear();
+            SV_INIT.sv.multicast.writeChar(Defines.svc_configstring);
+            SV_INIT.sv.multicast.writeShort(index);
+            SV_INIT.sv.multicast.writeString(val);
 
             SV_SEND.SV_Multicast(Globals.vec3_origin, Defines.MULTICAST_ALL_R);
         }
     }
 
     public static void PF_WriteChar(int c) {
-        MSG.WriteChar(SV_INIT.sv.multicast, c);
+        SV_INIT.sv.multicast.writeChar(c);
     }
 
     public static void PF_WriteByte(int c) {
-        MSG.WriteByte(SV_INIT.sv.multicast, c);
+        SV_INIT.sv.multicast.writeByte(c);
     }
 
     public static void PF_WriteShort(int c) {
-        MSG.WriteShort(SV_INIT.sv.multicast, c);
+        SV_INIT.sv.multicast.writeShort(c);
     }
 
     public static void PF_WriteLong(int c) {
-        MSG.WriteLong(SV_INIT.sv.multicast, c);
+        SV_INIT.sv.multicast.writeLong(c);
     }
 
     public static void PF_WriteFloat(float f) {
-        MSG.WriteFloat(SV_INIT.sv.multicast, f);
+        SV_INIT.sv.multicast.writeFloat(Float.floatToIntBits(f));
     }
 
     public static void PF_WriteString(String s) {
-        MSG.WriteString(SV_INIT.sv.multicast, s);
+        SV_INIT.sv.multicast.writeString(s);
     }
 
     public static void PF_WritePos(float[] pos) {
-        MSG.WritePos(SV_INIT.sv.multicast, pos);
+        SV_INIT.sv.multicast.writePos(pos);
     }
 
     public static void PF_WriteDir(float[] dir) {
-        MSG.WriteDir(SV_INIT.sv.multicast, dir);
+        TSizeBuffer.WriteDir(SV_INIT.sv.multicast, dir);
     }
 
     public static void PF_WriteAngle(float f) {
-        MSG.WriteAngle(SV_INIT.sv.multicast, f);
+        SV_INIT.sv.multicast.writeAngle(f);
     }
 
     /**
@@ -296,7 +292,7 @@ public class SV_GAME {
     /**
      * SV_InitGameProgs
      * <p>
-     * Init the game subsystem for a new map.
+     * init the game subsystem for a new map.
      */
 
     public static void SV_InitGameProgs() {

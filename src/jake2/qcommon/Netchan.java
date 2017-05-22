@@ -96,7 +96,7 @@ public final class Netchan extends SV_MAIN {
     public static TVar qport;
 
     //public static netadr_t net_from = new netadr_t();
-    public static sizebuf_t net_message = new sizebuf_t();
+    public static TSizeBuffer net_message = new TSizeBuffer();
 
     public static byte net_message_buffer[] = new byte[Defines.MAX_MSGLEN];
 
@@ -110,13 +110,13 @@ public final class Netchan extends SV_MAIN {
         // pick a port value that should be nice and random
         port = Timer.Milliseconds() & 0xffff;
 
-        showpackets = Cvar.Get("showpackets", "0", 0);
-        showdrop = Cvar.Get("showdrop", "0", 0);
-        qport = Cvar.Get("qport", "" + port, TVar.CVAR_FLAG_NOSET);
+        showpackets = ConsoleVar.Get("showpackets", "0", 0);
+        showdrop = ConsoleVar.Get("showdrop", "0", 0);
+        qport = ConsoleVar.Get("qport", "" + port, TVar.CVAR_FLAG_NOSET);
     }
 
     private static final byte send_buf[] = new byte[Defines.MAX_MSGLEN];
-    private static final sizebuf_t send = new sizebuf_t();
+    private static final TSizeBuffer send = new TSizeBuffer();
     
     /**
      * Netchan_OutOfBand. Sends an out-of-band datagram.
@@ -125,10 +125,10 @@ public final class Netchan extends SV_MAIN {
             int length, byte data[]) {
 
         // write the packet header
-        SZ.Init(send, send_buf, Defines.MAX_MSGLEN);
+        send.init(send_buf, Defines.MAX_MSGLEN);
 
-        MSG.WriteInt(send, -1); // -1 sequence means out of band
-        SZ.Write(send, data, length);
+        send.writeInt(-1);
+        send.write(data, length);
 
         // send the datagram
         NET.SendPacket(net_socket, send.cursize, send.data, adr);
@@ -150,7 +150,7 @@ public final class Netchan extends SV_MAIN {
         chan.incoming_sequence = 0;
         chan.outgoing_sequence = 1;
 
-        SZ.Init(chan.message, chan.message_buf, chan.message_buf.length);
+        chan.message.init(chan.message_buf, chan.message_buf.length);
         chan.message.allowoverflow = true;
     }
 
@@ -209,7 +209,7 @@ public final class Netchan extends SV_MAIN {
         }
 
         // write the packet header
-        SZ.Init(send, send_buf, send_buf.length);
+        send.init(send_buf, send_buf.length);
 
         w1 = (chan.outgoing_sequence & ~(1 << 31)) | (send_reliable << 31);
         w2 = (chan.incoming_sequence & ~(1 << 31))
@@ -218,22 +218,22 @@ public final class Netchan extends SV_MAIN {
         chan.outgoing_sequence++;
         chan.last_sent = Globals.curtime;
 
-        MSG.WriteInt(send, w1);
-        MSG.WriteInt(send, w2);
+        send.writeInt(w1);
+        send.writeInt(w2);
 
         // send the qport if we are a client
         if (chan.sock == Defines.NS_CLIENT)
-            MSG.WriteShort(send, (int) qport.value);
+            send.writeShort((int) qport.value);
 
         // copy the reliable message to the packet first
         if (send_reliable != 0) {
-            SZ.Write(send, chan.reliable_buf, chan.reliable_length);
+            send.write(chan.reliable_buf, chan.reliable_length);
             chan.last_reliable_sequence = chan.outgoing_sequence;
         }
 
         // add the unreliable part if space is available
         if (send.maxsize - send.cursize >= length)
-            SZ.Write(send, data, length);
+            send.write(data, length);
         else
             Com.Printf("Netchan_Transmit: dumped unreliable\n");
 
@@ -261,7 +261,7 @@ public final class Netchan extends SV_MAIN {
      * Netchan_Process is called when the current net_message is from remote_address modifies
      * net_message so that it points to the packet payload.
      */
-    public static boolean Process(netchan_t chan, sizebuf_t msg) {
+    public static boolean Process(netchan_t chan, TSizeBuffer msg) {
         // get sequence numbers
         MSG.BeginReading(msg);
         int sequence = MSG.ReadLong(msg);

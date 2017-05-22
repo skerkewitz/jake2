@@ -356,7 +356,7 @@ import java.text.DecimalFormatSymbols;
  *        is omitted from the argument, it is taken to
  *        be infinite, so all characters up to the end
  *        of the string are written.
- * <dt>%<dd>Write a % character;  no argument is
+ * <dt>%<dd>write a % character;  no argument is
  *        converted.
  *</dl>
  *<p>

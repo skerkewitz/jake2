@@ -49,9 +49,9 @@ public class SV_SEND {
 			Netchan.Netchan_OutOfBand(Defines.NS_SERVER, Globals.net_from, s.length(), Lib.stringToBytes(s));
 		}
 		else if (sv_redirected == Defines.RD_CLIENT) {
-			MSG.WriteByte(SV_MAIN.sv_client.netchan.message, Defines.svc_print);
-			MSG.WriteByte(SV_MAIN.sv_client.netchan.message, Defines.PRINT_HIGH);
-			MSG.WriteString(SV_MAIN.sv_client.netchan.message, outputbuf);
+			SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_print);
+			SV_MAIN.sv_client.netchan.message.writeByte(Defines.PRINT_HIGH);
+			SV_MAIN.sv_client.netchan.message.writeString(outputbuf);
         }
 	}
 	/*
@@ -74,9 +74,9 @@ public class SV_SEND {
 		if (level < cl.messagelevel)
 			return;
 
-		MSG.WriteByte(cl.netchan.message, Defines.svc_print);
-		MSG.WriteByte(cl.netchan.message, level);
-		MSG.WriteString(cl.netchan.message, s);
+		cl.netchan.message.writeByte(Defines.svc_print);
+		cl.netchan.message.writeByte(level);
+		cl.netchan.message.writeString(s);
 	}
 	/*
 	=================
@@ -101,9 +101,9 @@ public class SV_SEND {
 				continue;
 			if (cl.state != Defines.cs_spawned)
 				continue;
-			MSG.WriteByte(cl.netchan.message, Defines.svc_print);
-			MSG.WriteByte(cl.netchan.message, level);
-			MSG.WriteString(cl.netchan.message, s);
+			cl.netchan.message.writeByte(Defines.svc_print);
+			cl.netchan.message.writeByte(level);
+			cl.netchan.message.writeString(s);
 		}
 	}
 	/*
@@ -118,8 +118,8 @@ public class SV_SEND {
 		if (SV_INIT.sv.state == 0)
 			return;
 
-		MSG.WriteByte(SV_INIT.sv.multicast, Defines.svc_stufftext);
-		MSG.WriteString(SV_INIT.sv.multicast, s);
+		SV_INIT.sv.multicast.writeByte(Defines.svc_stufftext);
+		SV_INIT.sv.multicast.writeString(s);
 		SV_Multicast(null, Defines.MULTICAST_ALL_R);
 	}
 	/*
@@ -155,7 +155,7 @@ public class SV_SEND {
 
 		// if doing a serverrecord, store everything
 		if (SV_INIT.svs.demofile != null)
-			SZ.Write(SV_INIT.svs.demo_multicast, SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+			SV_INIT.svs.demo_multicast.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
 
 		switch (to) {
 			case Defines.MULTICAST_ALL_R :
@@ -209,13 +209,14 @@ public class SV_SEND {
 					continue;
 			}
 
-			if (reliable)
-				SZ.Write(client.netchan.message, SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
-			else
-				SZ.Write(client.datagram, SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+			if (reliable) {
+				client.netchan.message.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+			} else {
+				client.datagram.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+			}
 		}
 
-		SZ.Clear(SV_INIT.sv.multicast);
+		SV_INIT.sv.multicast.clear();
 	}
 
 	private static final float[] origin_v = { 0, 0, 0 };
@@ -312,22 +313,22 @@ public class SV_SEND {
 			}
 		}
 
-		MSG.WriteByte(SV_INIT.sv.multicast, Defines.svc_sound);
-		MSG.WriteByte(SV_INIT.sv.multicast, flags);
-		MSG.WriteByte(SV_INIT.sv.multicast, soundindex);
+		SV_INIT.sv.multicast.writeByte(Defines.svc_sound);
+		SV_INIT.sv.multicast.writeByte(flags);
+		SV_INIT.sv.multicast.writeByte(soundindex);
 
 		if ((flags & Defines.SND_VOLUME) != 0)
-			MSG.WriteByte(SV_INIT.sv.multicast, volume * 255);
+			SV_INIT.sv.multicast.writeByte(volume * 255);
 		if ((flags & Defines.SND_ATTENUATION) != 0)
-			MSG.WriteByte(SV_INIT.sv.multicast, attenuation * 64);
+			SV_INIT.sv.multicast.writeByte(attenuation * 64);
 		if ((flags & Defines.SND_OFFSET) != 0)
-			MSG.WriteByte(SV_INIT.sv.multicast, timeofs * 1000);
+			SV_INIT.sv.multicast.writeByte(timeofs * 1000);
 
 		if ((flags & Defines.SND_ENT) != 0)
-			MSG.WriteShort(SV_INIT.sv.multicast, sendchan);
+			SV_INIT.sv.multicast.writeShort(sendchan);
 
 		if ((flags & Defines.SND_POS) != 0)
-			MSG.WritePos(SV_INIT.sv.multicast, origin);
+			SV_INIT.sv.multicast.writePos(origin);
 
 		// if the sound doesn't attenuate,send it to everyone
 		// (global radio chatter, voiceovers, etc)
@@ -355,7 +356,7 @@ public class SV_SEND {
 	===============================================================================
 	*/
 
-	private static final sizebuf_t msg = new sizebuf_t();
+	private static final TSizeBuffer msg = new TSizeBuffer();
 	/*
 	=======================
 	SV_SendClientDatagram
@@ -366,7 +367,7 @@ public class SV_SEND {
 
 		SV_ENTS.SV_BuildClientFrame(client);
 
-		SZ.Init(msg, msgbuf, msgbuf.length);
+		msg.init(msgbuf, msgbuf.length);
 		msg.allowoverflow = true;
 
 		// send over all the relevant entity_state_t
@@ -380,12 +381,12 @@ public class SV_SEND {
 		if (client.datagram.overflowed)
 			Com.Printf("WARNING: datagram overflowed for " + client.name + "\n");
 		else
-			SZ.Write(msg, client.datagram.data, client.datagram.cursize);
-		SZ.Clear(client.datagram);
+			msg.write(client.datagram.data, client.datagram.cursize);
+		client.datagram.clear();
 
 		if (msg.overflowed) { // must have room left for the packet header
 			Com.Printf("WARNING: msg overflowed for " + client.name + "\n");
-			SZ.Clear(msg);
+			msg.clear();
 		}
 
 		// send the datagram
@@ -506,8 +507,8 @@ public class SV_SEND {
 			// if the reliable message overflowed,
 			// drop the client
 			if (c.netchan.message.overflowed) {
-				SZ.Clear(c.netchan.message);
-				SZ.Clear(c.datagram);
+				c.netchan.message.clear();
+				c.datagram.clear();
 				SV_BroadcastPrintf(Defines.PRINT_HIGH, c.name + " overflowed\n");
 				SV_MAIN.SV_DropClient(c);
 			}

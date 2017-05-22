@@ -220,7 +220,7 @@ public class VID extends Globals {
 			return false;
 		}
 
-		/* Init Keyboard */
+		/* init Keyboard */
 		Globals.re.getKeyboardHandler().Init();
 
 		Com.Printf( "------------------------------------\n");
@@ -270,17 +270,17 @@ public class VID extends Globals {
 				if ( vid_ref.string.equals(Renderer.getDefaultName())) {
 				    renderer = vid_ref.string;
 					Com.Printf("Refresh failed\n");
-					gl_mode = Cvar.Get( "gl_mode", "0", 0 );
+					gl_mode = ConsoleVar.Get( "gl_mode", "0", 0 );
 					if (gl_mode.value != 0.0f) {
 						Com.Printf("Trying mode 0\n");
-						Cvar.SetValue("gl_mode", 0);
+						ConsoleVar.SetValue("gl_mode", 0);
 						if ( !LoadRefresh( vid_ref.string, false ) )
 							Com.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
 					} else
 						Com.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
 				}
 
-				Cvar.Set("vid_ref", renderer);
+				ConsoleVar.Set("vid_ref", renderer);
 
 				/*
 				 * drop the console if we fail to load a refresh
@@ -305,13 +305,13 @@ public class VID extends Globals {
 	public static void Init()
 	{
 		/* Create the video variables so we know how to start the graphics drivers */
-		vid_ref = Cvar.Get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
-		vid_xpos = Cvar.Get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
-		vid_ypos = Cvar.Get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
-		vid_width = Cvar.Get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
-		vid_height = Cvar.Get("vid_height", "480", TVar.CVAR_FLAG_ARCHIVE);
-		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
-		vid_gamma = Cvar.Get( "vid_gamma", "1", TVar.CVAR_FLAG_ARCHIVE );
+		vid_ref = ConsoleVar.Get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
+		vid_xpos = ConsoleVar.Get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
+		vid_ypos = ConsoleVar.Get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
+		vid_width = ConsoleVar.Get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
+		vid_height = ConsoleVar.Get("vid_height", "480", TVar.CVAR_FLAG_ARCHIVE);
+		vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_gamma = ConsoleVar.Get( "vid_gamma", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		vid_modes[11].width = (int)vid_width.value;
 		vid_modes[11].height = (int)vid_height.value;
@@ -402,7 +402,7 @@ public class VID extends Globals {
 	{
 		Menu.menuslider_s slider = (Menu.menuslider_s) s;
 
-		Cvar.SetValue( "viewsize", slider.curvalue * 10 );
+		ConsoleVar.SetValue( "viewsize", slider.curvalue * 10 );
 	}
 
 	static void BrightnessCallback( Object s )
@@ -416,7 +416,7 @@ public class VID extends Globals {
 		{
 			float gamma = ( 0.8f - ( slider.curvalue/10.0f - 0.5f ) ) + 0.5f;
 
-			Cvar.SetValue( "vid_gamma", gamma );
+			ConsoleVar.SetValue( "vid_gamma", gamma );
 		}
 	}
 
@@ -438,18 +438,18 @@ public class VID extends Globals {
 		// modulate:  [1.0; 2.6]
 		float modulate = s_brightness_slider.curvalue * 0.2f;
 
-		Cvar.SetValue( "vid_gamma", gamma );
-		Cvar.SetValue( "gl_modulate", modulate);
-		Cvar.SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
-		Cvar.SetValue( "vid_fullscreen", s_fs_box.curvalue );
-		Cvar.SetValue( "gl_swapinterval", s_vsync_box.curvalue);
+		ConsoleVar.SetValue( "vid_gamma", gamma );
+		ConsoleVar.SetValue( "gl_modulate", modulate);
+		ConsoleVar.SetValue( "gl_picmip", 3 - s_tq_slider.curvalue );
+		ConsoleVar.SetValue( "vid_fullscreen", s_fs_box.curvalue );
+		ConsoleVar.SetValue( "gl_swapinterval", s_vsync_box.curvalue);
 		// set always true because of vid_ref or mode changes
 		gl_swapinterval.modified = true;
-		Cvar.SetValue( "gl_ext_palettedtexture", s_paletted_texture_box.curvalue );
-		Cvar.SetValue( "gl_mode", s_mode_list.curvalue );
+		ConsoleVar.SetValue( "gl_ext_palettedtexture", s_paletted_texture_box.curvalue );
+		ConsoleVar.SetValue( "gl_mode", s_mode_list.curvalue );
 
-		Cvar.Set( "vid_ref", drivers[s_ref_list.curvalue] );
-		Cvar.Set( "gl_driver", drivers[s_ref_list.curvalue] );
+		ConsoleVar.Set( "vid_ref", drivers[s_ref_list.curvalue] );
+		ConsoleVar.Set( "gl_driver", drivers[s_ref_list.curvalue] );
 		if (gl_driver.modified)
 			vid_ref.modified = true;
 		
@@ -529,16 +529,16 @@ public class VID extends Globals {
 		initRefs();
 		
 		if ( gl_driver == null )
-			gl_driver = Cvar.Get( "gl_driver", Renderer.getPreferedName(), 0 );
+			gl_driver = ConsoleVar.Get( "gl_driver", Renderer.getPreferedName(), 0 );
 		if ( gl_picmip == null )
-			gl_picmip = Cvar.Get( "gl_picmip", "0", 0 );
+			gl_picmip = ConsoleVar.Get( "gl_picmip", "0", 0 );
 		if ( gl_mode == null)
-			gl_mode = Cvar.Get( "gl_mode", "3", 0 );
+			gl_mode = ConsoleVar.Get( "gl_mode", "3", 0 );
 		if ( gl_ext_palettedtexture == null )
-			gl_ext_palettedtexture = Cvar.Get( "gl_ext_palettedtexture", "1", TVar.CVAR_FLAG_ARCHIVE );
+			gl_ext_palettedtexture = ConsoleVar.Get( "gl_ext_palettedtexture", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		if ( gl_swapinterval == null)
-			gl_swapinterval = Cvar.Get( "gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE );
+			gl_swapinterval = ConsoleVar.Get( "gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE );
 
 		s_mode_list.curvalue = (int)gl_mode.value;
 		if (vid_fullscreen.value != 0.0f) {
@@ -556,7 +556,7 @@ public class VID extends Globals {
 		}
 
 		if ( SCR.scr_viewsize == null )
-			SCR.scr_viewsize = Cvar.Get ("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
+			SCR.scr_viewsize = ConsoleVar.Get ("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
 
 		s_screensize_slider.curvalue = (int)(SCR.scr_viewsize.value/10);
 

@@ -106,14 +106,14 @@ public class CL_parse {
 
             // give the server an offset to start the download
             Com.Printf("Resuming " + Globals.cls.downloadname + "\n");
-            MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-            MSG.WriteString(Globals.cls.netchan.message, "download "
-                    + Globals.cls.downloadname + " " + len);
+            Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+            Globals.cls.netchan.message.writeString("download "
+                        + Globals.cls.downloadname + " " + len);
         } else {
             Com.Printf("Downloading " + Globals.cls.downloadname + "\n");
-            MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-            MSG.WriteString(Globals.cls.netchan.message, "download "
-                    + Globals.cls.downloadname);
+            Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+            Globals.cls.netchan.message.writeString("download "
+                        + Globals.cls.downloadname);
         }
 
         Globals.cls.downloadnumber++;
@@ -158,9 +158,9 @@ public class CL_parse {
                     .StripExtension(Globals.cls.downloadname);
             Globals.cls.downloadtempname += ".tmp";
 
-            MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-            MSG.WriteString(Globals.cls.netchan.message, "download "
-                    + Globals.cls.downloadname);
+            Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+            Globals.cls.netchan.message.writeString("download "
+                        + Globals.cls.downloadname);
 
             Globals.cls.downloadnumber++;
         }
@@ -241,8 +241,8 @@ public class CL_parse {
             // request next block
             //	   change display routines by zoid
             Globals.cls.downloadpercent = percent;
-            MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-            SZ.Print(Globals.cls.netchan.message, "nextdl");
+            Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+            Globals.cls.netchan.message.print("nextdl");
         } else {
             try {
                 Globals.cls.download.close();
@@ -311,7 +311,7 @@ public class CL_parse {
                         .equals(str))
                 || (str.length() == 0 && (FileSystem.fs_gamedirvar.string != null || FileSystem.fs_gamedirvar.string
                         .length() == 0)))
-            Cvar.Set("game", str);
+            ConsoleVar.Set("game", str);
 
         // parse player entity number
         Globals.cl.playernum = MSG.ReadShort(Globals.net_message);

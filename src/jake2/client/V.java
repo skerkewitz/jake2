@@ -400,13 +400,13 @@ public final class V extends Globals {
 
         Cmd.AddCommand("viewpos", Viewpos_f);
 
-        crosshair = Cvar.Get("crosshair", "0", TVar.CVAR_FLAG_ARCHIVE);
+        crosshair = ConsoleVar.Get("crosshair", "0", TVar.CVAR_FLAG_ARCHIVE);
 
-        cl_testblend = Cvar.Get("cl_testblend", "0", 0);
-        cl_testparticles = Cvar.Get("cl_testparticles", "0", 0);
-        cl_testentities = Cvar.Get("cl_testentities", "0", 0);
-        cl_testlights = Cvar.Get("cl_testlights", "0", 0);
+        cl_testblend = ConsoleVar.Get("cl_testblend", "0", 0);
+        cl_testparticles = ConsoleVar.Get("cl_testparticles", "0", 0);
+        cl_testentities = ConsoleVar.Get("cl_testentities", "0", 0);
+        cl_testlights = ConsoleVar.Get("cl_testlights", "0", 0);
 
-        cl_stats = Cvar.Get("cl_stats", "0", 0);
+        cl_stats = ConsoleVar.Get("cl_stats", "0", 0);
     }
 }

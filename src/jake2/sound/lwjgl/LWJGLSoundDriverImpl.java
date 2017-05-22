@@ -12,7 +12,7 @@ import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.entity_state_t;
 import jake2.qcommon.Com;
-import jake2.qcommon.Cvar;
+import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.FileSystem;
 import jake2.qcommon.xcommand_t;
 import jake2.sound.*;
@@ -50,7 +50,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundImpl#Init()
+     * @see jake2.sound.SoundImpl#init()
      */
     public boolean Init() {
 
@@ -63,7 +63,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         }
 
         // set the listerner (master) volume
-        s_volume = Cvar.Get("s_volume", "0.7", TVar.CVAR_FLAG_ARCHIVE);
+        s_volume = ConsoleVar.Get("s_volume", "0.7", TVar.CVAR_FLAG_ARCHIVE);
         AL10.alGenBuffers(buffers);
         int count = Channel.init(buffers);
         Com.Printf("... using " + count + " channels\n");

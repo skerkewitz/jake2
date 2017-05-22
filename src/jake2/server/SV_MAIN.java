@@ -99,7 +99,7 @@ public class SV_MAIN {
      */
     public static void SV_DropClient(client_t drop) {
         // add the disconnect
-        MSG.WriteByte(drop.netchan.message, Defines.svc_disconnect);
+        drop.netchan.message.writeByte(Defines.svc_disconnect);
 
         if (drop.state == Defines.cs_spawned) {
             // call the prog function for removing a client
@@ -134,7 +134,7 @@ public class SV_MAIN {
         int statusLength;
         int playerLength;
 
-        status = Cvar.Serverinfo() + "\n";
+        status = ConsoleVar.Serverinfo() + "\n";
 
         for (i = 0; i < SV_MAIN.maxclients.value; i++) {
             cl = SV_INIT.svs.clients[i];
@@ -393,9 +393,7 @@ public class SV_MAIN {
 
         SV_INIT.svs.clients[i].state = Defines.cs_connected;
 
-        SZ.Init(SV_INIT.svs.clients[i].datagram,
-                SV_INIT.svs.clients[i].datagram_buf,
-                SV_INIT.svs.clients[i].datagram_buf.length);
+        SV_INIT.svs.clients[i].datagram.init(SV_INIT.svs.clients[i].datagram_buf, SV_INIT.svs.clients[i].datagram_buf.length);
         
         SV_INIT.svs.clients[i].datagram.allowoverflow = true;
         SV_INIT.svs.clients[i].lastmessage = SV_INIT.svs.realtime; // don't timeout
@@ -864,37 +862,37 @@ public class SV_MAIN {
     public static void SV_Init() {
         SV_CCMDS.SV_InitOperatorCommands(); //ok.
 
-        SV_MAIN.rcon_password = Cvar.Get("rcon_password", "", 0);
-        Cvar.Get("skill", "1", 0);
-        Cvar.Get("deathmatch", "0", TVar.CVAR_FLAG_LATCH);
-        Cvar.Get("coop", "0", TVar.CVAR_FLAG_LATCH);
-        Cvar.Get("dmflags", "" + Defines.DF_INSTANT_ITEMS, TVar.CVAR_FLAG_SERVERINFO);
-        Cvar.Get("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
-        Cvar.Get("timelimit", "0", TVar.CVAR_FLAG_SERVERINFO);
-        Cvar.Get("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        Cvar.Get("protocol", "" + Defines.PROTOCOL_VERSION, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+        SV_MAIN.rcon_password = ConsoleVar.Get("rcon_password", "", 0);
+        ConsoleVar.Get("skill", "1", 0);
+        ConsoleVar.Get("deathmatch", "0", TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.Get("coop", "0", TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.Get("dmflags", "" + Defines.DF_INSTANT_ITEMS, TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.Get("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.Get("timelimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.Get("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.Get("protocol", "" + Defines.PROTOCOL_VERSION, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
 
-        SV_MAIN.maxclients = Cvar.Get("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        SV_MAIN.hostname = Cvar.Get("hostname", "noname",TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_ARCHIVE);
-        SV_MAIN.timeout = Cvar.Get("timeout", "125", 0);
-        SV_MAIN.zombietime = Cvar.Get("zombietime", "2", 0);
-        SV_MAIN.sv_showclamp = Cvar.Get("showclamp", "0", 0);
-        SV_MAIN.sv_paused = Cvar.Get("paused", "0", 0);
-        SV_MAIN.sv_timedemo = Cvar.Get("timedemo", "0", 0);
-        SV_MAIN.sv_enforcetime = Cvar.Get("sv_enforcetime", "0", 0);
+        SV_MAIN.maxclients = ConsoleVar.Get("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        SV_MAIN.hostname = ConsoleVar.Get("hostname", "noname",TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.timeout = ConsoleVar.Get("timeout", "125", 0);
+        SV_MAIN.zombietime = ConsoleVar.Get("zombietime", "2", 0);
+        SV_MAIN.sv_showclamp = ConsoleVar.Get("showclamp", "0", 0);
+        SV_MAIN.sv_paused = ConsoleVar.Get("paused", "0", 0);
+        SV_MAIN.sv_timedemo = ConsoleVar.Get("timedemo", "0", 0);
+        SV_MAIN.sv_enforcetime = ConsoleVar.Get("sv_enforcetime", "0", 0);
 
-        SV_MAIN.allow_download = Cvar.Get("allow_download", "1", TVar.CVAR_FLAG_ARCHIVE);
-        SV_MAIN.allow_download_players = Cvar.Get("allow_download_players","0", TVar.CVAR_FLAG_ARCHIVE);
-        SV_MAIN.allow_download_models = Cvar.Get("allow_download_models", "1", TVar.CVAR_FLAG_ARCHIVE);
-        SV_MAIN.allow_download_sounds = Cvar.Get("allow_download_sounds", "1", TVar.CVAR_FLAG_ARCHIVE);
-        SV_MAIN.allow_download_maps = Cvar.Get("allow_download_maps", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download = ConsoleVar.Get("allow_download", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_players = ConsoleVar.Get("allow_download_players","0", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_models = ConsoleVar.Get("allow_download_models", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_sounds = ConsoleVar.Get("allow_download_sounds", "1", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.allow_download_maps = ConsoleVar.Get("allow_download_maps", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-        SV_MAIN.sv_noreload = Cvar.Get("sv_noreload", "0", 0);
-        SV_MAIN.sv_airaccelerate = Cvar.Get("sv_airaccelerate", "0", TVar.CVAR_FLAG_LATCH);
-        SV_MAIN.public_server = Cvar.Get("public", "0", 0);
-        SV_MAIN.sv_reconnect_limit = Cvar.Get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
+        SV_MAIN.sv_noreload = ConsoleVar.Get("sv_noreload", "0", 0);
+        SV_MAIN.sv_airaccelerate = ConsoleVar.Get("sv_airaccelerate", "0", TVar.CVAR_FLAG_LATCH);
+        SV_MAIN.public_server = ConsoleVar.Get("public", "0", 0);
+        SV_MAIN.sv_reconnect_limit = ConsoleVar.Get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        SZ.Init(Globals.net_message, Globals.net_message_buffer, Globals.net_message_buffer.length);
+        Globals.net_message.init(Globals.net_message_buffer, Globals.net_message_buffer.length);
     }
 
     /**
@@ -907,15 +905,12 @@ public class SV_MAIN {
         int i;
         client_t cl;
 
-        SZ.Clear(Globals.net_message);
-        MSG.WriteByte(Globals.net_message, Defines.svc_print);
-        MSG.WriteByte(Globals.net_message, Defines.PRINT_HIGH);
-        MSG.WriteString(Globals.net_message, message);
+        Globals.net_message.clear();
+        Globals.net_message.writeByte(Defines.svc_print);
+        Globals.net_message.writeByte(Defines.PRINT_HIGH);
+        Globals.net_message.writeString(message);
 
-        if (reconnect)
-            MSG.WriteByte(Globals.net_message, Defines.svc_reconnect);
-        else
-            MSG.WriteByte(Globals.net_message, Defines.svc_disconnect);
+        Globals.net_message.writeByte(reconnect ? Defines.svc_reconnect : Defines.svc_disconnect);
 
         // send it twice
         // stagger the packets to crutch operating system limited buffers

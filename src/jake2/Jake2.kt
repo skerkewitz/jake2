@@ -27,7 +27,7 @@ package jake2
 
 import jake2.game.TVar
 import jake2.qcommon.Com
-import jake2.qcommon.Cvar
+import jake2.qcommon.ConsoleVar
 import jake2.qcommon.Qcommon
 import jake2.render.opengl.LwjglDriver
 import jake2.sys.Timer
@@ -81,7 +81,7 @@ object Jake2 {
 
         // TODO: check if dedicated is set in config file
 
-        Globals.dedicated = Cvar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+        Globals.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
 
         if (dedicated)
             Globals.dedicated.value = 1.0f
@@ -104,7 +104,7 @@ object Jake2 {
         }
         Qcommon.Init(c_args)
 
-        Globals.nostdout = Cvar.Get("nostdout", "0", 0)
+        Globals.nostdout = ConsoleVar.Get("nostdout", "0", 0)
 
         var oldtime = Timer.Milliseconds()
         var newtime: Int

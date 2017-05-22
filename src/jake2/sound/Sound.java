@@ -25,10 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package jake2.sound;
 
-import jake2.Defines;
 import jake2.game.TVar;
 import jake2.qcommon.Com;
-import jake2.qcommon.Cvar;
+import jake2.qcommon.ConsoleVar;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -102,7 +101,7 @@ public class Sound {
 
         Com.Printf("\n------- sound initialization -------\n");
 
-        TVar cv = Cvar.Get("s_initsound", "1", 0);
+        TVar cv = ConsoleVar.Get("s_initsound", "1", 0);
         if (cv.value == 0.0f) {
             Com.Printf("not initializing.\n");
             useDriver("dummy");
@@ -115,12 +114,12 @@ public class Sound {
             defaultDriver = drivers.get(drivers.size() - 1).getName();
         }
 
-        s_impl = Cvar.Get("s_impl", defaultDriver, TVar.CVAR_FLAG_ARCHIVE);
+        s_impl = ConsoleVar.Get("s_impl", defaultDriver, TVar.CVAR_FLAG_ARCHIVE);
         useDriver(s_impl.string);
 
         if (impl.Init()) {
             // driver ok
-            Cvar.Set("s_impl", impl.getName());
+            ConsoleVar.Set("s_impl", impl.getName());
         } else {
             // fallback
             useDriver("dummy");

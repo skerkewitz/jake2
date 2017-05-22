@@ -126,7 +126,7 @@ public final class CL {
             try {
                 String name;
                 byte buf_data[] = new byte[Defines.MAX_MSGLEN];
-                sizebuf_t buf = new sizebuf_t();
+                TSizeBuffer buf = new TSizeBuffer();
                 int i;
                 entity_state_t ent;
 
@@ -166,17 +166,17 @@ public final class CL {
                 //
                 // write out messages to hold the startup information
                 //
-                SZ.Init(buf, buf_data, Defines.MAX_MSGLEN);
+                buf.init(buf_data, Defines.MAX_MSGLEN);
 
                 // send the serverdata
-                MSG.WriteByte(buf, Defines.svc_serverdata);
-                MSG.WriteInt(buf, Defines.PROTOCOL_VERSION);
-                MSG.WriteInt(buf, 0x10000 + Globals.cl.servercount);
-                MSG.WriteByte(buf, 1); // demos are always attract loops
-                MSG.WriteString(buf, Globals.cl.gamedir);
-                MSG.WriteShort(buf, Globals.cl.playernum);
+                buf.writeByte(Defines.svc_serverdata);
+                buf.writeInt(Defines.PROTOCOL_VERSION);
+                buf.writeInt(0x10000 + Globals.cl.servercount);
+                buf.writeByte(1); // demos are always attract loops
+                buf.writeString(Globals.cl.gamedir);
+                buf.writeShort(Globals.cl.playernum);
 
-                MSG.WriteString(buf, Globals.cl.configstrings[Defines.CS_NAME]);
+                buf.writeString(Globals.cl.configstrings[Defines.CS_NAME]);
 
                 // configstrings
                 for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++) {
@@ -190,9 +190,9 @@ public final class CL {
                             buf.cursize = 0;
                         }
 
-                        MSG.WriteByte(buf, Defines.svc_configstring);
-                        MSG.WriteShort(buf, i);
-                        MSG.WriteString(buf, Globals.cl.configstrings[i]);
+                        buf.writeByte(Defines.svc_configstring);
+                        buf.writeShort(i);
+                        buf.writeString(Globals.cl.configstrings[i]);
                     }
 
                 }
@@ -210,13 +210,13 @@ public final class CL {
                         buf.cursize = 0;
                     }
 
-                    MSG.WriteByte(buf, Defines.svc_spawnbaseline);
-                    MSG.WriteDeltaEntity(nullstate,
+                    buf.writeByte(Defines.svc_spawnbaseline);
+                    TSizeBuffer.WriteDeltaEntity(nullstate,
                             Globals.cl_entities[i].baseline, buf, true, true);
                 }
 
-                MSG.WriteByte(buf, Defines.svc_stufftext);
-                MSG.WriteString(buf, "precache\n");
+                buf.writeByte(Defines.svc_stufftext);
+                buf.writeString("precache\n");
 
                 // write it to the demo file
                 Globals.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
@@ -241,9 +241,8 @@ public final class CL {
 
             // don't forward the first argument
             if (Cmd.Argc() > 1) {
-                MSG.WriteByte(Globals.cls.netchan.message,
-                        Defines.clc_stringcmd);
-                SZ.Print(Globals.cls.netchan.message, Cmd.Args());
+                Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+                Globals.cls.netchan.message.print(Cmd.Args());
             }
         }
     };
@@ -255,13 +254,13 @@ public final class CL {
         public void execute() {
             // never pause in multiplayer
 
-            if (Cvar.VariableValue("maxclients") > 1
+            if (ConsoleVar.VariableValue("maxclients") > 1
                     || Globals.server_state == 0) {
-                Cvar.SetValue("paused", 0);
+                ConsoleVar.SetValue("paused", 0);
                 return;
             }
 
-            Cvar.SetValue("paused", Globals.cl_paused.value);
+            ConsoleVar.SetValue("paused", Globals.cl_paused.value);
         }
     };
 
@@ -403,9 +402,8 @@ public final class CL {
             if (Globals.cls.state == Defines.ca_connected) {
                 Com.Printf("reconnecting...\n");
                 Globals.cls.state = Defines.ca_connected;
-                MSG.WriteChar(Globals.cls.netchan.message,
-                        Defines.clc_stringcmd);
-                MSG.WriteString(Globals.cls.netchan.message, "new");
+                Globals.cls.netchan.message.writeChar(Defines.clc_stringcmd);
+                Globals.cls.netchan.message.writeString("new");
                 return;
             }
 
@@ -440,7 +438,7 @@ public final class CL {
             // send a broadcast packet
             Com.Printf("pinging broadcast...\n");
 
-            noudp = Cvar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
+            noudp = ConsoleVar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
             if (noudp.value == 0.0f) {
                 adr.type = Defines.NA_BROADCAST;
                 adr.port = Defines.PORT_SERVER;
@@ -450,7 +448,7 @@ public final class CL {
             }
 
             // we use no IPX
-            noipx = Cvar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
+            noipx = ConsoleVar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
             if (noipx.value == 0.0f) {
                 adr.type = Defines.NA_BROADCAST_IPX;
                 //adr.port = BigShort(PORT_SERVER);
@@ -463,7 +461,7 @@ public final class CL {
             for (i = 0; i < 16; i++) {
                 //Com_sprintf (name, sizeof(name), "adr%i", i);
                 name = "adr" + i;
-                adrstring = Cvar.VariableString(name);
+                adrstring = ConsoleVar.VariableString(name);
                 if (adrstring == null || adrstring.length() == 0)
                     continue;
 
@@ -509,7 +507,7 @@ public final class CL {
     static xcommand_t Userinfo_f = new xcommand_t() {
         public void execute() {
             Com.Printf("User info settings:\n");
-            Info.Print(Cvar.Userinfo());
+            Info.Print(ConsoleVar.Userinfo());
         }
     };
 
@@ -612,12 +610,12 @@ public final class CL {
             adr.port = Defines.PORT_SERVER;
         //			adr.port = BigShort(PORT_SERVER);
 
-        port = (int) Cvar.VariableValue("qport");
+        port = (int) ConsoleVar.VariableValue("qport");
         Globals.userinfo_modified = false;
 
         Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "connect "
                 + Defines.PROTOCOL_VERSION + " " + port + " "
-                + Globals.cls.challenge + " \"" + Cvar.Userinfo() + "\"\n");
+                + Globals.cls.challenge + " \"" + ConsoleVar.Userinfo() + "\"\n");
     }
 
     /**
@@ -677,7 +675,7 @@ public final class CL {
             Globals.cl_entities[i] = new centity_t();
         }
 
-        SZ.Clear(Globals.cls.netchan.message);
+        Globals.cls.netchan.message.clear();
     }
 
     /**
@@ -777,8 +775,8 @@ public final class CL {
             }
             Netchan.Setup(Defines.NS_CLIENT, Globals.cls.netchan,
                     Globals.net_from, Globals.cls.quakePort);
-            MSG.WriteChar(Globals.cls.netchan.message, Defines.clc_stringcmd);
-            MSG.WriteString(Globals.cls.netchan.message, "new");
+            Globals.cls.netchan.message.writeChar(Defines.clc_stringcmd);
+            Globals.cls.netchan.message.writeString("new");
             Globals.cls.state = Defines.ca_connected;
             return;
         }
@@ -909,11 +907,11 @@ public final class CL {
 
             sk = Globals.skin.string;
             if (sk.startsWith("male") || sk.startsWith("cyborg"))
-                Cvar.Set("gender", "male");
+                ConsoleVar.Set("gender", "male");
             else if (sk.startsWith("female") || sk.startsWith("crackhor"))
-                Cvar.Set("gender", "female");
+                ConsoleVar.Set("gender", "female");
             else
-                Cvar.Set("gender", "none");
+                ConsoleVar.Set("gender", "none");
             Globals.gender.modified = false;
         }
     }
@@ -1231,8 +1229,8 @@ public final class CL {
         CL_parse.RegisterSounds();
         CL_view.PrepRefresh();
 
-        MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-        MSG.WriteString(Globals.cls.netchan.message, "begin "
+        Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+        Globals.cls.netchan.message.writeString("begin "
                 + CL.precache_spawncount + "\n");
     }
 
@@ -1245,91 +1243,91 @@ public final class CL {
 
         CL_input.InitInput();
 
-        Cvar.Get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr2", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr3", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr4", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr5", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr6", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr7", "", TVar.CVAR_FLAG_ARCHIVE);
-        Cvar.Get("adr8", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr2", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr3", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr4", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr5", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr6", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr7", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.Get("adr8", "", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our variables
         //
-        Globals.cl_stereo_separation = Cvar.Get("cl_stereo_separation", "0.4",
+        Globals.cl_stereo_separation = ConsoleVar.Get("cl_stereo_separation", "0.4",
                 TVar.CVAR_FLAG_ARCHIVE);
-        Globals.cl_stereo = Cvar.Get("cl_stereo", "0", 0);
+        Globals.cl_stereo = ConsoleVar.Get("cl_stereo", "0", 0);
 
-        Globals.cl_add_blend = Cvar.Get("cl_blend", "1", 0);
-        Globals.cl_add_lights = Cvar.Get("cl_lights", "1", 0);
-        Globals.cl_add_particles = Cvar.Get("cl_particles", "1", 0);
-        Globals.cl_add_entities = Cvar.Get("cl_entities", "1", 0);
-        Globals.cl_gun = Cvar.Get("cl_gun", "1", 0);
-        Globals.cl_footsteps = Cvar.Get("cl_footsteps", "1", 0);
-        Globals.cl_noskins = Cvar.Get("cl_noskins", "0", 0);
-        Globals.cl_autoskins = Cvar.Get("cl_autoskins", "0", 0);
-        Globals.cl_predict = Cvar.Get("cl_predict", "1", 0);
+        Globals.cl_add_blend = ConsoleVar.Get("cl_blend", "1", 0);
+        Globals.cl_add_lights = ConsoleVar.Get("cl_lights", "1", 0);
+        Globals.cl_add_particles = ConsoleVar.Get("cl_particles", "1", 0);
+        Globals.cl_add_entities = ConsoleVar.Get("cl_entities", "1", 0);
+        Globals.cl_gun = ConsoleVar.Get("cl_gun", "1", 0);
+        Globals.cl_footsteps = ConsoleVar.Get("cl_footsteps", "1", 0);
+        Globals.cl_noskins = ConsoleVar.Get("cl_noskins", "0", 0);
+        Globals.cl_autoskins = ConsoleVar.Get("cl_autoskins", "0", 0);
+        Globals.cl_predict = ConsoleVar.Get("cl_predict", "1", 0);
 
-        Globals.cl_maxfps = Cvar.Get("cl_maxfps", "90", 0);
+        Globals.cl_maxfps = ConsoleVar.Get("cl_maxfps", "90", 0);
 
-        Globals.cl_upspeed = Cvar.Get("cl_upspeed", "200", 0);
-        Globals.cl_forwardspeed = Cvar.Get("cl_forwardspeed", "200", 0);
-        Globals.cl_sidespeed = Cvar.Get("cl_sidespeed", "200", 0);
-        Globals.cl_yawspeed = Cvar.Get("cl_yawspeed", "140", 0);
-        Globals.cl_pitchspeed = Cvar.Get("cl_pitchspeed", "150", 0);
-        Globals.cl_anglespeedkey = Cvar.Get("cl_anglespeedkey", "1.5", 0);
+        Globals.cl_upspeed = ConsoleVar.Get("cl_upspeed", "200", 0);
+        Globals.cl_forwardspeed = ConsoleVar.Get("cl_forwardspeed", "200", 0);
+        Globals.cl_sidespeed = ConsoleVar.Get("cl_sidespeed", "200", 0);
+        Globals.cl_yawspeed = ConsoleVar.Get("cl_yawspeed", "140", 0);
+        Globals.cl_pitchspeed = ConsoleVar.Get("cl_pitchspeed", "150", 0);
+        Globals.cl_anglespeedkey = ConsoleVar.Get("cl_anglespeedkey", "1.5", 0);
 
-        Globals.cl_run = Cvar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.lookspring = Cvar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.lookstrafe = Cvar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.sensitivity = Cvar
+        Globals.cl_run = ConsoleVar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.lookspring = ConsoleVar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.lookstrafe = ConsoleVar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.sensitivity = ConsoleVar
                 .Get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Globals.m_pitch = Cvar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.m_yaw = Cvar.Get("m_yaw", "0.022", 0);
-        Globals.m_forward = Cvar.Get("m_forward", "1", 0);
-        Globals.m_side = Cvar.Get("m_side", "1", 0);
+        Globals.m_pitch = ConsoleVar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
+        Globals.m_forward = ConsoleVar.Get("m_forward", "1", 0);
+        Globals.m_side = ConsoleVar.Get("m_side", "1", 0);
 
-        Globals.cl_shownet = Cvar.Get("cl_shownet", "0", 0);
-        Globals.cl_showmiss = Cvar.Get("cl_showmiss", "0", 0);
-        Globals.cl_showclamp = Cvar.Get("showclamp", "0", 0);
-        Globals.cl_timeout = Cvar.Get("cl_timeout", "120", 0);
-        Globals.cl_paused = Cvar.Get("paused", "0", 0);
-        Globals.cl_timedemo = Cvar.Get("timedemo", "0", 0);
+        Globals.cl_shownet = ConsoleVar.Get("cl_shownet", "0", 0);
+        Globals.cl_showmiss = ConsoleVar.Get("cl_showmiss", "0", 0);
+        Globals.cl_showclamp = ConsoleVar.Get("showclamp", "0", 0);
+        Globals.cl_timeout = ConsoleVar.Get("cl_timeout", "120", 0);
+        Globals.cl_paused = ConsoleVar.Get("paused", "0", 0);
+        Globals.cl_timedemo = ConsoleVar.Get("timedemo", "0", 0);
 
-        Globals.rcon_client_password = Cvar.Get("rcon_password", "", 0);
-        Globals.rcon_address = Cvar.Get("rcon_address", "", 0);
+        Globals.rcon_client_password = ConsoleVar.Get("rcon_password", "", 0);
+        Globals.rcon_address = ConsoleVar.Get("rcon_address", "", 0);
 
-        Globals.cl_lightlevel = Cvar.Get("r_lightlevel", "0", 0);
+        Globals.cl_lightlevel = ConsoleVar.Get("r_lightlevel", "0", 0);
 
         //
         // userinfo
         //
-        Globals.info_password = Cvar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
-        Globals.info_spectator = Cvar.Get("spectator", "0",
+        Globals.info_password = ConsoleVar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
+        Globals.info_spectator = ConsoleVar.Get("spectator", "0",
                 TVar.CVAR_FLAG_USERINFO);
-        Globals.name = Cvar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
+        Globals.name = ConsoleVar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.skin = Cvar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
+        Globals.skin = ConsoleVar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.rate = Cvar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
+        Globals.rate = ConsoleVar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE); // FIXME
-        Globals.msg = Cvar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
+        Globals.msg = ConsoleVar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.hand = Cvar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
+        Globals.hand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.fov = Cvar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
+        Globals.fov = ConsoleVar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.gender = Cvar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
+        Globals.gender = ConsoleVar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.gender_auto = Cvar
+        Globals.gender_auto = ConsoleVar
                 .Get("gender_auto", "1", TVar.CVAR_FLAG_ARCHIVE);
         Globals.gender.modified = false; // clear this so we know when user sets
                                          // it manually
 
-        Globals.cl_vwep = Cvar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.cl_vwep = ConsoleVar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our commands
@@ -1416,7 +1414,7 @@ public final class CL {
 
         Key.WriteBindings(f);
         Lib.fclose(f);
-        Cvar.WriteVariables(path);
+        ConsoleVar.WriteVariables(path);
     }
 
     /**
@@ -1434,7 +1432,7 @@ public final class CL {
         // find all the cvars if we haven't done it yet
         if (0 == CL.numcheatvars) {
             while (CL.cheatvars[CL.numcheatvars].name != null) {
-                CL.cheatvars[CL.numcheatvars].var = Cvar.Get(
+                CL.cheatvars[CL.numcheatvars].var = ConsoleVar.Get(
                         CL.cheatvars[CL.numcheatvars].name,
                         CL.cheatvars[CL.numcheatvars].value, 0);
                 CL.numcheatvars++;
@@ -1445,7 +1443,7 @@ public final class CL {
         for (i = 0; i < CL.numcheatvars; i++) {
             var = CL.cheatvars[i];
             if (!var.var.string.equals(var.value)) {
-                Cvar.Set(var.name, var.value);
+                ConsoleVar.Set(var.name, var.value);
             }
         }
     }

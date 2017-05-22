@@ -38,23 +38,23 @@ public final class Cbuf {
     private static final byte[] line = new byte[1024];
     private static final byte[] tmp = new byte[8192];
 
+    private static TSizeBuffer cmd_text = new TSizeBuffer();
+    private static byte[] cmd_text_buf = new byte[8192];
+
     /**
      *  
      */
     public static void Init() {
-        SZ.Init(Globals.cmd_text, Globals.cmd_text_buf,
-                Globals.cmd_text_buf.length);
+        cmd_text.init(cmd_text_buf, cmd_text_buf.length);
     }
 
     public static void InsertText(String text) {
 
-        int templen = 0;
-
         // copy off any commands still remaining in the exec buffer
-        templen = Globals.cmd_text.cursize;
+        int templen = cmd_text.cursize;
         if (templen != 0) {
-            System.arraycopy(Globals.cmd_text.data, 0, tmp, 0, templen);
-            SZ.Clear(Globals.cmd_text);
+            System.arraycopy(cmd_text.data, 0, tmp, 0, templen);
+            cmd_text.clear();
         }
 
         // add the entire text of the file
@@ -62,7 +62,7 @@ public final class Cbuf {
 
         // add the copied off data
         if (templen != 0) {
-            SZ.Write(Globals.cmd_text, tmp, templen);
+            cmd_text.write(tmp, templen);
         }
     }
 
@@ -141,11 +141,11 @@ public final class Cbuf {
     public static void AddText(String text) {
         int l = text.length();
 
-        if (Globals.cmd_text.cursize + l >= Globals.cmd_text.maxsize) {
+        if (cmd_text.cursize + l >= cmd_text.maxsize) {
             Com.Printf("Cbuf_AddText: overflow\n");
             return;
         }
-        SZ.Write(Globals.cmd_text, Lib.stringToBytes(text), l);
+        cmd_text.write(Lib.stringToBytes(text), l);
     }
 
     /**
@@ -157,14 +157,14 @@ public final class Cbuf {
 
         Globals.alias_count = 0; // don't allow infinite alias loops
 
-        while (Globals.cmd_text.cursize != 0) {
+        while (cmd_text.cursize != 0) {
             // find a \n or ; line break
-            text = Globals.cmd_text.data;
+            text = cmd_text.data;
 
             int quotes = 0;
             int i;
 
-            for (i = 0; i < Globals.cmd_text.cursize; i++) {
+            for (i = 0; i < cmd_text.cursize; i++) {
                 if (text[i] == '"')
                     quotes++;
                 if (!(quotes % 2 != 0) && text[i] == ';')
@@ -182,16 +182,16 @@ public final class Cbuf {
             // at the
             // beginning of the text buffer
 
-            if (i == Globals.cmd_text.cursize)
-                Globals.cmd_text.cursize = 0;
+            if (i == cmd_text.cursize)
+                cmd_text.cursize = 0;
             else {
                 i++;
-                Globals.cmd_text.cursize -= i;
+                cmd_text.cursize -= i;
                 //byte[] tmp = new byte[Globals.cmd_text.cursize];
 
-                System.arraycopy(text, i, tmp, 0, Globals.cmd_text.cursize);
-                System.arraycopy(tmp, 0, text, 0, Globals.cmd_text.cursize);
-                text[Globals.cmd_text.cursize] = '\0';
+                System.arraycopy(text, i, tmp, 0, cmd_text.cursize);
+                System.arraycopy(tmp, 0, text, 0, cmd_text.cursize);
+                text[cmd_text.cursize] = '\0';
 
             }
 
@@ -230,10 +230,10 @@ public final class Cbuf {
      * ============ Cbuf_CopyToDefer ============
      */
     public static void CopyToDefer() {
-        System.arraycopy(Globals.cmd_text_buf, 0, Globals.defer_text_buf, 0,
-                Globals.cmd_text.cursize);
-        Globals.defer_text_buf[Globals.cmd_text.cursize] = 0;
-        Globals.cmd_text.cursize = 0;
+        System.arraycopy(cmd_text_buf, 0, Globals.defer_text_buf, 0,
+                cmd_text.cursize);
+        Globals.defer_text_buf[cmd_text.cursize] = 0;
+        cmd_text.cursize = 0;
     }
 
     /*

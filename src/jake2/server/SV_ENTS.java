@@ -53,14 +53,14 @@ public class SV_ENTS {
      * Writes a delta update of an entity_state_t list to the message.
      */
     static void SV_EmitPacketEntities(client_frame_t from, client_frame_t to,
-            sizebuf_t msg) {
+            TSizeBuffer msg) {
         entity_state_t oldent = null, newent = null;
         int oldindex, newindex;
         int oldnum, newnum;
         int from_num_entities;
         int bits;
 
-        MSG.WriteByte(msg, Defines.svc_packetentities);
+        msg.writeByte(Defines.svc_packetentities);
 
         if (from == null)
             from_num_entities = 0;
@@ -93,7 +93,7 @@ public class SV_ENTS {
                 // all note that players are always 'newentities', this updates
                 // their oldorigin always
                 // and prevents warping
-                MSG.WriteDeltaEntity(oldent, newent, msg, false,
+                TSizeBuffer.WriteDeltaEntity(oldent, newent, msg, false,
                         newent.number <= SV_MAIN.maxclients.value);
                 oldindex++;
                 newindex++;
@@ -102,7 +102,7 @@ public class SV_ENTS {
 
             if (newnum < oldnum) { 
             	// this is a new entity, send it from the baseline
-                MSG.WriteDeltaEntity(SV_INIT.sv.baselines[newnum], newent, msg,
+                TSizeBuffer.WriteDeltaEntity(SV_INIT.sv.baselines[newnum], newent, msg,
                         true, true);
                 newindex++;
                 continue;
@@ -114,21 +114,21 @@ public class SV_ENTS {
                 if (oldnum >= 256)
                     bits |= Defines.U_NUMBER16 | Defines.U_MOREBITS1;
 
-                MSG.WriteByte(msg, bits & 255);
+                msg.writeByte(bits & 255);
                 if ((bits & 0x0000ff00) != 0)
-                    MSG.WriteByte(msg, (bits >> 8) & 255);
+                    msg.writeByte((bits >> 8) & 255);
 
                 if ((bits & Defines.U_NUMBER16) != 0)
-                    MSG.WriteShort(msg, oldnum);
+                    msg.writeShort(oldnum);
                 else
-                    MSG.WriteByte(msg, oldnum);
+                    msg.writeByte(oldnum);
 
                 oldindex++;
                 continue;
             }
         }
 
-        MSG.WriteShort(msg, 0); // end of packetentities
+        msg.writeShort(0);
 
     }
 
@@ -136,7 +136,7 @@ public class SV_ENTS {
      * Writes the status of a player to a client system.
      */
     static void SV_WritePlayerstateToClient(client_frame_t from,
-            client_frame_t to, sizebuf_t msg) {
+            client_frame_t to, TSizeBuffer msg) {
         // ptr
         player_state_t ps, ops;
         // mem
@@ -212,99 +212,99 @@ public class SV_ENTS {
         pflags |= Defines.PS_WEAPONINDEX;
 
         // write it
-        MSG.WriteByte(msg, Defines.svc_playerinfo);
-        MSG.WriteShort(msg, pflags);
+        msg.writeByte(Defines.svc_playerinfo);
+        msg.writeShort(pflags);
 
         // write the pmove_state_t
         if ((pflags & Defines.PS_M_TYPE) != 0)
-            MSG.WriteByte(msg, ps.pmove.pm_type);
+            msg.writeByte(ps.pmove.pm_type);
 
         if ((pflags & Defines.PS_M_ORIGIN) != 0) {
-            MSG.WriteShort(msg, ps.pmove.origin[0]);
-            MSG.WriteShort(msg, ps.pmove.origin[1]);
-            MSG.WriteShort(msg, ps.pmove.origin[2]);
+            msg.writeShort((int) ps.pmove.origin[0]);
+            msg.writeShort((int) ps.pmove.origin[1]);
+            msg.writeShort((int) ps.pmove.origin[2]);
         }
 
         if ((pflags & Defines.PS_M_VELOCITY) != 0) {
-            MSG.WriteShort(msg, ps.pmove.velocity[0]);
-            MSG.WriteShort(msg, ps.pmove.velocity[1]);
-            MSG.WriteShort(msg, ps.pmove.velocity[2]);
+            msg.writeShort((int) ps.pmove.velocity[0]);
+            msg.writeShort((int) ps.pmove.velocity[1]);
+            msg.writeShort((int) ps.pmove.velocity[2]);
         }
 
         if ((pflags & Defines.PS_M_TIME) != 0)
-            MSG.WriteByte(msg, ps.pmove.pm_time);
+            msg.writeByte(ps.pmove.pm_time);
 
         if ((pflags & Defines.PS_M_FLAGS) != 0)
-            MSG.WriteByte(msg, ps.pmove.pm_flags);
+            msg.writeByte(ps.pmove.pm_flags);
 
         if ((pflags & Defines.PS_M_GRAVITY) != 0)
-            MSG.WriteShort(msg, ps.pmove.gravity);
+            msg.writeShort((int) ps.pmove.gravity);
 
         if ((pflags & Defines.PS_M_DELTA_ANGLES) != 0) {
-            MSG.WriteShort(msg, ps.pmove.delta_angles[0]);
-            MSG.WriteShort(msg, ps.pmove.delta_angles[1]);
-            MSG.WriteShort(msg, ps.pmove.delta_angles[2]);
+            msg.writeShort((int) ps.pmove.delta_angles[0]);
+            msg.writeShort((int) ps.pmove.delta_angles[1]);
+            msg.writeShort((int) ps.pmove.delta_angles[2]);
         }
 
         // write the rest of the player_state_t
         if ((pflags & Defines.PS_VIEWOFFSET) != 0) {
-            MSG.WriteChar(msg, ps.viewoffset[0] * 4);
-            MSG.WriteChar(msg, ps.viewoffset[1] * 4);
-            MSG.WriteChar(msg, ps.viewoffset[2] * 4);
+            msg.writeChar(ps.viewoffset[0] * 4);
+            msg.writeChar(ps.viewoffset[1] * 4);
+            msg.writeChar(ps.viewoffset[2] * 4);
         }
 
         if ((pflags & Defines.PS_VIEWANGLES) != 0) {
-            MSG.WriteAngle16(msg, ps.viewangles[0]);
-            MSG.WriteAngle16(msg, ps.viewangles[1]);
-            MSG.WriteAngle16(msg, ps.viewangles[2]);
+            TSizeBuffer.WriteAngle16(msg, ps.viewangles[0]);
+            TSizeBuffer.WriteAngle16(msg, ps.viewangles[1]);
+            TSizeBuffer.WriteAngle16(msg, ps.viewangles[2]);
         }
 
         if ((pflags & Defines.PS_KICKANGLES) != 0) {
-            MSG.WriteChar(msg, ps.kick_angles[0] * 4);
-            MSG.WriteChar(msg, ps.kick_angles[1] * 4);
-            MSG.WriteChar(msg, ps.kick_angles[2] * 4);
+            msg.writeChar( ps.kick_angles[0] * 4);
+            msg.writeChar( ps.kick_angles[1] * 4);
+            msg.writeChar( ps.kick_angles[2] * 4);
         }
 
         if ((pflags & Defines.PS_WEAPONINDEX) != 0) {
-            MSG.WriteByte(msg, ps.gunindex);
+            msg.writeByte(ps.gunindex);
         }
 
         if ((pflags & Defines.PS_WEAPONFRAME) != 0) {
-            MSG.WriteByte(msg, ps.gunframe);
-            MSG.WriteChar(msg, ps.gunoffset[0] * 4);
-            MSG.WriteChar(msg, ps.gunoffset[1] * 4);
-            MSG.WriteChar(msg, ps.gunoffset[2] * 4);
-            MSG.WriteChar(msg, ps.gunangles[0] * 4);
-            MSG.WriteChar(msg, ps.gunangles[1] * 4);
-            MSG.WriteChar(msg, ps.gunangles[2] * 4);
+            msg.writeByte(ps.gunframe);
+            msg.writeChar(ps.gunoffset[0] * 4);
+            msg.writeChar(ps.gunoffset[1] * 4);
+            msg.writeChar(ps.gunoffset[2] * 4);
+            msg.writeChar(ps.gunangles[0] * 4);
+            msg.writeChar(ps.gunangles[1] * 4);
+            msg.writeChar(ps.gunangles[2] * 4);
         }
 
         if ((pflags & Defines.PS_BLEND) != 0) {
-            MSG.WriteByte(msg, ps.blend[0] * 255);
-            MSG.WriteByte(msg, ps.blend[1] * 255);
-            MSG.WriteByte(msg, ps.blend[2] * 255);
-            MSG.WriteByte(msg, ps.blend[3] * 255);
+            msg.writeByte(ps.blend[0] * 255);
+            msg.writeByte(ps.blend[1] * 255);
+            msg.writeByte(ps.blend[2] * 255);
+            msg.writeByte(ps.blend[3] * 255);
         }
         if ((pflags & Defines.PS_FOV) != 0)
-            MSG.WriteByte(msg, ps.fov);
+            msg.writeByte(ps.fov);
         if ((pflags & Defines.PS_RDFLAGS) != 0)
-            MSG.WriteByte(msg, ps.rdflags);
+            msg.writeByte(ps.rdflags);
 
         // send stats
         int statbits = 0;
         for (int i = 0; i < Defines.MAX_STATS; i++)
             if (ps.stats[i] != ops.stats[i])
                 statbits |= 1 << i;
-        MSG.WriteLong(msg, statbits);
+        msg.writeLong(statbits);
         for (int i = 0; i < Defines.MAX_STATS; i++)
             if ((statbits & (1 << i)) != 0)
-                MSG.WriteShort(msg, ps.stats[i]);
+                msg.writeShort((int) ps.stats[i]);
     }
 
     /**
      * Writes a frame to a client system.
      */
-    public static void SV_WriteFrameToClient(client_t client, sizebuf_t msg) {
+    public static void SV_WriteFrameToClient(client_t client, TSizeBuffer msg) {
         //ptr
         client_frame_t frame, oldframe;
         int lastframe;
@@ -327,15 +327,15 @@ public class SV_ENTS {
             lastframe = client.lastframe;
         }
 
-        MSG.WriteByte(msg, Defines.svc_frame);
-        MSG.WriteLong(msg, SV_INIT.sv.framenum);
-        MSG.WriteLong(msg, lastframe); // what we are delta'ing from
-        MSG.WriteByte(msg, client.surpressCount); // rate dropped packets
+        msg.writeByte(Defines.svc_frame);
+        msg.writeLong(SV_INIT.sv.framenum);
+        msg.writeLong(lastframe);
+        msg.writeByte(client.surpressCount); // rate dropped packets
         client.surpressCount = 0;
 
         // send over the areabits
-        MSG.WriteByte(msg, frame.areabytes);
-        SZ.Write(msg, frame.areabits, frame.areabytes);
+        msg.writeByte(frame.areabytes);
+        msg.write(frame.areabits, frame.areabytes);
 
         // delta encode the playerstate
         SV_WritePlayerstateToClient(oldframe, frame, msg);
@@ -544,14 +544,14 @@ public class SV_ENTS {
 
         //memset (nostate, 0, sizeof(nostate));
         entity_state_t nostate = new entity_state_t(null);
-        sizebuf_t buf = new sizebuf_t();
-        SZ.Init(buf, buf_data, buf_data.length);
+        TSizeBuffer buf = new TSizeBuffer();
+        buf.init(buf_data, buf_data.length);
 
         // write a frame message that doesn't contain a player_state_t
-        MSG.WriteByte(buf, Defines.svc_frame);
-        MSG.WriteLong(buf, SV_INIT.sv.framenum);
+        buf.writeByte(Defines.svc_frame);
+        buf.writeLong(SV_INIT.sv.framenum);
 
-        MSG.WriteByte(buf, Defines.svc_packetentities);
+        buf.writeByte(Defines.svc_packetentities);
 
         int e = 1;
         edict_t ent = GameBase.g_edicts[e];
@@ -563,18 +563,17 @@ public class SV_ENTS {
                     && (ent.s.modelindex != 0 || ent.s.effects != 0
                             || ent.s.sound != 0 || ent.s.event != 0)
                     && 0 == (ent.svflags & Defines.SVF_NOCLIENT))
-                MSG.WriteDeltaEntity(nostate, ent.s, buf, false, true);
+                TSizeBuffer.WriteDeltaEntity(nostate, ent.s, buf, false, true);
 
             e++;
             ent = GameBase.g_edicts[e];
         }
 
-        MSG.WriteShort(buf, 0); // end of packetentities
+        buf.writeShort(0);
 
         // now add the accumulated multicast information
-        SZ.Write(buf, SV_INIT.svs.demo_multicast.data,
-                SV_INIT.svs.demo_multicast.cursize);
-        SZ.Clear(SV_INIT.svs.demo_multicast);
+        buf.write(SV_INIT.svs.demo_multicast.data, SV_INIT.svs.demo_multicast.cursize);
+        SV_INIT.svs.demo_multicast.clear();
 
         // now write the entire message to the file, prefixed by the length
         int len = EndianHandler.swapInt(buf.cursize);

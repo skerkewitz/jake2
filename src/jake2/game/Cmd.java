@@ -217,7 +217,7 @@ public final class Cmd {
             if (ph.data == null)
                 continue;
 
-            token = Cvar.VariableString(token);
+            token = ConsoleVar.VariableString(token);
 
             j = token.length();
 
@@ -310,7 +310,7 @@ public final class Cmd {
         cmd_function_t cmd;
         //Com.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
         // fail if the command is a variable name
-        if ((Cvar.VariableString(cmd_name)).length() > 0) {
+        if ((ConsoleVar.VariableString(cmd_name)).length() > 0) {
             Com.Printf("Cmd_AddCommand: " + cmd_name
                     + " already defined as a var\n");
             return;
@@ -432,7 +432,7 @@ public final class Cmd {
         }
 
         // check cvars
-        if (Cvar.Command())
+        if (ConsoleVar.Command())
             return;
 
         // send it as a server command if we are connected
@@ -1169,11 +1169,11 @@ public final class Cmd {
             return;
         }
 
-        MSG.WriteByte(Globals.cls.netchan.message, Defines.clc_stringcmd);
-        SZ.Print(Globals.cls.netchan.message, cmd);
+        Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+        Globals.cls.netchan.message.print(cmd);
         if (Cmd.Argc() > 1) {
-            SZ.Print(Globals.cls.netchan.message, " ");
-            SZ.Print(Globals.cls.netchan.message, Cmd.Args());
+            Globals.cls.netchan.message.print(" ");
+            Globals.cls.netchan.message.print(Cmd.Args());
         }
     }
 

@@ -920,72 +920,72 @@ public abstract class Main extends Base {
 	 * R_Register
 	 */
 	protected void R_Register() {
-		r_lefthand = Cvar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
-		r_norefresh = Cvar.Get("r_norefresh", "0", 0);
-		r_fullbright = Cvar.Get("r_fullbright", "0", 0);
-		r_drawentities = Cvar.Get("r_drawentities", "1", 0);
-		r_drawworld = Cvar.Get("r_drawworld", "1", 0);
-		r_novis = Cvar.Get("r_novis", "0", 0);
-		r_nocull = Cvar.Get("r_nocull", "0", 0);
-		r_lerpmodels = Cvar.Get("r_lerpmodels", "1", 0);
-		r_speeds = Cvar.Get("r_speeds", "0", 0);
+		r_lefthand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
+		r_norefresh = ConsoleVar.Get("r_norefresh", "0", 0);
+		r_fullbright = ConsoleVar.Get("r_fullbright", "0", 0);
+		r_drawentities = ConsoleVar.Get("r_drawentities", "1", 0);
+		r_drawworld = ConsoleVar.Get("r_drawworld", "1", 0);
+		r_novis = ConsoleVar.Get("r_novis", "0", 0);
+		r_nocull = ConsoleVar.Get("r_nocull", "0", 0);
+		r_lerpmodels = ConsoleVar.Get("r_lerpmodels", "1", 0);
+		r_speeds = ConsoleVar.Get("r_speeds", "0", 0);
 
-		r_lightlevel = Cvar.Get("r_lightlevel", "1", 0);
+		r_lightlevel = ConsoleVar.Get("r_lightlevel", "1", 0);
 
-		gl_nosubimage = Cvar.Get("gl_nosubimage", "0", 0);
-		gl_allow_software = Cvar.Get("gl_allow_software", "0", 0);
+		gl_nosubimage = ConsoleVar.Get("gl_nosubimage", "0", 0);
+		gl_allow_software = ConsoleVar.Get("gl_allow_software", "0", 0);
 
-		gl_particle_min_size = Cvar.Get("gl_particle_min_size", "2", TVar.CVAR_FLAG_ARCHIVE);
-		gl_particle_max_size = Cvar.Get("gl_particle_max_size", "40", TVar.CVAR_FLAG_ARCHIVE);
-		gl_particle_size = Cvar.Get("gl_particle_size", "40", TVar.CVAR_FLAG_ARCHIVE);
-		gl_particle_att_a = Cvar.Get("gl_particle_att_a", "0.01", TVar.CVAR_FLAG_ARCHIVE);
-		gl_particle_att_b = Cvar.Get("gl_particle_att_b", "0.0", TVar.CVAR_FLAG_ARCHIVE);
-		gl_particle_att_c = Cvar.Get("gl_particle_att_c", "0.01", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_min_size = ConsoleVar.Get("gl_particle_min_size", "2", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_max_size = ConsoleVar.Get("gl_particle_max_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_size = ConsoleVar.Get("gl_particle_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_a = ConsoleVar.Get("gl_particle_att_a", "0.01", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_b = ConsoleVar.Get("gl_particle_att_b", "0.0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_particle_att_c = ConsoleVar.Get("gl_particle_att_c", "0.01", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_modulate = Cvar.Get("gl_modulate", "1.5", TVar.CVAR_FLAG_ARCHIVE);
-		gl_log = Cvar.Get("gl_log", "0", 0);
-		gl_bitdepth = Cvar.Get("gl_bitdepth", "0", 0);
-		gl_mode = Cvar.Get("gl_mode", "3", TVar.CVAR_FLAG_ARCHIVE); // 640x480
-		gl_lightmap = Cvar.Get("gl_lightmap", "0", 0);
-		gl_shadows = Cvar.Get("gl_shadows", "0", TVar.CVAR_FLAG_ARCHIVE);
-		gl_dynamic = Cvar.Get("gl_dynamic", "1", 0);
-		gl_nobind = Cvar.Get("gl_nobind", "0", 0);
-		gl_round_down = Cvar.Get("gl_round_down", "1", 0);
-		gl_picmip = Cvar.Get("gl_picmip", "0", 0);
-		gl_skymip = Cvar.Get("gl_skymip", "0", 0);
-		gl_showtris = Cvar.Get("gl_showtris", "0", 0);
-		gl_ztrick = Cvar.Get("gl_ztrick", "0", 0);
-		gl_finish = Cvar.Get("gl_finish", "0", TVar.CVAR_FLAG_ARCHIVE);
-		gl_clear = Cvar.Get("gl_clear", "0", 0);
-		gl_cull = Cvar.Get("gl_cull", "1", 0);
-		gl_polyblend = Cvar.Get("gl_polyblend", "1", 0);
-		gl_flashblend = Cvar.Get("gl_flashblend", "0", 0);
-		gl_playermip = Cvar.Get("gl_playermip", "0", 0);
-		gl_monolightmap = Cvar.Get("gl_monolightmap", "0", 0);
-		gl_driver = Cvar.Get("gl_driver", "opengl32", TVar.CVAR_FLAG_ARCHIVE);
-		gl_texturemode = Cvar.Get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", TVar.CVAR_FLAG_ARCHIVE);
-		gl_texturealphamode = Cvar.Get("gl_texturealphamode", "default", TVar.CVAR_FLAG_ARCHIVE);
-		gl_texturesolidmode = Cvar.Get("gl_texturesolidmode", "default", TVar.CVAR_FLAG_ARCHIVE);
-		gl_lockpvs = Cvar.Get("gl_lockpvs", "0", 0);
+		gl_modulate = ConsoleVar.Get("gl_modulate", "1.5", TVar.CVAR_FLAG_ARCHIVE);
+		gl_log = ConsoleVar.Get("gl_log", "0", 0);
+		gl_bitdepth = ConsoleVar.Get("gl_bitdepth", "0", 0);
+		gl_mode = ConsoleVar.Get("gl_mode", "3", TVar.CVAR_FLAG_ARCHIVE); // 640x480
+		gl_lightmap = ConsoleVar.Get("gl_lightmap", "0", 0);
+		gl_shadows = ConsoleVar.Get("gl_shadows", "0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_dynamic = ConsoleVar.Get("gl_dynamic", "1", 0);
+		gl_nobind = ConsoleVar.Get("gl_nobind", "0", 0);
+		gl_round_down = ConsoleVar.Get("gl_round_down", "1", 0);
+		gl_picmip = ConsoleVar.Get("gl_picmip", "0", 0);
+		gl_skymip = ConsoleVar.Get("gl_skymip", "0", 0);
+		gl_showtris = ConsoleVar.Get("gl_showtris", "0", 0);
+		gl_ztrick = ConsoleVar.Get("gl_ztrick", "0", 0);
+		gl_finish = ConsoleVar.Get("gl_finish", "0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_clear = ConsoleVar.Get("gl_clear", "0", 0);
+		gl_cull = ConsoleVar.Get("gl_cull", "1", 0);
+		gl_polyblend = ConsoleVar.Get("gl_polyblend", "1", 0);
+		gl_flashblend = ConsoleVar.Get("gl_flashblend", "0", 0);
+		gl_playermip = ConsoleVar.Get("gl_playermip", "0", 0);
+		gl_monolightmap = ConsoleVar.Get("gl_monolightmap", "0", 0);
+		gl_driver = ConsoleVar.Get("gl_driver", "opengl32", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturemode = ConsoleVar.Get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturealphamode = ConsoleVar.Get("gl_texturealphamode", "default", TVar.CVAR_FLAG_ARCHIVE);
+		gl_texturesolidmode = ConsoleVar.Get("gl_texturesolidmode", "default", TVar.CVAR_FLAG_ARCHIVE);
+		gl_lockpvs = ConsoleVar.Get("gl_lockpvs", "0", 0);
 
-		gl_vertex_arrays = Cvar.Get("gl_vertex_arrays", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_vertex_arrays = ConsoleVar.Get("gl_vertex_arrays", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_ext_swapinterval = Cvar.Get("gl_ext_swapinterval", "1", TVar.CVAR_FLAG_ARCHIVE);
-		gl_ext_palettedtexture = Cvar.Get("gl_ext_palettedtexture", "0", TVar.CVAR_FLAG_ARCHIVE);
-		gl_ext_multitexture = Cvar.Get("gl_ext_multitexture", "1", TVar.CVAR_FLAG_ARCHIVE);
-		gl_ext_pointparameters = Cvar.Get("gl_ext_pointparameters", "1", TVar.CVAR_FLAG_ARCHIVE);
-		gl_ext_compiled_vertex_array = Cvar.Get("gl_ext_compiled_vertex_array", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_swapinterval = ConsoleVar.Get("gl_ext_swapinterval", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_palettedtexture = ConsoleVar.Get("gl_ext_palettedtexture", "0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_multitexture = ConsoleVar.Get("gl_ext_multitexture", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_pointparameters = ConsoleVar.Get("gl_ext_pointparameters", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_ext_compiled_vertex_array = ConsoleVar.Get("gl_ext_compiled_vertex_array", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_drawbuffer = Cvar.Get("gl_drawbuffer", "GL_BACK", 0);
-		gl_swapinterval = Cvar.Get("gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE);
+		gl_drawbuffer = ConsoleVar.Get("gl_drawbuffer", "GL_BACK", 0);
+		gl_swapinterval = ConsoleVar.Get("gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE);
 
-		gl_saturatelighting = Cvar.Get("gl_saturatelighting", "0", 0);
+		gl_saturatelighting = ConsoleVar.Get("gl_saturatelighting", "0", 0);
 
-		gl_3dlabs_broken = Cvar.Get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
+		gl_3dlabs_broken = ConsoleVar.Get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		vid_fullscreen = Cvar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
-		vid_gamma = Cvar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
-		vid_ref = Cvar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
+		vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_gamma = ConsoleVar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_ref = ConsoleVar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
 
 		Cmd.AddCommand("imagelist", new xcommand_t() {
 			public void execute() {
@@ -1027,14 +1027,14 @@ public abstract class Main extends Base {
 		}
 		else {
 			if (err == rserr_invalid_fullscreen) {
-				Cvar.SetValue("vid_fullscreen", 0);
+				ConsoleVar.SetValue("vid_fullscreen", 0);
 				vid_fullscreen.modified = false;
 				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n");
 				if ((err = glImpl.setMode(dim, (int) gl_mode.value, false)) == rserr_ok)
 					return true;
 			}
 			else if (err == rserr_invalid_mode) {
-				Cvar.SetValue("gl_mode", gl_state.prev_mode);
+				ConsoleVar.SetValue("gl_mode", gl_state.prev_mode);
 				gl_mode.modified = false;
 				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - invalid mode\n");
 			}
@@ -1134,29 +1134,29 @@ public abstract class Main extends Base {
 		String monolightmap = gl_monolightmap.string.toUpperCase();
 		if (monolightmap.length() < 2 || monolightmap.charAt(1) != 'F') {
 			if (gl_config.renderer == GL_RENDERER_PERMEDIA2) {
-				Cvar.Set("gl_monolightmap", "A");
+				ConsoleVar.Set("gl_monolightmap", "A");
 				VID.Printf(Defines.PRINT_ALL, "...using gl_monolightmap 'a'\n");
 			}
 			else if ((gl_config.renderer & GL_RENDERER_POWERVR) != 0) {
-				Cvar.Set("gl_monolightmap", "0");
+				ConsoleVar.Set("gl_monolightmap", "0");
 			}
 			else {
-				Cvar.Set("gl_monolightmap", "0");
+				ConsoleVar.Set("gl_monolightmap", "0");
 			}
 		}
 
 		// power vr can't have anything stay in the framebuffer, so
 		// the screen needs to redraw the tiled background every frame
 		if ((gl_config.renderer & GL_RENDERER_POWERVR) != 0) {
-			Cvar.Set("scr_drawall", "1");
+			ConsoleVar.Set("scr_drawall", "1");
 		}
 		else {
-			Cvar.Set("scr_drawall", "0");
+			ConsoleVar.Set("scr_drawall", "0");
 		}
 
 		// MCD has buffering issues
 		if (gl_config.renderer == GL_RENDERER_MCD) {
-			Cvar.SetValue("gl_finish", 1);
+			ConsoleVar.SetValue("gl_finish", 1);
 		}
 
 		if ((gl_config.renderer & GL_RENDERER_3DLABS) != 0) {
@@ -1323,7 +1323,7 @@ public abstract class Main extends Base {
 			// FIXME: only restart if CDS is required
 			TVar ref;
 
-			ref = Cvar.Get("vid_ref", "lwjgl", 0);
+			ref = ConsoleVar.Get("vid_ref", "lwjgl", 0);
 			ref.modified = true;
 		}
 

@@ -43,7 +43,7 @@ public final class DummyDriver implements SoundDriver {
 	}
 
 	/* (non-Javadoc)
-	 * @see jake2.sound.SoundDriver#Init()
+	 * @see jake2.sound.SoundDriver#init()
 	 */
 	public boolean Init() {
 		return true;

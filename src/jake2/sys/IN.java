@@ -31,7 +31,7 @@ import jake2.client.Key;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.usercmd_t;
-import jake2.qcommon.Cvar;
+import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.xcommand_t;
 import jake2.util.Math3D;
 
@@ -94,8 +94,8 @@ public final class IN extends Globals {
     }
 
     public static void Init() {
-        in_mouse = Cvar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        in_joystick = Cvar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
+        in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        in_joystick = ConsoleVar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
     }
 
     public static void Shutdown() {
@@ -104,15 +104,15 @@ public final class IN extends Globals {
 
     public static void Real_IN_Init() {
         // mouse variables
-        Globals.m_filter = Cvar.Get("m_filter", "0", 0);
-        Globals.in_mouse = Cvar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.freelook = Cvar.Get("freelook", "1", 0);
-        Globals.lookstrafe = Cvar.Get("lookstrafe", "0", 0);
-        Globals.sensitivity = Cvar.Get("sensitivity", "3", 0);
-        Globals.m_pitch = Cvar.Get("m_pitch", "0.022", 0);
-        Globals.m_yaw = Cvar.Get("m_yaw", "0.022", 0);
-        Globals.m_forward = Cvar.Get("m_forward", "1", 0);
-        Globals.m_side = Cvar.Get("m_side", "0.8", 0);
+        Globals.m_filter = ConsoleVar.Get("m_filter", "0", 0);
+        Globals.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Globals.freelook = ConsoleVar.Get("freelook", "1", 0);
+        Globals.lookstrafe = ConsoleVar.Get("lookstrafe", "0", 0);
+        Globals.sensitivity = ConsoleVar.Get("sensitivity", "3", 0);
+        Globals.m_pitch = ConsoleVar.Get("m_pitch", "0.022", 0);
+        Globals.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
+        Globals.m_forward = ConsoleVar.Get("m_forward", "1", 0);
+        Globals.m_side = ConsoleVar.Get("m_side", "0.8", 0);
 
         Cmd.AddCommand("+mlook", new xcommand_t() {
             public void execute() {

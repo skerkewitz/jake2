@@ -348,9 +348,9 @@ public final class SCR extends Globals {
 
         // bound viewsize
         if (scr_viewsize.value < 40)
-            Cvar.Set("viewsize", "40");
+            ConsoleVar.Set("viewsize", "40");
         if (scr_viewsize.value > 100)
-            Cvar.Set("viewsize", "100");
+            ConsoleVar.Set("viewsize", "100");
 
         size = (int) scr_viewsize.value;
 
@@ -370,7 +370,7 @@ public final class SCR extends Globals {
      * Keybinding command =================
      */
     static void SizeUp_f() {
-        Cvar.SetValue("viewsize", scr_viewsize.value + 10);
+        ConsoleVar.SetValue("viewsize", scr_viewsize.value + 10);
     }
 
     /*
@@ -379,7 +379,7 @@ public final class SCR extends Globals {
      * Keybinding command =================
      */
     static void SizeDown_f() {
-        Cvar.SetValue("viewsize", scr_viewsize.value - 10);
+        ConsoleVar.SetValue("viewsize", scr_viewsize.value - 10);
     }
 
     /*
@@ -418,20 +418,20 @@ public final class SCR extends Globals {
      * ================== SCR_Init ==================
      */
     static void Init() {
-        scr_viewsize = Cvar.Get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
-        scr_conspeed = Cvar.Get("scr_conspeed", "3", 0);
-        scr_showturtle = Cvar.Get("scr_showturtle", "0", 0);
-        scr_showpause = Cvar.Get("scr_showpause", "1", 0);
-        scr_centertime = Cvar.Get("scr_centertime", "2.5", 0);
-        scr_printspeed = Cvar.Get("scr_printspeed", "8", 0);
-        scr_netgraph = Cvar.Get("netgraph", "1", 0);
-        scr_timegraph = Cvar.Get("timegraph", "1", 0);
-        scr_debuggraph = Cvar.Get("debuggraph", "1", 0);
-        scr_graphheight = Cvar.Get("graphheight", "32", 0);
-        scr_graphscale = Cvar.Get("graphscale", "1", 0);
-        scr_graphshift = Cvar.Get("graphshift", "0", 0);
-        scr_drawall = Cvar.Get("scr_drawall", "1", 0);
-        fps = Cvar.Get("fps", "0", 0);
+        scr_viewsize = ConsoleVar.Get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
+        scr_conspeed = ConsoleVar.Get("scr_conspeed", "3", 0);
+        scr_showturtle = ConsoleVar.Get("scr_showturtle", "0", 0);
+        scr_showpause = ConsoleVar.Get("scr_showpause", "1", 0);
+        scr_centertime = ConsoleVar.Get("scr_centertime", "2.5", 0);
+        scr_printspeed = ConsoleVar.Get("scr_printspeed", "8", 0);
+        scr_netgraph = ConsoleVar.Get("netgraph", "1", 0);
+        scr_timegraph = ConsoleVar.Get("timegraph", "1", 0);
+        scr_debuggraph = ConsoleVar.Get("debuggraph", "1", 0);
+        scr_graphheight = ConsoleVar.Get("graphheight", "32", 0);
+        scr_graphscale = ConsoleVar.Get("graphscale", "1", 0);
+        scr_graphshift = ConsoleVar.Get("graphshift", "0", 0);
+        scr_drawall = ConsoleVar.Get("scr_drawall", "1", 0);
+        fps = ConsoleVar.Get("fps", "0", 0);
 
         //
         // register our commands
@@ -1190,9 +1190,9 @@ public final class SCR extends Globals {
          * someone's * brain
          */
         if (cl_stereo_separation.value > 1.0)
-            Cvar.SetValue("cl_stereo_separation", 1.0f);
+            ConsoleVar.SetValue("cl_stereo_separation", 1.0f);
         else if (cl_stereo_separation.value < 0)
-            Cvar.SetValue("cl_stereo_separation", 0.0f);
+            ConsoleVar.SetValue("cl_stereo_separation", 0.0f);
 
         if (cl_stereo.value != 0) {
             numframes = 2;
@@ -1334,7 +1334,7 @@ public final class SCR extends Globals {
         if (fps.value > 0.0f) {
             if (fps.modified) {
                 fps.modified = false;
-                Cvar.SetValue("cl_maxfps", 1000);
+                ConsoleVar.SetValue("cl_maxfps", 1000);
             }
 
             int diff = cls.realtime - lasttime;
@@ -1351,7 +1351,7 @@ public final class SCR extends Globals {
             }
         } else if (fps.modified) {
             fps.modified = false;
-            Cvar.SetValue("cl_maxfps", 90);
+            ConsoleVar.SetValue("cl_maxfps", 90);
         }
     }
 
@@ -1494,8 +1494,8 @@ public final class SCR extends Globals {
      */
     static void FinishCinematic() {
         // tell the server to advance to the next map / cinematic
-        MSG.WriteByte(cls.netchan.message, clc_stringcmd);
-        SZ.Print(cls.netchan.message, "nextserver " + cl.servercount + '\n');
+        cls.netchan.message.writeByte(clc_stringcmd);
+        cls.netchan.message.print("nextserver " + cl.servercount + '\n');
     }
 
     // ==========================================================================

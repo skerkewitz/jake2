@@ -25,8 +25,8 @@ package jake2.server;
 import jake2.Defines;
 import jake2.game.edict_t;
 import jake2.game.usercmd_t;
+import jake2.qcommon.TSizeBuffer;
 import jake2.qcommon.netchan_t;
-import jake2.qcommon.sizebuf_t;
 
 public class client_t {
 
@@ -66,7 +66,7 @@ public class client_t {
 
 	// The datagram is written to by sound calls, prints, temp ents, etc.
 	// It can be harmlessly overflowed.
-	sizebuf_t datagram = new sizebuf_t();
+	TSizeBuffer datagram = new TSizeBuffer();
 	byte datagram_buf[] = new byte[Defines.MAX_MSGLEN];
 
 	client_frame_t frames[] = new client_frame_t[Defines.UPDATE_BACKUP]; // updates can be delta'd from here

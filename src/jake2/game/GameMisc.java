@@ -1402,7 +1402,7 @@ public class GameMisc {
         public String getID() { return "misc_blavkhole_use";}
         public void use(edict_t ent, edict_t other, edict_t activator) {
             /*
-             * gi.WriteByte (svc_temp_entity); gi.WriteByte (TE_BOSSTPORT);
+             * gi.writeByte (svc_temp_entity); gi.writeByte (TE_BOSSTPORT);
              * gi.WritePosition (ent.s.origin); gi.multicast (ent.s.origin,
              * MULTICAST_PVS);
              */

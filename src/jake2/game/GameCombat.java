@@ -140,7 +140,7 @@ public class GameCombat {
             damage = 255;
         GameBase.gi.WriteByte(Defines.svc_temp_entity);
         GameBase.gi.WriteByte(type);
-        //		gi.WriteByte (damage);
+        //		gi.writeByte (damage);
         GameBase.gi.WritePosition(origin);
         GameBase.gi.WriteDir(normal);
         GameBase.gi.multicast(origin, Defines.MULTICAST_PVS);

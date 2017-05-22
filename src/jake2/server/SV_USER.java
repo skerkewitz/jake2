@@ -150,19 +150,15 @@ public class SV_USER {
         // serverdata needs to go over for all types of servers
         // to make sure the protocol is right, and to set the gamedir
         //
-        gamedir = Cvar.VariableString("gamedir");
+        gamedir = ConsoleVar.VariableString("gamedir");
 
         // send the serverdata
-        MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                        Defines.svc_serverdata);
-        MSG.WriteInt(SV_MAIN.sv_client.netchan.message,
-                Defines.PROTOCOL_VERSION);
-        
-        MSG.WriteLong(SV_MAIN.sv_client.netchan.message,
-                        SV_INIT.svs.spawncount);
-        MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                SV_INIT.sv.attractloop ? 1 : 0);
-        MSG.WriteString(SV_MAIN.sv_client.netchan.message, gamedir);
+        SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_serverdata);
+        SV_MAIN.sv_client.netchan.message.writeInt(Defines.PROTOCOL_VERSION);
+
+        SV_MAIN.sv_client.netchan.message.writeLong(SV_INIT.svs.spawncount);
+        SV_MAIN.sv_client.netchan.message.writeByte(SV_INIT.sv.attractloop ? 1 : 0);
+        SV_MAIN.sv_client.netchan.message.writeString(gamedir);
 
         if (SV_INIT.sv.state == Defines.ss_cinematic
                 || SV_INIT.sv.state == Defines.ss_pic)
@@ -171,11 +167,10 @@ public class SV_USER {
             //playernum = sv_client - svs.clients;
             playernum = SV_MAIN.sv_client.serverindex;
 
-        MSG.WriteShort(SV_MAIN.sv_client.netchan.message, playernum);
+        SV_MAIN.sv_client.netchan.message.writeShort(playernum);
 
         // send full levelname
-        MSG.WriteString(SV_MAIN.sv_client.netchan.message,
-                SV_INIT.sv.configstrings[Defines.CS_NAME]);
+        SV_MAIN.sv_client.netchan.message.writeString(SV_INIT.sv.configstrings[Defines.CS_NAME]);
 
         //
         // game server
@@ -188,10 +183,8 @@ public class SV_USER {
             SV_MAIN.sv_client.lastcmd = new usercmd_t();
 
             // begin fetching configstrings
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_stufftext);
-            MSG.WriteString(SV_MAIN.sv_client.netchan.message,
-                    "cmd configstrings " + SV_INIT.svs.spawncount + " 0\n");
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
+            SV_MAIN.sv_client.netchan.message.writeString("cmd configstrings " + SV_INIT.svs.spawncount + " 0\n");
         }
         
     }
@@ -224,11 +217,9 @@ public class SV_USER {
                 && start < Defines.MAX_CONFIGSTRINGS) {
             if (SV_INIT.sv.configstrings[start] != null
                     && SV_INIT.sv.configstrings[start].length() != 0) {
-                MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                        Defines.svc_configstring);
-                MSG.WriteShort(SV_MAIN.sv_client.netchan.message, start);
-                MSG.WriteString(SV_MAIN.sv_client.netchan.message,
-                        SV_INIT.sv.configstrings[start]);
+                SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_configstring);
+                SV_MAIN.sv_client.netchan.message.writeShort(start);
+                SV_MAIN.sv_client.netchan.message.writeString(SV_INIT.sv.configstrings[start]);
             }
             start++;
         }
@@ -236,16 +227,13 @@ public class SV_USER {
         // send next command
 
         if (start == Defines.MAX_CONFIGSTRINGS) {
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_stufftext);
-            MSG.WriteString(SV_MAIN.sv_client.netchan.message, "cmd baselines "
-                    + SV_INIT.svs.spawncount + " 0\n");
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
+            SV_MAIN.sv_client.netchan.message.writeString("cmd baselines "
+                        + SV_INIT.svs.spawncount + " 0\n");
         } else {
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_stufftext);
-            MSG.WriteString(SV_MAIN.sv_client.netchan.message,
-                    "cmd configstrings " + SV_INIT.svs.spawncount + " " + start
-                            + "\n");
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
+            SV_MAIN.sv_client.netchan.message.writeString("cmd configstrings " + SV_INIT.svs.spawncount + " " + start
+                                + "\n");
         }
     }
 
@@ -282,9 +270,8 @@ public class SV_USER {
                 && start < Defines.MAX_EDICTS) {
             base = SV_INIT.sv.baselines[start];
             if (base.modelindex != 0 || base.sound != 0 || base.effects != 0) {
-                MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                        Defines.svc_spawnbaseline);
-                MSG.WriteDeltaEntity(nullstate, base,
+                SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_spawnbaseline);
+                TSizeBuffer.WriteDeltaEntity(nullstate, base,
                         SV_MAIN.sv_client.netchan.message, true, true);
             }
             start++;
@@ -293,15 +280,13 @@ public class SV_USER {
         // send next command
 
         if (start == Defines.MAX_EDICTS) {
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_stufftext);
-            MSG.WriteString(SV_MAIN.sv_client.netchan.message, "precache "
-                    + SV_INIT.svs.spawncount + "\n");
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
+            SV_MAIN.sv_client.netchan.message.writeString("precache "
+                        + SV_INIT.svs.spawncount + "\n");
         } else {
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_stufftext);
-            MSG.WriteString(SV_MAIN.sv_client.netchan.message, "cmd baselines "
-                    + SV_INIT.svs.spawncount + " " + start + "\n");
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
+            SV_MAIN.sv_client.netchan.message.writeString("cmd baselines "
+                        + SV_INIT.svs.spawncount + " " + start + "\n");
         }
     }
 
@@ -343,20 +328,20 @@ public class SV_USER {
         if (r > 1024)
             r = 1024;
 
-        MSG.WriteByte(SV_MAIN.sv_client.netchan.message, Defines.svc_download);
-        MSG.WriteShort(SV_MAIN.sv_client.netchan.message, r);
+        SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_download);
+        SV_MAIN.sv_client.netchan.message.writeShort(r);
 
         SV_MAIN.sv_client.downloadcount += r;
         size = SV_MAIN.sv_client.downloadsize;
         if (size == 0)
             size = 1;
         percent = SV_MAIN.sv_client.downloadcount * 100 / size;
-        MSG.WriteByte(SV_MAIN.sv_client.netchan.message, percent);
-        SZ.Write(SV_MAIN.sv_client.netchan.message, SV_MAIN.sv_client.download,
-                SV_MAIN.sv_client.downloadcount - r, r);
+        SV_MAIN.sv_client.netchan.message.writeByte(percent);
+        SV_MAIN.sv_client.netchan.message.write(SV_MAIN.sv_client.download,SV_MAIN.sv_client.downloadcount - r, r);
 
-        if (SV_MAIN.sv_client.downloadcount != SV_MAIN.sv_client.downloadsize)
+        if (SV_MAIN.sv_client.downloadcount != SV_MAIN.sv_client.downloadsize) {
             return;
+        }
 
         FileSystem.FreeFile(SV_MAIN.sv_client.download);
         SV_MAIN.sv_client.download = null;
@@ -394,10 +379,9 @@ public class SV_USER {
                                                                                         // subdirectory
                 || name.indexOf('/') == -1) { // don't allow anything with ..
                                               // path
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_download);
-            MSG.WriteShort(SV_MAIN.sv_client.netchan.message, -1);
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message, 0);
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_download);
+            SV_MAIN.sv_client.netchan.message.writeShort(-1);
+            SV_MAIN.sv_client.netchan.message.writeByte(0);
             return;
         }
 
@@ -430,10 +414,9 @@ public class SV_USER {
                 SV_MAIN.sv_client.download = null;
             }
 
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message,
-                    Defines.svc_download);
-            MSG.WriteShort(SV_MAIN.sv_client.netchan.message, -1);
-            MSG.WriteByte(SV_MAIN.sv_client.netchan.message, 0);
+            SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_download);
+            SV_MAIN.sv_client.netchan.message.writeShort(-1);
+            SV_MAIN.sv_client.netchan.message.writeByte(0);
             return;
         }
 
@@ -461,7 +444,7 @@ public class SV_USER {
      * Dumps the serverinfo info string ==================
      */
     public static void SV_ShowServerinfo_f() {
-        Info.Print(Cvar.Serverinfo());
+        Info.Print(ConsoleVar.Serverinfo());
     }
 
     public static void SV_Nextserver() {
@@ -470,11 +453,11 @@ public class SV_USER {
         //ZOID, ss_pic can be nextserver'd in coop mode
         if (SV_INIT.sv.state == Defines.ss_game
                 || (SV_INIT.sv.state == Defines.ss_pic && 
-                        0 == Cvar.VariableValue("coop")))
+                        0 == ConsoleVar.VariableValue("coop")))
             return; // can't nextserver while playing a normal game
 
         SV_INIT.svs.spawncount++; // make sure another doesn't sneak in
-        v = Cvar.VariableString("nextserver");
+        v = ConsoleVar.VariableString("nextserver");
         //if (!v[0])
         if (v.length() == 0)
             Cbuf.AddText("killserver\n");
@@ -482,7 +465,7 @@ public class SV_USER {
             Cbuf.AddText(v);
             Cbuf.AddText("\n");
         }
-        Cvar.Set("nextserver", "");
+        ConsoleVar.Set("nextserver", "");
     }
 
     /*

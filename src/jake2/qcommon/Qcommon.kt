@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon
 
 import jake2.Globals
-import jake2.Globals.fileSystem
 import jake2.client.*
 import jake2.game.Cmd
 import jake2.game.TVar
@@ -65,7 +64,7 @@ class Qcommon : Globals() {
                 Cbuf.Init()
 
                 Cmd.Init()
-                Cvar.Init()
+                ConsoleVar.Init()
 
                 Key.Init()
 
@@ -99,14 +98,14 @@ class Qcommon : Globals() {
                 //
                 Cmd.AddCommand("error", Com.Error_f)
 
-                Globals.host_speeds = Cvar.Get("host_speeds", "0", 0)
-                Globals.log_stats = Cvar.Get("log_stats", "0", 0)
-                Globals.developer = Cvar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
-                Globals.timescale = Cvar.Get("timescale", "0", 0)
-                Globals.fixedtime = Cvar.Get("fixedtime", "0", 0)
-                Globals.logfile_active = Cvar.Get("logfile", "0", 0)
-                Globals.showtrace = Cvar.Get("showtrace", "0", 0)
-                Globals.dedicated = Cvar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+                Globals.host_speeds = ConsoleVar.Get("host_speeds", "0", 0)
+                Globals.log_stats = ConsoleVar.Get("log_stats", "0", 0)
+                Globals.developer = ConsoleVar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
+                Globals.timescale = ConsoleVar.Get("timescale", "0", 0)
+                Globals.fixedtime = ConsoleVar.Get("fixedtime", "0", 0)
+                Globals.logfile_active = ConsoleVar.Get("logfile", "0", 0)
+                Globals.showtrace = ConsoleVar.Get("showtrace", "0", 0)
+                Globals.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
                 val s = Com.sprintf("%4.2f %s %s %s",
                         Vargs(4)
                                 .add(Globals.VERSION)
@@ -114,7 +113,7 @@ class Qcommon : Globals() {
                                 .add(Globals.__DATE__)
                                 .add(BUILDSTRING))
 
-                Cvar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
+                ConsoleVar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
 
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
@@ -133,7 +132,7 @@ class Qcommon : Globals() {
                 val sep = System.getProperty("file.separator")
 
                 val dir = home + sep + "Jake2" + sep + "baseq2"
-                Cvar.Set("cddir", dir)
+                ConsoleVar.Set("cddir", dir)
                 fileSystem.setCDDir()
 
                 CL.Init()
@@ -276,7 +275,7 @@ class Qcommon : Globals() {
         }
 
         internal fun reconfigure(clear: Boolean) {
-            val dir = Cvar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
+            val dir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
             Cbuf.AddText("exec default.cfg\n")
             Cbuf.AddText("bind MWHEELUP weapnext\n")
             Cbuf.AddText("bind MWHEELDOWN weapprev\n")
@@ -285,12 +284,12 @@ class Qcommon : Globals() {
             Cbuf.AddText("bind a +moveleft\n")
             Cbuf.AddText("bind d +moveright\n")
             Cbuf.Execute()
-            Cvar.Set("vid_fullscreen", "0")
+            ConsoleVar.Set("vid_fullscreen", "0")
             Cbuf.AddText("exec config.cfg\n")
 
             Cbuf.AddEarlyCommands(clear)
             Cbuf.Execute()
-            if ("" != dir) Cvar.Set("cddir", dir)
+            if ("" != dir) ConsoleVar.Set("cddir", dir)
         }
     }
 }
