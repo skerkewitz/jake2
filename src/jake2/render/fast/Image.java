@@ -91,7 +91,7 @@ public abstract class Image extends Main {
 		int i;
 		//byte[] temptable = new byte[768];
 
-		if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f) 
+		if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f)
 		{
 			ByteBuffer temptable = Lib.newByteBuffer(768);
 			for (i = 0; i < 256; i++) {
@@ -440,7 +440,7 @@ public abstract class Image extends Main {
 		//
 		// load the file
 		//
-		byte[] raw = FS.LoadFile(filename);
+		byte[] raw = FileSystem.LoadFile(filename);
 
 		if (raw == null) {
 			VID.Printf(Defines.PRINT_DEVELOPER, "Bad pcx file " + filename + '\n');
@@ -537,7 +537,7 @@ public abstract class Image extends Main {
 		//
 		// load the file
 		//
-		raw = FS.LoadFile(name);
+		raw = FileSystem.LoadFile(name);
 		
 		if (raw == null)
 		{
@@ -1426,7 +1426,7 @@ public abstract class Image extends Main {
 
 		image_t image = null;
 
-		byte[] raw = FS.LoadFile(name);
+		byte[] raw = FileSystem.LoadFile(name);
 		if (raw == null) {
 			VID.Printf(Defines.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
 			return r_notexture;
@@ -1608,7 +1608,7 @@ public abstract class Image extends Main {
 		Draw_GetPalette();
 
 		if (qglColorTableEXT) {
-			gl_state.d_16to8table = FS.LoadFile("pics/16to8.dat");
+			gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
 			if (gl_state.d_16to8table == null)
 				Com.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
 		}

@@ -260,7 +260,7 @@ public abstract class Model extends Surf {
 		//
 		// load the file
 		//
-		fileBuffer = FS.LoadFile(name);
+		fileBuffer = FileSystem.LoadFile(name);
 
 		if (fileBuffer == null)
 		{
@@ -324,7 +324,7 @@ public abstract class Model extends Surf {
 	Mod_LoadLighting
 	=================
 	*/
-	void Mod_LoadLighting(lump_t l)
+	void Mod_LoadLighting(TLump l)
 	{
 		if (l.filelen == 0)
 		{
@@ -342,7 +342,7 @@ public abstract class Model extends Surf {
 	Mod_LoadVisibility
 	=================
 	*/
-	void Mod_LoadVisibility(lump_t l)
+	void Mod_LoadVisibility(TLump l)
 	{
 		if (l.filelen == 0)
 		{
@@ -374,7 +374,7 @@ public abstract class Model extends Surf {
 	Mod_LoadVertexes
 	=================
 	*/
-	void Mod_LoadVertexes(lump_t l)
+	void Mod_LoadVertexes(TLump l)
 	{
 		mvertex_t[] vertexes;
 		int i, count;
@@ -420,7 +420,7 @@ public abstract class Model extends Surf {
 	Mod_LoadSubmodels
 	=================
 	*/
-	void Mod_LoadSubmodels(lump_t l) {
+	void Mod_LoadSubmodels(TLump l) {
 	    
 	    if ((l.filelen % qfiles.dmodel_t.SIZE) != 0)
 	        Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in "
@@ -465,7 +465,7 @@ public abstract class Model extends Surf {
 	Mod_LoadEdges
 	=================
 	*/
-	void Mod_LoadEdges (lump_t l)
+	void Mod_LoadEdges (TLump l)
 	{
 		medge_t[] edges;
 		int i, count;
@@ -494,19 +494,19 @@ public abstract class Model extends Surf {
 	Mod_LoadTexinfo
 	=================
 	*/
-	void Mod_LoadTexinfo(lump_t l)
+	void Mod_LoadTexinfo(TLump l)
 	{
-		texinfo_t in;
+		TTexInfo in;
 		mtexinfo_t[] out;
 		mtexinfo_t step;
 		int i, count;
 		int next;
 		String name;
 
-		if ((l.filelen % texinfo_t.SIZE) != 0)
+		if ((l.filelen % TTexInfo.SIZE) != 0)
 			Com.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
-		count = l.filelen / texinfo_t.SIZE;
+		count = l.filelen / TTexInfo.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));
 		out = new mtexinfo_t[count];
 		for ( i=0 ; i<count ; i++) {
@@ -521,7 +521,7 @@ public abstract class Model extends Surf {
 
 		for ( i=0 ; i<count ; i++) {
 			
-			in = new texinfo_t(bb);			
+			in = new TTexInfo(bb);
 			out[i].vecs = in.vecs;
 			out[i].flags = in.flags;
 			next = in.nexttexinfo;
@@ -607,7 +607,7 @@ public abstract class Model extends Surf {
 	Mod_LoadFaces
 	=================
 	*/
-	void Mod_LoadFaces(lump_t l) {
+	void Mod_LoadFaces(TLump l) {
 	    
 	    int i, surfnum;
 	    int planenum, side;
@@ -719,7 +719,7 @@ public abstract class Model extends Surf {
 	Mod_LoadNodes
 	=================
 	*/
-	void Mod_LoadNodes(lump_t l)
+	void Mod_LoadNodes(TLump l)
 	{
 		int i, j, count, p;
 		qfiles.dnode_t in;
@@ -776,7 +776,7 @@ public abstract class Model extends Surf {
 	Mod_LoadLeafs
 	=================
 	*/
-	void Mod_LoadLeafs(lump_t l)
+	void Mod_LoadLeafs(TLump l)
 	{
 		qfiles.dleaf_t in;
 		mleaf_t[] out;
@@ -821,7 +821,7 @@ public abstract class Model extends Surf {
 	Mod_LoadMarksurfaces
 	=================
 	*/
-	void Mod_LoadMarksurfaces(lump_t l)
+	void Mod_LoadMarksurfaces(TLump l)
 	{	
 		int i, j, count;
 
@@ -855,7 +855,7 @@ public abstract class Model extends Surf {
 	Mod_LoadSurfedges
 	=================
 	*/
-	void Mod_LoadSurfedges(lump_t l)
+	void Mod_LoadSurfedges(TLump l)
 	{	
 		int i, count;
 		int[] offsets;
@@ -884,7 +884,7 @@ public abstract class Model extends Surf {
 	Mod_LoadPlanes
 	=================
 	*/
-	void Mod_LoadPlanes(lump_t l)
+	void Mod_LoadPlanes(TLump l)
 	{
 		int i, j;
 		cplane_t[] out;

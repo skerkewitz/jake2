@@ -62,7 +62,7 @@ public final class Cmd {
             }
 
             byte[] f = null;
-            f = FS.LoadFile(Cmd.Argv(1));
+            f = FileSystem.LoadFile(Cmd.Argv(1));
             if (f == null) {
                 Com.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
                 return;
@@ -71,7 +71,7 @@ public final class Cmd {
 
             Cbuf.InsertText(new String(f));
 
-            FS.FreeFile(f);
+            FileSystem.FreeFile(f);
         }
     };
 

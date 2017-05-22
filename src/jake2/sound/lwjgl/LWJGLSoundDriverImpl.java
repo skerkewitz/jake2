@@ -13,7 +13,7 @@ import jake2.game.TVar;
 import jake2.game.entity_state_t;
 import jake2.qcommon.Com;
 import jake2.qcommon.Cvar;
-import jake2.qcommon.FS;
+import jake2.qcommon.FileSystem;
 import jake2.qcommon.xcommand_t;
 import jake2.sound.*;
 import jake2.util.Lib;
@@ -374,14 +374,14 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         // fall back strategies
         //
         // not found , so see if it exists
-        if (FS.FileLength(sexedFilename.substring(1)) > 0) {
+        if (FileSystem.FileLength(sexedFilename.substring(1)) > 0) {
             // yes, register it
             return RegisterSound(sexedFilename);
         }
         // try it with the female sound in the pak0.pak
         if (model.equalsIgnoreCase("female")) {
             String femaleFilename = "player/female/" + base.substring(1);
-            if (FS.FileLength("sound/" + femaleFilename) > 0)
+            if (FileSystem.FileLength("sound/" + femaleFilename) > 0)
                 return AliasName(sexedFilename, femaleFilename);
         }
         // no chance, revert to the male sound in the pak0.pak

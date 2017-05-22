@@ -369,7 +369,7 @@ public final class Com
 
 			if (Globals.logfile == null)
 			{
-				name= FS.Gamedir() + "/qconsole.log";
+				name= FileSystem.Gamedir() + "/qconsole.log";
 				if (Globals.logfile_active.value > 2)
 					try
 					{

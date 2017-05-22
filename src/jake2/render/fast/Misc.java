@@ -27,7 +27,7 @@ package jake2.render.fast;
 
 import jake2.Defines;
 import jake2.client.VID;
-import jake2.qcommon.FS;
+import jake2.qcommon.FileSystem;
 import jake2.util.Lib;
 import org.lwjgl.opengl.*;
 
@@ -119,8 +119,8 @@ public final class Misc extends Mesh {
 	 * GL_ScreenShot_f
 	 */
 	public void GL_ScreenShot_f() {
-	    StringBuffer sb = new StringBuffer(FS.Gamedir() + "/scrshot/jake00.tga");
-	    FS.CreatePath(sb.toString());
+	    StringBuffer sb = new StringBuffer(FileSystem.Gamedir() + "/scrshot/jake00.tga");
+	    FileSystem.CreatePath(sb.toString());
 	    File file = new File(sb.toString());
 	    // find a valid file name
 	    int i = 0; int offset = sb.length() - 6;

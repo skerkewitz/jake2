@@ -399,13 +399,13 @@ public class qfiles {
 			this.version = bb.getInt();
 
 			for (int n = 0; n < Defines.HEADER_LUMPS; n++)
-				lumps[n] = new lump_t(bb.getInt(), bb.getInt());
+				lumps[n] = new TLump(bb.getInt(), bb.getInt());
 
 		}
 
 		public int ident;
 		public int version;
-		public lump_t lumps[] = new lump_t[Defines.HEADER_LUMPS];
+		public TLump lumps[] = new TLump[Defines.HEADER_LUMPS];
 	}
 
 	public static class dmodel_t {

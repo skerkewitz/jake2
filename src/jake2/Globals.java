@@ -27,6 +27,7 @@ package jake2;
 
 import jake2.client.*;
 import jake2.game.*;
+import jake2.qcommon.FileSystem;
 import jake2.qcommon.netadr_t;
 import jake2.qcommon.sizebuf_t;
 import jake2.render.DummyRenderer;
@@ -52,6 +53,8 @@ public class Globals implements Defines {
 	public static final float VERSION = 3.21f;
 
 	public static final String BASEDIRNAME = "baseq2";
+
+	public static FileSystem fileSystem = null;
 
 	/*
 	 * global variables

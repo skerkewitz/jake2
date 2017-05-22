@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.util;
 
 import jake2.Globals;
-import jake2.qcommon.Com;
-import jake2.qcommon.FS;
+import jake2.qcommon.*;
+import jake2.qcommon.FileSystem;
 
 import java.io.*;
 import java.nio.*;
@@ -237,7 +237,7 @@ public class Lib {
 	/** Like in libc */
 	public static String freadString(RandomAccessFile f, int len) {
 		byte buffer[] = new byte[len];
-		FS.Read(buffer, len, f);
+		FileSystem.Read(buffer, len, f);
 	
 		return Lib.CtoJava(buffer);
 	}

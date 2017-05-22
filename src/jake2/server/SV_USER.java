@@ -113,7 +113,7 @@ public class SV_USER {
 
         name = "demos/" + SV_INIT.sv.name;
         try {
-            SV_INIT.sv.demofile = FS.FOpenFile(name);
+            SV_INIT.sv.demofile = FileSystem.FOpenFile(name);
         } catch (IOException e) {
             Com.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
         }
@@ -358,7 +358,7 @@ public class SV_USER {
         if (SV_MAIN.sv_client.downloadcount != SV_MAIN.sv_client.downloadsize)
             return;
 
-        FS.FreeFile(SV_MAIN.sv_client.download);
+        FileSystem.FreeFile(SV_MAIN.sv_client.download);
         SV_MAIN.sv_client.download = null;
     }
 
@@ -402,9 +402,9 @@ public class SV_USER {
         }
 
         if (SV_MAIN.sv_client.download != null)
-            FS.FreeFile(SV_MAIN.sv_client.download);
+            FileSystem.FreeFile(SV_MAIN.sv_client.download);
 
-        SV_MAIN.sv_client.download = FS.LoadFile(name);
+        SV_MAIN.sv_client.download = FileSystem.LoadFile(name);
         
         // rst: this handles loading errors, no message yet visible 
         if (SV_MAIN.sv_client.download == null)
@@ -422,11 +422,11 @@ public class SV_USER {
                                                // came from a pak file, don't
                                                // allow
                 							   // download ZOID
-                || (name.startsWith("maps/") && FS.file_from_pak != 0)) {
+                || (name.startsWith("maps/") && FileSystem.file_from_pak != 0)) {
             Com.DPrintf("Couldn't download " + name + " to "
                     + SV_MAIN.sv_client.name + "\n");
             if (SV_MAIN.sv_client.download != null) {
-                FS.FreeFile(SV_MAIN.sv_client.download);
+                FileSystem.FreeFile(SV_MAIN.sv_client.download);
                 SV_MAIN.sv_client.download = null;
             }
 

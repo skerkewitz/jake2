@@ -25,8 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package jake2.qcommon
 
-import jake2.Defines
 import jake2.Globals
+import jake2.Globals.fileSystem
 import jake2.client.*
 import jake2.game.Cmd
 import jake2.game.TVar
@@ -79,15 +79,15 @@ class Qcommon : Globals() {
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing filesystem...");
 
-                FS.InitFilesystem()
+                fileSystem = FileSystem()
 
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("loading config...");
 
                 reconfigure(false)
 
-                FS.setCDDir() // use cddir from config.cfg
-                FS.markBaseSearchPaths() // mark the default search paths
+                fileSystem.setCDDir() // use cddir from config.cfg
+                fileSystem.markBaseSearchPaths() // mark the default search paths
 
                 //			if (Globals.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.testQ2Data(); // test for valid baseq2
@@ -134,7 +134,7 @@ class Qcommon : Globals() {
 
                 val dir = home + sep + "Jake2" + sep + "baseq2"
                 Cvar.Set("cddir", dir)
-                FS.setCDDir()
+                fileSystem.setCDDir()
 
                 CL.Init()
 

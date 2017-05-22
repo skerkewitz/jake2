@@ -95,10 +95,10 @@ public final class Console extends Globals {
 
 	    // Com_sprintf (name, sizeof(name), "%s/%s.txt", FS_Gamedir(),
 	    // Cmd_Argv(1));
-	    name = FS.Gamedir() + "/" + Cmd.Argv(1) + ".txt";
+	    name = FileSystem.Gamedir() + "/" + Cmd.Argv(1) + ".txt";
 
 	    Com.Printf("Dumped console text to " + name + ".\n");
-	    FS.CreatePath(name);
+	    FileSystem.CreatePath(name);
 	    f = Lib.fopen(name, "rw");
 	    if (f == null) {
 		Com.Printf("ERROR: couldn't open.\n");

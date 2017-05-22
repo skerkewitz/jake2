@@ -818,7 +818,7 @@ public class CL_ents {
 				 *  
 				 */
 				if ((renderfx & Defines.RF_SHELL_HALF_DAM) != 0) {
-					if (FS.Developer_searchpath(2) == 2) {
+					if (FileSystem.Developer_searchpath(2) == 2) {
 						// ditch the half damage shell if any of red, blue, or
 						// double are on
 						if ((renderfx & (Defines.RF_SHELL_RED | Defines.RF_SHELL_BLUE | Defines.RF_SHELL_DOUBLE)) != 0)
@@ -827,7 +827,7 @@ public class CL_ents {
 				}
 
 				if ((renderfx & Defines.RF_SHELL_DOUBLE) != 0) {
-					if (FS.Developer_searchpath(2) == 2) {
+					if (FileSystem.Developer_searchpath(2) == 2) {
 						// lose the yellow shell if we have a red, blue, or
 						// green shell
 						if ((renderfx & (Defines.RF_SHELL_RED | Defines.RF_SHELL_BLUE | Defines.RF_SHELL_GREEN)) != 0)

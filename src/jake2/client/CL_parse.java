@@ -54,7 +54,7 @@ public class CL_parse {
     //	  =============================================================================
 
     public static String DownloadFileName(String fn) {
-        return FS.Gamedir() + "/" + fn;
+        return FileSystem.Gamedir() + "/" + fn;
     }
 
     /**
@@ -68,7 +68,7 @@ public class CL_parse {
             return true;
         }
 
-        if (FS.FileLength(filename) > 0) {
+        if (FileSystem.FileLength(filename) > 0) {
             // it exists, no need to download
             return true;
         }
@@ -142,7 +142,7 @@ public class CL_parse {
                 return;
             }
 
-            if (FS.LoadFile(filename) != null) { // it exists, no need to
+            if (FileSystem.LoadFile(filename) != null) { // it exists, no need to
                 // download
                 Com.Printf("File already exists.\n");
                 return;
@@ -216,7 +216,7 @@ public class CL_parse {
         if (Globals.cls.download == null) {
             String name = DownloadFileName(Globals.cls.downloadtempname).toLowerCase();
 
-            FS.CreatePath(name);
+            FileSystem.CreatePath(name);
 
             Globals.cls.download = Lib.fopen(name, "rw");
             if (Globals.cls.download == null) {
@@ -306,10 +306,10 @@ public class CL_parse {
 
         // set gamedir
         if (str.length() > 0
-                && (FS.fs_gamedirvar.string == null
-                        || FS.fs_gamedirvar.string.length() == 0 || FS.fs_gamedirvar.string
+                && (FileSystem.fs_gamedirvar.string == null
+                        || FileSystem.fs_gamedirvar.string.length() == 0 || FileSystem.fs_gamedirvar.string
                         .equals(str))
-                || (str.length() == 0 && (FS.fs_gamedirvar.string != null || FS.fs_gamedirvar.string
+                || (str.length() == 0 && (FileSystem.fs_gamedirvar.string != null || FileSystem.fs_gamedirvar.string
                         .length() == 0)))
             Cvar.Set("game", str);
 

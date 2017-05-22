@@ -126,7 +126,7 @@ public class SV_INIT {
         if (Cvar.VariableValue("deathmatch") != 0)
             return;
 
-        name = FS.Gamedir() + "/save/current/" + sv.name + ".sav";
+        name = FileSystem.Gamedir() + "/save/current/" + sv.name + ".sav";
         try {
             f = new RandomAccessFile(name, "r");
         }

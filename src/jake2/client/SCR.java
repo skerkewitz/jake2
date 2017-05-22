@@ -1392,7 +1392,7 @@ public final class SCR extends Globals {
         qfiles.pcx_t pcx;
 
         // load the file
-        ByteBuffer raw = FS.LoadMappedFile(filename);
+        ByteBuffer raw = FileSystem.LoadMappedFile(filename);
 
         if (raw == null) {
             VID.Printf(Defines.PRINT_DEVELOPER, "Bad pcx file " + filename
@@ -1832,7 +1832,7 @@ public final class SCR extends Globals {
         }
 
         String name = "video/" + arg;
-        cl.cinematic_file = FS.LoadMappedFile(name);
+        cl.cinematic_file = FileSystem.LoadMappedFile(name);
         if (cl.cinematic_file == null) {
             //Com.Error(ERR_DROP, "Cinematic " + name + " not found.\n");
             FinishCinematic();

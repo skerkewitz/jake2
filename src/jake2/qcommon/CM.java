@@ -242,7 +242,7 @@ public class CM {
         //
         // load the file
         //
-        buf = FS.LoadFile(name);
+        buf = FileSystem.LoadFile(name);
 
         if (buf == null)
             Com.Error(Defines.ERR_DROP, "Couldn't load " + name);
@@ -278,7 +278,7 @@ public class CM {
         CMod_LoadVisibility(header.lumps[Defines.LUMP_VISIBILITY]);
         CMod_LoadEntityString(header.lumps[Defines.LUMP_ENTITIES]);
         
-        FS.FreeFile(buf);
+        FileSystem.FreeFile(buf);
 
         CM_InitBoxHull();
 
@@ -292,7 +292,7 @@ public class CM {
     }
 
     /** Loads Submodels. */
-    public static void CMod_LoadSubmodels(lump_t l) {
+    public static void CMod_LoadSubmodels(TLump l) {
         Com.DPrintf("CMod_LoadSubmodels()\n");
         qfiles.dmodel_t in;
         cmodel_t out;
@@ -339,16 +339,16 @@ public class CM {
     static boolean debugloadmap = false;
 
     /** Loads surfaces. */
-    public static void CMod_LoadSurfaces(lump_t l) {
+    public static void CMod_LoadSurfaces(TLump l) {
         Com.DPrintf("CMod_LoadSurfaces()\n");
-        texinfo_t in;
+        TTexInfo in;
         mapsurface_t out;
         int i, count;
 
-        if ((l.filelen % texinfo_t.SIZE) != 0)
+        if ((l.filelen % TTexInfo.SIZE) != 0)
             Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size");
 
-        count = l.filelen / texinfo_t.SIZE;
+        count = l.filelen / TTexInfo.SIZE;
         if (count < 1)
             Com.Error(Defines.ERR_DROP, "Map with no surfaces");
         if (count > Defines.MAX_MAP_TEXINFO)
@@ -361,8 +361,8 @@ public class CM {
 
         for (i = 0; i < count; i++) {
             out = map_surfaces[i] = new mapsurface_t();
-            in = new texinfo_t(cmod_base, l.fileofs + i * texinfo_t.SIZE,
-                    texinfo_t.SIZE);
+            in = new TTexInfo(cmod_base, l.fileofs + i * TTexInfo.SIZE,
+                    TTexInfo.SIZE);
 
             out.c.name = in.texture;
             out.rname = in.texture;
@@ -379,7 +379,7 @@ public class CM {
     }
 
     /** Loads nodes. */
-    public static void CMod_LoadNodes(lump_t l) {
+    public static void CMod_LoadNodes(TLump l) {
         Com.DPrintf("CMod_LoadNodes()\n");
         qfiles.dnode_t in;
         int child;
@@ -421,7 +421,7 @@ public class CM {
     }
 
     /** Loads brushes.*/
-    public static void CMod_LoadBrushes(lump_t l) {
+    public static void CMod_LoadBrushes(TLump l) {
         Com.DPrintf("CMod_LoadBrushes()\n");
         qfiles.dbrush_t in;
         cbrush_t out;
@@ -457,7 +457,7 @@ public class CM {
     }
 
     /** Loads leafs.   */
-    public static void CMod_LoadLeafs(lump_t l) {
+    public static void CMod_LoadLeafs(TLump l) {
         Com.DPrintf("CMod_LoadLeafs()\n");
         int i;
         cleaf_t out;
@@ -525,7 +525,7 @@ public class CM {
     }
 
     /** Loads planes. */
-    public static void CMod_LoadPlanes(lump_t l) {
+    public static void CMod_LoadPlanes(TLump l) {
         Com.DPrintf("CMod_LoadPlanes()\n");
         int i, j;
         cplane_t out;
@@ -581,7 +581,7 @@ public class CM {
     }
 
     /** Loads leaf brushes. */
-    public static void CMod_LoadLeafBrushes(lump_t l) {
+    public static void CMod_LoadLeafBrushes(TLump l) {
         Com.DPrintf("CMod_LoadLeafBrushes()\n");
 
         if ((l.filelen % 2) != 0)
@@ -617,7 +617,7 @@ public class CM {
     }
 
     /** Loads brush sides. */
-    public static void CMod_LoadBrushSides(lump_t l) {
+    public static void CMod_LoadBrushSides(TLump l) {
         Com.DPrintf("CMod_LoadBrushSides()\n");
         int i, j;
         cbrushside_t out;
@@ -670,7 +670,7 @@ public class CM {
     }
 
     /** Loads areas. */
-    public static void CMod_LoadAreas(lump_t l) {
+    public static void CMod_LoadAreas(TLump l) {
         Com.DPrintf("CMod_LoadAreas()\n");
         int i;
         carea_t out;
@@ -710,7 +710,7 @@ public class CM {
     }
 
     /** Loads area portals. */
-    public static void CMod_LoadAreaPortals(lump_t l) {
+    public static void CMod_LoadAreaPortals(TLump l) {
         Com.DPrintf("CMod_LoadAreaPortals()\n");
         int i;
         qfiles.dareaportal_t out;
@@ -747,7 +747,7 @@ public class CM {
     }
 
     /** Loads visibility data. */
-    public static void CMod_LoadVisibility(lump_t l) {
+    public static void CMod_LoadVisibility(TLump l) {
         Com.DPrintf("CMod_LoadVisibility()\n");
 
         numvisibility = l.filelen;
@@ -767,7 +767,7 @@ public class CM {
     }
 
     /** Loads entity strings. */
-    public static void CMod_LoadEntityString(lump_t l) {
+    public static void CMod_LoadEntityString(TLump l) {
         Com.DPrintf("CMod_LoadEntityString()\n");
 
         numentitychars = l.filelen;
@@ -1758,7 +1758,7 @@ public class CM {
 
         byte buf[] = new byte[len];
 
-        FS.Read(buf, len, f);
+        FileSystem.Read(buf, len, f);
 
         ByteBuffer bb = ByteBuffer.wrap(buf);
         IntBuffer ib = bb.asIntBuffer();

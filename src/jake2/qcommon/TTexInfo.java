@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 02.01.2004 by RST.
-// $Id: texinfo_t.java,v 1.2 2004-07-08 15:58:46 hzi Exp $
+// $Id: TTexInfo.java,v 1.2 2004-07-08 15:58:46 hzi Exp $
 
 package jake2.qcommon;
 
@@ -28,14 +28,14 @@ import jake2.util.Lib;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class texinfo_t {
+public class TTexInfo {
 
 	// works fine.
-	public texinfo_t(byte[] cmod_base, int o, int len) {
+	public TTexInfo(byte[] cmod_base, int o, int len) {
 		this(ByteBuffer.wrap(cmod_base, o, len).order(ByteOrder.LITTLE_ENDIAN));
 	}
 
-	public texinfo_t(ByteBuffer bb) {
+	public TTexInfo(ByteBuffer bb) {
 
 		byte str[] = new byte[32];
 

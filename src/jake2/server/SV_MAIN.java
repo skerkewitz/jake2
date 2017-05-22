@@ -108,7 +108,7 @@ public class SV_MAIN {
         }
 
         if (drop.download != null) {
-            FS.FreeFile(drop.download);
+            FileSystem.FreeFile(drop.download);
             drop.download = null;
         }
 

@@ -25,7 +25,7 @@ package jake2.sound;
 
 import jake2.Defines;
 import jake2.qcommon.Com;
-import jake2.qcommon.FS;
+import jake2.qcommon.FileSystem;
 
 /**
  * SND_MEM
@@ -70,7 +70,7 @@ public class WaveLoader {
 		else
 			namebuffer = "sound/" + name;
 
-		byte[] data = FS.LoadFile(namebuffer);
+		byte[] data = FileSystem.LoadFile(namebuffer);
 
 		if (data == null) {
 			Com.DPrintf("Couldn't load " + namebuffer + "\n");

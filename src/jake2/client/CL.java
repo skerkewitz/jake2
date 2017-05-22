@@ -148,10 +148,10 @@ public final class CL {
                 //
                 // open the demo file
                 //
-                name = FS.Gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
+                name = FileSystem.Gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
 
                 Com.Printf("recording to " + name + ".\n");
-                FS.CreatePath(name);
+                FileSystem.CreatePath(name);
                 Globals.cls.demofile = new RandomAccessFile(name, "rw");
                 if (Globals.cls.demofile == null) {
                     Com.Printf("ERROR: couldn't open.\n");
@@ -963,7 +963,7 @@ public final class CL {
                     // checking for skins in the model
                     if (CL.precache_model == null) {
 
-                        CL.precache_model = FS
+                        CL.precache_model = FileSystem
                                 .LoadFile(Globals.cl.configstrings[CL.precache_check]);
                         if (CL.precache_model == null) {
                             CL.precache_model_skin = 0;
@@ -977,7 +977,7 @@ public final class CL {
 
                         if (header != qfiles.IDALIASHEADER) {
                             // not an alias model
-                            FS.FreeFile(CL.precache_model);
+                            FileSystem.FreeFile(CL.precache_model);
                             CL.precache_model = null;
                             CL.precache_model_skin = 0;
                             CL.precache_check++;
@@ -1015,7 +1015,7 @@ public final class CL {
                         CL.precache_model_skin++;
                     }
                     if (CL.precache_model != null) {
-                        FS.FreeFile(CL.precache_model);
+                        FileSystem.FreeFile(CL.precache_model);
                         CL.precache_model = null;
                     }
                     CL.precache_model_skin = 0;
@@ -1398,7 +1398,7 @@ public final class CL {
 //        if (Globals.cls.state == Defines.ca_uninitialized)
 //            return;
 
-        path = FS.Gamedir() + "/config.cfg";
+        path = FileSystem.Gamedir() + "/config.cfg";
         f = Lib.fopen(path, "rw");
         if (f == null) {
             Com.Printf("Couldn't write config.cfg.\n");
@@ -1599,7 +1599,7 @@ public final class CL {
         InitLocal();
         IN.Init();
 
-        FS.ExecAutoexec();
+        FileSystem.ExecAutoexec();
         Cbuf.Execute();
     }
 

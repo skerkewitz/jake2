@@ -26,7 +26,6 @@
 
 package jake2.qcommon;
 
-import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.Info;
@@ -189,8 +188,8 @@ public class Cvar {
                     var.string = value;
                     var.value = Lib.atof(var.string);
                     if (var.name.equals("game")) {
-                        FS.SetGamedir(var.string);
-                        FS.ExecAutoexec();
+                        FileSystem.SetGamedir(var.string);
+                        FileSystem.ExecAutoexec();
                     }
                 }
                 return var;
@@ -367,8 +366,8 @@ public class Cvar {
             var.latched_string = null;
             var.value = Lib.atof(var.string);
             if (var.name.equals("game")) {
-                FS.SetGamedir(var.string);
-                FS.ExecAutoexec();
+                FileSystem.SetGamedir(var.string);
+                FileSystem.ExecAutoexec();
             }
         }
     }
