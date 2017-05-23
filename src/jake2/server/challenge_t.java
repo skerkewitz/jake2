@@ -22,11 +22,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.server;
 
-import jake2.qcommon.netadr_t;
+import jake2.network.TNetAddr;
 
 public class challenge_t {
 	//mem
-	netadr_t		adr = new netadr_t();
+	TNetAddr adr = new TNetAddr();
 	int			challenge;
 	int			time;
 }

@@ -27,9 +27,9 @@ package jake2;
 
 import jake2.client.*;
 import jake2.game.*;
-import jake2.qcommon.FileSystem;
+import jake2.io.FileSystem;
+import jake2.network.TNetAddr;
 import jake2.qcommon.TSizeBuffer;
-import jake2.qcommon.netadr_t;
 import jake2.render.DummyRenderer;
 import jake2.render.model_t;
 
@@ -374,7 +374,7 @@ public class Globals implements Defines {
 	public static int chat_bufferlen = 0;
 	public static int gun_frame;
 	public static model_t gun_model;
-	public static netadr_t net_from = new netadr_t();
+	public static TNetAddr net_from = new TNetAddr();
 	
 	// logfile
 	public static RandomAccessFile logfile = null;

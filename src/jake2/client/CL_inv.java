@@ -30,7 +30,7 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.qcommon.Com;
-import jake2.qcommon.MSG;
+import jake2.qcommon.TSizeBuffer;
 import jake2.util.Lib;
 import jake2.util.Vargs;
 
@@ -46,7 +46,7 @@ public class CL_inv {
 		int i;
 
 		for (i = 0; i < Defines.MAX_ITEMS; i++)
-			Globals.cl.inventory[i] = MSG.ReadShort(Globals.net_message);
+			Globals.cl.inventory[i] = TSizeBuffer.ReadShort(Globals.net_message);
 	}
 
 	/*

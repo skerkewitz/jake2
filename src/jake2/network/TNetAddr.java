@@ -19,8 +19,8 @@
  */
 
 // Created on 27.11.2003 by RST.
-// $Id: netadr_t.java,v 1.6 2005-10-26 12:37:58 cawe Exp $
-package jake2.qcommon;
+// $Id: TNetAddr.java,v 1.6 2005-10-26 12:37:58 cawe Exp $
+package jake2.network;
 
 import jake2.Defines;
 import jake2.sys.NET;
@@ -28,7 +28,7 @@ import jake2.sys.NET;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class netadr_t {
+public class TNetAddr {
 
     public int type;
 
@@ -36,7 +36,7 @@ public class netadr_t {
 
     public byte ip[];
 
-    public netadr_t() {
+    public TNetAddr() {
         this.type = Defines.NA_LOOPBACK;
         this.port = 0; // any
         try {
@@ -60,7 +60,7 @@ public class netadr_t {
         }
     }
 
-    public void set(netadr_t from) {
+    public void set(TNetAddr from) {
         type = from.type;
         port = from.port;
         ip[0] = from.ip[0];

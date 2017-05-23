@@ -24,6 +24,8 @@ package jake2.qcommon;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
+import jake2.io.FileSystem;
+import jake2.io.TLump;
 import jake2.util.*;
 
 import java.io.RandomAccessFile;

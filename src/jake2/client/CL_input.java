@@ -30,6 +30,7 @@ import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.usercmd_t;
+import jake2.network.Netchan;
 import jake2.qcommon.*;
 import jake2.sys.IN;
 import jake2.util.Lib;
@@ -727,19 +728,19 @@ public class CL_input {
 		//memset (nullcmd, 0, sizeof(nullcmd));
 		nullcmd.clear();
 
-		TSizeBuffer.WriteDeltaUsercmd(buf, nullcmd, cmd);
+		buf.writeDeltaUsercmd(nullcmd, cmd);
 		oldcmd = cmd;
 
 		i = (Globals.cls.netchan.outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
 		cmd = Globals.cl.cmds[i];
 
-		TSizeBuffer.WriteDeltaUsercmd(buf, oldcmd, cmd);
+		buf.writeDeltaUsercmd(oldcmd, cmd);
 		oldcmd = cmd;
 
 		i = (Globals.cls.netchan.outgoing_sequence) & (Defines.CMD_BACKUP - 1);
 		cmd = Globals.cl.cmds[i];
 
-		TSizeBuffer.WriteDeltaUsercmd(buf, oldcmd, cmd);
+		buf.writeDeltaUsercmd(oldcmd, cmd);
 
 		// calculate a checksum over the move commands
 		buf.data[checksumIndex] = Com.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,

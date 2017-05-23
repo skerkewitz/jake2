@@ -21,12 +21,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
  */
-package jake2.qcommon;
+package jake2.io;
 
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
+import jake2.qcommon.Cbuf;
+import jake2.qcommon.Com;
+import jake2.qcommon.ConsoleVar;
+import jake2.qcommon.xcommand_t;
 import jake2.sys.QSystem;
 
 import java.io.*;
@@ -55,7 +59,7 @@ public final class FileSystem {
 
     public static TVar fs_gamedirvar;
 
-    public static class filelink_t {
+    public static class TFileLink {
         String from;
 
         int fromlength;
@@ -63,21 +67,21 @@ public final class FileSystem {
         String to;
     }
 
-    // with filelink_t entries
+    // with TFileLink entries
     public static List fs_links = new LinkedList();
 
-    public static class searchpath_t {
+    public static class TSearchPath {
         String filename;
 
         TPack pack; // only one of filename or pack will be used
 
-        searchpath_t next;
+        TSearchPath next;
     }
 
-    public static searchpath_t fs_searchpaths;
+    public static TSearchPath fs_searchpaths;
 
     // without gamedirs
-    public static searchpath_t fs_base_searchpaths;
+    public static TSearchPath fs_base_searchpaths;
 
     /*
      * All of Quake's data access is through a hierchal file system, but the
@@ -184,16 +188,16 @@ public final class FileSystem {
     }
 
     public static int FileLength(String filename) {
-        searchpath_t search;
+        TSearchPath search;
         String netpath;
         TPack pak;
-        filelink_t link;
+        TFileLink link;
 
         file_from_pak = 0;
 
         // check for links first
         for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            link = (filelink_t) it.next();
+            link = (TFileLink) it.next();
 
             if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
                 netpath = link.to + filename.substring(link.fromlength);
@@ -256,17 +260,17 @@ public final class FileSystem {
      */
     public static RandomAccessFile FOpenFile(String filename)
             throws IOException {
-        searchpath_t search;
+        TSearchPath search;
         String netpath;
         TPack pak;
-        filelink_t link;
+        TFileLink link;
         File file = null;
 
         file_from_pak = 0;
 
         // check for links first
         for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            link = (filelink_t) it.next();
+            link = (TFileLink) it.next();
 
             //			if (!strncmp (filename, link->from, link->fromlength))
             if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
@@ -407,10 +411,10 @@ public final class FileSystem {
      * return the file content as ByteBuffer (memory mapped)
      */
     public static ByteBuffer LoadMappedFile(String filename) {
-        searchpath_t search;
+        TSearchPath search;
         String netpath;
         TPack pak;
-        filelink_t link;
+        TFileLink link;
         File file = null;
 
         int fileLength = 0;
@@ -423,7 +427,7 @@ public final class FileSystem {
         try {
             // check for links first
             for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-                link = (filelink_t) it.next();
+                link = (TFileLink) it.next();
 
                 if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
                     netpath = link.to + filename.substring(link.fromlength);
@@ -615,7 +619,7 @@ public final class FileSystem {
      */
     static void AddGameDirectory(String dir) {
         int i;
-        searchpath_t search;
+        TSearchPath search;
         TPack pak;
         String pakfile;
 
@@ -624,7 +628,7 @@ public final class FileSystem {
         //
         // add the directory to the search path
         // ensure fs_userdir is first in searchpath
-        search = new searchpath_t();
+        search = new TSearchPath();
         search.filename = new String(dir);
         if (fs_searchpaths != null) {
             search.next = fs_searchpaths.next;
@@ -645,7 +649,7 @@ public final class FileSystem {
             if (pak == null)
                 continue;
 
-            search = new searchpath_t();
+            search = new TSearchPath();
             search.pack = pak;
             search.filename = "";
             search.next = fs_searchpaths;
@@ -700,7 +704,7 @@ public final class FileSystem {
      * Sets the gamedir and path to a different directory.
      */
     public static void SetGamedir(String dir) {
-        searchpath_t next;
+        TSearchPath next;
 
         if (dir.indexOf("..") != -1 || dir.indexOf("/") != -1
                 || dir.indexOf("\\") != -1 || dir.indexOf(":") != -1) {
@@ -751,10 +755,10 @@ public final class FileSystem {
     /*
      * Link_f
      * 
-     * Creates a filelink_t
+     * Creates a TFileLink
      */
     public static void Link_f() {
-        filelink_t entry = null;
+        TFileLink entry = null;
 
         if (Cmd.Argc() != 3) {
             Com.Printf("USAGE: link <from> <to>\n");
@@ -763,7 +767,7 @@ public final class FileSystem {
 
         // see if the link already exists
         for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            entry = (filelink_t) it.next();
+            entry = (TFileLink) it.next();
 
             if (entry.from.equals(Cmd.Argv(1))) {
                 if (Cmd.Argv(2).length() < 1) {
@@ -778,7 +782,7 @@ public final class FileSystem {
 
         // create a new link if the <to> is not empty
         if (Cmd.Argv(2).length() > 0) {
-            entry = new filelink_t();
+            entry = new TFileLink();
             entry.from = new String(Cmd.Argv(1));
             entry.fromlength = entry.from.length();
             entry.to = new String(Cmd.Argv(2));
@@ -851,8 +855,8 @@ public final class FileSystem {
      */
     public static void Path_f() {
 
-        searchpath_t s;
-        filelink_t link;
+        TSearchPath s;
+        TFileLink link;
 
         Com.Printf("Current search path:\n");
         for (s = fs_searchpaths; s != null; s = s.next) {
@@ -867,7 +871,7 @@ public final class FileSystem {
 
         Com.Printf("\nLinks:\n");
         for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            link = (filelink_t) it.next();
+            link = (TFileLink) it.next();
             Com.Printf(link.from + " : " + link.to + '\n');
         }
     }
@@ -878,7 +882,7 @@ public final class FileSystem {
      * Allows enumerating all of the directories in the search path
      */
     public static String NextPath(String prevpath) {
-        searchpath_t s;
+        TSearchPath s;
         String prev;
 
         if (prevpath == null || prevpath.length() == 0)
@@ -901,13 +905,13 @@ public final class FileSystem {
     /**
      * set baseq2 directory
      */
-    void setCDDir() {
+    public void setCDDir() {
         fs_cddir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
         if (fs_cddir.string.length() > 0)
             AddGameDirectory(fs_cddir.string);
     }
 
-    void markBaseSearchPaths() {
+    public void markBaseSearchPaths() {
         // any set gamedirs will be freed up to here
         fs_base_searchpaths = fs_searchpaths;
     }
@@ -920,7 +924,7 @@ public final class FileSystem {
 
         // PMM - warning removal
         //	 char *start;
-        searchpath_t s;
+        TSearchPath s;
 
         for (s = fs_searchpaths; s != null; s = s.next) {
             if (s.filename.indexOf("xatrix") != -1)

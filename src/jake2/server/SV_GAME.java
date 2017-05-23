@@ -204,7 +204,7 @@ public class SV_GAME {
     }
 
     public static void PF_WriteDir(float[] dir) {
-        TSizeBuffer.WriteDir(SV_INIT.sv.multicast, dir);
+        SV_INIT.sv.multicast.writeDir(dir);
     }
 
     public static void PF_WriteAngle(float f) {

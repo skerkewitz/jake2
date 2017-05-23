@@ -29,6 +29,8 @@ import jake2.Defines;
 import jake2.client.VID;
 import jake2.game.cplane_t;
 import jake2.game.TVar;
+import jake2.io.FileSystem;
+import jake2.io.TLump;
 import jake2.qcommon.*;
 import jake2.render.*;
 import jake2.util.*;

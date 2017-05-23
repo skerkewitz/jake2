@@ -25,6 +25,9 @@ package jake2.server;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
+import jake2.io.FileSystem;
+import jake2.network.Netchan;
+import jake2.network.TNetAddr;
 import jake2.qcommon.*;
 import jake2.sys.NET;
 import jake2.sys.Timer;
@@ -35,13 +38,13 @@ import java.io.IOException;
 public class SV_MAIN {
 
 	/** Addess of group servers.*/ 
-    public static netadr_t master_adr[] = new netadr_t[Defines.MAX_MASTERS];
+    public static TNetAddr master_adr[] = new TNetAddr[Defines.MAX_MASTERS];
                                                                             
                                                                             
                                                                             
     static {
         for (int i = 0; i < Defines.MAX_MASTERS; i++) {
-            master_adr[i] = new netadr_t();
+            master_adr[i] = new TNetAddr();
         }
     }
 
@@ -252,7 +255,7 @@ public class SV_MAIN {
      */
     public static void SVC_DirectConnect() {
         String userinfo;
-        netadr_t adr;
+        TNetAddr adr;
         int i;
         client_t cl;
 
@@ -351,7 +354,7 @@ public class SV_MAIN {
      * Initializes player structures after successfull connection.
      */
     public static void gotnewcl(int i, int challenge, String userinfo,
-            netadr_t adr, int qport) {
+                                TNetAddr adr, int qport) {
         // build a new connection
         // accept the new client
         // this is the only place a client_t is ever initialized
@@ -466,10 +469,10 @@ public class SV_MAIN {
         String s;
         String c;
 
-        MSG.BeginReading(Globals.net_message);
-        MSG.ReadLong(Globals.net_message); // skip the -1 marker
+        TSizeBuffer.BeginReading(Globals.net_message);
+        TSizeBuffer.ReadLong(Globals.net_message); // skip the -1 marker
 
-        s = MSG.ReadStringLine(Globals.net_message);
+        s = TSizeBuffer.ReadStringLine(Globals.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
@@ -574,10 +577,10 @@ public class SV_MAIN {
 
             // read the qport out of the message so we can fix up
             // stupid address translating routers
-            MSG.BeginReading(Globals.net_message);
-            MSG.ReadLong(Globals.net_message); // sequence number
-            MSG.ReadLong(Globals.net_message); // sequence number
-            qport = MSG.ReadShort(Globals.net_message) & 0xffff;
+            TSizeBuffer.BeginReading(Globals.net_message);
+            TSizeBuffer.ReadLong(Globals.net_message); // sequence number
+            TSizeBuffer.ReadLong(Globals.net_message); // sequence number
+            qport = TSizeBuffer.ReadShort(Globals.net_message) & 0xffff;
 
             // check for packets from connected clients
             for (i = 0; i < SV_MAIN.maxclients.value; i++) {

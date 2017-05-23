@@ -19,12 +19,13 @@
  */
 
 // Created on 27.11.2003 by RST.
-// $Id: netchan_t.java,v 1.2 2004-09-22 19:22:09 salomo Exp $
-package jake2.qcommon;
+// $Id: TNetChan.java,v 1.2 2004-09-22 19:22:09 salomo Exp $
+package jake2.network;
 
 import jake2.*;
+import jake2.qcommon.TSizeBuffer;
 
-public class netchan_t {
+public class TNetChan {
 
     public boolean fatal_error;
 
@@ -37,7 +38,7 @@ public class netchan_t {
 
     public int last_sent; // for retransmits
 
-    public netadr_t remote_address = new netadr_t();
+    public TNetAddr remote_address = new TNetAddr();
 
     public int qport; // qport value to write when transmitting
 
@@ -74,7 +75,7 @@ public class netchan_t {
     //ok.
     public void clear() {
         sock = dropped = last_received = last_sent = 0;
-        remote_address = new netadr_t();
+        remote_address = new TNetAddr();
         qport = incoming_sequence = incoming_acknowledged = incoming_reliable_acknowledged = incoming_reliable_sequence = outgoing_sequence = reliable_sequence = last_reliable_sequence = 0;
         message = new TSizeBuffer();
 

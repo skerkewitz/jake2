@@ -13,7 +13,7 @@ import jake2.game.TVar;
 import jake2.game.entity_state_t;
 import jake2.qcommon.Com;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.FileSystem;
+import jake2.io.FileSystem;
 import jake2.qcommon.xcommand_t;
 import jake2.sound.*;
 import jake2.util.Lib;

@@ -28,6 +28,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
 import jake2.sys.Timer;

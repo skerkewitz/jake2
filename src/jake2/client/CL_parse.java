@@ -27,6 +27,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.entity_state_t;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.render.model_t;
 import jake2.sound.Sound;
@@ -196,8 +197,8 @@ public class CL_parse {
     public static void ParseDownload() {
 
         // read the data
-        int size = MSG.ReadShort(Globals.net_message);
-        int percent = MSG.ReadByte(Globals.net_message);
+        int size = TSizeBuffer.ReadShort(Globals.net_message);
+        int percent = TSizeBuffer.ReadByte(Globals.net_message);
         if (size == -1) {
             Com.Printf("Server does not have this file.\n");
             if (Globals.cls.download != null) {
@@ -287,7 +288,7 @@ public class CL_parse {
         Globals.cls.state = Defines.ca_connected;
 
         //	   parse protocol version number
-        int i = MSG.ReadLong(Globals.net_message);
+        int i = TSizeBuffer.ReadLong(Globals.net_message);
         Globals.cls.serverProtocol = i;
 
         // BIG HACK to let demos from release work with the 3.0x patch!!!
@@ -296,11 +297,11 @@ public class CL_parse {
             Com.Error(Defines.ERR_DROP, "Server returned version " + i
                     + ", not " + Defines.PROTOCOL_VERSION);
 
-        Globals.cl.servercount = MSG.ReadLong(Globals.net_message);
-        Globals.cl.attractloop = MSG.ReadByte(Globals.net_message) != 0;
+        Globals.cl.servercount = TSizeBuffer.ReadLong(Globals.net_message);
+        Globals.cl.attractloop = TSizeBuffer.ReadByte(Globals.net_message) != 0;
 
         // game directory
-        String str = MSG.ReadString(Globals.net_message);
+        String str = TSizeBuffer.ReadString(Globals.net_message);
         Globals.cl.gamedir = str;
         Com.dprintln("gamedir=" + str);
 
@@ -314,10 +315,10 @@ public class CL_parse {
             ConsoleVar.Set("game", str);
 
         // parse player entity number
-        Globals.cl.playernum = MSG.ReadShort(Globals.net_message);
+        Globals.cl.playernum = TSizeBuffer.ReadShort(Globals.net_message);
         Com.dprintln("numplayers=" + Globals.cl.playernum);
         // get the full level name
-        str = MSG.ReadString(Globals.net_message);
+        str = TSizeBuffer.ReadString(Globals.net_message);
         Com.dprintln("levelname=" + str);
 
         if (Globals.cl.playernum == -1) { // playing a cinematic or showing a
@@ -493,12 +494,12 @@ public class CL_parse {
      * ================ CL_ParseConfigString ================
      */
     public static void ParseConfigString() {
-        int i = MSG.ReadShort(Globals.net_message);
+        int i = TSizeBuffer.ReadShort(Globals.net_message);
 
         if (i < 0 || i >= Defines.MAX_CONFIGSTRINGS)
             Com.Error(Defines.ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
 
-        String s = MSG.ReadString(Globals.net_message);
+        String s = TSizeBuffer.ReadString(Globals.net_message);
 
         String olds = Globals.cl.configstrings[i];
         Globals.cl.configstrings[i] = s;
@@ -552,31 +553,31 @@ public class CL_parse {
      * ================== CL_ParseStartSoundPacket ==================
      */
     public static void ParseStartSoundPacket() {
-        int flags = MSG.ReadByte(Globals.net_message);
-        int sound_num = MSG.ReadByte(Globals.net_message);
+        int flags = TSizeBuffer.ReadByte(Globals.net_message);
+        int sound_num = TSizeBuffer.ReadByte(Globals.net_message);
 
         float volume;
         if ((flags & Defines.SND_VOLUME) != 0)
-            volume = MSG.ReadByte(Globals.net_message) / 255.0f;
+            volume = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
         else
             volume = Defines.DEFAULT_SOUND_PACKET_VOLUME;
 
         float attenuation;
         if ((flags & Defines.SND_ATTENUATION) != 0)
-            attenuation = MSG.ReadByte(Globals.net_message) / 64.0f;
+            attenuation = TSizeBuffer.ReadByte(Globals.net_message) / 64.0f;
         else
             attenuation = Defines.DEFAULT_SOUND_PACKET_ATTENUATION;
 
         float ofs;
         if ((flags & Defines.SND_OFFSET) != 0)
-            ofs = MSG.ReadByte(Globals.net_message) / 1000.0f;
+            ofs = TSizeBuffer.ReadByte(Globals.net_message) / 1000.0f;
         else
             ofs = 0;
 
         int channel;
         int ent;
         if ((flags & Defines.SND_ENT) != 0) { // entity reletive
-            channel = MSG.ReadShort(Globals.net_message);
+            channel = TSizeBuffer.ReadShort(Globals.net_message);
             ent = channel >> 3;
             if (ent > Defines.MAX_EDICTS)
                 Com.Error(Defines.ERR_DROP, "CL_ParseStartSoundPacket: ent = "
@@ -590,7 +591,7 @@ public class CL_parse {
 
         float pos[];
         if ((flags & Defines.SND_POS) != 0) { // positioned in space
-            MSG.ReadPos(Globals.net_message, pos_v);
+            TSizeBuffer.ReadPos(Globals.net_message, pos_v);
             // is ok. sound driver copies
             pos = pos_v;
         } else
@@ -631,7 +632,7 @@ public class CL_parse {
                 break;
             }
 
-            int cmd = MSG.ReadByte(Globals.net_message);
+            int cmd = TSizeBuffer.ReadByte(Globals.net_message);
 
             if (cmd == -1) {
                 SHOWNET("END OF MESSAGE");
@@ -677,21 +678,21 @@ public class CL_parse {
                 break;
 
             case Defines.svc_print:
-                int i = MSG.ReadByte(Globals.net_message);
+                int i = TSizeBuffer.ReadByte(Globals.net_message);
                 if (i == Defines.PRINT_CHAT) {
                     Sound.StartLocalSound("misc/talk.wav");
                     Globals.con.ormask = 128;
                 }
-                Com.Printf(MSG.ReadString(Globals.net_message));
+                Com.Printf(TSizeBuffer.ReadString(Globals.net_message));
                 Globals.con.ormask = 0;
                 break;
 
             case Defines.svc_centerprint:
-                SCR.CenterPrint(MSG.ReadString(Globals.net_message));
+                SCR.CenterPrint(TSizeBuffer.ReadString(Globals.net_message));
                 break;
 
             case Defines.svc_stufftext:
-                String s = MSG.ReadString(Globals.net_message);
+                String s = TSizeBuffer.ReadString(Globals.net_message);
                 Com.DPrintf("stufftext: " + s + "\n");
                 Cbuf.AddText(s);
                 break;
@@ -738,7 +739,7 @@ public class CL_parse {
                 break;
 
             case Defines.svc_layout:
-        	Globals.cl.layout = MSG.ReadString(Globals.net_message);
+        	Globals.cl.layout = TSizeBuffer.ReadString(Globals.net_message);
                 break;
 
             case Defines.svc_playerinfo:

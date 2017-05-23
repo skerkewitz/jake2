@@ -21,11 +21,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
  */
-package jake2.qcommon;
+package jake2.network;
 
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.TVar;
+import jake2.qcommon.*;
 import jake2.server.SV_MAIN;
 import jake2.sys.NET;
 import jake2.sys.Timer;
@@ -95,7 +96,7 @@ public final class Netchan extends SV_MAIN {
 
     public static TVar qport;
 
-    //public static netadr_t net_from = new netadr_t();
+    //public static TNetAddr net_from = new TNetAddr();
     public static TSizeBuffer net_message = new TSizeBuffer();
 
     public static byte net_message_buffer[] = new byte[Defines.MAX_MSGLEN];
@@ -121,7 +122,7 @@ public final class Netchan extends SV_MAIN {
     /**
      * Netchan_OutOfBand. Sends an out-of-band datagram.
      */
-    public static void Netchan_OutOfBand(int net_socket, netadr_t adr,
+    public static void Netchan_OutOfBand(int net_socket, TNetAddr adr,
             int length, byte data[]) {
 
         // write the packet header
@@ -134,14 +135,14 @@ public final class Netchan extends SV_MAIN {
         NET.SendPacket(net_socket, send.cursize, send.data, adr);
     }
 
-    public static void OutOfBandPrint(int net_socket, netadr_t adr, String s) {
+    public static void OutOfBandPrint(int net_socket, TNetAddr adr, String s) {
         Netchan_OutOfBand(net_socket, adr, s.length(), Lib.stringToBytes(s));
     }
 
     /**
      * Netchan_Setup is alled to open a channel to a remote system.
      */
-    public static void Setup(int sock, netchan_t chan, netadr_t adr, int qport) {
+    public static void Setup(int sock, TNetChan chan, TNetAddr adr, int qport) {
         chan.clear();
         chan.sock = sock;
         chan.remote_address.set(adr);
@@ -157,12 +158,12 @@ public final class Netchan extends SV_MAIN {
     /**
      * Netchan_CanReliable. Returns true if the last reliable message has acked.
      */
-    public static boolean Netchan_CanReliable(netchan_t chan) {
+    public static boolean Netchan_CanReliable(TNetChan chan) {
         return chan.reliable_length == 0;
     }
 
     
-    public static boolean Netchan_NeedReliable(netchan_t chan) {
+    public static boolean Netchan_NeedReliable(TNetChan chan) {
         boolean send_reliable;
 
         // if the remote side dropped the last reliable message, resend it
@@ -186,7 +187,7 @@ public final class Netchan extends SV_MAIN {
      * A 0 length will still generate a packet and deal with the reliable
      * messages.
      */
-    public static void Transmit(netchan_t chan, int length, byte data[]) {
+    public static void Transmit(TNetChan chan, int length, byte data[]) {
         int send_reliable;
         int w1, w2;
 
@@ -261,15 +262,15 @@ public final class Netchan extends SV_MAIN {
      * Netchan_Process is called when the current net_message is from remote_address modifies
      * net_message so that it points to the packet payload.
      */
-    public static boolean Process(netchan_t chan, TSizeBuffer msg) {
+    public static boolean Process(TNetChan chan, TSizeBuffer msg) {
         // get sequence numbers
-        MSG.BeginReading(msg);
-        int sequence = MSG.ReadLong(msg);
-        int sequence_ack = MSG.ReadLong(msg);
+        TSizeBuffer.BeginReading(msg);
+        int sequence = TSizeBuffer.ReadLong(msg);
+        int sequence_ack = TSizeBuffer.ReadLong(msg);
 
         // read the qport if we are a server
         if (chan.sock == Defines.NS_SERVER)
-            MSG.ReadShort(msg);
+            TSizeBuffer.ReadShort(msg);
 
         // achtung unsigned int
         int reliable_message = sequence >>> 31;

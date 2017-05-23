@@ -28,6 +28,9 @@ package jake2.client;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
+import jake2.io.FileSystem;
+import jake2.io.QuakeFile;
+import jake2.network.TNetAddr;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
 import jake2.sys.*;
@@ -2358,7 +2361,7 @@ public final class Menu extends Key {
 
     static menuaction_s s_joinserver_address_book_action = new menuaction_s();
 
-    static netadr_t local_server_netadr[] = new netadr_t[MAX_LOCAL_SERVERS];
+    static TNetAddr local_server_netadr[] = new TNetAddr[MAX_LOCAL_SERVERS];
 
     static String local_server_names[] = new String[MAX_LOCAL_SERVERS]; //[80];
 
@@ -2368,7 +2371,7 @@ public final class Menu extends Key {
     //	   network address
     static {
         for (int n = 0; n < MAX_LOCAL_SERVERS; n++) {
-            local_server_netadr[n] = new netadr_t();
+            local_server_netadr[n] = new TNetAddr();
             local_server_names[n] = "";
             s_joinserver_server_actions[n] = new menuaction_s();
             s_joinserver_server_actions[n].n = n;
@@ -2377,7 +2380,7 @@ public final class Menu extends Key {
 
     static int m_num_servers;
 
-    static void AddToServerList(netadr_t adr, String info) {
+    static void AddToServerList(TNetAddr adr, String info) {
         int i;
 
         if (m_num_servers == MAX_LOCAL_SERVERS)

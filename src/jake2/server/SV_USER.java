@@ -25,6 +25,7 @@ package jake2.server;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.util.Lib;
 
@@ -271,8 +272,7 @@ public class SV_USER {
             base = SV_INIT.sv.baselines[start];
             if (base.modelindex != 0 || base.sound != 0 || base.effects != 0) {
                 SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_spawnbaseline);
-                TSizeBuffer.WriteDeltaEntity(nullstate, base,
-                        SV_MAIN.sv_client.netchan.message, true, true);
+                SV_MAIN.sv_client.netchan.message.writeDeltaEntity(nullstate, base, true, true);
             }
             start++;
         }
@@ -567,7 +567,7 @@ public class SV_USER {
                 return;
             }
 
-            c = MSG.ReadByte(Globals.net_message);
+            c = TSizeBuffer.ReadByte(Globals.net_message);
             if (c == -1)
                 break;
 
@@ -581,7 +581,7 @@ public class SV_USER {
                 break;
 
             case Defines.clc_userinfo:
-                cl.userinfo = MSG.ReadString(Globals.net_message);
+                cl.userinfo = TSizeBuffer.ReadString(Globals.net_message);
                 SV_MAIN.SV_UserinfoChanged(cl);
                 break;
 
@@ -591,8 +591,8 @@ public class SV_USER {
 
                 move_issued = true;
                 checksumIndex = Globals.net_message.readcount;
-                checksum = MSG.ReadByte(Globals.net_message);
-                lastframe = MSG.ReadLong(Globals.net_message);
+                checksum = TSizeBuffer.ReadByte(Globals.net_message);
+                lastframe = TSizeBuffer.ReadLong(Globals.net_message);
 
                 if (lastframe != cl.lastframe) {
                     cl.lastframe = lastframe;
@@ -605,9 +605,9 @@ public class SV_USER {
 
                 //memset (nullcmd, 0, sizeof(nullcmd));
                 nullcmd = new usercmd_t();
-                MSG.ReadDeltaUsercmd(Globals.net_message, nullcmd, oldest);
-                MSG.ReadDeltaUsercmd(Globals.net_message, oldest, oldcmd);
-                MSG.ReadDeltaUsercmd(Globals.net_message, oldcmd, newcmd);
+                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, nullcmd, oldest);
+                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, oldest, oldcmd);
+                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, oldcmd, newcmd);
 
                 if (cl.state != Defines.cs_spawned) {
                     cl.lastframe = -1;
@@ -655,7 +655,7 @@ public class SV_USER {
                 break;
 
             case Defines.clc_stringcmd:
-                s = MSG.ReadString(Globals.net_message);
+                s = TSizeBuffer.ReadString(Globals.net_message);
 
                 // malicious users may try using too many string commands
                 if (++stringCmdCount < SV_USER.MAX_STRINGCMDS)

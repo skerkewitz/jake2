@@ -27,7 +27,7 @@ package jake2.render.fast;
 
 import jake2.Defines;
 import jake2.client.VID;
-import jake2.qcommon.FileSystem;
+import jake2.io.FileSystem;
 import jake2.util.Lib;
 import org.lwjgl.opengl.*;
 

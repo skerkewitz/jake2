@@ -26,6 +26,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.EndianHandler;
 import jake2.game.edict_t;
+import jake2.network.Netchan;
 import jake2.qcommon.*;
 import jake2.util.Lib;
 import jake2.util.Math3D;

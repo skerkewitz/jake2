@@ -25,7 +25,7 @@ package jake2.game;
 
 import java.io.IOException;
 
-import jake2.util.QuakeFile;
+import jake2.io.QuakeFile;
 
 public class moveinfo_t {
 	// fixed data

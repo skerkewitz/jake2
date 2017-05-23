@@ -22,7 +22,7 @@
 
 // $Id: QuakeFile.java,v 1.6 2005-11-20 22:18:34 salomo Exp $
 
-package jake2.util;
+package jake2.io;
 
 import jake2.game.*;
 import jake2.qcommon.Com;

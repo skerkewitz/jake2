@@ -93,8 +93,7 @@ public class SV_ENTS {
                 // all note that players are always 'newentities', this updates
                 // their oldorigin always
                 // and prevents warping
-                TSizeBuffer.WriteDeltaEntity(oldent, newent, msg, false,
-                        newent.number <= SV_MAIN.maxclients.value);
+                msg.writeDeltaEntity(oldent, newent, false, newent.number <= SV_MAIN.maxclients.value);
                 oldindex++;
                 newindex++;
                 continue;
@@ -102,8 +101,7 @@ public class SV_ENTS {
 
             if (newnum < oldnum) { 
             	// this is a new entity, send it from the baseline
-                TSizeBuffer.WriteDeltaEntity(SV_INIT.sv.baselines[newnum], newent, msg,
-                        true, true);
+                msg.writeDeltaEntity(SV_INIT.sv.baselines[newnum], newent, true, true);
                 newindex++;
                 continue;
             }
@@ -254,9 +252,9 @@ public class SV_ENTS {
         }
 
         if ((pflags & Defines.PS_VIEWANGLES) != 0) {
-            TSizeBuffer.WriteAngle16(msg, ps.viewangles[0]);
-            TSizeBuffer.WriteAngle16(msg, ps.viewangles[1]);
-            TSizeBuffer.WriteAngle16(msg, ps.viewangles[2]);
+            msg.writeAngle16(ps.viewangles[0]);
+            msg.writeAngle16(ps.viewangles[1]);
+            msg.writeAngle16(ps.viewangles[2]);
         }
 
         if ((pflags & Defines.PS_KICKANGLES) != 0) {
@@ -563,7 +561,7 @@ public class SV_ENTS {
                     && (ent.s.modelindex != 0 || ent.s.effects != 0
                             || ent.s.sound != 0 || ent.s.event != 0)
                     && 0 == (ent.svflags & Defines.SVF_NOCLIENT))
-                TSizeBuffer.WriteDeltaEntity(nostate, ent.s, buf, false, true);
+                buf.writeDeltaEntity(nostate, ent.s, false, true);
 
             e++;
             ent = GameBase.g_edicts[e];

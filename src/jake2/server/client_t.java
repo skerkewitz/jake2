@@ -25,8 +25,8 @@ package jake2.server;
 import jake2.Defines;
 import jake2.game.edict_t;
 import jake2.game.usercmd_t;
+import jake2.network.TNetChan;
 import jake2.qcommon.TSizeBuffer;
-import jake2.qcommon.netchan_t;
 
 public class client_t {
 
@@ -80,7 +80,7 @@ public class client_t {
 
 	int challenge; // challenge of this user, randomly generated
 
-	netchan_t netchan = new netchan_t();
+	TNetChan netchan = new TNetChan();
 
 	//this was introduced by rst, since java can't calculate the index out of the address.
 	int serverindex;

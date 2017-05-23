@@ -28,6 +28,7 @@ import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.client.particle_t;
 import jake2.game.TVar;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.render.image_t;
 import jake2.util.Lib;

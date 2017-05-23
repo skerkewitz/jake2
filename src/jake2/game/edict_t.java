@@ -25,7 +25,7 @@ package jake2.game;
 import jake2.Defines;
 import jake2.qcommon.Com;
 import jake2.util.Lib;
-import jake2.util.QuakeFile;
+import jake2.io.QuakeFile;
 
 import java.io.IOException;
 

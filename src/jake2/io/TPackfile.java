@@ -1,4 +1,4 @@
-package jake2.qcommon;
+package jake2.io;
 
 /**
  * Created by tropper on 22.05.17.
@@ -8,9 +8,9 @@ public class TPackfile {
 
     static final int NAME_SIZE = 56;
 
-    String name; // char name[56]
+    public String name; // char name[56]
 
-    int filepos, filelen;
+    public int filepos, filelen;
 
     public String toString() {
         return name + " [ length: " + filelen + " pos: " + filepos + " ]";

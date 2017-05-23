@@ -30,6 +30,7 @@ import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.Info;
 import jake2.game.TVar;
+import jake2.io.FileSystem;
 import jake2.util.Lib;
 
 import java.io.IOException;

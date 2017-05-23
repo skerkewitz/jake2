@@ -26,6 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon;
 
 import jake2.Defines;
+import jake2.io.TLump;
 
 import java.nio.*;
 

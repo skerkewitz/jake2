@@ -28,6 +28,9 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
+import jake2.io.FileSystem;
+import jake2.network.Netchan;
+import jake2.network.TNetAddr;
 import jake2.qcommon.*;
 import jake2.server.SV_MAIN;
 import jake2.sound.Sound;
@@ -211,8 +214,7 @@ public final class CL {
                     }
 
                     buf.writeByte(Defines.svc_spawnbaseline);
-                    TSizeBuffer.WriteDeltaEntity(nullstate,
-                            Globals.cl_entities[i].baseline, buf, true, true);
+                    buf.writeDeltaEntity(nullstate, Globals.cl_entities[i].baseline, true, true);
                 }
 
                 buf.writeByte(Defines.svc_stufftext);
@@ -340,7 +342,7 @@ public final class CL {
                 message.append(" ");
             }
 
-            netadr_t to = new netadr_t();
+            TNetAddr to = new TNetAddr();
 
             if (Globals.cls.state >= Defines.ca_connected)
                 to = Globals.cls.netchan.remote_address;
@@ -426,7 +428,7 @@ public final class CL {
     static xcommand_t PingServers_f = new xcommand_t() {
         public void execute() {
             int i;
-            netadr_t adr = new netadr_t();
+            TNetAddr adr = new TNetAddr();
             //char name[32];
             String name;
             String adrstring;
@@ -598,7 +600,7 @@ public final class CL {
      * We have gotten a challenge from the server, so try and connect.
      */
     static void SendConnectPacket() {
-        netadr_t adr = new netadr_t();
+        TNetAddr adr = new TNetAddr();
         int port;
 
         if (!NET.StringToAdr(Globals.cls.servername, adr)) {
@@ -642,7 +644,7 @@ public final class CL {
         if (Globals.cls.realtime - Globals.cls.connect_time < 3000)
             return;
 
-        netadr_t adr = new netadr_t();
+        TNetAddr adr = new TNetAddr();
         if (!NET.StringToAdr(Globals.cls.servername, adr)) {
             Com.Printf("Bad server address\n");
             Globals.cls.state = Defines.ca_disconnected;
@@ -741,7 +743,7 @@ public final class CL {
     static void ParseStatusMessage() {
         String s;
 
-        s = MSG.ReadString(Globals.net_message);
+        s = TSizeBuffer.ReadString(Globals.net_message);
 
         Com.Printf(s + "\n");
         Menu.AddToServerList(Globals.net_from, s);
@@ -756,10 +758,10 @@ public final class CL {
         String s;
         String c;
 
-        MSG.BeginReading(Globals.net_message);
-        MSG.ReadLong(Globals.net_message); // skip the -1
+        TSizeBuffer.BeginReading(Globals.net_message);
+        TSizeBuffer.ReadLong(Globals.net_message); // skip the -1
 
-        s = MSG.ReadStringLine(Globals.net_message);
+        s = TSizeBuffer.ReadStringLine(Globals.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
@@ -793,14 +795,14 @@ public final class CL {
                 Com.Printf("Command packet from remote host.  Ignored.\n");
                 return;
             }
-            s = MSG.ReadString(Globals.net_message);
+            s = TSizeBuffer.ReadString(Globals.net_message);
             Cbuf.AddText(s);
             Cbuf.AddText("\n");
             return;
         }
         // print command from somewhere
         if (c.equals("print")) {
-            s = MSG.ReadString(Globals.net_message);
+            s = TSizeBuffer.ReadString(Globals.net_message);
             if (s.length() > 0)
             	Com.Printf(s);
             return;

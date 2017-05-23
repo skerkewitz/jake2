@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.Globals;
 import jake2.game.player_state_t;
 import jake2.qcommon.Com;
-import jake2.qcommon.MSG;
+import jake2.qcommon.TSizeBuffer;
 import jake2.render.model_t;
 import jake2.sound.Sound;
 import jake2.sound.TSound;
@@ -396,10 +396,10 @@ public class CL_tent {
         beam_t[] b;
         int i;
 
-        ent = MSG.ReadShort(Globals.net_message);
+        ent = TSizeBuffer.ReadShort(Globals.net_message);
 
-        MSG.ReadPos(Globals.net_message, start);
-        MSG.ReadPos(Globals.net_message, end);
+        TSizeBuffer.ReadPos(Globals.net_message, start);
+        TSizeBuffer.ReadPos(Globals.net_message, end);
 
         //	   override any beam with the same entity
         b = cl_beams;
@@ -442,11 +442,11 @@ public class CL_tent {
         beam_t[] b;
         int i;
 
-        ent = MSG.ReadShort(Globals.net_message);
+        ent = TSizeBuffer.ReadShort(Globals.net_message);
 
-        MSG.ReadPos(Globals.net_message, start);
-        MSG.ReadPos(Globals.net_message, end);
-        MSG.ReadPos(Globals.net_message, offset);
+        TSizeBuffer.ReadPos(Globals.net_message, start);
+        TSizeBuffer.ReadPos(Globals.net_message, end);
+        TSizeBuffer.ReadPos(Globals.net_message, offset);
 
         //		Com_Printf ("end- %f %f %f\n", end[0], end[1], end[2]);
 
@@ -493,10 +493,10 @@ public class CL_tent {
         beam_t[] b;
         int i;
 
-        ent = MSG.ReadShort(Globals.net_message);
+        ent = TSizeBuffer.ReadShort(Globals.net_message);
 
-        MSG.ReadPos(Globals.net_message, start);
-        MSG.ReadPos(Globals.net_message, end);
+        TSizeBuffer.ReadPos(Globals.net_message, start);
+        TSizeBuffer.ReadPos(Globals.net_message, end);
         // PMM - network optimization
         if (model == cl_mod_heatbeam)
             Math3D.VectorSet(offset, 2, 7, -3);
@@ -504,7 +504,7 @@ public class CL_tent {
             model = cl_mod_heatbeam;
             Math3D.VectorSet(offset, 0, 0, 0);
         } else
-            MSG.ReadPos(Globals.net_message, offset);
+            TSizeBuffer.ReadPos(Globals.net_message, offset);
 
         //		Com_Printf ("end- %f %f %f\n", end[0], end[1], end[2]);
 
@@ -555,11 +555,11 @@ public class CL_tent {
         beam_t[] b;
         int i;
 
-        srcEnt = MSG.ReadShort(Globals.net_message);
-        destEnt = MSG.ReadShort(Globals.net_message);
+        srcEnt = TSizeBuffer.ReadShort(Globals.net_message);
+        destEnt = TSizeBuffer.ReadShort(Globals.net_message);
 
-        MSG.ReadPos(Globals.net_message, start);
-        MSG.ReadPos(Globals.net_message, end);
+        TSizeBuffer.ReadPos(Globals.net_message, start);
+        TSizeBuffer.ReadPos(Globals.net_message, end);
 
         //	   override any beam with the same source AND destination entities
         b = cl_beams;
@@ -605,8 +605,8 @@ public class CL_tent {
         laser_t[] l;
         int i;
 
-        MSG.ReadPos(Globals.net_message, start);
-        MSG.ReadPos(Globals.net_message, end);
+        TSizeBuffer.ReadPos(Globals.net_message, start);
+        TSizeBuffer.ReadPos(Globals.net_message, end);
 
         l = cl_lasers;
         for (i = 0; i < MAX_LASERS; i++) {
@@ -638,7 +638,7 @@ public class CL_tent {
         cl_sustain_t[] s;
         cl_sustain_t free_sustain;
 
-        id = MSG.ReadShort(Globals.net_message); // an id of -1 is an instant
+        id = TSizeBuffer.ReadShort(Globals.net_message); // an id of -1 is an instant
                                                  // effect
         if (id != -1) // sustains
         {
@@ -653,14 +653,14 @@ public class CL_tent {
             }
             if (free_sustain != null) {
                 s[i].id = id;
-                s[i].count = MSG.ReadByte(Globals.net_message);
-                MSG.ReadPos(Globals.net_message, s[i].org);
-                MSG.ReadDir(Globals.net_message, s[i].dir);
-                r = MSG.ReadByte(Globals.net_message);
+                s[i].count = TSizeBuffer.ReadByte(Globals.net_message);
+                TSizeBuffer.ReadPos(Globals.net_message, s[i].org);
+                TSizeBuffer.ReadDir(Globals.net_message, s[i].dir);
+                r = TSizeBuffer.ReadByte(Globals.net_message);
                 s[i].color = r & 0xff;
-                s[i].magnitude = MSG.ReadShort(Globals.net_message);
+                s[i].magnitude = TSizeBuffer.ReadShort(Globals.net_message);
                 s[i].endtime = Globals.cl.time
-                        + MSG.ReadLong(Globals.net_message);
+                        + TSizeBuffer.ReadLong(Globals.net_message);
                 s[i].think = new cl_sustain_t.ThinkAdapter() {
                     void think(cl_sustain_t self) {
                         CL_newfx.ParticleSteamEffect2(self);
@@ -671,21 +671,21 @@ public class CL_tent {
             } else {
                 //					Com_Printf ("No free sustains!\n");
                 // FIXME - read the stuff anyway
-                cnt = MSG.ReadByte(Globals.net_message);
-                MSG.ReadPos(Globals.net_message, pos);
-                MSG.ReadDir(Globals.net_message, dir);
-                r = MSG.ReadByte(Globals.net_message);
-                magnitude = MSG.ReadShort(Globals.net_message);
-                magnitude = MSG.ReadLong(Globals.net_message); // really
+                cnt = TSizeBuffer.ReadByte(Globals.net_message);
+                TSizeBuffer.ReadPos(Globals.net_message, pos);
+                TSizeBuffer.ReadDir(Globals.net_message, dir);
+                r = TSizeBuffer.ReadByte(Globals.net_message);
+                magnitude = TSizeBuffer.ReadShort(Globals.net_message);
+                magnitude = TSizeBuffer.ReadLong(Globals.net_message); // really
                                                                // interval
             }
         } else // instant
         {
-            cnt = MSG.ReadByte(Globals.net_message);
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
-            r = MSG.ReadByte(Globals.net_message);
-            magnitude = MSG.ReadShort(Globals.net_message);
+            cnt = TSizeBuffer.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
+            r = TSizeBuffer.ReadByte(Globals.net_message);
+            magnitude = TSizeBuffer.ReadShort(Globals.net_message);
             color = r & 0xff;
             CL_newfx.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
             //			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
@@ -699,7 +699,7 @@ public class CL_tent {
         cl_sustain_t[] s;
         cl_sustain_t free_sustain;
 
-        id = MSG.ReadShort(Globals.net_message);
+        id = TSizeBuffer.ReadShort(Globals.net_message);
 
         free_sustain = null;
         s = cl_sustains;
@@ -711,7 +711,7 @@ public class CL_tent {
         }
         if (free_sustain != null) {
             s[i].id = id;
-            MSG.ReadPos(Globals.net_message, s[i].org);
+            TSizeBuffer.ReadPos(Globals.net_message, s[i].org);
             s[i].endtime = Globals.cl.time + 2100;
             s[i].think = new cl_sustain_t.ThinkAdapter() {
                 void think(cl_sustain_t self) {
@@ -723,7 +723,7 @@ public class CL_tent {
         } else // no free sustains
         {
             // FIXME - read the stuff anyway
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
         }
     }
 
@@ -744,7 +744,7 @@ public class CL_tent {
         }
         if (free_sustain != null) {
             s[i].id = 21000;
-            MSG.ReadPos(Globals.net_message, s[i].org);
+            TSizeBuffer.ReadPos(Globals.net_message, s[i].org);
             s[i].endtime = Globals.cl.time + 1000;
             s[i].think = new cl_sustain_t.ThinkAdapter() {
                 void think(cl_sustain_t self) {
@@ -756,7 +756,7 @@ public class CL_tent {
         } else // no free sustains
         {
             // FIXME - read the stuff anyway
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
         }
     }
 
@@ -780,20 +780,20 @@ public class CL_tent {
         int ent;
         int magnitude;
 
-        type = MSG.ReadByte(Globals.net_message);
+        type = TSizeBuffer.ReadByte(Globals.net_message);
 
         switch (type) {
         case Defines.TE_BLOOD: // bullet hitting flesh
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             CL_fx.ParticleEffect(pos, dir, 0xe8, 60);
             break;
 
         case Defines.TE_GUNSHOT: // bullet hitting wall
         case Defines.TE_SPARKS:
         case Defines.TE_BULLET_SPARKS:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             if (type == Defines.TE_GUNSHOT)
                 CL_fx.ParticleEffect(pos, dir, 0, 40);
             else
@@ -819,8 +819,8 @@ public class CL_tent {
 
         case Defines.TE_SCREEN_SPARKS:
         case Defines.TE_SHIELD_SPARKS:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             if (type == Defines.TE_SCREEN_SPARKS)
                 CL_fx.ParticleEffect(pos, dir, 0xd0, 40);
             else
@@ -830,17 +830,17 @@ public class CL_tent {
             break;
 
         case Defines.TE_SHOTGUN: // bullet hitting wall
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             CL_fx.ParticleEffect(pos, dir, 0, 20);
             SmokeAndFlash(pos);
             break;
 
         case Defines.TE_SPLASH: // bullet hitting water
-            cnt = MSG.ReadByte(Globals.net_message);
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
-            r = MSG.ReadByte(Globals.net_message);
+            cnt = TSizeBuffer.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
+            r = TSizeBuffer.ReadByte(Globals.net_message);
             if (r > 6)
                 color = 0x00;
             else
@@ -862,23 +862,23 @@ public class CL_tent {
             break;
 
         case Defines.TE_LASER_SPARKS:
-            cnt = MSG.ReadByte(Globals.net_message);
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
-            color = MSG.ReadByte(Globals.net_message);
+            cnt = TSizeBuffer.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
+            color = TSizeBuffer.ReadByte(Globals.net_message);
             CL_fx.ParticleEffect2(pos, dir, color, cnt);
             break;
 
         // RAFAEL
         case Defines.TE_BLUEHYPERBLASTER:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, dir);
             CL_fx.BlasterParticles(pos, dir);
             break;
 
         case Defines.TE_BLASTER: // blaster hitting wall
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             CL_fx.BlasterParticles(pos, dir);
 
             ex = AllocExplosion();
@@ -907,8 +907,8 @@ public class CL_tent {
             break;
 
         case Defines.TE_RAILTRAIL: // railgun effect
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, pos2);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos2);
             CL_fx.RailTrail(pos, pos2);
             Sound.StartSound(pos2, 0, 0, cl_sfx_railg, 1, Defines.ATTN_NORM, 0);
             break;
@@ -916,7 +916,7 @@ public class CL_tent {
         case Defines.TE_EXPLOSION2:
         case Defines.TE_GRENADE_EXPLOSION:
         case Defines.TE_GRENADE_EXPLOSION_WATER:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -944,7 +944,7 @@ public class CL_tent {
 
         // RAFAEL
         case Defines.TE_PLASMA_EXPLOSION:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
             ex.type = ex_poly;
@@ -968,7 +968,7 @@ public class CL_tent {
         case Defines.TE_ROCKET_EXPLOSION:
         case Defines.TE_ROCKET_EXPLOSION_WATER:
         case Defines.TE_EXPLOSION1_NP: // PMM
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -1001,7 +1001,7 @@ public class CL_tent {
             break;
 
         case Defines.TE_BFG_EXPLOSION:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
             ex.type = ex_poly;
@@ -1018,7 +1018,7 @@ public class CL_tent {
             break;
 
         case Defines.TE_BFG_BIGEXPLOSION:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_fx.BFGExplosionParticles(pos);
             break;
 
@@ -1027,8 +1027,8 @@ public class CL_tent {
             break;
 
         case Defines.TE_BUBBLETRAIL:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, pos2);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos2);
             CL_fx.BubbleTrail(pos, pos2);
             break;
 
@@ -1038,7 +1038,7 @@ public class CL_tent {
             break;
 
         case Defines.TE_BOSSTPORT: // boss teleporting to station
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_fx.BigTeleportParticles(pos);
             Sound.StartSound(pos, 0, 0, Sound.RegisterSound("misc/bigtele.wav"), 1,
                     Defines.ATTN_NONE, 0);
@@ -1050,10 +1050,10 @@ public class CL_tent {
 
         // RAFAEL
         case Defines.TE_WELDING_SPARKS:
-            cnt = MSG.ReadByte(Globals.net_message);
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
-            color = MSG.ReadByte(Globals.net_message);
+            cnt = TSizeBuffer.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
+            color = TSizeBuffer.ReadByte(Globals.net_message);
             CL_fx.ParticleEffect2(pos, dir, color, cnt);
 
             ex = AllocExplosion();
@@ -1072,17 +1072,17 @@ public class CL_tent {
             break;
 
         case Defines.TE_GREENBLOOD:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             CL_fx.ParticleEffect2(pos, dir, 0xdf, 30);
             break;
 
         // RAFAEL
         case Defines.TE_TUNNEL_SPARKS:
-            cnt = MSG.ReadByte(Globals.net_message);
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
-            color = MSG.ReadByte(Globals.net_message);
+            cnt = TSizeBuffer.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
+            color = TSizeBuffer.ReadByte(Globals.net_message);
             CL_fx.ParticleEffect3(pos, dir, color, cnt);
             break;
 
@@ -1091,8 +1091,8 @@ public class CL_tent {
         // PMM -following code integrated for flechette (different color)
         case Defines.TE_BLASTER2: // green blaster hitting wall
         case Defines.TE_FLECHETTE: // flechette
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
 
             // PMM
             if (type == Defines.TE_BLASTER2)
@@ -1147,13 +1147,13 @@ public class CL_tent {
             break;
 
         case Defines.TE_DEBUGTRAIL:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, pos2);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos2);
             CL_newfx.DebugTrail(pos, pos2);
             break;
 
         case Defines.TE_PLAIN_EXPLOSION:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -1180,15 +1180,15 @@ public class CL_tent {
             break;
 
         case Defines.TE_FLASHLIGHT:
-            MSG.ReadPos(Globals.net_message, pos);
-            ent = MSG.ReadShort(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            ent = TSizeBuffer.ReadShort(Globals.net_message);
             CL_newfx.Flashlight(ent, pos);
             break;
 
         case Defines.TE_FORCEWALL:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, pos2);
-            color = MSG.ReadByte(Globals.net_message);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos2);
+            color = TSizeBuffer.ReadByte(Globals.net_message);
             CL_newfx.ForceWall(pos, pos2, color);
             break;
 
@@ -1203,8 +1203,8 @@ public class CL_tent {
         case Defines.TE_HEATBEAM_SPARKS:
             //			cnt = MSG.ReadByte (net_message);
             cnt = 50;
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             //			r = MSG.ReadByte (net_message);
             //			magnitude = MSG.ReadShort (net_message);
             r = 8;
@@ -1217,8 +1217,8 @@ public class CL_tent {
         case Defines.TE_HEATBEAM_STEAM:
             //			cnt = MSG.ReadByte (net_message);
             cnt = 20;
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             //			r = MSG.ReadByte (net_message);
             //			magnitude = MSG.ReadShort (net_message);
             //			color = r & 0xff;
@@ -1235,15 +1235,15 @@ public class CL_tent {
         case Defines.TE_BUBBLETRAIL2:
             //			cnt = MSG.ReadByte (net_message);
             cnt = 8;
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadPos(Globals.net_message, pos2);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos2);
             CL_newfx.BubbleTrail2(pos, pos2, cnt);
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
 
         case Defines.TE_MOREBLOOD:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             CL_fx.ParticleEffect(pos, dir, 0xe8, 250);
             break;
 
@@ -1251,13 +1251,13 @@ public class CL_tent {
             dir[0] = 0;
             dir[1] = 0;
             dir[2] = 1;
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_newfx.ParticleSmokeEffect(pos, dir, 0, 20, 20);
             break;
 
         case Defines.TE_ELECTRIC_SPARKS:
-            MSG.ReadPos(Globals.net_message, pos);
-            MSG.ReadDir(Globals.net_message, dir);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadDir(Globals.net_message, dir);
             //			CL_ParticleEffect (pos, dir, 109, 40);
             CL_fx.ParticleEffect(pos, dir, 0x75, 40);
             //FIXME : replace or remove this sound
@@ -1265,7 +1265,7 @@ public class CL_tent {
             break;
 
         case Defines.TE_TRACKER_EXPLOSION:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_newfx.ColorFlash(pos, 0, 150, -1, -1, -1);
             CL_newfx.ColorExplosionParticles(pos, 0, 1);
             Sound.StartSound(pos, 0, 0, cl_sfx_disrexp, 1, Defines.ATTN_NORM, 0);
@@ -1273,7 +1273,7 @@ public class CL_tent {
 
         case Defines.TE_TELEPORT_EFFECT:
         case Defines.TE_DBALL_GOAL:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_fx.TeleportParticles(pos);
             break;
 
@@ -1286,7 +1286,7 @@ public class CL_tent {
             break;
 
         case Defines.TE_WIDOWSPLASH:
-            MSG.ReadPos(Globals.net_message, pos);
+            TSizeBuffer.ReadPos(Globals.net_message, pos);
             CL_newfx.WidowSplash(pos);
             break;
         //	  PGM

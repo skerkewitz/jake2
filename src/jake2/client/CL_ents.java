@@ -28,6 +28,7 @@ package jake2.client;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.*;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.util.Math3D;
 
@@ -58,20 +59,20 @@ public class CL_ents {
 		int i;
 		int number;
 
-		total = MSG.ReadByte(Globals.net_message);
+		total = TSizeBuffer.ReadByte(Globals.net_message);
 		if ((total & Defines.U_MOREBITS1) != 0) {
 		    
-			b = MSG.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Globals.net_message);
 			total |= b << 8;
 		}
 		if ((total & Defines.U_MOREBITS2) != 0) {
 		    
-			b = MSG.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Globals.net_message);
 			total |= b << 16;
 		}
 		if ((total & Defines.U_MOREBITS3) != 0) {
 		    
-			b = MSG.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Globals.net_message);
 			total |= b << 24;
 		}
 
@@ -81,9 +82,9 @@ public class CL_ents {
 				bitcounts[i]++;
 
 		if ((total & Defines.U_NUMBER16) != 0)
-			number = MSG.ReadShort(Globals.net_message);
+			number = TSizeBuffer.ReadShort(Globals.net_message);
 		else
-			number = MSG.ReadByte(Globals.net_message);
+			number = TSizeBuffer.ReadByte(Globals.net_message);
 
 		bits[0] = total;
 
@@ -104,70 +105,70 @@ public class CL_ents {
 		to.number = number;
 
 		if ((bits & Defines.U_MODEL) != 0)
-			to.modelindex = MSG.ReadByte(Globals.net_message);
+			to.modelindex = TSizeBuffer.ReadByte(Globals.net_message);
 		if ((bits & Defines.U_MODEL2) != 0)
-			to.modelindex2 = MSG.ReadByte(Globals.net_message);
+			to.modelindex2 = TSizeBuffer.ReadByte(Globals.net_message);
 		if ((bits & Defines.U_MODEL3) != 0)
-			to.modelindex3 = MSG.ReadByte(Globals.net_message);
+			to.modelindex3 = TSizeBuffer.ReadByte(Globals.net_message);
 		if ((bits & Defines.U_MODEL4) != 0)
-			to.modelindex4 = MSG.ReadByte(Globals.net_message);
+			to.modelindex4 = TSizeBuffer.ReadByte(Globals.net_message);
 
 		if ((bits & Defines.U_FRAME8) != 0)
-			to.frame = MSG.ReadByte(Globals.net_message);
+			to.frame = TSizeBuffer.ReadByte(Globals.net_message);
 		if ((bits & Defines.U_FRAME16) != 0)
-			to.frame = MSG.ReadShort(Globals.net_message);
+			to.frame = TSizeBuffer.ReadShort(Globals.net_message);
 
 		if ((bits & Defines.U_SKIN8) != 0 && (bits & Defines.U_SKIN16) != 0) //used
 																			 // for
 																			 // laser
 																			 // colors
-			to.skinnum = MSG.ReadLong(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadLong(Globals.net_message);
 		else if ((bits & Defines.U_SKIN8) != 0)
-			to.skinnum = MSG.ReadByte(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadByte(Globals.net_message);
 		else if ((bits & Defines.U_SKIN16) != 0)
-			to.skinnum = MSG.ReadShort(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadShort(Globals.net_message);
 
 		if ((bits & (Defines.U_EFFECTS8 | Defines.U_EFFECTS16)) == (Defines.U_EFFECTS8 | Defines.U_EFFECTS16))
-			to.effects = MSG.ReadLong(Globals.net_message);
+			to.effects = TSizeBuffer.ReadLong(Globals.net_message);
 		else if ((bits & Defines.U_EFFECTS8) != 0)
-			to.effects = MSG.ReadByte(Globals.net_message);
+			to.effects = TSizeBuffer.ReadByte(Globals.net_message);
 		else if ((bits & Defines.U_EFFECTS16) != 0)
-			to.effects = MSG.ReadShort(Globals.net_message);
+			to.effects = TSizeBuffer.ReadShort(Globals.net_message);
 
 		if ((bits & (Defines.U_RENDERFX8 | Defines.U_RENDERFX16)) == (Defines.U_RENDERFX8 | Defines.U_RENDERFX16))
-			to.renderfx = MSG.ReadLong(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadLong(Globals.net_message);
 		else if ((bits & Defines.U_RENDERFX8) != 0)
-			to.renderfx = MSG.ReadByte(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadByte(Globals.net_message);
 		else if ((bits & Defines.U_RENDERFX16) != 0)
-			to.renderfx = MSG.ReadShort(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadShort(Globals.net_message);
 
 		if ((bits & Defines.U_ORIGIN1) != 0)
-			to.origin[0] = MSG.ReadCoord(Globals.net_message);
+			to.origin[0] = TSizeBuffer.ReadCoord(Globals.net_message);
 		if ((bits & Defines.U_ORIGIN2) != 0)
-			to.origin[1] = MSG.ReadCoord(Globals.net_message);
+			to.origin[1] = TSizeBuffer.ReadCoord(Globals.net_message);
 		if ((bits & Defines.U_ORIGIN3) != 0)
-			to.origin[2] = MSG.ReadCoord(Globals.net_message);
+			to.origin[2] = TSizeBuffer.ReadCoord(Globals.net_message);
 
 		if ((bits & Defines.U_ANGLE1) != 0)
-			to.angles[0] = MSG.ReadAngle(Globals.net_message);
+			to.angles[0] = TSizeBuffer.ReadAngle(Globals.net_message);
 		if ((bits & Defines.U_ANGLE2) != 0)
-			to.angles[1] = MSG.ReadAngle(Globals.net_message);
+			to.angles[1] = TSizeBuffer.ReadAngle(Globals.net_message);
 		if ((bits & Defines.U_ANGLE3) != 0)
-			to.angles[2] = MSG.ReadAngle(Globals.net_message);
+			to.angles[2] = TSizeBuffer.ReadAngle(Globals.net_message);
 
 		if ((bits & Defines.U_OLDORIGIN) != 0)
-			MSG.ReadPos(Globals.net_message, to.old_origin);
+			TSizeBuffer.ReadPos(Globals.net_message, to.old_origin);
 
 		if ((bits & Defines.U_SOUND) != 0)
-			to.sound = MSG.ReadByte(Globals.net_message);
+			to.sound = TSizeBuffer.ReadByte(Globals.net_message);
 
 		if ((bits & Defines.U_EVENT) != 0)
-			to.event = MSG.ReadByte(Globals.net_message);
+			to.event = TSizeBuffer.ReadByte(Globals.net_message);
 		else
 			to.event = 0;
 
 		if ((bits & Defines.U_SOLID) != 0)
-			to.solid = MSG.ReadShort(Globals.net_message);
+			to.solid = TSizeBuffer.ReadShort(Globals.net_message);
 	}
 
 	/*
@@ -366,40 +367,40 @@ public class CL_ents {
 			//memset (state, 0, sizeof(*state));
 			state.clear();
 
-		flags = MSG.ReadShort(Globals.net_message);
+		flags = TSizeBuffer.ReadShort(Globals.net_message);
 
 		//
 		// parse the pmove_state_t
 		//
 		if ((flags & Defines.PS_M_TYPE) != 0)
-			state.pmove.pm_type = MSG.ReadByte(Globals.net_message);
+			state.pmove.pm_type = TSizeBuffer.ReadByte(Globals.net_message);
 
 		if ((flags & Defines.PS_M_ORIGIN) != 0) {
-			state.pmove.origin[0] = MSG.ReadShort(Globals.net_message);
-			state.pmove.origin[1] = MSG.ReadShort(Globals.net_message);
-			state.pmove.origin[2] = MSG.ReadShort(Globals.net_message);
+			state.pmove.origin[0] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.origin[1] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.origin[2] = TSizeBuffer.ReadShort(Globals.net_message);
 		}
 
 		if ((flags & Defines.PS_M_VELOCITY) != 0) {
-			state.pmove.velocity[0] = MSG.ReadShort(Globals.net_message);
-			state.pmove.velocity[1] = MSG.ReadShort(Globals.net_message);
-			state.pmove.velocity[2] = MSG.ReadShort(Globals.net_message);
+			state.pmove.velocity[0] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.velocity[1] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.velocity[2] = TSizeBuffer.ReadShort(Globals.net_message);
 		}
 
 		if ((flags & Defines.PS_M_TIME) != 0) {
-			state.pmove.pm_time = (byte) MSG.ReadByte(Globals.net_message);
+			state.pmove.pm_time = (byte) TSizeBuffer.ReadByte(Globals.net_message);
 		}
 
 		if ((flags & Defines.PS_M_FLAGS) != 0)
-			state.pmove.pm_flags = (byte) MSG.ReadByte(Globals.net_message);
+			state.pmove.pm_flags = (byte) TSizeBuffer.ReadByte(Globals.net_message);
 
 		if ((flags & Defines.PS_M_GRAVITY) != 0)
-			state.pmove.gravity = MSG.ReadShort(Globals.net_message);
+			state.pmove.gravity = TSizeBuffer.ReadShort(Globals.net_message);
 
 		if ((flags & Defines.PS_M_DELTA_ANGLES) != 0) {
-			state.pmove.delta_angles[0] = MSG.ReadShort(Globals.net_message);
-			state.pmove.delta_angles[1] = MSG.ReadShort(Globals.net_message);
-			state.pmove.delta_angles[2] = MSG.ReadShort(Globals.net_message);
+			state.pmove.delta_angles[0] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.delta_angles[1] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.delta_angles[2] = TSizeBuffer.ReadShort(Globals.net_message);
 		}
 
 		if (Globals.cl.attractloop)
@@ -409,57 +410,57 @@ public class CL_ents {
 		// parse the rest of the player_state_t
 		//
 		if ((flags & Defines.PS_VIEWOFFSET) != 0) {
-			state.viewoffset[0] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.viewoffset[1] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.viewoffset[2] = MSG.ReadChar(Globals.net_message) * 0.25f;
+			state.viewoffset[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.viewoffset[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.viewoffset[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_VIEWANGLES) != 0) {
-			state.viewangles[0] = MSG.ReadAngle16(Globals.net_message);
-			state.viewangles[1] = MSG.ReadAngle16(Globals.net_message);
-			state.viewangles[2] = MSG.ReadAngle16(Globals.net_message);
+			state.viewangles[0] = TSizeBuffer.ReadAngle16(Globals.net_message);
+			state.viewangles[1] = TSizeBuffer.ReadAngle16(Globals.net_message);
+			state.viewangles[2] = TSizeBuffer.ReadAngle16(Globals.net_message);
 		}
 
 		if ((flags & Defines.PS_KICKANGLES) != 0) {
 
-			state.kick_angles[0] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.kick_angles[1] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.kick_angles[2] = MSG.ReadChar(Globals.net_message) * 0.25f;
+			state.kick_angles[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.kick_angles[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.kick_angles[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
 
 		}
 
 		if ((flags & Defines.PS_WEAPONINDEX) != 0) {
-			state.gunindex = MSG.ReadByte(Globals.net_message);
+			state.gunindex = TSizeBuffer.ReadByte(Globals.net_message);
 		}
 
 		if ((flags & Defines.PS_WEAPONFRAME) != 0) {
-			state.gunframe = MSG.ReadByte(Globals.net_message);
-			state.gunoffset[0] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.gunoffset[1] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.gunoffset[2] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[0] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[1] = MSG.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[2] = MSG.ReadChar(Globals.net_message) * 0.25f;
+			state.gunframe = TSizeBuffer.ReadByte(Globals.net_message);
+			state.gunoffset[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunoffset[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunoffset[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunangles[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunangles[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunangles[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_BLEND) != 0) {
-			state.blend[0] = MSG.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[1] = MSG.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[2] = MSG.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[3] = MSG.ReadByte(Globals.net_message) / 255.0f;
+			state.blend[0] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
+			state.blend[1] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
+			state.blend[2] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
+			state.blend[3] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
 		}
 
 		if ((flags & Defines.PS_FOV) != 0)
-			state.fov = MSG.ReadByte(Globals.net_message);
+			state.fov = TSizeBuffer.ReadByte(Globals.net_message);
 
 		if ((flags & Defines.PS_RDFLAGS) != 0)
-			state.rdflags = MSG.ReadByte(Globals.net_message);
+			state.rdflags = TSizeBuffer.ReadByte(Globals.net_message);
 
 		// parse stats
-		statbits = MSG.ReadLong(Globals.net_message);
+		statbits = TSizeBuffer.ReadLong(Globals.net_message);
 		for (i = 0; i < Defines.MAX_STATS; i++)
 			if ((statbits & (1 << i)) != 0)
-				state.stats[i] = MSG.ReadShort(Globals.net_message);
+				state.stats[i] = TSizeBuffer.ReadShort(Globals.net_message);
 	}
 
 	/*
@@ -494,13 +495,13 @@ public class CL_ents {
 		//memset( cl.frame, 0, sizeof(cl.frame));
 		Globals.cl.frame.reset();
 
-		Globals.cl.frame.serverframe = MSG.ReadLong(Globals.net_message);
-		Globals.cl.frame.deltaframe = MSG.ReadLong(Globals.net_message);
+		Globals.cl.frame.serverframe = TSizeBuffer.ReadLong(Globals.net_message);
+		Globals.cl.frame.deltaframe = TSizeBuffer.ReadLong(Globals.net_message);
 		Globals.cl.frame.servertime = Globals.cl.frame.serverframe * 100;
 
 		// BIG HACK to let old demos continue to work
 		if (Globals.cls.serverProtocol != 26)
-			Globals.cl.surpressCount = MSG.ReadByte(Globals.net_message);
+			Globals.cl.surpressCount = TSizeBuffer.ReadByte(Globals.net_message);
 
 		if (Globals.cl_shownet.value == 3)
 			Com.Printf("   frame:" + Globals.cl.frame.serverframe + "  delta:" + Globals.cl.frame.deltaframe + "\n");
@@ -538,18 +539,18 @@ public class CL_ents {
 			Globals.cl.time = Globals.cl.frame.servertime - 100;
 
 		// read areabits
-		len = MSG.ReadByte(Globals.net_message);
-		MSG.ReadData(Globals.net_message, Globals.cl.frame.areabits, len);
+		len = TSizeBuffer.ReadByte(Globals.net_message);
+		TSizeBuffer.ReadData(Globals.net_message, Globals.cl.frame.areabits, len);
 
 		// read playerinfo
-		cmd = MSG.ReadByte(Globals.net_message);
+		cmd = TSizeBuffer.ReadByte(Globals.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_playerinfo)
 			Com.Error(Defines.ERR_DROP, "CL_ParseFrame: not playerinfo");
 		ParsePlayerstate(old, Globals.cl.frame);
 
 		// read packet entities
-		cmd = MSG.ReadByte(Globals.net_message);
+		cmd = TSizeBuffer.ReadByte(Globals.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_packetentities)
 			Com.Error(Defines.ERR_DROP, "CL_ParseFrame: not packetentities");

@@ -30,6 +30,7 @@ import jake2.Globals;
 import jake2.client.CL;
 import jake2.client.Console;
 import jake2.game.Cmd;
+import jake2.io.*;
 import jake2.server.SV_MAIN;
 import jake2.sys.QSystem;
 import jake2.util.*;

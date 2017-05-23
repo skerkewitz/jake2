@@ -29,6 +29,8 @@ import jake2.Globals
 import jake2.client.*
 import jake2.game.Cmd
 import jake2.game.TVar
+import jake2.io.FileSystem
+import jake2.network.Netchan
 import jake2.server.SV_MAIN
 import jake2.sys.*
 import jake2.sys.NET

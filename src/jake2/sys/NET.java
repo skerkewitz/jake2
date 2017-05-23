@@ -27,8 +27,8 @@ import jake2.Globals;
 import jake2.game.TVar;
 import jake2.qcommon.Com;
 import jake2.qcommon.ConsoleVar;
+import jake2.network.TNetAddr;
 import jake2.qcommon.TSizeBuffer;
-import jake2.qcommon.netadr_t;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public final class NET {
     private final static int MAX_LOOPBACK = 4;
 
     /** Local loopback adress. */
-    private static netadr_t net_local_adr = new netadr_t();
+    private static TNetAddr net_local_adr = new TNetAddr();
 
     public static class loopmsg_t {
         byte data[] = new byte[Defines.MAX_MSGLEN];
@@ -78,7 +78,7 @@ public final class NET {
     /**
      * Compares ip address and port.
      */
-    public static boolean CompareAdr(netadr_t a, netadr_t b) {
+    public static boolean CompareAdr(TNetAddr a, TNetAddr b) {
         return (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2]
                 && a.ip[3] == b.ip[3] && a.port == b.port);
     }
@@ -86,7 +86,7 @@ public final class NET {
     /**
      * Compares ip address without the port.
      */
-    public static boolean CompareBaseAdr(netadr_t a, netadr_t b) {
+    public static boolean CompareBaseAdr(TNetAddr a, TNetAddr b) {
         if (a.type != b.type)
             return false;
 
@@ -103,7 +103,7 @@ public final class NET {
     /**
      * Returns a string holding ip address and port like "ip0.ip1.ip2.ip3:port".
      */
-    public static String AdrToString(netadr_t a) {
+    public static String AdrToString(TNetAddr a) {
         StringBuffer sb = new StringBuffer();
         sb.append(a.ip[0] & 0xFF).append('.').append(a.ip[1] & 0xFF);
         sb.append('.');
@@ -115,7 +115,7 @@ public final class NET {
     /**
      * Returns IP address without the port as string.
      */
-    public static String BaseAdrToString(netadr_t a) {
+    public static String BaseAdrToString(TNetAddr a) {
         StringBuffer sb = new StringBuffer();
         sb.append(a.ip[0] & 0xFF).append('.').append(a.ip[1] & 0xFF);
         sb.append('.');
@@ -124,9 +124,9 @@ public final class NET {
     }
 
     /**
-     * Creates an netadr_t from an string.
+     * Creates an TNetAddr from an string.
      */
-    public static boolean StringToAdr(String s, netadr_t a) {
+    public static boolean StringToAdr(String s, TNetAddr a) {
         if (s.equalsIgnoreCase("localhost") || s.equalsIgnoreCase("loopback")) {
             a.set(net_local_adr);
             return true;
@@ -148,7 +148,7 @@ public final class NET {
     /**
      * Seems to return true, if the address is is on 127.0.0.1.
      */
-    public static boolean IsLocalAddress(netadr_t adr) {
+    public static boolean IsLocalAddress(TNetAddr adr) {
         return CompareAdr(adr, net_local_adr);
     }
 
@@ -163,7 +163,7 @@ public final class NET {
     /**
      * Gets a packet from internal loopback.
      */
-    public static boolean GetLoopPacket(int sock, netadr_t net_from,
+    public static boolean GetLoopPacket(int sock, TNetAddr net_from,
             TSizeBuffer net_message) {
 	
         loopback_t loop = loopbacks[sock];
@@ -189,7 +189,7 @@ public final class NET {
      * Sends a packet via internal loopback.
      */
     public static void SendLoopPacket(int sock, int length, byte[] data,
-            netadr_t to) {
+            TNetAddr to) {
         int i;
         loopback_t loop;
 
@@ -206,7 +206,7 @@ public final class NET {
     /**
      * Gets a packet from a network channel
      */
-    public static boolean GetPacket(int sock, netadr_t net_from,
+    public static boolean GetPacket(int sock, TNetAddr net_from,
             TSizeBuffer net_message) {
 
         if (GetLoopPacket(sock, net_from, net_message)) {
@@ -251,7 +251,7 @@ public final class NET {
     /**
      * Sends a Packet.
      */
-    public static void SendPacket(int sock, int length, byte[] data, netadr_t to) {
+    public static void SendPacket(int sock, int length, byte[] data, TNetAddr to) {
         if (to.type == Defines.NA_LOOPBACK) {
             SendLoopPacket(sock, length, data, to);
             return;

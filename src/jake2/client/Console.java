@@ -32,6 +32,7 @@ import java.util.Arrays;
 import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.util.Lib;
 import jake2.util.Vargs;

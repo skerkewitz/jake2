@@ -27,6 +27,7 @@ import jake2.Globals;
 import jake2.client.CL;
 import jake2.client.SCR;
 import jake2.game.*;
+import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.sys.NET;
 import jake2.util.Lib;

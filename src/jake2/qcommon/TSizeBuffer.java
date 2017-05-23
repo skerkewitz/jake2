@@ -39,6 +39,7 @@ import java.util.Arrays;
  */
 public final class TSizeBuffer {
 
+    // 2k read buffer.
     public boolean allowoverflow = false;
     public boolean overflowed = false;
     public byte[] data = null;
@@ -46,16 +47,187 @@ public final class TSizeBuffer {
     public int cursize = 0;
     public int readcount = 0;
 
-    public void writeAngle(float f) {
-        writeByte((int) (f * 256 / 360) & 255);
+    //should be ok.
+    public static void ReadDir(TSizeBuffer sb, float[] dir) {
+        int b;
+
+        b = ReadByte(sb);
+        if (b >= Defines.NUMVERTEXNORMALS)
+            Com.Error(Defines.ERR_DROP, "MSF_ReadDir: out of range");
+        Math3D.VectorCopy(Globals.bytedirs[b], dir);
     }
 
-    public static void WriteAngle16(TSizeBuffer sb, float f) {
-        sb.writeShort(Math3D.ANGLE2SHORT(f));
+    public static void BeginReading(TSizeBuffer msg) {
+        msg.readcount = 0;
     }
 
-    public static void WriteDeltaUsercmd(TSizeBuffer buf, usercmd_t from,
-                                         usercmd_t cmd) {
+    // returns -1 if no more characters are available, but also [-128 , 127]
+    public static int ReadChar(TSizeBuffer msg_read) {
+        int c;
+
+        if (msg_read.readcount + 1 > msg_read.cursize)
+            c = -1;
+        else
+            c = msg_read.data[msg_read.readcount];
+        msg_read.readcount++;
+        // kickangles bugfix (rst)
+        return c;
+    }
+
+    public static int ReadByte(TSizeBuffer msg_read) {
+        int c;
+
+        if (msg_read.readcount + 1 > msg_read.cursize)
+            c = -1;
+        else
+            c = msg_read.data[msg_read.readcount] & 0xff;
+
+        msg_read.readcount++;
+
+        return c;
+    }
+
+    public static short ReadShort(TSizeBuffer msg_read) {
+        int c;
+
+        if (msg_read.readcount + 2 > msg_read.cursize)
+            c = -1;
+        else
+            c = (short) ((msg_read.data[msg_read.readcount] & 0xff) + (msg_read.data[msg_read.readcount + 1] << 8));
+
+        msg_read.readcount += 2;
+
+        return (short) c;
+    }
+
+    public static int ReadLong(TSizeBuffer msg_read) {
+        int c;
+
+        if (msg_read.readcount + 4 > msg_read.cursize) {
+            Com.Printf("buffer underrun in ReadLong!");
+            c = -1;
+        }
+
+        else
+            c = (msg_read.data[msg_read.readcount] & 0xff)
+                    | ((msg_read.data[msg_read.readcount + 1] & 0xff) << 8)
+                    | ((msg_read.data[msg_read.readcount + 2] & 0xff) << 16)
+                    | ((msg_read.data[msg_read.readcount + 3] & 0xff) << 24);
+
+        msg_read.readcount += 4;
+
+        return c;
+    }
+
+    public static float ReadFloat(TSizeBuffer msg_read) {
+        int n = ReadLong(msg_read);
+        return Float.intBitsToFloat(n);
+    }
+
+    public static String ReadString(TSizeBuffer msg_read) {
+        byte[] readbuf = new byte[2048];
+
+        byte c;
+        int l = 0;
+        do {
+            c = (byte) ReadByte(msg_read);
+            if (c == -1 || c == 0)
+                break;
+
+            readbuf[l] = c;
+            l++;
+        } while (l < 2047);
+
+        String ret = new String(readbuf, 0, l);
+        // Com.dprintln("MSG.ReadString:[" + ret + "]");
+        return ret;
+    }
+
+    public static String ReadStringLine(TSizeBuffer msg_read) {
+        byte[] readbuf = new byte[2048];
+        int l;
+        byte c;
+
+        l = 0;
+        do {
+            c = (byte) ReadChar(msg_read);
+            if (c == -1 || c == 0 || c == 0x0a)
+                break;
+            readbuf[l] = c;
+            l++;
+        } while (l < 2047);
+
+        String ret = new String(readbuf, 0, l).trim();
+        Com.dprintln("MSG.ReadStringLine:[" + ret.replace('\0', '@') + "]");
+        return ret;
+    }
+
+    public static float ReadCoord(TSizeBuffer msg_read) {
+        return ReadShort(msg_read) * (1.0f / 8);
+    }
+
+    public static void ReadPos(TSizeBuffer msg_read, float pos[]) {
+        assert (pos.length == 3) : "vec3_t bug";
+        pos[0] = ReadShort(msg_read) * (1.0f / 8);
+        pos[1] = ReadShort(msg_read) * (1.0f / 8);
+        pos[2] = ReadShort(msg_read) * (1.0f / 8);
+    }
+
+    public static float ReadAngle(TSizeBuffer msg_read) {
+        return ReadChar(msg_read) * (360.0f / 256);
+    }
+
+    public static float ReadAngle16(TSizeBuffer msg_read) {
+        return Math3D.SHORT2ANGLE(ReadShort(msg_read));
+    }
+
+    public static void ReadDeltaUsercmd(TSizeBuffer msg_read, usercmd_t from,
+                                        usercmd_t move) {
+        int bits;
+
+        //memcpy(move, from, sizeof(* move));
+        // IMPORTANT!! copy without new
+        move.set(from);
+        bits = ReadByte(msg_read);
+
+        // read current angles
+        if ((bits & Defines.CM_ANGLE1) != 0)
+            move.angles[0] = ReadShort(msg_read);
+        if ((bits & Defines.CM_ANGLE2) != 0)
+            move.angles[1] = ReadShort(msg_read);
+        if ((bits & Defines.CM_ANGLE3) != 0)
+            move.angles[2] = ReadShort(msg_read);
+
+        // read movement
+        if ((bits & Defines.CM_FORWARD) != 0)
+            move.forwardmove = ReadShort(msg_read);
+        if ((bits & Defines.CM_SIDE) != 0)
+            move.sidemove = ReadShort(msg_read);
+        if ((bits & Defines.CM_UP) != 0)
+            move.upmove = ReadShort(msg_read);
+
+        // read buttons
+        if ((bits & Defines.CM_BUTTONS) != 0)
+            move.buttons = (byte) ReadByte(msg_read);
+
+        if ((bits & Defines.CM_IMPULSE) != 0)
+            move.impulse = (byte) ReadByte(msg_read);
+
+        // read time to run command
+        move.msec = (byte) ReadByte(msg_read);
+
+        // read the light level
+        move.lightlevel = (byte) ReadByte(msg_read);
+
+    }
+
+    public static void ReadData(TSizeBuffer msg_read, byte data[], int len) {
+        for (int i = 0; i < len; i++)
+            data[i] = (byte) ReadByte(msg_read);
+    }
+
+
+    public void writeDeltaUsercmd(usercmd_t from, usercmd_t cmd) {
         int bits;
 
         //
@@ -79,38 +251,38 @@ public final class TSizeBuffer {
         if (cmd.impulse != from.impulse)
             bits |= Defines.CM_IMPULSE;
 
-        buf.writeByte(bits);
+        this.writeByte(bits);
 
         if ((bits & Defines.CM_ANGLE1) != 0)
-            buf.writeShort((int) cmd.angles[0]);
+            this.writeShort((int) cmd.angles[0]);
         if ((bits & Defines.CM_ANGLE2) != 0)
-            buf.writeShort((int) cmd.angles[1]);
+            this.writeShort((int) cmd.angles[1]);
         if ((bits & Defines.CM_ANGLE3) != 0)
-            buf.writeShort((int) cmd.angles[2]);
+            this.writeShort((int) cmd.angles[2]);
 
         if ((bits & Defines.CM_FORWARD) != 0)
-            buf.writeShort((int) cmd.forwardmove);
+            this.writeShort((int) cmd.forwardmove);
         if ((bits & Defines.CM_SIDE) != 0)
-            buf.writeShort((int) cmd.sidemove);
+            this.writeShort((int) cmd.sidemove);
         if ((bits & Defines.CM_UP) != 0)
-            buf.writeShort((int) cmd.upmove);
+            this.writeShort((int) cmd.upmove);
 
         if ((bits & Defines.CM_BUTTONS) != 0)
-            buf.writeByte(cmd.buttons);
+            this.writeByte(cmd.buttons);
         if ((bits & Defines.CM_IMPULSE) != 0)
-            buf.writeByte(cmd.impulse);
+            this.writeByte(cmd.impulse);
 
-        buf.writeByte(cmd.msec);
-        buf.writeByte(cmd.lightlevel);
+        this.writeByte(cmd.msec);
+        this.writeByte(cmd.lightlevel);
     }
 
     //should be ok.
-    public static void WriteDir(TSizeBuffer sb, float[] dir) {
+    public void writeDir(float[] dir) {
         int i, best;
         float d, bestd;
 
         if (dir == null) {
-            sb.writeByte(0);
+            this.writeByte(0);
             return;
         }
 
@@ -123,17 +295,14 @@ public final class TSizeBuffer {
                 best = i;
             }
         }
-        sb.writeByte(best);
+        this.writeByte(best);
     }
 
-    /*
-         * ================== WriteDeltaEntity
-         *
-         * Writes part of a packetentities message. Can delta from either a baseline
-         * or a previous packet_entity ==================
-         */
-    public static void WriteDeltaEntity(entity_state_t from, entity_state_t to,
-                                        TSizeBuffer msg, boolean force, boolean newentity) {
+    /**
+      * Writes part of a packetentities message. Can delta from either a baseline
+      * or a previous packet_entity ==================
+      */
+    public void writeDeltaEntity(entity_state_t from, entity_state_t to, boolean force, boolean newentity) {
         int bits;
 
         if (0 == to.number)
@@ -232,88 +401,96 @@ public final class TSizeBuffer {
         else if ((bits & 0x0000ff00) != 0)
             bits |= Defines.U_MOREBITS1;
 
-        msg.writeByte(bits & 255);
+        this.writeByte(bits & 255);
 
         if ((bits & 0xff000000) != 0) {
-            msg.writeByte((bits >>> 8) & 255);
-            msg.writeByte((bits >>> 16) & 255);
-            msg.writeByte((bits >>> 24) & 255);
+            this.writeByte((bits >>> 8) & 255);
+            this.writeByte((bits >>> 16) & 255);
+            this.writeByte((bits >>> 24) & 255);
         } else if ((bits & 0x00ff0000) != 0) {
-            msg.writeByte((bits >>> 8) & 255);
-            msg.writeByte((bits >>> 16) & 255);
+            this.writeByte((bits >>> 8) & 255);
+            this.writeByte((bits >>> 16) & 255);
         } else if ((bits & 0x0000ff00) != 0) {
-            msg.writeByte((bits >>> 8) & 255);
+            this.writeByte((bits >>> 8) & 255);
         }
 
         //----------
 
         if ((bits & Defines.U_NUMBER16) != 0)
-            msg.writeShort(to.number);
+            this.writeShort(to.number);
         else
-            msg.writeByte(to.number);
+            this.writeByte(to.number);
 
         if ((bits & Defines.U_MODEL) != 0)
-            msg.writeByte(to.modelindex);
+            this.writeByte(to.modelindex);
         if ((bits & Defines.U_MODEL2) != 0)
-            msg.writeByte(to.modelindex2);
+            this.writeByte(to.modelindex2);
         if ((bits & Defines.U_MODEL3) != 0)
-            msg.writeByte(to.modelindex3);
+            this.writeByte(to.modelindex3);
         if ((bits & Defines.U_MODEL4) != 0)
-            msg.writeByte(to.modelindex4);
+            this.writeByte(to.modelindex4);
 
         if ((bits & Defines.U_FRAME8) != 0)
-            msg.writeByte(to.frame);
+            this.writeByte(to.frame);
         if ((bits & Defines.U_FRAME16) != 0)
-            msg.writeShort(to.frame);
+            this.writeShort(to.frame);
 
         if ((bits & Defines.U_SKIN8) != 0 && (bits & Defines.U_SKIN16) != 0) //used for laser
                                                              // colors
-            msg.writeInt(to.skinnum);
+            this.writeInt(to.skinnum);
         else if ((bits & Defines.U_SKIN8) != 0)
-            msg.writeByte(to.skinnum);
+            this.writeByte(to.skinnum);
         else if ((bits & Defines.U_SKIN16) != 0)
-            msg.writeShort(to.skinnum);
+            this.writeShort(to.skinnum);
 
         if ((bits & (Defines.U_EFFECTS8 | Defines.U_EFFECTS16)) == (Defines.U_EFFECTS8 | Defines.U_EFFECTS16))
-            msg.writeInt(to.effects);
+            this.writeInt(to.effects);
         else if ((bits & Defines.U_EFFECTS8) != 0)
-            msg.writeByte(to.effects);
+            this.writeByte(to.effects);
         else if ((bits & Defines.U_EFFECTS16) != 0)
-            msg.writeShort(to.effects);
+            this.writeShort(to.effects);
 
         if ((bits & (Defines.U_RENDERFX8 | Defines.U_RENDERFX16)) == (Defines.U_RENDERFX8 | Defines.U_RENDERFX16))
-            msg.writeInt(to.renderfx);
+            this.writeInt(to.renderfx);
         else if ((bits & Defines.U_RENDERFX8) != 0)
-            msg.writeByte(to.renderfx);
+            this.writeByte(to.renderfx);
         else if ((bits & Defines.U_RENDERFX16) != 0)
-            msg.writeShort(to.renderfx);
+            this.writeShort(to.renderfx);
 
         if ((bits & Defines.U_ORIGIN1) != 0)
-            msg.writeCoord(to.origin[0]);
+            this.writeCoord(to.origin[0]);
         if ((bits & Defines.U_ORIGIN2) != 0)
-            msg.writeCoord(to.origin[1]);
+            this.writeCoord(to.origin[1]);
         if ((bits & Defines.U_ORIGIN3) != 0)
-            msg.writeCoord(to.origin[2]);
+            this.writeCoord(to.origin[2]);
 
         if ((bits & Defines.U_ANGLE1) != 0)
-            msg.writeAngle(to.angles[0]);
+            this.writeAngle(to.angles[0]);
         if ((bits & Defines.U_ANGLE2) != 0)
-            msg.writeAngle(to.angles[1]);
+            this.writeAngle(to.angles[1]);
         if ((bits & Defines.U_ANGLE3) != 0)
-            msg.writeAngle(to.angles[2]);
+            this.writeAngle(to.angles[2]);
 
         if ((bits & Defines.U_OLDORIGIN) != 0) {
-            msg.writeCoord(to.old_origin[0]);
-            msg.writeCoord(to.old_origin[1]);
-            msg.writeCoord(to.old_origin[2]);
+            this.writeCoord(to.old_origin[0]);
+            this.writeCoord(to.old_origin[1]);
+            this.writeCoord(to.old_origin[2]);
         }
 
         if ((bits & Defines.U_SOUND) != 0)
-            msg.writeByte(to.sound);
+            this.writeByte(to.sound);
         if ((bits & Defines.U_EVENT) != 0)
-            msg.writeByte(to.event);
+            this.writeByte(to.event);
         if ((bits & Defines.U_SOLID) != 0)
-            msg.writeShort(to.solid);
+            this.writeShort(to.solid);
+    }
+
+    public void writeAngle(float f) {
+        writeByte((int) (f * 256 / 360) & 255);
+    }
+
+    public void writeAngle16(float f) {
+        writeShort(Math3D.ANGLE2SHORT(f));
     }
 
     public void writeLong(int c) {

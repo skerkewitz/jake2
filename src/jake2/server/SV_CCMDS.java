@@ -31,12 +31,14 @@ import jake2.game.GameSVCmds;
 import jake2.game.GameSave;
 import jake2.game.Info;
 import jake2.game.TVar;
+import jake2.network.Netchan;
+import jake2.network.TNetAddr;
 import jake2.qcommon.*;
-import jake2.qcommon.FileSystem;
+import jake2.io.FileSystem;
 import jake2.sys.NET;
 import jake2.sys.QSystem;
 import jake2.util.Lib;
-import jake2.util.QuakeFile;
+import jake2.io.QuakeFile;
 import jake2.util.Vargs;
 
 import java.io.File;
@@ -76,7 +78,7 @@ public class SV_CCMDS {
 		ConsoleVar.Set("public", "1");
 
 		for (i = 1; i < Defines.MAX_MASTERS; i++)
-			SV_MAIN.master_adr[i] = new netadr_t();
+			SV_MAIN.master_adr[i] = new TNetAddr();
 
 		slot = 1; // slot 0 will always contain the id master
 		for (i = 1; i < Cmd.Argc(); i++) {
