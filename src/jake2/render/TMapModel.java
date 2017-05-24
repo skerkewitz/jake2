@@ -19,13 +19,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: dlight_t.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
+// $Id: TMapModel.java,v 1.2 2006-08-20 21:47:36 salomo Exp $
 
-package jake2.client;
+package jake2.render;
 
-public class dlight_t
-{
-	public float origin[] = { 0, 0, 0 };
-	public float color[] = { 0, 0, 0 };
-	public float intensity;
+public class TMapModel {
+	public float[] mins = { 0, 0, 0 };
+	public float[] maxs = { 0, 0, 0 };
+	public float[] origin = { 0, 0, 0 }; // for sounds or lights
+	public float radius;
+	public int headnode;
+	public int visleafs; // not including the solid leaf 0
+	public int firstface, numfaces;
 }

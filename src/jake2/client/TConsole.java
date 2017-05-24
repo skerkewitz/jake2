@@ -28,24 +28,24 @@ package jake2.client;
 import jake2.Defines;
 
 /**
- * console_t
+ * TConsole
  */
-public final class console_t {
-	boolean initialized;
-	byte[] text = new byte[Defines.CON_TEXTSIZE];
-	int current;	// line where next message will be printed
-	int x;			// offset in current line for next print
-	int display;	// bottom of console displays this line
+public final class TConsole {
+    boolean initialized;
+    byte[] text = new byte[Defines.CON_TEXTSIZE];
+    int current;    // line where next message will be printed
+    int x;            // offset in current line for next print
+    int display;    // bottom of console displays this line
 
-	int ormask;		// high bit mask for colored characters
+    int ormask;        // high bit mask for colored characters
 
-	int linewidth;	// characters across screen
-	int totallines;	// total lines in console scrollback
+    int linewidth;    // characters across screen
+    int totallines;    // total lines in console scrollback
 
-	float cursorspeed;
+    float cursorspeed;
 
-	int vislines;
+    int vislines;
 
-	float[] times = new float[Defines.NUM_CON_TIMES];	// cls.realtime time the line was generated
-										// for transparent notify lines	
+    float[] times = new float[Defines.NUM_CON_TIMES];    // cls.realtime time the line was generated
+    // for transparent notify lines
 }

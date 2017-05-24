@@ -33,12 +33,15 @@ import jake2.util.Math3D;
 import jake2.util.Vec3Cache;
 import org.lwjgl.opengl.GL11;
 
+import static jake2.render.Base.it_sky;
+
 /**
  * Warp
  *  
  * @author cwei
  */
-public abstract class Warp extends Model {
+public class Warp {
+
 	// warpsin.h
 	public static final float[] SIN = {
 		0f, 0.19633f, 0.392541f, 0.588517f, 0.784137f, 0.979285f, 1.17384f, 1.3677f,
@@ -78,9 +81,9 @@ public abstract class Warp extends Model {
 	String skyname;
 	float	skyrotate;
 	float[] skyaxis = {0, 0, 0};
-	image_t[] sky_images = new image_t[6];
+	TImage[] sky_images = new TImage[6];
 
-	msurface_t	warpface;
+	TMapSurface warpface;
 
 	static final int SUBDIVIDE_SIZE = 64;
 
@@ -192,10 +195,10 @@ public abstract class Warp extends Model {
 		// add a point in the center to help keep warp valid
 		
 		// wird im Konstruktor erschlagen
-		// poly = Hunk_Alloc (sizeof(glpoly_t) + ((numverts-4)+2) * VERTEXSIZE*sizeof(float));
+		// poly = Hunk_Alloc (sizeof(TGlPoly) + ((numverts-4)+2) * VERTEXSIZE*sizeof(float));
 
 		// init polys
-		glpoly_t poly = Polygon.create(numverts + 2);
+		TGlPoly poly = Polygon.create(numverts + 2);
 
 		poly.next = warpface.polys;
 		warpface.polys = poly;
@@ -245,7 +248,7 @@ public abstract class Warp extends Model {
 	 * boundaries so that turbulent and sky warps
 	 * can be done reasonably.
 	 */
-    void GL_SubdivideSurface(msurface_t fa) {
+    void GL_SubdivideSurface(TMapSurface fa) {
         float[][] verts = tmpVerts;
         float[] vec;
         warpface = fa;
@@ -254,12 +257,12 @@ public abstract class Warp extends Model {
         //
         int numverts = 0;
         for (int i = 0; i < fa.numedges; i++) {
-            int lindex = loadmodel.surfedges[fa.firstedge + i];
+            int lindex = RenderAPIImpl.model.loadmodel.surfedges[fa.firstedge + i];
 
             if (lindex > 0)
-                vec = loadmodel.vertexes[loadmodel.edges[lindex].v[0]].position;
+                vec = RenderAPIImpl.model.loadmodel.vertexes[RenderAPIImpl.model.loadmodel.edges[lindex].v[0]].position;
             else
-                vec = loadmodel.vertexes[loadmodel.edges[-lindex].v[1]].position;
+                vec = RenderAPIImpl.model.loadmodel.vertexes[RenderAPIImpl.model.loadmodel.edges[-lindex].v[1]].position;
             Math3D.VectorCopy(vec, verts[numverts]);
             numverts++;
         }
@@ -271,31 +274,31 @@ public abstract class Warp extends Model {
 
 	/**
 	 * EmitWaterPolys
-	 * Does a water warp on the pre-fragmented glpoly_t chain
+	 * Does a water warp on the pre-fragmented TGlPoly chain
 	 */
-	void EmitWaterPolys(msurface_t fa)
+	void EmitWaterPolys(TMapSurface fa)
 	{
-		float rdt = r_newrefdef.time;
+		float rdt = RenderAPIImpl.main.r_newrefdef.time;
 
 		float scroll;
 		if ((fa.texinfo.flags & Defines.SURF_FLOWING) != 0)
-			scroll = -64 * ( (r_newrefdef.time*0.5f) - (int)(r_newrefdef.time*0.5f) );
+			scroll = -64 * ( (RenderAPIImpl.main.r_newrefdef.time*0.5f) - (int)(RenderAPIImpl.main.r_newrefdef.time*0.5f) );
 		else
 			scroll = 0;
 		
 		int i;
 		float s, t, os, ot;
-		glpoly_t p, bp;
+		TGlPoly p, bp;
         for (bp = fa.polys; bp != null; bp = bp.next) {
             p = bp;
 
-            gl.glBegin(GL11.GL_TRIANGLE_FAN);
+            GL11.glBegin(GL11.GL_TRIANGLE_FAN);
             for (i = 0; i < p.numverts; i++) {
                 os = p.s1(i);
                 ot = p.t1(i);
 
                 s = os
-                        + Warp.SIN[(int) ((ot * 0.125f + r_newrefdef.time) * TURBSCALE) & 255];
+                        + Warp.SIN[(int) ((ot * 0.125f + RenderAPIImpl.main.r_newrefdef.time) * TURBSCALE) & 255];
                 s += scroll;
                 s *= (1.0f / 64);
 
@@ -303,10 +306,10 @@ public abstract class Warp extends Model {
                         + Warp.SIN[(int) ((os * 0.125f + rdt) * TURBSCALE) & 255];
                 t *= (1.0f / 64);
 
-                gl.glTexCoord2f(s, t);
-                gl.glVertex3f(p.x(i), p.y(i), p.z(i));
+                GL11.glTexCoord2f(s, t);
+                GL11.glVertex3f(p.x(i), p.y(i), p.z(i));
             }
-            gl.glEnd();
+            GL11.glEnd();
         }
 	}
 
@@ -542,14 +545,14 @@ public abstract class Warp extends Model {
 	/**
 	 * R_AddSkySurface
 	 */
-	void R_AddSkySurface(msurface_t fa)
+	void R_AddSkySurface(TMapSurface fa)
 	{
 	    // calculate vertex values for sky box
-        for (glpoly_t p = fa.polys; p != null; p = p.next) {
+        for (TGlPoly p = fa.polys; p != null; p = p.next) {
             for (int i = 0; i < p.numverts; i++) {
-                verts[i][0] = p.x(i) - r_origin[0];
-                verts[i][1] = p.y(i) - r_origin[1];
-                verts[i][2] = p.z(i) - r_origin[2];
+                verts[i][0] = p.x(i) - RenderAPIImpl.main.r_origin[0];
+                verts[i][1] = p.y(i) - RenderAPIImpl.main.r_origin[1];
+                verts[i][2] = p.z(i) - RenderAPIImpl.main.r_origin[2];
             }
             ClipSkyPolygon(p.numverts, verts, 0);
         }
@@ -611,8 +614,8 @@ public abstract class Warp extends Model {
 			t = sky_max;
 
 		t = 1.0f - t;
-		gl.glTexCoord2f (s, t);
-		gl.glVertex3f(v1[0], v1[1], v1[2]);
+		GL11.glTexCoord2f (s, t);
+		GL11.glVertex3f(v1[0], v1[1], v1[2]);
 	}
 
 	int[] skytexorder = {0,2,1,3,4,5};
@@ -634,9 +637,9 @@ public abstract class Warp extends Model {
 				return;		// nothing visible
 		}
 
-		gl.glPushMatrix ();
-		gl.glTranslatef (r_origin[0], r_origin[1], r_origin[2]);
-		gl.glRotatef (r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+		GL11.glPushMatrix ();
+		GL11.glTranslatef (RenderAPIImpl.main.r_origin[0], RenderAPIImpl.main.r_origin[1], RenderAPIImpl.main.r_origin[2]);
+		GL11.glRotatef (RenderAPIImpl.main.r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
 		for (i=0 ; i<6 ; i++)
 		{
@@ -652,16 +655,16 @@ public abstract class Warp extends Model {
 			|| skymins[1][i] >= skymaxs[1][i])
 				continue;
 
-			GL_Bind(sky_images[skytexorder[i]].texnum);
+			RenderAPIImpl.image.GL_Bind(sky_images[skytexorder[i]].texnum);
 
-			gl.glBegin(GL11.GL_QUADS);
+			GL11.glBegin(GL11.GL_QUADS);
 			MakeSkyVec(skymins[0][i], skymins[1][i], i);
 			MakeSkyVec(skymins[0][i], skymaxs[1][i], i);
 			MakeSkyVec(skymaxs[0][i], skymaxs[1][i], i);
 			MakeSkyVec(skymaxs[0][i], skymins[1][i], i);
-			gl.glEnd ();
+			GL11.glEnd ();
 		}
-		gl.glPopMatrix ();
+		GL11.glPopMatrix ();
 	}
 
 	// 3dstudio environment map names
@@ -685,10 +688,10 @@ public abstract class Warp extends Model {
 		for (int i=0 ; i<6 ; i++)
 		{
 			// chop down rotating skies for less memory
-			if (gl_skymip.value != 0 || skyrotate != 0)
-				gl_picmip.value++;
+			if (RenderAPIImpl.main.gl_skymip.value != 0 || skyrotate != 0)
+				RenderAPIImpl.main.gl_picmip.value++;
 
-			if ( qglColorTableEXT && gl_ext_palettedtexture.value != 0) {
+			if ( RenderAPIImpl.main.qglColorTableEXT && RenderAPIImpl.main.gl_ext_palettedtexture.value != 0) {
 				//	Com_sprintf (pathname, sizeof(pathname), "env/%s%s.pcx", skyname, suf[i]);
 				pathname = "env/" + skyname + suf[i] + ".pcx";
 			} else {
@@ -696,14 +699,14 @@ public abstract class Warp extends Model {
 				pathname = "env/" + skyname + suf[i] + ".tga";
 			}
 
-			sky_images[i] = GL_FindImage(pathname, it_sky);
+			sky_images[i] = RenderAPIImpl.image.GL_FindImage(pathname, it_sky);
 
 			if (sky_images[i] == null)
-				sky_images[i] = r_notexture;
+				sky_images[i] = RenderAPIImpl.main.r_notexture;
 
-			if (gl_skymip.value != 0 || skyrotate != 0)
+			if (RenderAPIImpl.main.gl_skymip.value != 0 || skyrotate != 0)
 			{	// take less memory
-				gl_picmip.value--;
+				RenderAPIImpl.main.gl_picmip.value--;
 				sky_min = 1.0f / 256;
 				sky_max = 255.0f / 256;
 			}

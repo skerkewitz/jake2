@@ -4073,11 +4073,11 @@ public final class Menu extends Key {
 
     static int yaw;
     
-    private static final entity_t entity = new entity_t();
+    private static final TEntity entity = new TEntity();
 
     static void PlayerConfig_MenuDraw() {
 
-        refdef_t refdef = new refdef_t();
+        TRefDef refdef = new TRefDef();
         //char scratch[MAX_QPATH];
         String scratch;
 
@@ -4122,7 +4122,7 @@ public final class Menu extends Key {
 
             refdef.areabits = null;
             refdef.num_entities = 1;
-            refdef.entities = new entity_t[] { entity };
+            refdef.entities = new TEntity[] { entity };
             refdef.lightstyles = null;
             refdef.rdflags = RDF_NOWORLDMODEL;
 

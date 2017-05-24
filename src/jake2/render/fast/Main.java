@@ -38,14 +38,15 @@ import org.lwjgl.opengl.GL13;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL11.*;
+import static jake2.render.Base.*;
+
 
 /**
  * Main
  * 
  * @author cwei
  */
-public abstract class Main extends Base {
+public class Main {
 
 	public static int[] d_8to24table = new int[256];
 
@@ -62,44 +63,6 @@ public abstract class Main extends Base {
 	boolean qglLockArraysEXT = false;
 	boolean qwglSwapIntervalEXT = false;
 
-	//	=================
-	//  abstract methods
-	//	=================
-	protected abstract void Draw_GetPalette();
-
-	abstract void GL_ImageList_f();
-	public abstract void GL_ScreenShot_f();
-	abstract void GL_SetTexturePalette(int[] palette);
-	abstract void GL_Strings_f();
-
-	abstract void Mod_Modellist_f();
-	abstract mleaf_t Mod_PointInLeaf(float[] point, model_t model);
-
-	abstract void GL_SetDefaultState();
-
-	abstract void GL_InitImages();
-	abstract void Mod_Init(); // Model.java
-	abstract void R_InitParticleTexture(); // MIsc.java
-	abstract void R_DrawAliasModel(entity_t e); // Mesh.java
-	abstract void R_DrawBrushModel(entity_t e); // Surf.java
-	abstract void Draw_InitLocal();
-	abstract void R_LightPoint(float[] p, float[] color);
-	abstract void R_PushDlights();
-	abstract void R_MarkLeaves();
-	abstract void R_DrawWorld();
-	abstract void R_RenderDlights();
-	abstract void R_DrawAlphaSurfaces();
-
-	abstract void Mod_FreeAll();
-
-	abstract void GL_ShutdownImages();
-	abstract void GL_Bind(int texnum);
-	abstract void GL_TexEnv(int mode);
-	abstract void GL_TextureMode(String string);
-	abstract void GL_TextureAlphaMode(String string);
-	abstract void GL_TextureSolidMode(String string);
-	abstract void GL_UpdateSwapInterval();
-
 	/*
 	====================================================================
 	
@@ -111,18 +74,18 @@ public abstract class Main extends Base {
 	int TEXTURE0 = GL13.GL_TEXTURE0;
 	int TEXTURE1 = GL13.GL_TEXTURE1;
 
-	model_t r_worldmodel;
+	TModel r_worldmodel;
 
 	float gldepthmin, gldepthmax;
 
-	glconfig_t gl_config = new glconfig_t();
-	glstate_t gl_state = new glstate_t();
+	TGlConfig gl_config = new TGlConfig();
+	TGlState gl_state = new TGlState();
 
-	image_t r_notexture; // use for bad textures
-	image_t r_particletexture; // little dot for particles
+	TImage r_notexture; // use for bad textures
+	TImage r_particletexture; // little dot for particles
 
-	entity_t currententity;
-	model_t currentmodel;
+	TEntity currententity;
+	TModel currentmodel;
 
 	cplane_t frustum[] = { new cplane_t(), new cplane_t(), new cplane_t(), new cplane_t()};
 
@@ -136,9 +99,9 @@ public abstract class Main extends Base {
 	//
 	//	   view origin
 	//
-	float[] vup = { 0, 0, 0 };
-	float[] vpn = { 0, 0, 0 };
-	float[] vright = { 0, 0, 0 };
+	float[] vecUp = { 0, 0, 0 };
+	float[] vecForward = { 0, 0, 0 };
+	float[] vecRight = { 0, 0, 0 };
 	float[] r_origin = { 0, 0, 0 };
 
 	//float r_world_matrix[] = new float[16];
@@ -149,7 +112,7 @@ public abstract class Main extends Base {
 	//
 	//	   screen size info
 	//
-	refdef_t r_newrefdef = new refdef_t();
+	TRefDef r_newrefdef = new TRefDef();
 
 	int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
@@ -242,12 +205,12 @@ public abstract class Main extends Base {
 	/**
 	 * R_RotateForEntity
 	 */
-	final void R_RotateForEntity(entity_t e) {
-		gl.glTranslatef(e.origin[0], e.origin[1], e.origin[2]);
+	final void R_RotateForEntity(TEntity e) {
+		GL11.glTranslatef(e.origin[0], e.origin[1], e.origin[2]);
 
-		gl.glRotatef(e.angles[1], 0, 0, 1);
-		gl.glRotatef(-e.angles[0], 0, 1, 0);
-		gl.glRotatef(-e.angles[2], 1, 0, 0);
+		GL11.glRotatef(e.angles[1], 0, 0, 1);
+		GL11.glRotatef(-e.angles[0], 0, 1, 0);
+		GL11.glRotatef(-e.angles[2], 1, 0, 0);
 	}
 
 	/*
@@ -263,7 +226,7 @@ public abstract class Main extends Base {
 	/**
 	 * R_DrawSpriteModel
 	 */
-	void R_DrawSpriteModel(entity_t e) {
+	void R_DrawSpriteModel(TEntity e) {
 		float alpha = 1.0F;
 
 		qfiles.dsprframe_t frame;
@@ -282,50 +245,50 @@ public abstract class Main extends Base {
 			alpha = e.alpha;
 
 		if (alpha != 1.0F)
-			gl.glEnable(GL11.GL_BLEND);
+			GL11.glEnable(GL11.GL_BLEND);
 
-		gl.glColor4f(1, 1, 1, alpha);
+		GL11.glColor4f(1, 1, 1, alpha);
 
-		GL_Bind(currentmodel.skins[e.frame].texnum);
 
-		GL_TexEnv(GL11.GL_MODULATE);
+		RenderAPIImpl.image.GL_Bind(currentmodel.skins[e.frame].texnum);
+		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
 
 		if (alpha == 1.0)
-			gl.glEnable(GL11.GL_ALPHA_TEST);
+			GL11.glEnable(GL11.GL_ALPHA_TEST);
 		else
-			gl.glDisable(GL11.GL_ALPHA_TEST);
+			GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-		gl.glBegin(GL11.GL_QUADS);
+		GL11.glBegin(GL11.GL_QUADS);
 
-		gl.glTexCoord2f(0, 1);
-		Math3D.VectorMA(e.origin, -frame.origin_y, vup, point);
-		Math3D.VectorMA(point, -frame.origin_x, vright, point);
-		gl.glVertex3f(point[0], point[1], point[2]);
+		GL11.glTexCoord2f(0, 1);
+		Math3D.VectorMA(e.origin, -frame.origin_y, vecUp, point);
+		Math3D.VectorMA(point, -frame.origin_x, vecRight, point);
+		GL11.glVertex3f(point[0], point[1], point[2]);
 
-		gl.glTexCoord2f(0, 0);
-		Math3D.VectorMA(e.origin, frame.height - frame.origin_y, vup, point);
-		Math3D.VectorMA(point, -frame.origin_x, vright, point);
-		gl.glVertex3f(point[0], point[1], point[2]);
+		GL11.glTexCoord2f(0, 0);
+		Math3D.VectorMA(e.origin, frame.height - frame.origin_y, vecUp, point);
+		Math3D.VectorMA(point, -frame.origin_x, vecRight, point);
+		GL11.glVertex3f(point[0], point[1], point[2]);
 
-		gl.glTexCoord2f(1, 0);
-		Math3D.VectorMA(e.origin, frame.height - frame.origin_y, vup, point);
-		Math3D.VectorMA(point, frame.width - frame.origin_x, vright, point);
-		gl.glVertex3f(point[0], point[1], point[2]);
+		GL11.glTexCoord2f(1, 0);
+		Math3D.VectorMA(e.origin, frame.height - frame.origin_y, vecUp, point);
+		Math3D.VectorMA(point, frame.width - frame.origin_x, vecRight, point);
+		GL11.glVertex3f(point[0], point[1], point[2]);
 
-		gl.glTexCoord2f(1, 1);
-		Math3D.VectorMA(e.origin, -frame.origin_y, vup, point);
-		Math3D.VectorMA(point, frame.width - frame.origin_x, vright, point);
-		gl.glVertex3f(point[0], point[1], point[2]);
+		GL11.glTexCoord2f(1, 1);
+		Math3D.VectorMA(e.origin, -frame.origin_y, vecUp, point);
+		Math3D.VectorMA(point, frame.width - frame.origin_x, vecRight, point);
+		GL11.glVertex3f(point[0], point[1], point[2]);
 
-		gl.glEnd();
+		GL11.glEnd();
 
-		gl.glDisable(GL11.GL_ALPHA_TEST);
-		GL_TexEnv(GL11.GL_REPLACE);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 
 		if (alpha != 1.0F)
-			gl.glDisable(GL11.GL_BLEND);
+			GL11.glDisable(GL11.GL_BLEND);
 
-		gl.glColor4f(1, 1, 1, 1);
+		GL11.glColor4f(1, 1, 1, 1);
 	}
 
 	// ==================================================================================
@@ -342,37 +305,37 @@ public abstract class Main extends Base {
 			shadelight[2] = 0.8F;
 		}
 		else {
-			R_LightPoint(currententity.origin, shadelight);
+			RenderAPIImpl.light.R_LightPoint(currententity.origin, shadelight);
 		}
 
-		gl.glPushMatrix();
+		GL11.glPushMatrix();
 		R_RotateForEntity(currententity);
 
-		gl.glDisable(GL11.GL_TEXTURE_2D);
-		gl.glColor3f(shadelight[0], shadelight[1], shadelight[2]);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glColor3f(shadelight[0], shadelight[1], shadelight[2]);
 
 		// this replaces the TRIANGLE_FAN
 		//glut.glutWireCube(gl, 20);
 
-		gl.glBegin(GL11.GL_TRIANGLE_FAN);
-		gl.glVertex3f(0, 0, -16);
+		GL11.glBegin(GL11.GL_TRIANGLE_FAN);
+		GL11.glVertex3f(0, 0, -16);
 		int i;
 		for (i=0 ; i<=4 ; i++) {
-			gl.glVertex3f((float)(16.0f * Math.cos(i * Math.PI / 2)), (float)(16.0f * Math.sin(i * Math.PI / 2)), 0.0f);
+			GL11.glVertex3f((float)(16.0f * Math.cos(i * Math.PI / 2)), (float)(16.0f * Math.sin(i * Math.PI / 2)), 0.0f);
 		}
-		gl.glEnd();
+		GL11.glEnd();
 		
-		gl.glBegin(GL11.GL_TRIANGLE_FAN);
-		gl.glVertex3f (0, 0, 16);
+		GL11.glBegin(GL11.GL_TRIANGLE_FAN);
+		GL11.glVertex3f (0, 0, 16);
 		for (i=4 ; i>=0 ; i--) {
-			gl.glVertex3f((float)(16.0f * Math.cos(i * Math.PI / 2)), (float)(16.0f * Math.sin(i * Math.PI / 2)), 0.0f);
+			GL11.glVertex3f((float)(16.0f * Math.cos(i * Math.PI / 2)), (float)(16.0f * Math.sin(i * Math.PI / 2)), 0.0f);
 		}
-		gl.glEnd();
+		GL11.glEnd();
 
 		
-		gl.glColor3f(1, 1, 1);
-		gl.glPopMatrix();
-		gl.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glColor3f(1, 1, 1);
+		GL11.glPopMatrix();
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 	}
 
 	/**
@@ -400,13 +363,13 @@ public abstract class Main extends Base {
 				}
 				switch (currentmodel.type) {
 					case mod_alias :
-						R_DrawAliasModel(currententity);
+						RenderAPIImpl.mesh.R_DrawAliasModel(currententity);
 						break;
 					case mod_brush :
-						R_DrawBrushModel(currententity);
+						RenderAPIImpl.surf.R_DrawBrushModel(currententity);
 						break;
 					case mod_sprite :
-						R_DrawSpriteModel(currententity);
+						RenderAPIImpl.main.R_DrawSpriteModel(currententity);
 						break;
 					default :
 						Com.Error(Defines.ERR_DROP, "Bad modeltype");
@@ -416,7 +379,7 @@ public abstract class Main extends Base {
 		}
 		// draw transparent entities
 		// we could sort these if it ever becomes a problem...
-		gl.glDepthMask(false); // no z writes
+		GL11.glDepthMask(false); // no z writes
 		for (i = 0; i < r_newrefdef.num_entities; i++) {
 			currententity = r_newrefdef.entities[i];
 			if ((currententity.flags & Defines.RF_TRANSLUCENT) == 0)
@@ -434,10 +397,10 @@ public abstract class Main extends Base {
 				}
 				switch (currentmodel.type) {
 					case mod_alias :
-						R_DrawAliasModel(currententity);
+						RenderAPIImpl.mesh.R_DrawAliasModel(currententity);
 						break;
 					case mod_brush :
-						R_DrawBrushModel(currententity);
+						RenderAPIImpl.surf.R_DrawBrushModel(currententity);
 						break;
 					case mod_sprite :
 						R_DrawSpriteModel(currententity);
@@ -448,7 +411,7 @@ public abstract class Main extends Base {
 				}
 			}
 		}
-		gl.glDepthMask(true); // back to writing
+		GL11.glDepthMask(true); // back to writing
 	}
 	
 	// stack variable 
@@ -460,15 +423,15 @@ public abstract class Main extends Base {
 	void GL_DrawParticles(int num_particles) {
 		float origin_x, origin_y, origin_z;
 
-		Math3D.VectorScale(vup, 1.5f, up);
-		Math3D.VectorScale(vright, 1.5f, right);
+		Math3D.VectorScale(vecUp, 1.5f, up);
+		Math3D.VectorScale(vecRight, 1.5f, right);
 
-		GL_Bind(r_particletexture.texnum);
-		gl.glDepthMask(false); // no z buffering
-		gl.glEnable(GL_BLEND);
-		GL_TexEnv(GL_MODULATE);
+		RenderAPIImpl.image.GL_Bind(r_particletexture.texnum);
+		GL11.glDepthMask(false); // no z buffering
+		GL11.glEnable(GL11.GL_BLEND);
+		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
 
-		gl.glBegin(GL_TRIANGLES);
+		GL11.glBegin(GL11.GL_TRIANGLES);
 
 		FloatBuffer sourceVertices = particle_t.vertexArray;
 		IntBuffer sourceColors = particle_t.colorArray;
@@ -481,36 +444,36 @@ public abstract class Main extends Base {
 
 			// hack a scale up to keep particles from disapearing
 			scale =
-				(origin_x - r_origin[0]) * vpn[0]
-					+ (origin_y - r_origin[1]) * vpn[1]
-					+ (origin_z - r_origin[2]) * vpn[2];
+				(origin_x - r_origin[0]) * vecForward[0]
+					+ (origin_y - r_origin[1]) * vecForward[1]
+					+ (origin_z - r_origin[2]) * vecForward[2];
 
 			scale = (scale < 20) ? 1 :  1 + scale * 0.004f;
 
 			color = sourceColors.get(i);
 
-			gl.glColor4f(
+			GL11.glColor4f(
 				((color) & 0xFF) / 255.0f,
 				((color >> 8) & 0xFF) / 255.0f,
 				((color >> 16) & 0xFF) / 255.0f,
 				((color >>> 24)) /255.0f
 			);
 			// first vertex
-			gl.glTexCoord2f(0.0625f, 0.0625f);
-			gl.glVertex3f(origin_x, origin_y, origin_z);
+			GL11.glTexCoord2f(0.0625f, 0.0625f);
+			GL11.glVertex3f(origin_x, origin_y, origin_z);
 			// second vertex
-			gl.glTexCoord2f(1.0625f, 0.0625f);
-			gl.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
+			GL11.glTexCoord2f(1.0625f, 0.0625f);
+			GL11.glVertex3f(origin_x + up[0] * scale, origin_y + up[1] * scale, origin_z + up[2] * scale);
 			// third vertex
-			gl.glTexCoord2f(0.0625f, 1.0625f);
-			gl.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
+			GL11.glTexCoord2f(0.0625f, 1.0625f);
+			GL11.glVertex3f(origin_x + right[0] * scale, origin_y + right[1] * scale, origin_z + right[2] * scale);
 		}
-		gl.glEnd();
+		GL11.glEnd();
 
-		gl.glDisable(GL_BLEND);
-		gl.glColor4f(1, 1, 1, 1);
-		gl.glDepthMask(true); // back to normal Z buffering
-		GL_TexEnv(GL_REPLACE);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glColor4f(1, 1, 1, 1);
+		GL11.glDepthMask(true); // back to normal Z buffering
+		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 	}
 
 	/**
@@ -520,25 +483,25 @@ public abstract class Main extends Base {
 
 		if (gl_ext_pointparameters.value != 0.0f && qglPointParameterfEXT) {
 
-			//gl.gl.glEnableClientState(GL_VERTEX_ARRAY);
-			gl.glVertexPointer(3, 0, particle_t.vertexArray);
-			gl.glEnableClientState(GL11.GL_COLOR_ARRAY);
-			gl.glColorPointer(4, true, 0, particle_t.getColorAsByteBuffer());
+			//GL11.GL11.glEnableClientState(GL_VERTEX_ARRAY);
+			GL11.glVertexPointer(3, GL11.GL_INT, 0, particle_t.vertexArray);
+			GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+			GL11.glColorPointer(4, GL11.GL_INT, 0, particle_t.getColorAsByteBuffer());
 			
-			gl.glDepthMask(false);
-			gl.glEnable(GL11.GL_BLEND);
-			gl.glDisable(GL11.GL_TEXTURE_2D);
-			gl.glPointSize(gl_particle_size.value);
+			GL11.glDepthMask(false);
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
+			GL11.glPointSize(gl_particle_size.value);
 			
-			gl.glDrawArrays(GL11.GL_POINTS, 0, r_newrefdef.num_particles);
+			GL11.glDrawArrays(GL11.GL_POINTS, 0, r_newrefdef.num_particles);
 			
-			gl.glDisableClientState(GL11.GL_COLOR_ARRAY);
-			//gl.gl.glDisableClientState(GL_VERTEX_ARRAY);
+			GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+			//GL11.GL11.glDisableClientState(GL_VERTEX_ARRAY);
 
-			gl.glDisable(GL11.GL_BLEND);
-			gl.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-			gl.glDepthMask(true);
-			gl.glEnable(GL11.GL_TEXTURE_2D);
+			GL11.glDisable(GL11.GL_BLEND);
+			GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+			GL11.glDepthMask(true);
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
 
 		}
 		else {
@@ -556,32 +519,32 @@ public abstract class Main extends Base {
 		if (v_blend[3] == 0.0f)
 			return;
 
-		gl.glDisable(GL11.GL_ALPHA_TEST);
-		gl.glEnable(GL11.GL_BLEND);
-		gl.glDisable(GL11.GL_DEPTH_TEST);
-		gl.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-		gl.glLoadIdentity();
+		GL11.glLoadIdentity();
 
 		// FIXME: get rid of these
-		gl.glRotatef(-90, 1, 0, 0); // put Z going up
-		gl.glRotatef(90, 0, 0, 1); // put Z going up
+		GL11.glRotatef(-90, 1, 0, 0); // put Z going up
+		GL11.glRotatef(90, 0, 0, 1); // put Z going up
 
-		gl.glColor4f(v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
+		GL11.glColor4f(v_blend[0], v_blend[1], v_blend[2], v_blend[3]);
 
-		gl.glBegin(GL11.GL_QUADS);
+		GL11.glBegin(GL11.GL_QUADS);
 
-		gl.glVertex3f(10, 100, 100);
-		gl.glVertex3f(10, -100, 100);
-		gl.glVertex3f(10, -100, -100);
-		gl.glVertex3f(10, 100, -100);
-		gl.glEnd();
+		GL11.glVertex3f(10, 100, 100);
+		GL11.glVertex3f(10, -100, 100);
+		GL11.glVertex3f(10, -100, -100);
+		GL11.glVertex3f(10, 100, -100);
+		GL11.glEnd();
 
-		gl.glDisable(GL11.GL_BLEND);
-		gl.glEnable(GL11.GL_TEXTURE_2D);
-		gl.glEnable(GL11.GL_ALPHA_TEST);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
 
-		gl.glColor4f(1, 1, 1, 1);
+		GL11.glColor4f(1, 1, 1, 1);
 	}
 
 	// =======================================================================
@@ -604,13 +567,13 @@ public abstract class Main extends Base {
 	 */
 	void R_SetFrustum() {
 		// rotate VPN right by FOV_X/2 degrees
-		Math3D.RotatePointAroundVector(frustum[0].normal, vup, vpn, - (90f - r_newrefdef.fov_x / 2f));
+		Math3D.RotatePointAroundVector(frustum[0].normal, vecUp, vecForward, - (90f - r_newrefdef.fov_x / 2f));
 		// rotate VPN left by FOV_X/2 degrees
-		Math3D.RotatePointAroundVector(frustum[1].normal, vup, vpn, 90f - r_newrefdef.fov_x / 2f);
+		Math3D.RotatePointAroundVector(frustum[1].normal, vecUp, vecForward, 90f - r_newrefdef.fov_x / 2f);
 		// rotate VPN up by FOV_X/2 degrees
-		Math3D.RotatePointAroundVector(frustum[2].normal, vright, vpn, 90f - r_newrefdef.fov_y / 2f);
+		Math3D.RotatePointAroundVector(frustum[2].normal, vecRight, vecForward, 90f - r_newrefdef.fov_y / 2f);
 		// rotate VPN down by FOV_X/2 degrees
-		Math3D.RotatePointAroundVector(frustum[3].normal, vright, vpn, - (90f - r_newrefdef.fov_y / 2f));
+		Math3D.RotatePointAroundVector(frustum[3].normal, vecRight, vecForward, - (90f - r_newrefdef.fov_y / 2f));
 
 		for (int i = 0; i < 4; i++) {
 			frustum[i].type = Defines.PLANE_ANYZ;
@@ -632,28 +595,28 @@ public abstract class Main extends Base {
 		//	build the transformation matrix for the given view angles
 		Math3D.VectorCopy(r_newrefdef.vieworg, r_origin);
 
-		Math3D.AngleVectors(r_newrefdef.viewangles, vpn, vright, vup);
+		Math3D.AngleVectors(r_newrefdef.viewangles, vecForward, vecRight, vecUp);
 
 		//	current viewcluster
-		mleaf_t leaf;
+		TMLeaf leaf;
 		if ((r_newrefdef.rdflags & Defines.RDF_NOWORLDMODEL) == 0) {
 			r_oldviewcluster = r_viewcluster;
 			r_oldviewcluster2 = r_viewcluster2;
-			leaf = Mod_PointInLeaf(r_origin, r_worldmodel);
+			leaf = RenderAPIImpl.model.Mod_PointInLeaf(r_origin, r_worldmodel);
 			r_viewcluster = r_viewcluster2 = leaf.cluster;
 
 			// check above and below so crossing solid water doesn't draw wrong
 			if (leaf.contents == 0) { // look down a bit
 				Math3D.VectorCopy(r_origin, temp);
 				temp[2] -= 16;
-				leaf = Mod_PointInLeaf(temp, r_worldmodel);
+				leaf = RenderAPIImpl.model.Mod_PointInLeaf(temp, r_worldmodel);
 				if ((leaf.contents & Defines.CONTENTS_SOLID) == 0 && (leaf.cluster != r_viewcluster2))
 					r_viewcluster2 = leaf.cluster;
 			}
 			else { // look up a bit
 				Math3D.VectorCopy(r_origin, temp);
 				temp[2] += 16;
-				leaf = Mod_PointInLeaf(temp, r_worldmodel);
+				leaf = RenderAPIImpl.model.Mod_PointInLeaf(temp, r_worldmodel);
 				if ((leaf.contents & Defines.CONTENTS_SOLID) == 0 && (leaf.cluster != r_viewcluster2))
 					r_viewcluster2 = leaf.cluster;
 			}
@@ -667,16 +630,16 @@ public abstract class Main extends Base {
 
 		// clear out the portion of the screen that the NOWORLDMODEL defines
 		if ((r_newrefdef.rdflags & Defines.RDF_NOWORLDMODEL) != 0) {
-			gl.glEnable(GL11.GL_SCISSOR_TEST);
-			gl.glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-			gl.glScissor(
+			GL11.glEnable(GL11.GL_SCISSOR_TEST);
+			GL11.glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+			GL11.glScissor(
 				r_newrefdef.x,
 				vid.getHeight() - r_newrefdef.height - r_newrefdef.y,
 				r_newrefdef.width,
 				r_newrefdef.height);
-			gl.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-			gl.glClearColor(1.0f, 0.0f, 0.5f, 0.5f);
-			gl.glDisable(GL11.GL_SCISSOR_TEST);
+			GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+			GL11.glClearColor(1.0f, 0.0f, 0.5f, 0.5f);
+			GL11.glDisable(GL11.GL_SCISSOR_TEST);
 		}
 	}
 
@@ -698,7 +661,7 @@ public abstract class Main extends Base {
 		xmin += - (2 * gl_state.camera_separation) / zNear;
 		xmax += - (2 * gl_state.camera_separation) / zNear;
 
-		gl.glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
+		GL11.glFrustum(xmin, xmax, ymin, ymax, zNear, zFar);
 	}
 
 	/**
@@ -721,42 +684,42 @@ public abstract class Main extends Base {
 		int w = x2 - x;
 		int h = y - y2;
 
-		gl.glViewport(x, y2, w, h);
+		GL11.glViewport(x, y2, w, h);
 
 		//
 		// set up projection matrix
 		//
 		float screenaspect = (float) r_newrefdef.width / r_newrefdef.height;
-		gl.glMatrixMode(GL11.GL_PROJECTION);
-		gl.glLoadIdentity();
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
 		MYgluPerspective(r_newrefdef.fov_y, screenaspect, 4, 4096);
 
-		gl.glCullFace(GL11.GL_FRONT);
+		GL11.glCullFace(GL11.GL_FRONT);
 
-		gl.glMatrixMode(GL11.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
 
-		gl.glRotatef(-90, 1, 0, 0); // put Z going up
-		gl.glRotatef(90, 0, 0, 1); // put Z going up
-		gl.glRotatef(-r_newrefdef.viewangles[2], 1, 0, 0);
-		gl.glRotatef(-r_newrefdef.viewangles[0], 0, 1, 0);
-		gl.glRotatef(-r_newrefdef.viewangles[1], 0, 0, 1);
-		gl.glTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1], -r_newrefdef.vieworg[2]);
+		GL11.glRotatef(-90, 1, 0, 0); // put Z going up
+		GL11.glRotatef(90, 0, 0, 1); // put Z going up
+		GL11.glRotatef(-r_newrefdef.viewangles[2], 1, 0, 0);
+		GL11.glRotatef(-r_newrefdef.viewangles[0], 0, 1, 0);
+		GL11.glRotatef(-r_newrefdef.viewangles[1], 0, 0, 1);
+		GL11.glTranslatef(-r_newrefdef.vieworg[0], -r_newrefdef.vieworg[1], -r_newrefdef.vieworg[2]);
 
-		gl.glGetFloat(GL11.GL_MODELVIEW_MATRIX, r_world_matrix);
+		GL11.glGetFloatv(GL11.GL_MODELVIEW_MATRIX, r_world_matrix);
 		r_world_matrix.clear();
 
 		//
 		// set drawing parms
 		//
 		if (gl_cull.value != 0.0f)
-			gl.glEnable(GL11.GL_CULL_FACE);
+			GL11.glEnable(GL11.GL_CULL_FACE);
 		else
-			gl.glDisable(GL11.GL_CULL_FACE);
+			GL11.glDisable(GL11.GL_CULL_FACE);
 
-		gl.glDisable(GL11.GL_BLEND);
-		gl.glDisable(GL11.GL_ALPHA_TEST);
-		gl.glEnable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glDisable(GL11.GL_ALPHA_TEST);
+		GL11.glEnable(GL11.GL_DEPTH_TEST);
 	}
 
 	int trickframe = 0;
@@ -768,32 +731,32 @@ public abstract class Main extends Base {
 		if (gl_ztrick.value != 0.0f) {
 
 			if (gl_clear.value != 0.0f) {
-				gl.glClear(GL11.GL_COLOR_BUFFER_BIT);
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 			}
 
 			trickframe++;
 			if ((trickframe & 1) != 0) {
 				gldepthmin = 0;
 				gldepthmax = 0.49999f;
-				gl.glDepthFunc(GL11.GL_LEQUAL);
+				GL11.glDepthFunc(GL11.GL_LEQUAL);
 			}
 			else {
 				gldepthmin = 1;
 				gldepthmax = 0.5f;
-				gl.glDepthFunc(GL11.GL_GEQUAL);
+				GL11.glDepthFunc(GL11.GL_GEQUAL);
 			}
 		}
 		else {
 			if (gl_clear.value != 0.0f)
-				gl.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+				GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 			else
-				gl.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+				GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
 			gldepthmin = 0;
 			gldepthmax = 1;
-			gl.glDepthFunc(GL11.GL_LEQUAL);
+			GL11.glDepthFunc(GL11.GL_LEQUAL);
 		}
-		gl.glDepthRange(gldepthmin, gldepthmax);
+		GL11.glDepthRange(gldepthmin, gldepthmax);
 	}
 
 	/**
@@ -807,7 +770,7 @@ public abstract class Main extends Base {
 	 * R_RenderView
 	 * r_newrefdef must be set before the first call
 	 */
-	void R_RenderView(refdef_t fd) {
+	void R_RenderView(TRefDef fd) {
 
 		if (r_norefresh.value != 0.0f)
 			return;
@@ -816,7 +779,7 @@ public abstract class Main extends Base {
 
 		// included by cwei
 		if (r_newrefdef == null) {
-			Com.Error(Defines.ERR_DROP, "R_RenderView: refdef_t fd is null");
+			Com.Error(Defines.ERR_DROP, "R_RenderView: TRefDef fd is null");
 		}
 
 		if (r_worldmodel == null && (r_newrefdef.rdflags & Defines.RDF_NOWORLDMODEL) == 0)
@@ -827,10 +790,10 @@ public abstract class Main extends Base {
 			c_alias_polys = 0;
 		}
 
-		R_PushDlights();
+		RenderAPIImpl.light.R_PushDlights();
 
 		if (gl_finish.value != 0.0f)
-			gl.glFinish();
+			GL11.glFinish();
 
 		R_SetupFrame();
 
@@ -838,17 +801,17 @@ public abstract class Main extends Base {
 
 		R_SetupGL();
 
-		R_MarkLeaves(); // done here so we know if we're in water
+		RenderAPIImpl.surf.R_MarkLeaves(); // done here so we know if we're in water
 
-		R_DrawWorld();
+		RenderAPIImpl.surf.R_DrawWorld();
 
 		R_DrawEntitiesOnList();
 
-		R_RenderDlights();
+		RenderAPIImpl.light.renderDynamicLights();
 
 		R_DrawParticles();
 
-		R_DrawAlphaSurfaces();
+		RenderAPIImpl.surf.R_DrawAlphaSurfaces();
 
 		R_Flash();
 
@@ -865,17 +828,17 @@ public abstract class Main extends Base {
 	 */
 	void R_SetGL2D() {
 		// set 2D virtual screen size
-		gl.glViewport(0, 0, vid.getWidth(), vid.getHeight());
-		gl.glMatrixMode(GL11.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
-		gl.glMatrixMode(GL11.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glDisable(GL11.GL_DEPTH_TEST);
-		gl.glDisable(GL11.GL_CULL_FACE);
-		gl.glDisable(GL11.GL_BLEND);
-		gl.glEnable(GL11.GL_ALPHA_TEST);
-		gl.glColor4f(1, 1, 1, 1);
+		GL11.glViewport(0, 0, vid.getWidth(), vid.getHeight());
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GL11.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_CULL_FACE);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GL11.glColor4f(1, 1, 1, 1);
 	}
 
 	// stack variable
@@ -889,7 +852,7 @@ public abstract class Main extends Base {
 
 		// save off light value for server to look at (BIG HACK!)
 
-		R_LightPoint(r_newrefdef.vieworg, light);
+		RenderAPIImpl.light.R_LightPoint(r_newrefdef.vieworg, light);
 
 		// pick the greatest component, which should be the same
 		// as the mono value returned by software
@@ -910,7 +873,7 @@ public abstract class Main extends Base {
 	/**
 	 * R_RenderFrame
 	 */
-	public void R_RenderFrame(refdef_t fd) {
+	public void R_RenderFrame(TRefDef fd) {
 		R_RenderView(fd);
 		R_SetLightLevel();
 		R_SetGL2D();
@@ -983,29 +946,29 @@ public abstract class Main extends Base {
 
 		gl_3dlabs_broken = ConsoleVar.Get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-		vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		VID.vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
 		vid_gamma = ConsoleVar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
 		vid_ref = ConsoleVar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
 
 		Cmd.AddCommand("imagelist", new xcommand_t() {
 			public void execute() {
-				GL_ImageList_f();
+				RenderAPIImpl.image.GL_ImageList_f();
 			}
 		});
 
 		Cmd.AddCommand("screenshot", new xcommand_t() {
 			public void execute() {
-			        glImpl.screenshot();
+				RenderAPIImpl.glImpl.screenshot();
 			}
 		});
 		Cmd.AddCommand("modellist", new xcommand_t() {
 			public void execute() {
-				Mod_Modellist_f();
+				RenderAPIImpl.model.Mod_Modellist_f();
 			}
 		});
 		Cmd.AddCommand("gl_strings", new xcommand_t() {
 			public void execute() {
-				GL_Strings_f();
+				RenderAPIImpl.misc.GL_Strings_f();
 			}
 		});
 	}
@@ -1014,23 +977,23 @@ public abstract class Main extends Base {
 	 * R_SetMode
 	 */
 	protected boolean R_SetMode() {
-		boolean fullscreen = (vid_fullscreen.value > 0.0f);
+		boolean fullscreen = (VID.vid_fullscreen.value > 0.0f);
 
-		vid_fullscreen.modified = false;
+		VID.vid_fullscreen.modified = false;
 		gl_mode.modified = false;
 
 		Dimension dim = new Dimension(vid.getWidth(), vid.getHeight());
 
 		int err; //  enum rserr_t
-		if ((err = glImpl.setMode(dim, (int) gl_mode.value, fullscreen)) == rserr_ok) {
+		if ((err = RenderAPIImpl.glImpl.setMode(dim, (int) gl_mode.value, fullscreen)) == rserr_ok) {
 			gl_state.prev_mode = (int) gl_mode.value;
 		}
 		else {
 			if (err == rserr_invalid_fullscreen) {
-				ConsoleVar.SetValue("vid_fullscreen", 0);
-				vid_fullscreen.modified = false;
+				ConsoleVar.SetValue("VID.vid_fullscreen", 0);
+				VID.vid_fullscreen.modified = false;
 				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n");
-				if ((err = glImpl.setMode(dim, (int) gl_mode.value, false)) == rserr_ok)
+				if ((err = RenderAPIImpl.glImpl.setMode(dim, (int) gl_mode.value, false)) == rserr_ok)
 					return true;
 			}
 			else if (err == rserr_invalid_mode) {
@@ -1040,7 +1003,7 @@ public abstract class Main extends Base {
 			}
 
 			// try setting it back to something safe
-			if ((err = glImpl.setMode(dim, gl_state.prev_mode, false)) != rserr_ok) {
+			if ((err = RenderAPIImpl.glImpl.setMode(dim, gl_state.prev_mode, false)) != rserr_ok) {
 				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - could not revert to safe mode\n");
 				return false;
 			}
@@ -1070,7 +1033,7 @@ public abstract class Main extends Base {
 
 		VID.Printf(Defines.PRINT_ALL, "ref_gl version: " + REF_VERSION + '\n');
 
-		Draw_GetPalette();
+		RenderAPIImpl.image.Draw_GetPalette();
 
 		R_Register();
 
@@ -1094,13 +1057,13 @@ public abstract class Main extends Base {
 		/*
 		** get our various GL strings
 //		*/
-		gl_config.vendor_string = gl.glGetString(GL11.GL_VENDOR);
+		gl_config.vendor_string = GL11.glGetString(GL11.GL_VENDOR);
 		VID.Printf(Defines.PRINT_ALL, "GL_VENDOR: " + gl_config.vendor_string + '\n');
-		gl_config.renderer_string = gl.glGetString(GL11.GL_RENDERER);
+		gl_config.renderer_string = GL11.glGetString(GL11.GL_RENDERER);
 		VID.Printf(Defines.PRINT_ALL, "GL_RENDERER: " + gl_config.renderer_string + '\n');
-		gl_config.version_string = gl.glGetString(GL11.GL_VERSION);
+		gl_config.version_string = GL11.glGetString(GL11.GL_VERSION);
 		VID.Printf(Defines.PRINT_ALL, "GL_VERSION: " + gl_config.version_string + '\n');
-		gl_config.extensions_string = gl.glGetString(GL11.GL_EXTENSIONS);
+		gl_config.extensions_string = GL11.glGetString(GL11.GL_EXTENSIONS);
 		VID.Printf(Defines.PRINT_ALL, "GL_EXTENSIONS: " + gl_config.extensions_string + '\n');
 
 		gl_config.parseOpenGLVersion();
@@ -1177,9 +1140,9 @@ public abstract class Main extends Base {
 		if (gl_config.extensions_string.indexOf("GL_EXT_compiled_vertex_array") >= 0
 			|| gl_config.extensions_string.indexOf("GL_SGI_compiled_vertex_array") >= 0) {
 			VID.Printf(Defines.PRINT_ALL, "...enabling GL_EXT_compiled_vertex_array\n");
-			//		 qgl.glLockArraysEXT = ( void * ) qwglGetProcAddress( "glLockArraysEXT" );
+			//		 qGL11.glLockArraysEXT = ( void * ) qwglGetProcAddress( "glLockArraysEXT" );
             qglLockArraysEXT = gl_ext_compiled_vertex_array.value != 0.0f;
-			//		 qgl.glUnlockArraysEXT = ( void * ) qwglGetProcAddress( "glUnlockArraysEXT" );
+			//		 qGL11.glUnlockArraysEXT = ( void * ) qwglGetProcAddress( "glUnlockArraysEXT" );
 			//qglUnlockArraysEXT = true;
 		}
 		else {
@@ -1197,9 +1160,9 @@ public abstract class Main extends Base {
 
 		if (gl_config.extensions_string.indexOf("GL_EXT_point_parameters") >= 0) {
 			if (gl_ext_pointparameters.value != 0.0f) {
-				//			 qgl.glPointParameterfEXT = ( void (APIENTRY *)( GLenum, GLfloat ) ) qwglGetProcAddress( "glPointParameterfEXT" );
+				//			 qGL11.glPointParameterfEXT = ( void (APIENTRY *)( GLenum, GLfloat ) ) qwglGetProcAddress( "glPointParameterfEXT" );
 				qglPointParameterfEXT = true;
-				//			 qgl.glPointParameterfvEXT = ( void (APIENTRY *)( GLenum, const GLfloat * ) ) qwglGetProcAddress( "glPointParameterfvEXT" );
+				//			 qGL11.glPointParameterfvEXT = ( void (APIENTRY *)( GLenum, const GLfloat * ) ) qwglGetProcAddress( "glPointParameterfvEXT" );
 				VID.Printf(Defines.PRINT_ALL, "...using GL_EXT_point_parameters\n");
 			}
 			else {
@@ -1216,7 +1179,7 @@ public abstract class Main extends Base {
 		//		 if ( gl_ext_palettedtexture->value )
 		//		 {
 		//			 VID.Printf( Defines.PRINT_ALL, "...using 3DFX_set_global_palette\n" );
-		//			 qgl3DfxSetPaletteEXT = ( void ( APIENTRY * ) (GLuint *) )qwgl.glGetProcAddress( "gl3DfxSetPaletteEXT" );
+		//			 qgl3DfxSetPaletteEXT = ( void ( APIENTRY * ) (GLuint *) )qwGL11.glGetProcAddress( "gl3DfxSetPaletteEXT" );
 		////			 qglColorTableEXT = Fake_glColorTableEXT;
 		//		 }
 		//		 else
@@ -1249,7 +1212,7 @@ public abstract class Main extends Base {
 		if (gl_config.extensions_string.indexOf("GL_ARB_multitexture") >= 0) {
 			// check if the extension realy exists
 			try {
-				gl.glClientActiveTextureARB(ARBMultitexture.GL_TEXTURE0_ARB);
+				ARBMultitexture.glClientActiveTextureARB(ARBMultitexture.GL_TEXTURE0_ARB);
 				// seems to work correctly
 				VID.Printf(Defines.PRINT_ALL, "...using GL_ARB_multitexture\n");
 				qglActiveTextureARB = true;
@@ -1269,21 +1232,21 @@ public abstract class Main extends Base {
             return false;
         }
 
-		GL_SetDefaultState();
+		RenderAPIImpl.misc.GL_SetDefaultState();
 
-		GL_InitImages();
-		Mod_Init();
-		R_InitParticleTexture();
-		Draw_InitLocal();
+		RenderAPIImpl.image.GL_InitImages();
+		RenderAPIImpl.model.Mod_Init();
+		RenderAPIImpl.misc.R_InitParticleTexture();
+		RenderAPIImpl.draw.Draw_InitLocal();
 
-		int err = gl.glGetError();
+		int err = GL11.glGetError();
 		if (err != GL11.GL_NO_ERROR)
 			VID.Printf(
 				Defines.PRINT_ALL,
-				"gl.glGetError() = 0x%x\n\t%s\n",
-				new Vargs(2).add(err).add("" + gl.glGetString(err)));
+				"GL11.glGetError() = 0x%x\n\t%s\n",
+				new Vargs(2).add(err).add("" + GL11.glGetString(err)));
 
-        glImpl.endFrame();
+        RenderAPIImpl.glImpl.endFrame();
 		return true;
 	}
 
@@ -1296,14 +1259,14 @@ public abstract class Main extends Base {
 		Cmd.RemoveCommand("imagelist");
 		Cmd.RemoveCommand("gl_strings");
 
-		Mod_FreeAll();
+		RenderAPIImpl.model.Mod_FreeAll();
 
-		GL_ShutdownImages();
+		RenderAPIImpl.image.GL_ShutdownImages();
 
 		/*
 		 * shut down OS specific OpenGL stuff like contexts, etc.
 		 */
-		glImpl.shutdown();
+		RenderAPIImpl.glImpl.shutdown();
 	}
 
 	/**
@@ -1319,7 +1282,7 @@ public abstract class Main extends Base {
 		/*
 		** change modes if necessary
 		*/
-		if (gl_mode.modified || vid_fullscreen.modified) {
+		if (gl_mode.modified || VID.vid_fullscreen.modified) {
 			// FIXME: only restart if CDS is required
 			TVar ref;
 
@@ -1328,12 +1291,12 @@ public abstract class Main extends Base {
 		}
 
 		if (gl_log.modified) {
-			glImpl.enableLogging((gl_log.value != 0.0f));
+			RenderAPIImpl.glImpl.enableLogging((gl_log.value != 0.0f));
 			gl_log.modified = false;
 		}
 
 		if (gl_log.value != 0.0f) {
-			glImpl.logNewFrame();
+			RenderAPIImpl.glImpl.logNewFrame();
 		}
 
 		/*
@@ -1360,22 +1323,22 @@ public abstract class Main extends Base {
 			}
 		}
 
-		glImpl.beginFrame(camera_separation);
+		RenderAPIImpl.glImpl.beginFrame(camera_separation);
 
 		/*
 		** go into 2D mode
 		*/
-		gl.glViewport(0, 0, vid.getWidth(), vid.getHeight());
-		gl.glMatrixMode(GL11.GL_PROJECTION);
-		gl.glLoadIdentity();
-		gl.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
-		gl.glMatrixMode(GL11.GL_MODELVIEW);
-		gl.glLoadIdentity();
-		gl.glDisable(GL11.GL_DEPTH_TEST);
-		gl.glDisable(GL11.GL_CULL_FACE);
-		gl.glDisable(GL11.GL_BLEND);
-		gl.glEnable(GL11.GL_ALPHA_TEST);
-		gl.glColor4f(1, 1, 1, 1);
+		GL11.glViewport(0, 0, vid.getWidth(), vid.getHeight());
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GL11.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
+		GL11.glLoadIdentity();
+		GL11.glDisable(GL11.GL_DEPTH_TEST);
+		GL11.glDisable(GL11.GL_CULL_FACE);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GL11.glColor4f(1, 1, 1, 1);
 
 		/*
 		** draw buffer stuff
@@ -1385,9 +1348,9 @@ public abstract class Main extends Base {
 
 			if (gl_state.camera_separation == 0 || !gl_state.stereo_enabled) {
 				if (gl_drawbuffer.string.equalsIgnoreCase("GL_FRONT"))
-					gl.glDrawBuffer(GL11.GL_FRONT);
+					GL11.glDrawBuffer(GL11.GL_FRONT);
 				else
-					gl.glDrawBuffer(GL11.GL_BACK);
+					GL11.glDrawBuffer(GL11.GL_BACK);
 			}
 		}
 
@@ -1395,24 +1358,24 @@ public abstract class Main extends Base {
 		** texturemode stuff
 		*/
 		if (gl_texturemode.modified) {
-			GL_TextureMode(gl_texturemode.string);
+			RenderAPIImpl.image.GL_TextureMode(gl_texturemode.string);
 			gl_texturemode.modified = false;
 		}
 
 		if (gl_texturealphamode.modified) {
-			GL_TextureAlphaMode(gl_texturealphamode.string);
+			RenderAPIImpl.image.GL_TextureAlphaMode(gl_texturealphamode.string);
 			gl_texturealphamode.modified = false;
 		}
 
 		if (gl_texturesolidmode.modified) {
-			GL_TextureSolidMode(gl_texturesolidmode.string);
+			RenderAPIImpl.image.GL_TextureSolidMode(gl_texturesolidmode.string);
 			gl_texturesolidmode.modified = false;
 		}
 
 		/*
 		** swapinterval stuff
 		*/
-		GL_UpdateSwapInterval();
+		RenderAPIImpl.misc.GL_UpdateSwapInterval();
 
 		//
 		// clear screen if desired
@@ -1446,11 +1409,11 @@ public abstract class Main extends Base {
 				r_rawpalette[i] = d_8to24table[i] | 0xff000000;
 			}
 		}
-		GL_SetTexturePalette(r_rawpalette);
+		RenderAPIImpl.image.GL_SetTexturePalette(r_rawpalette);
 
-		gl.glClearColor(0, 0, 0, 0);
-		gl.glClear(GL11.GL_COLOR_BUFFER_BIT);
-		gl.glClearColor(1f, 0f, 0.5f, 0.5f);
+		GL11.glClearColor(0, 0, 0, 0);
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+		GL11.glClearColor(1f, 0f, 0.5f, 0.5f);
 	}
 
 	static final int NUM_BEAM_SEGS = 6;
@@ -1467,7 +1430,7 @@ public abstract class Main extends Base {
 	/**
 	 * R_DrawBeam
 	 */
-	void R_DrawBeam(entity_t e) {
+	void R_DrawBeam(TEntity e) {
 		oldorigin[0] = e.oldorigin[0];
 		oldorigin[1] = e.oldorigin[1];
 		oldorigin[2] = e.oldorigin[2];
@@ -1497,9 +1460,9 @@ public abstract class Main extends Base {
 			Math3D.VectorAdd(start_points[i], direction, end_points[i]);
 		}
 
-		gl.glDisable(GL11.GL_TEXTURE_2D);
-		gl.glEnable(GL11.GL_BLEND);
-		gl.glDepthMask(false);
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glDepthMask(false);
 
 		float r = (d_8to24table[e.skinnum & 0xFF]) & 0xFF;
 		float g = (d_8to24table[e.skinnum & 0xFF] >> 8) & 0xFF;
@@ -1509,26 +1472,26 @@ public abstract class Main extends Base {
 		g *= 1 / 255.0f;
 		b *= 1 / 255.0f;
 
-		gl.glColor4f(r, g, b, e.alpha);
+		GL11.glColor4f(r, g, b, e.alpha);
 
-		gl.glBegin(GL11.GL_TRIANGLE_STRIP);
+		GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
 		
 		float[] v;
 		
 		for (int i = 0; i < NUM_BEAM_SEGS; i++) {
 			v = start_points[i];
-			gl.glVertex3f(v[0], v[1], v[2]);
+			GL11.glVertex3f(v[0], v[1], v[2]);
 			v = end_points[i];
-			gl.glVertex3f(v[0], v[1], v[2]);
+			GL11.glVertex3f(v[0], v[1], v[2]);
 			v = start_points[(i + 1) % NUM_BEAM_SEGS];
-			gl.glVertex3f(v[0], v[1], v[2]);
+			GL11.glVertex3f(v[0], v[1], v[2]);
 			v = end_points[(i + 1) % NUM_BEAM_SEGS];
-			gl.glVertex3f(v[0], v[1], v[2]);
+			GL11.glVertex3f(v[0], v[1], v[2]);
 		}
-		gl.glEnd();
+		GL11.glEnd();
 
-		gl.glEnable(GL11.GL_TEXTURE_2D);
-		gl.glDisable(GL11.GL_BLEND);
-		gl.glDepthMask(true);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_BLEND);
+		GL11.glDepthMask(true);
 	}
 }

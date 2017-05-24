@@ -27,8 +27,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 import jake2.qcommon.xcommand_t;
-import jake2.render.image_t;
-import jake2.render.model_t;
+import jake2.render.TImage;
+import jake2.render.TModel;
 import jake2.sys.Keyboard;
 
 
@@ -66,14 +66,14 @@ public interface refexport_t {
 	// an implicit "pics/" prepended to the name. (a pic name that starts with a
 	// slash will not use the "pics/" prefix or the ".pcx" postfix)
 	void BeginRegistration(String map);
-	model_t RegisterModel(String name);
-	image_t RegisterSkin(String name);
-	image_t RegisterPic(String name);
+	TModel RegisterModel(String name);
+	TImage RegisterSkin(String name);
+	TImage RegisterPic(String name);
 	void SetSky(String name, float rotate, /* vec3_t */
 	float[] axis);
 	void EndRegistration();
 
-	void RenderFrame(refdef_t fd);
+	void RenderFrame(TRefDef fd);
 
 	void DrawGetPicSize(Dimension dim /* int *w, *h */, String name);
 	// will return 0 0 if not found

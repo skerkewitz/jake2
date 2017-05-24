@@ -29,380 +29,368 @@ import jake2.Defines;
 import jake2.client.Dimension;
 import jake2.client.VID;
 import jake2.qcommon.Com;
-import jake2.render.image_t;
+import jake2.render.RenderAPIImpl;
+import jake2.render.TImage;
 import jake2.util.Lib;
 import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
+import static jake2.render.Base.*;
+import static jake2.render.fast.Main.d_8to24table;
+
 /**
  * Draw
  * (gl_draw.c)
- * 
+ *
  * @author cwei
  */
-public abstract class Draw extends Image {
+public class Draw {
 
-	/*
-	===============
-	Draw_InitLocal
-	===============
-	*/
-	void Draw_InitLocal() {
-		// load console characters (don't bilerp characters)
-		draw_chars = GL_FindImage("pics/conchars.pcx", it_pic);
-		GL_Bind(draw_chars.texnum);
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-	}
+    /*
+    ===============
+    Draw_InitLocal
+    ===============
+    */
+    void Draw_InitLocal() {
+        // load console characters (don't bilerp characters)
+        RenderAPIImpl.image.draw_chars = RenderAPIImpl.image.GL_FindImage("pics/conchars.pcx", it_pic);
+        RenderAPIImpl.image.GL_Bind(RenderAPIImpl.image.draw_chars.texnum);
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+    }
 
-	/*
-	================
-	Draw_Char
+    /*
+    ================
+    Draw_Char
 
-	Draws one 8*8 graphics character with 0 being transparent.
-	It can be clipped to the top of the screen to allow the console to be
-	smoothly scrolled off.
-	================
-	*/
-	public void Draw_Char(int x, int y, int num) {
+    Draws one 8*8 graphics character with 0 being transparent.
+    It can be clipped to the top of the screen to allow the console to be
+    smoothly scrolled off.
+    ================
+    */
+    public void Draw_Char(int x, int y, int num) {
 
-		num &= 255;
-	
-		if ( (num&127) == 32 ) return; // space
+        num &= 255;
 
-		if (y <= -8) return; // totally off screen
+        if ((num & 127) == 32) return; // space
 
-		int row = num>>4;
-		int col = num&15;
+        if (y <= -8) return; // totally off screen
 
-		float frow = row*0.0625f;
-		float fcol = col*0.0625f;
-		float size = 0.0625f;
+        int row = num >> 4;
+        int col = num & 15;
 
-		GL_Bind(draw_chars.texnum);
+        float frow = row * 0.0625f;
+        float fcol = col * 0.0625f;
+        float size = 0.0625f;
 
-		gl.glBegin (GL11.GL_QUADS);
-		gl.glTexCoord2f (fcol, frow);
-		gl.glVertex2f (x, y);
-		gl.glTexCoord2f (fcol + size, frow);
-		gl.glVertex2f (x+8, y);
-		gl.glTexCoord2f (fcol + size, frow + size);
-		gl.glVertex2f (x+8, y+8);
-		gl.glTexCoord2f (fcol, frow + size);
-		gl.glVertex2f (x, y+8);
-		gl.glEnd ();
-	}
+        RenderAPIImpl.image.GL_Bind(RenderAPIImpl.image.draw_chars.texnum);
 
-
-	/*
-	=============
-	Draw_FindPic
-	=============
-	*/
-	public image_t Draw_FindPic(String name) {
-		if (!name.startsWith("/") && !name.startsWith("\\"))
-		{
-			return GL_FindImage(name, it_pic);
-		} else {
-			return GL_FindImage(name.substring(1), it_pic);
-		}
-	}
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(fcol, frow);
+        GL11.glVertex2f(x, y);
+        GL11.glTexCoord2f(fcol + size, frow);
+        GL11.glVertex2f(x + 8, y);
+        GL11.glTexCoord2f(fcol + size, frow + size);
+        GL11.glVertex2f(x + 8, y + 8);
+        GL11.glTexCoord2f(fcol, frow + size);
+        GL11.glVertex2f(x, y + 8);
+        GL11.glEnd();
+    }
 
 
-	/*
-	=============
-	Draw_GetPicSize
-	=============
-	*/
-	public void Draw_GetPicSize(Dimension dim, String pic)	{
-
-		image_t image = Draw_FindPic(pic);
-		dim.width = (image != null) ? image.width : -1;
-		dim.height = (image != null) ? image.height : -1;
-	}
-
-	/*
-	=============
-	Draw_StretchPic
-	=============
-	*/
-	public void Draw_StretchPic (int x, int y, int w, int h, String pic) {
-		
-		image_t image;
-
-		image = Draw_FindPic(pic);
-		if (image == null)
-		{
-			VID.Printf (Defines.PRINT_ALL, "Can't find pic: " + pic +'\n');
-			return;
-		}
-
-		if (scrap_dirty)
-			Scrap_Upload();
-
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0) ) && !image.has_alpha)
-			gl.glDisable(GL11.GL_ALPHA_TEST);
-
-		GL_Bind(image.texnum);
-		gl.glBegin (GL11.GL_QUADS);
-		gl.glTexCoord2f (image.sl, image.tl);
-		gl.glVertex2f (x, y);
-		gl.glTexCoord2f (image.sh, image.tl);
-		gl.glVertex2f (x+w, y);
-		gl.glTexCoord2f (image.sh, image.th);
-		gl.glVertex2f (x+w, y+h);
-		gl.glTexCoord2f (image.sl, image.th);
-		gl.glVertex2f (x, y+h);
-		gl.glEnd ();
-
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) !=0 ) ) && !image.has_alpha)
-			gl.glEnable(GL11.GL_ALPHA_TEST);
-	}
+    /*
+    =============
+    Draw_FindPic
+    =============
+    */
+    public TImage Draw_FindPic(String name) {
+        if (!name.startsWith("/") && !name.startsWith("\\")) {
+            return RenderAPIImpl.image.GL_FindImage(name, it_pic);
+        } else {
+            return RenderAPIImpl.image.GL_FindImage(name.substring(1), it_pic);
+        }
+    }
 
 
-	/*
-	=============
-	Draw_Pic
-	=============
-	*/
-	public void Draw_Pic(int x, int y, String pic)
-	{
-		image_t image;
+    /*
+    =============
+    Draw_GetPicSize
+    =============
+    */
+    public void Draw_GetPicSize(Dimension dim, String pic) {
 
-		image = Draw_FindPic(pic);
-		if (image == null)
-		{
-			VID.Printf(Defines.PRINT_ALL, "Can't find pic: " +pic + '\n');
-			return;
-		}
-		if (scrap_dirty)
-			Scrap_Upload();
+        TImage image = Draw_FindPic(pic);
+        dim.width = (image != null) ? image.width : -1;
+        dim.height = (image != null) ? image.height : -1;
+    }
 
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) ) && !image.has_alpha)
-			gl.glDisable (GL11.GL_ALPHA_TEST);
+    /*
+    =============
+    Draw_StretchPic
+    =============
+    */
+    public void Draw_StretchPic(int x, int y, int w, int h, String pic) {
 
-		GL_Bind(image.texnum);
+        TImage image;
 
-		gl.glBegin (GL11.GL_QUADS);
-		gl.glTexCoord2f (image.sl, image.tl);
-		gl.glVertex2f (x, y);
-		gl.glTexCoord2f (image.sh, image.tl);
-		gl.glVertex2f (x+image.width, y);
-		gl.glTexCoord2f (image.sh, image.th);
-		gl.glVertex2f (x+image.width, y+image.height);
-		gl.glTexCoord2f (image.sl, image.th);
-		gl.glVertex2f (x, y+image.height);
-		gl.glEnd ();
+        image = Draw_FindPic(pic);
+        if (image == null) {
+            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            return;
+        }
 
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) )  && !image.has_alpha)
-			gl.glEnable (GL11.GL_ALPHA_TEST);
-	}
+        if (RenderAPIImpl.image.scrap_dirty)
+            RenderAPIImpl.image.Scrap_Upload();
 
-	/*
-	=============
-	Draw_TileClear
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-	This repeats a 64*64 tile graphic to fill the screen around a sized down
-	refresh window.
-	=============
-	*/
-	public void Draw_TileClear(int x, int y, int w, int h, String pic) {
-		image_t	image;
+        RenderAPIImpl.image.GL_Bind(image.texnum);
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(image.sl, image.tl);
+        GL11.glVertex2f(x, y);
+        GL11.glTexCoord2f(image.sh, image.tl);
+        GL11.glVertex2f(x + w, y);
+        GL11.glTexCoord2f(image.sh, image.th);
+        GL11.glVertex2f(x + w, y + h);
+        GL11.glTexCoord2f(image.sl, image.th);
+        GL11.glVertex2f(x, y + h);
+        GL11.glEnd();
 
-		image = Draw_FindPic(pic);
-		if (image == null)
-		{
-			VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
-			return;
-		}
-
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) )  && !image.has_alpha)
-			gl.glDisable(GL11.GL_ALPHA_TEST);
-
-		GL_Bind(image.texnum);
-		gl.glBegin (GL11.GL_QUADS);
-		gl.glTexCoord2f(x/64.0f, y/64.0f);
-		gl.glVertex2f (x, y);
-		gl.glTexCoord2f( (x+w)/64.0f, y/64.0f);
-		gl.glVertex2f(x+w, y);
-		gl.glTexCoord2f( (x+w)/64.0f, (y+h)/64.0f);
-		gl.glVertex2f(x+w, y+h);
-		gl.glTexCoord2f( x/64.0f, (y+h)/64.0f );
-		gl.glVertex2f (x, y+h);
-		gl.glEnd ();
-
-		if ( ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) )  && !image.has_alpha)
-			gl.glEnable(GL11.GL_ALPHA_TEST);
-	}
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+    }
 
 
-	/*
-	=============
-	Draw_Fill
+    /*
+    =============
+    Draw_Pic
+    =============
+    */
+    public void Draw_Pic(int x, int y, String pic) {
+        TImage image;
 
-	Fills a box of pixels with a single color
-	=============
-	*/
-	public void Draw_Fill(int x, int y, int w, int h, int colorIndex)	{
+        image = Draw_FindPic(pic);
+        if (image == null) {
+            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            return;
+        }
+        if (RenderAPIImpl.image.scrap_dirty)
+            RenderAPIImpl.image.Scrap_Upload();
 
-		if ( colorIndex > 255)
-			Com.Error(Defines.ERR_FATAL, "Draw_Fill: bad color");
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-		gl.glDisable(GL11.GL_TEXTURE_2D);
+        RenderAPIImpl.image.GL_Bind(image.texnum);
 
-		int color = d_8to24table[colorIndex]; 
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(image.sl, image.tl);
+        GL11.glVertex2f(x, y);
+        GL11.glTexCoord2f(image.sh, image.tl);
+        GL11.glVertex2f(x + image.width, y);
+        GL11.glTexCoord2f(image.sh, image.th);
+        GL11.glVertex2f(x + image.width, y + image.height);
+        GL11.glTexCoord2f(image.sl, image.th);
+        GL11.glVertex2f(x, y + image.height);
+        GL11.glEnd();
 
-		gl.glColor3ub(
-			(byte)((color >> 0) & 0xff), // r
-			(byte)((color >> 8) & 0xff), // g
-			(byte)((color >> 16) & 0xff) // b
-		);
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+    }
 
-		gl.glBegin (GL11.GL_QUADS);
+    /*
+    =============
+    Draw_TileClear
 
-		gl.glVertex2f(x,y);
-		gl.glVertex2f(x+w, y);
-		gl.glVertex2f(x+w, y+h);
-		gl.glVertex2f(x, y+h);
+    This repeats a 64*64 tile graphic to fill the screen around a sized down
+    refresh window.
+    =============
+    */
+    public void Draw_TileClear(int x, int y, int w, int h, String pic) {
+        TImage image;
 
-		gl.glEnd();
-		gl.glColor3f(1,1,1);
-		gl.glEnable(GL11.GL_TEXTURE_2D);
-	}
+        image = Draw_FindPic(pic);
+        if (image == null) {
+            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            return;
+        }
 
-	//=============================================================================
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-	/*
-	================
-	Draw_FadeScreen
-	================
-	*/
-	public void Draw_FadeScreen()	{
-		gl.glEnable(GL11.GL_BLEND);
-		gl.glDisable(GL11.GL_TEXTURE_2D);
-		gl.glColor4f(0, 0, 0, 0.8f);
-		gl.glBegin(GL11.GL_QUADS);
+        RenderAPIImpl.image.GL_Bind(image.texnum);
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(x / 64.0f, y / 64.0f);
+        GL11.glVertex2f(x, y);
+        GL11.glTexCoord2f((x + w) / 64.0f, y / 64.0f);
+        GL11.glVertex2f(x + w, y);
+        GL11.glTexCoord2f((x + w) / 64.0f, (y + h) / 64.0f);
+        GL11.glVertex2f(x + w, y + h);
+        GL11.glTexCoord2f(x / 64.0f, (y + h) / 64.0f);
+        GL11.glVertex2f(x, y + h);
+        GL11.glEnd();
 
-		gl.glVertex2f(0,0);
-		gl.glVertex2f(vid.getWidth(), 0);
-		gl.glVertex2f(vid.getWidth(), vid.getHeight());
-		gl.glVertex2f(0, vid.getHeight());
+        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+    }
 
-		gl.glEnd();
-		gl.glColor4f(1,1,1,1);
-		gl.glEnable(GL11.GL_TEXTURE_2D);
-		gl.glDisable(GL11.GL_BLEND);
-	}
+
+    /*
+    =============
+    Draw_Fill
+
+    Fills a box of pixels with a single color
+    =============
+    */
+    public void Draw_Fill(int x, int y, int w, int h, int colorIndex) {
+
+        if (colorIndex > 255)
+            Com.Error(Defines.ERR_FATAL, "Draw_Fill: bad color");
+
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+        int color = d_8to24table[colorIndex];
+
+        GL11.glColor3ub(
+                (byte) ((color >> 0) & 0xff), // r
+                (byte) ((color >> 8) & 0xff), // g
+                (byte) ((color >> 16) & 0xff) // b
+        );
+
+        GL11.glBegin(GL11.GL_QUADS);
+
+        GL11.glVertex2f(x, y);
+        GL11.glVertex2f(x + w, y);
+        GL11.glVertex2f(x + w, y + h);
+        GL11.glVertex2f(x, y + h);
+
+        GL11.glEnd();
+        GL11.glColor3f(1, 1, 1);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
+
+    //=============================================================================
+
+    /*
+    ================
+    Draw_FadeScreen
+    ================
+    */
+    public void Draw_FadeScreen() {
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glColor4f(0, 0, 0, 0.8f);
+        GL11.glBegin(GL11.GL_QUADS);
+
+        GL11.glVertex2f(0, 0);
+        GL11.glVertex2f(vid.getWidth(), 0);
+        GL11.glVertex2f(vid.getWidth(), vid.getHeight());
+        GL11.glVertex2f(0, vid.getHeight());
+
+        GL11.glEnd();
+        GL11.glColor4f(1, 1, 1, 1);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glDisable(GL11.GL_BLEND);
+    }
 
 // ====================================================================
 
-	IntBuffer image32=Lib.newIntBuffer(256*256);
-	ByteBuffer image8=Lib.newByteBuffer(256*256);
-	
+    IntBuffer image32 = Lib.newIntBuffer(256 * 256);
+    ByteBuffer image8 = Lib.newByteBuffer(256 * 256);
 
-	/*
-	=============
-	Draw_StretchRaw
-	=============
-	*/
-	public void Draw_StretchRaw (int x, int y, int w, int h, int cols, int rows, byte[] data)
-	{
-		int i, j, trows;
-		int sourceIndex;
-		int frac, fracstep;
-		float hscale;
-		int row;
-		float t;
 
-		GL_Bind(0);
+    /*
+    =============
+    Draw_StretchRaw
+    =============
+    */
+    public void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows, byte[] data) {
+        int i, j, trows;
+        int sourceIndex;
+        int frac, fracstep;
+        float hscale;
+        int row;
+        float t;
 
-		if (rows<=256)
-		{
-			hscale = 1;
-			trows = rows;
-		}
-		else
-		{
-			hscale = rows/256.0f;
-			trows = 256;
-		}
-		t = rows*hscale / 256;
+        RenderAPIImpl.image.GL_Bind(0);
 
-		if ( !qglColorTableEXT )
-		{
-			//int[] image32 = new int[256*256];
-			image32.clear();
-			int destIndex = 0;
+        if (rows <= 256) {
+            hscale = 1;
+            trows = rows;
+        } else {
+            hscale = rows / 256.0f;
+            trows = 256;
+        }
+        t = rows * hscale / 256;
 
-			for (i=0 ; i<trows ; i++)
-			{
-				row = (int)(i*hscale);
-				if (row > rows)
-					break;
-				sourceIndex = cols*row;
-				destIndex = i*256;
-				fracstep = cols*0x10000/256;
-				frac = fracstep >> 1;
-				for (j=0 ; j<256 ; j++)
-				{
-					image32.put(destIndex + j, r_rawpalette[data[sourceIndex + (frac>>16)] & 0xff]);
-					frac += fracstep;
-				}
-			}
-			gl.glTexImage2D (GL11.GL_TEXTURE_2D, 0, gl_tex_solid_format, 256, 256, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, image32);
-		}
-		else
-		{
-			//byte[] image8 = new byte[256*256];
-			image8.clear();
-			int destIndex = 0;
+        if (!RenderAPIImpl.main.qglColorTableEXT) {
+            //int[] image32 = new int[256*256];
+            image32.clear();
+            int destIndex = 0;
 
-            for (i=0 ; i<trows ; i++)
-			{
-				row = (int)(i*hscale);
-				if (row > rows)
-					break;
-				sourceIndex = cols*row;
-				destIndex = i*256;
-				fracstep = cols*0x10000/256;
-				frac = fracstep >> 1;
-				for (j=0 ; j<256 ; j++)
-				{
-					image8.put(destIndex  + j, data[sourceIndex + (frac>>16)]);
-					frac += fracstep;
-				}
-			}
+            for (i = 0; i < trows; i++) {
+                row = (int) (i * hscale);
+                if (row > rows)
+                    break;
+                sourceIndex = cols * row;
+                destIndex = i * 256;
+                fracstep = cols * 0x10000 / 256;
+                frac = fracstep >> 1;
+                for (j = 0; j < 256; j++) {
+                    image32.put(destIndex + j, RenderAPIImpl.main.r_rawpalette[data[sourceIndex + (frac >> 16)] & 0xff]);
+                    frac += fracstep;
+                }
+            }
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, RenderAPIImpl.image.gl_tex_solid_format, 256, 256, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, image32);
+        } else {
+            //byte[] image8 = new byte[256*256];
+            image8.clear();
+            int destIndex = 0;
 
-			gl.glTexImage2D(GL11.GL_TEXTURE_2D,
-						   0, 
-						   GL_COLOR_INDEX8_EXT, 
-						   256, 256, 
-						   0,
+            for (i = 0; i < trows; i++) {
+                row = (int) (i * hscale);
+                if (row > rows)
+                    break;
+                sourceIndex = cols * row;
+                destIndex = i * 256;
+                fracstep = cols * 0x10000 / 256;
+                frac = fracstep >> 1;
+                for (j = 0; j < 256; j++) {
+                    image8.put(destIndex + j, data[sourceIndex + (frac >> 16)]);
+                    frac += fracstep;
+                }
+            }
+
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D,
+                    0,
+                    GL_COLOR_INDEX8_EXT,
+                    256, 256,
+                    0,
                     GL11.GL_COLOR_INDEX,
                     GL11.GL_UNSIGNED_BYTE,
-						   image8 );
-		}
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+                    image8);
+        }
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
-		if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) ) 
-			gl.glDisable (GL11.GL_ALPHA_TEST);
+        if ((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-		gl.glBegin (GL11.GL_QUADS);
-		gl.glTexCoord2f (0, 0);
-		gl.glVertex2f (x, y);
-		gl.glTexCoord2f (1, 0);
-		gl.glVertex2f (x+w, y);
-		gl.glTexCoord2f (1, t);
-		gl.glVertex2f (x+w, y+h);
-		gl.glTexCoord2f (0, t);
-		gl.glVertex2f (x, y+h);
-		gl.glEnd ();
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f(0, 0);
+        GL11.glVertex2f(x, y);
+        GL11.glTexCoord2f(1, 0);
+        GL11.glVertex2f(x + w, y);
+        GL11.glTexCoord2f(1, t);
+        GL11.glVertex2f(x + w, y + h);
+        GL11.glTexCoord2f(0, t);
+        GL11.glVertex2f(x, y + h);
+        GL11.glEnd();
 
-		if ( ( gl_config.renderer == GL_RENDERER_MCD ) || ( (gl_config.renderer & GL_RENDERER_RENDITION) != 0 ) ) 
-			gl.glEnable (GL11.GL_ALPHA_TEST);
-	}
+        if ((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+    }
 
 }

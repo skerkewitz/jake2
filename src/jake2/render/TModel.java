@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: model_t.java,v 1.5 2005-02-07 21:23:14 cawe Exp $
+// $Id: TModel.java,v 1.5 2005-02-07 21:23:14 cawe Exp $
 
 package jake2.render;
 
@@ -31,7 +31,7 @@ import jake2.util.Math3D;
 
 import java.util.Arrays;
 
-public class model_t implements Cloneable {
+public class TModel implements Cloneable {
 	
 	public String name = "";
 
@@ -62,43 +62,43 @@ public class model_t implements Cloneable {
 	public int lightmap; // only for submodels
 
 	public int numsubmodels;
-	public mmodel_t submodels[];
+	public TMapModel submodels[];
 
 	public int numplanes;
 	public cplane_t planes[];
 
 	public int numleafs; // number of visible leafs, not counting 0
-	public mleaf_t leafs[];
+	public TMLeaf leafs[];
 
 	public int numvertexes;
-	public mvertex_t vertexes[];
+	public TVertex vertexes[];
 
 	public int numedges;
-	public medge_t edges[];
+	public TMEdge edges[];
 
 	public int numnodes;
 	public int firstnode;
-	public mnode_t nodes[];
+	public TMNode nodes[];
 
 	public int numtexinfo;
-	public mtexinfo_t texinfo[];
+	public TMapTexInfo texinfo[];
 
 	public int numsurfaces;
-	public msurface_t surfaces[];
+	public TMapSurface surfaces[];
 
 	public int numsurfedges;
 	public int surfedges[];
 
 	public int nummarksurfaces;
-	public msurface_t marksurfaces[];
+	public TMapSurface marksurfaces[];
 
 	public qfiles.dvis_t vis;
 
 	public byte lightdata[];
 
 	// for alias models and skins
-	// was image_t *skins[]; (array of pointers)
-	public image_t skins[] = new image_t[Defines.MAX_MD2SKINS];
+	// was TImage *skins[]; (array of pointers)
+	public TImage skins[] = new TImage[Defines.MAX_MD2SKINS];
 
 	public int extradatasize;
 
@@ -170,7 +170,7 @@ public class model_t implements Cloneable {
 		lightdata = null;
 
 		// for alias models and skins
-		// was image_t *skins[]; (array of pointers)
+		// was TImage *skins[]; (array of pointers)
 		Arrays.fill(skins, null);
 
 		extradatasize = 0;
@@ -178,12 +178,12 @@ public class model_t implements Cloneable {
 		extradata = null;
 	}
 	
-	// TODO replace with set(model_t from)
-	public model_t copy() {
-		model_t theClone = null;
+	// TODO replace with set(TModel from)
+	public TModel copy() {
+		TModel theClone = null;
 		try
 		{
-			theClone = (model_t)super.clone();
+			theClone = (TModel)super.clone();
 			theClone.mins = Lib.clone(this.mins);
 			theClone.maxs = Lib.clone(this.maxs);
 			theClone.clipmins = Lib.clone(this.clipmins);

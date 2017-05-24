@@ -29,7 +29,7 @@ import jake2.game.Cmd;
 import jake2.game.entity_state_t;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
-import jake2.render.model_t;
+import jake2.render.TModel;
 import jake2.sound.Sound;
 import jake2.sys.QSystem;
 import jake2.util.Lib;
@@ -386,7 +386,7 @@ public class CL_parse {
 
             ci.model = Globals.re.RegisterModel(model_filename);
 
-            ci.weaponmodel = new model_t[Defines.MAX_CLIENTWEAPONMODELS];
+            ci.weaponmodel = new TModel[Defines.MAX_CLIENTWEAPONMODELS];
             ci.weaponmodel[0] = Globals.re.RegisterModel(weapon_filename);
             ci.skin = Globals.re.RegisterSkin(skin_filename);
             ci.icon = Globals.re.RegisterPic(ci.iconname);

@@ -26,6 +26,7 @@
 package jake2.client;
 
 import jake2.Globals;
+import jake2.common.TDynamicLight;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.*;
@@ -53,11 +54,11 @@ public final class V extends Globals {
 
     static int r_numdlights;
 
-    static dlight_t[] r_dlights = new dlight_t[MAX_DLIGHTS];
+    static TDynamicLight[] r_dlights = new TDynamicLight[MAX_DLIGHTS];
 
     static int r_numentities;
 
-    static entity_t[] r_entities = new entity_t[MAX_ENTITIES];
+    static TEntity[] r_entities = new TEntity[MAX_ENTITIES];
 
     static int r_numparticles;
 
@@ -66,9 +67,9 @@ public final class V extends Globals {
     static lightstyle_t[] r_lightstyles = new lightstyle_t[MAX_LIGHTSTYLES];
     static {
         for (int i = 0; i < r_dlights.length; i++)
-            r_dlights[i] = new dlight_t();
+            r_dlights[i] = new TDynamicLight();
         for (int i = 0; i < r_entities.length; i++)
-            r_entities[i] = new entity_t();
+            r_entities[i] = new TEntity();
         for (int i = 0; i < r_lightstyles.length; i++)
             r_lightstyles[i] = new lightstyle_t();
     }
@@ -89,7 +90,7 @@ public final class V extends Globals {
      * 
      * =====================
      */
-    static void AddEntity(entity_t ent) {
+    static void AddEntity(TEntity ent) {
         if (r_numentities >= MAX_ENTITIES)
             return;
         r_entities[r_numentities++].set(ent);
@@ -123,7 +124,7 @@ public final class V extends Globals {
      * =====================
      */
     static void AddLight(float[] org, float intensity, float r, float g, float b) {
-        dlight_t dl;
+        TDynamicLight dl;
 
         if (r_numdlights >= MAX_DLIGHTS)
             return;
@@ -187,7 +188,7 @@ public final class V extends Globals {
     static void TestEntities() {
         int i, j;
         float f, r;
-        entity_t ent;
+        TEntity ent;
 
         r_numentities = 32;
         //memset (r_entities, 0, sizeof(r_entities));
@@ -217,12 +218,12 @@ public final class V extends Globals {
     static void TestLights() {
         int i, j;
         float f, r;
-        dlight_t dl;
+        TDynamicLight dl;
 
         r_numdlights = 32;
         //memset (r_dlights, 0, sizeof(r_dlights));
         for (i = 0; i < r_dlights.length; i++)
-            r_dlights[i] = new dlight_t();
+            r_dlights[i] = new TDynamicLight();
 
         for (i = 0; i < r_numdlights; i++) {
             dl = r_dlights[i];
@@ -273,7 +274,7 @@ public final class V extends Globals {
      * ==================
      */
     static void RenderView(float stereo_separation) {
-        //		extern int entitycmpfnc( const entity_t *, const entity_t * );
+        //		extern int entitycmpfnc( const TEntity *, const TEntity * );
         //
         if (cls.state != ca_active)
             return;

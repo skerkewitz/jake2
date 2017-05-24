@@ -10,7 +10,7 @@ package jake2.render;
 
 import jake2.client.Dimension;
 import jake2.client.DisplayMode;
-import jake2.client.refdef_t;
+import jake2.client.TRefDef;
 import jake2.client.refexport_t;
 import jake2.qcommon.xcommand_t;
 import jake2.sys.Keyboard;
@@ -44,21 +44,21 @@ public class DummyRenderer implements refexport_t {
 	/* (non-Javadoc)
 	 * @see jake2.client.refexport_t#RegisterModel(java.lang.String)
 	 */
-	public model_t RegisterModel(String name) {
+	public TModel RegisterModel(String name) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see jake2.client.refexport_t#RegisterSkin(java.lang.String)
 	 */
-	public image_t RegisterSkin(String name) {
+	public TImage RegisterSkin(String name) {
 		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see jake2.client.refexport_t#RegisterPic(java.lang.String)
 	 */
-	public image_t RegisterPic(String name) {
+	public TImage RegisterPic(String name) {
 		return null;
 	}
 
@@ -75,9 +75,9 @@ public class DummyRenderer implements refexport_t {
 	}
 
 	/* (non-Javadoc)
-	 * @see jake2.client.refexport_t#RenderFrame(jake2.client.refdef_t)
+	 * @see jake2.client.refexport_t#RenderFrame(jake2.client.TRefDef)
 	 */
-	public void RenderFrame(refdef_t fd) {
+	public void RenderFrame(TRefDef fd) {
 	}
 
 	public void DrawGetPicSize(Dimension dim, String name) {

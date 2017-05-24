@@ -19,29 +19,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: glstate_t.java,v 1.1 2004-07-07 19:59:35 hzi Exp $
+// $Id: TMapTexInfo.java,v 1.2 2004-07-09 06:50:47 hzi Exp $
 
 package jake2.render;
 
-public class glstate_t 
-{
-	public float inverse_intensity;
-	public boolean fullscreen;
+import java.util.Arrays;
 
-	public int prev_mode;
-
-	public byte d_16to8table[];
-
-	public int lightmap_textures;
-
-	public int currenttextures[]= {0,0};
-	public int currenttmu;
-
-	public float camera_separation;
-	public boolean stereo_enabled;
-
-	public byte originalRedGammaTable[]= new byte [256];
-	public byte originalGreenGammaTable[]= new byte [256];
-	public byte originalBlueGammaTable[]= new byte [256];
-
+public class TMapTexInfo {
+	// [s/t][xyz offset]
+	public float vecs[][] = {
+		 { 0, 0, 0, 0 },
+		 { 0, 0, 0, 0 }
+	};
+	public int flags;
+	public int numframes;
+	public TMapTexInfo next; // animation chain
+	public TImage image;
+	
+	public void clear() {
+		Arrays.fill(vecs[0], 0);
+		Arrays.fill(vecs[1], 0);
+		
+		flags = 0;
+		numframes = 0;
+		next = null;
+		image = null;
+	}
+	
 }

@@ -19,26 +19,23 @@
  */
 
 // Created on 20.11.2003 by RST.
-// $Id: medge_t.java,v 1.2 2004-09-22 19:22:15 salomo Exp $
+// $Id: TVertex.java,v 1.2 2004-09-22 19:22:15 salomo Exp $
 package jake2.render;
 
 import jake2.Defines;
 
 import java.nio.ByteBuffer;
 
-public class medge_t {
+public class TVertex {
+    public static final int DISK_SIZE = 3 * Defines.SIZE_OF_FLOAT;
 
-    public static final int DISK_SIZE = 2 * Defines.SIZE_OF_SHORT;
+    public static final int MEM_SIZE = 3 * Defines.SIZE_OF_FLOAT;
 
-    public static final int MEM_SIZE = 3 * Defines.SIZE_OF_INT;
+    public float[] position = { 0, 0, 0 };
 
-    // unsigned short
-    public int[] v = new int[2];
-
-    public int cachededgeoffset;
-
-    public medge_t(ByteBuffer b) {
-        v[0] = b.getShort() & 0xFFFF;
-        v[1] = b.getShort() & 0xFFFF;
+    public TVertex(ByteBuffer b) {
+        position[0] = b.getFloat();
+        position[1] = b.getFloat();
+        position[2] = b.getFloat();
     }
 }

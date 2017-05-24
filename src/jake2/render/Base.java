@@ -26,7 +26,6 @@ package jake2.render;
 import jake2.client.viddef_t;
 import jake2.game.TVar;
 import jake2.render.opengl.GLDriver;
-import jake2.render.opengl.QGL;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -34,7 +33,7 @@ import org.lwjgl.opengl.GL11;
  * 
  * @author dsanders/cwei
  */
-public abstract class Base implements RenderAPI {
+public abstract class Base {
 
     public static final int GL_COLOR_INDEX8_EXT = GL11.GL_COLOR_INDEX;
 
@@ -166,21 +165,18 @@ public abstract class Base implements RenderAPI {
     /*
      * base members
      */
-    protected final static viddef_t vid = new viddef_t();
+    public final static viddef_t vid = new viddef_t();
 
     protected TVar vid_fullscreen;
-    
-    protected QGL gl;
 
     protected GLDriver glImpl;
 
     public void setGLDriver(GLDriver driver) {
         glImpl = driver;
-        gl = (QGL)driver;
     }
 
     public static synchronized void setVid(int width, int height) {
-	vid.setSize(width, height);
+    	vid.setSize(width, height);
     }
     
 }

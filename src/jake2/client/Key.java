@@ -419,7 +419,7 @@ public class Key extends Globals {
 
 		switch (Globals.cls.key_dest) {
 			case Defines.key_message :
-				Key.Message(key);
+//				Key.Message(key);
 				break;
 			case Defines.key_menu :
 				Menu.Keydown(key);
@@ -427,10 +427,25 @@ public class Key extends Globals {
 
 			case Defines.key_game :
 			case Defines.key_console :
-				Key.Console(key);
+//				Key.Console(key);
 				break;
 			default :
 				Com.Error(Defines.ERR_FATAL, "Bad cls.key_dest");
+		}
+	}
+
+	public static void charEvent(int codepoint) {
+		switch (Globals.cls.key_dest) {
+			case Defines.key_message :
+				Key.Message(codepoint);
+				break;
+
+			case Defines.key_game :
+			case Defines.key_console :
+				Key.Console(codepoint);
+				break;
+			default :
+				break;
 		}
 	}
 

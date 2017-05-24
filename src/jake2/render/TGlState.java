@@ -19,31 +19,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: glconfig_t.java,v 1.3 2006-11-21 00:51:22 cawe Exp $
+// $Id: TGlState.java,v 1.1 2004-07-07 19:59:35 hzi Exp $
 
 package jake2.render;
 
-public class glconfig_t {
-    
-	public int renderer;
-	public String renderer_string;
-	public String vendor_string;
-	public String version_string;
-	public String extensions_string;
+public class TGlState
+{
+	public float inverse_intensity;
+	public boolean fullscreen;
 
-	public boolean allow_cds;
-	
-	private float version = 1.1f;
+	public int prev_mode;
 
-	public void parseOpenGLVersion() {
-	    try {
-		version = Float.parseFloat(version_string.substring(0, 3));
-	    } catch (Exception e) {
-		version = 1.1f;
-	    }
-	}
-	
-	public float getOpenGLVersion() {
-	    return version;
-	}
+	public byte d_16to8table[];
+
+	public int lightmap_textures;
+
+	public int currenttextures[]= {0,0};
+	public int currenttmu;
+
+	public float camera_separation;
+	public boolean stereo_enabled;
+
+	public byte originalRedGammaTable[]= new byte [256];
+	public byte originalGreenGammaTable[]= new byte [256];
+	public byte originalBlueGammaTable[]= new byte [256];
+
 }

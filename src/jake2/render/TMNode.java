@@ -19,17 +19,29 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: mmodel_t.java,v 1.2 2006-08-20 21:47:36 salomo Exp $
+// $Id: TMNode.java,v 1.1 2004-07-07 19:59:35 hzi Exp $
 
 package jake2.render;
 
-public class mmodel_t
-{
-	public float[] mins = { 0, 0, 0 };
-	public float[] maxs = { 0, 0, 0 };
-	public float[] origin = { 0, 0, 0 }; // for sounds or lights
-	public float radius;
-	public int headnode;
-	public int visleafs; // not including the solid leaf 0
-	public int firstface, numfaces;
+import jake2.game.*;
+
+public class TMNode {
+	//	common with leaf
+	public int contents; // -1, to differentiate from leafs
+	public int visframe; // node needs to be traversed if current
+
+	//public float minmaxs[] = new float[6]; // for bounding box culling
+	public float mins[] = new float[3]; // for bounding box culling
+	public float maxs[] = new float[3]; // for bounding box culling
+
+	public TMNode parent;
+
+	//	node specific
+	public cplane_t plane;
+	public TMNode children[] = new TMNode[2];
+
+	// unsigned short
+	public int firstsurface;
+	public int numsurfaces;
+
 }

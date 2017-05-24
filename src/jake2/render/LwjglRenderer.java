@@ -28,7 +28,7 @@ package jake2.render;
 import jake2.Defines;
 import jake2.client.Dimension;
 import jake2.client.DisplayMode;
-import jake2.client.refdef_t;
+import jake2.client.TRefDef;
 import jake2.client.refexport_t;
 import jake2.render.opengl.LwjglDriver;
 import jake2.sys.GlfwKeyboardImpl;
@@ -96,21 +96,21 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 	/**
 	 * @see jake2.client.refexport_t#RegisterModel(java.lang.String)
 	 */
-	public final model_t RegisterModel(String name) {
+	public final TModel RegisterModel(String name) {
 		return impl.R_RegisterModel(name);
 	}
 
 	/**
 	 * @see jake2.client.refexport_t#RegisterSkin(java.lang.String)
 	 */
-	public final image_t RegisterSkin(String name) {
+	public final TImage RegisterSkin(String name) {
 		return impl.R_RegisterSkin(name);
 	}
 
 	/**
 	 * @see jake2.client.refexport_t#RegisterPic(java.lang.String)
 	 */
-	public final image_t RegisterPic(String name) {
+	public final TImage RegisterPic(String name) {
 		return impl.Draw_FindPic(name);
 	}
 	/**
@@ -128,9 +128,9 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#RenderFrame(jake2.client.refdef_t)
+	 * @see jake2.client.refexport_t#RenderFrame(TRefDef)
 	 */
-	public final void RenderFrame(refdef_t fd) {
+	public final void RenderFrame(TRefDef fd) {
 		impl.R_RenderFrame(fd);
 	}
 

@@ -57,13 +57,13 @@ public class VID extends Globals {
 	// Globals.re;
 
 	// Console variables that we need to access from this module
-	static TVar vid_gamma;
+	public static TVar vid_gamma;
 	static TVar vid_ref;			// Name of Refresh DLL loaded
 	static TVar vid_xpos;			// X coordinate of window position
 	static TVar vid_ypos;			// Y coordinate of window position
 	static TVar vid_width;
 	static TVar vid_height;
-	static TVar vid_fullscreen;
+	public static TVar vid_fullscreen;
 
 	// Global variables used internally by this module
 	// void *reflib_library;		// Handle to refresh DLL 
@@ -360,7 +360,7 @@ public class VID extends Globals {
 	static TVar gl_mode;
 	static TVar gl_driver;
 	static TVar gl_picmip;
-	static TVar gl_ext_palettedtexture;
+	public static TVar gl_ext_palettedtexture;
 	static TVar gl_swapinterval;
 
 	/*

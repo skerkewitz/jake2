@@ -19,31 +19,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: mtexinfo_t.java,v 1.2 2004-07-09 06:50:47 hzi Exp $
+// $Id: TDynamicLight.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
 
-package jake2.render;
+package jake2.common;
 
-import java.util.Arrays;
+public class TDynamicLight {
 
-public class mtexinfo_t {
-	// [s/t][xyz offset]
-	public float vecs[][] = {
-		 { 0, 0, 0, 0 },
-		 { 0, 0, 0, 0 }
-	};
-	public int flags;
-	public int numframes;
-	public mtexinfo_t next; // animation chain
-	public image_t image;
-	
-	public void clear() {
-		Arrays.fill(vecs[0], 0);
-		Arrays.fill(vecs[1], 0);
-		
-		flags = 0;
-		numframes = 0;
-		next = null;
-		image = null;
-	}
-	
+    public float origin[] = {0, 0, 0};
+    public float color[] = {0, 0, 0};
+    public float intensity;
 }

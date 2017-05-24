@@ -27,7 +27,7 @@ import jake2.game.cplane_t;
 
 import java.nio.ByteBuffer;
 
-public class msurface_t
+public class TMapSurface
 {
 
 	public int visframe; // should be drawn when node is crossed
@@ -45,12 +45,12 @@ public class msurface_t
 	public int dlight_s, dlight_t;
 	// gl lightmap coordinates for dynamic lightmaps
 
-	public glpoly_t polys; // multiple if warped
-	public msurface_t texturechain;
-	public msurface_t lightmapchain;
+	public TGlPoly polys; // multiple if warped
+	public TMapSurface texturechain;
+	public TMapSurface lightmapchain;
 
 	// TODO check this
-	public mtexinfo_t texinfo = new mtexinfo_t();
+	public TMapTexInfo texinfo = new TMapTexInfo();
 
 	// lighting info
 	public int dlightframe;
@@ -81,7 +81,7 @@ public class msurface_t
 		texturechain = null;
 		lightmapchain = null;
 
-		//texinfo = new mtexinfo_t();
+		//texinfo = new TMapTexInfo();
 		texinfo.clear();
 
 		dlightframe = 0;

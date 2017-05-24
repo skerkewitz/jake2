@@ -28,7 +28,9 @@ package jake2.render.fast;
 import jake2.Defines;
 import jake2.client.VID;
 import jake2.io.FileSystem;
+import jake2.render.RenderAPIImpl;
 import jake2.util.Lib;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
 import java.io.*;
@@ -36,12 +38,17 @@ import java.nio.FloatBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
+import static jake2.render.Base.it_sprite;
+import static jake2.render.Base.it_wall;
+import static jake2.render.Base.vid;
+import static jake2.render.fast.Main.d_8to24table;
+
 /**
  * Misc
  *  
  * @author cwei
  */
-public final class Misc extends Mesh {
+public final class Misc {
 
 	/*
 	==================
@@ -79,7 +86,7 @@ public final class Misc extends Mesh {
 
 			}
 		}
-		r_particletexture = GL_LoadPic("***particle***", data, 8, 8, it_sprite, 32);
+		RenderAPIImpl.main.r_particletexture = RenderAPIImpl.image.GL_LoadPic("***particle***", data, 8, 8, it_sprite, 32);
 
 		//
 		// also use this for bad textures, but without alpha
@@ -94,7 +101,7 @@ public final class Misc extends Mesh {
 				data[y * 32 + x * 4 + 3] = (byte)255;
 			}
 		}
-		r_notexture = GL_LoadPic("***r_notexture***", data, 8, 8, it_wall, 32);
+		RenderAPIImpl.main.r_notexture = RenderAPIImpl.image.GL_LoadPic("***r_notexture***", data, 8, 8, it_wall, 32);
 	}
 
 //	/* 
@@ -157,13 +164,13 @@ public final class Misc extends Mesh {
 	        
 	        // change pixel alignment for reading
 	        if (vid.getWidth() % 4 != 0) {
-	            gl.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
+	            GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 1);
 	        }
 	        
-			gl.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), GL12.GL_BGR, GL11.GL_UNSIGNED_BYTE, image);
+			GL11.glReadPixels(0, 0, vid.getWidth(), vid.getHeight(), GL12.GL_BGR, GL11.GL_UNSIGNED_BYTE, image);
 
 	        // reset to default alignment
-	        gl.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 4);
+	        GL11.glPixelStorei(GL11.GL_PACK_ALIGNMENT, 4);
 	        // close the file channel
 	        ch.close();
 	    } catch (IOException e) {
@@ -177,10 +184,10 @@ public final class Misc extends Mesh {
 	** GL_Strings_f
 	*/
 	void GL_Strings_f()	{
-		VID.Printf(Defines.PRINT_ALL, "GL_VENDOR: " + gl_config.vendor_string + '\n');
-		VID.Printf(Defines.PRINT_ALL, "GL_RENDERER: " + gl_config.renderer_string + '\n');
-		VID.Printf(Defines.PRINT_ALL, "GL_VERSION: " + gl_config.version_string + '\n');
-		VID.Printf(Defines.PRINT_ALL, "GL_EXTENSIONS: " + gl_config.extensions_string + '\n');
+		VID.Printf(Defines.PRINT_ALL, "GL_VENDOR: " + RenderAPIImpl.main.gl_config.vendor_string + '\n');
+		VID.Printf(Defines.PRINT_ALL, "GL_RENDERER: " + RenderAPIImpl.main.gl_config.renderer_string + '\n');
+		VID.Printf(Defines.PRINT_ALL, "GL_VERSION: " + RenderAPIImpl.main.gl_config.version_string + '\n');
+		VID.Printf(Defines.PRINT_ALL, "GL_EXTENSIONS: " + RenderAPIImpl.main.gl_config.extensions_string + '\n');
 	}
 
 	/*
@@ -188,56 +195,56 @@ public final class Misc extends Mesh {
 	*/
 	void GL_SetDefaultState()
 	{
-		gl.glClearColor(1f,0f, 0.5f , 0.5f); // original quake2
-		//gl.gl.glClearColor(0, 0, 0, 0); // replaced with black
-		gl.glCullFace(GL11.GL_FRONT);
-		gl.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glClearColor(1f,0f, 0.5f , 0.5f); // original quake2
+		//GL11.GL11.glClearColor(0, 0, 0, 0); // replaced with black
+		GL11.glCullFace(GL11.GL_FRONT);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-		gl.glEnable(GL11.GL_ALPHA_TEST);
-		gl.glAlphaFunc(GL11.GL_GREATER, 0.666f);
+		GL11.glEnable(GL11.GL_ALPHA_TEST);
+		GL11.glAlphaFunc(GL11.GL_GREATER, 0.666f);
 
-		gl.glDisable (GL11.GL_DEPTH_TEST);
-		gl.glDisable (GL11.GL_CULL_FACE);
-		gl.glDisable (GL11.GL_BLEND);
+		GL11.glDisable (GL11.GL_DEPTH_TEST);
+		GL11.glDisable (GL11.GL_CULL_FACE);
+		GL11.glDisable (GL11.GL_BLEND);
 
-		gl.glColor4f (1,1,1,1);
+		GL11.glColor4f (1,1,1,1);
 
-		gl.glPolygonMode (GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
-		gl.glShadeModel (GL11.GL_FLAT);
+		GL11.glPolygonMode (GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
+		GL11.glShadeModel (GL11.GL_FLAT);
 
-		GL_TextureMode( gl_texturemode.string );
-		GL_TextureAlphaMode( gl_texturealphamode.string );
-		GL_TextureSolidMode( gl_texturesolidmode.string );
+		RenderAPIImpl.image.GL_TextureMode( RenderAPIImpl.main.gl_texturemode.string );
+		RenderAPIImpl.image.GL_TextureAlphaMode( RenderAPIImpl.main.gl_texturealphamode.string );
+		RenderAPIImpl.image.GL_TextureSolidMode( RenderAPIImpl.main.gl_texturesolidmode.string );
 
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, RenderAPIImpl.image.gl_filter_min);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, RenderAPIImpl.image.gl_filter_max);
 
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
-		gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
 
-		gl.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glBlendFunc (GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-		GL_TexEnv(GL11.GL_REPLACE);
+		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 
-		if ( qglPointParameterfEXT )
+		if ( RenderAPIImpl.main.qglPointParameterfEXT )
 		{
 			// float[] attenuations = { gl_particle_att_a.value, gl_particle_att_b.value, gl_particle_att_c.value };
 			FloatBuffer att_buffer=Lib.newFloatBuffer(4);
-			att_buffer.put(0,gl_particle_att_a.value);
-			att_buffer.put(1,gl_particle_att_b.value);
-			att_buffer.put(2,gl_particle_att_c.value);
+			att_buffer.put(0,RenderAPIImpl.main.gl_particle_att_a.value);
+			att_buffer.put(1,RenderAPIImpl.main.gl_particle_att_b.value);
+			att_buffer.put(2,RenderAPIImpl.main.gl_particle_att_c.value);
 			
-			gl.glEnable(GL11.GL_POINT_SMOOTH);
-			gl.glPointParameterfEXT(EXTPointParameters.GL_POINT_SIZE_MIN_EXT, gl_particle_min_size.value );
-			gl.glPointParameterfEXT(EXTPointParameters.GL_POINT_SIZE_MAX_EXT, gl_particle_max_size.value );
-			gl.glPointParameterEXT(EXTPointParameters.GL_DISTANCE_ATTENUATION_EXT, att_buffer );
+			GL11.glEnable(GL11.GL_POINT_SMOOTH);
+			EXTPointParameters.glPointParameterfEXT(EXTPointParameters.GL_POINT_SIZE_MIN_EXT, RenderAPIImpl.main.gl_particle_min_size.value );
+			EXTPointParameters.glPointParameterfEXT(EXTPointParameters.GL_POINT_SIZE_MAX_EXT, RenderAPIImpl.main.gl_particle_max_size.value );
+			EXTPointParameters.glPointParameterfvEXT(EXTPointParameters.GL_DISTANCE_ATTENUATION_EXT, att_buffer );
 		}
 
-		if ( qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f )
+		if ( RenderAPIImpl.main.qglColorTableEXT && RenderAPIImpl.main.gl_ext_palettedtexture.value != 0.0f )
 		{
-			gl.glEnable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT);
+			GL11.glEnable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT);
 
-			GL_SetTexturePalette( d_8to24table );
+			RenderAPIImpl.image.GL_SetTexturePalette( d_8to24table );
 		}
 
 		GL_UpdateSwapInterval();
@@ -245,25 +252,24 @@ public final class Misc extends Mesh {
 		/*
 		 * vertex array extension
 		 */
-		gl.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-		gl.glClientActiveTextureARB(TEXTURE0);
-		gl.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+		GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+		ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.main.TEXTURE0);
+		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 		
 		/*
 		 * perspective correction
 		 */
-		//gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+		//GL11.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	}
 
 	void GL_UpdateSwapInterval()
 	{
-		if ( gl_swapinterval.modified )
+		if ( RenderAPIImpl.main.gl_swapinterval.modified )
 		{
-			gl_swapinterval.modified = false;
-			if ( !gl_state.stereo_enabled ) 
-			{
-			    gl.setSwapInterval((int) gl_swapinterval.value);
+			RenderAPIImpl.main.gl_swapinterval.modified = false;
+			if ( !RenderAPIImpl.main.gl_state.stereo_enabled ) {
+				GLFW.glfwSwapInterval((int) RenderAPIImpl.main.gl_swapinterval.value);
 			}
 		}
 	}

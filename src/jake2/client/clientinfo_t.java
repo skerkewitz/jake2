@@ -29,11 +29,11 @@ import jake2.render.*;
 public class clientinfo_t {
 	String	name	="";
 	String	cinfo	="";
-	image_t skin;	// ptr
-	image_t icon;	// ptr
+	TImage skin;	// ptr
+	TImage icon;	// ptr
 	String iconname	="";
-	model_t model;	// ptr
-	model_t weaponmodel[] = new model_t[Defines.MAX_CLIENTWEAPONMODELS]; // arary of references
+	TModel model;	// ptr
+	TModel weaponmodel[] = new TModel[Defines.MAX_CLIENTWEAPONMODELS]; // arary of references
 	
 //	public void reset()
 //	{

@@ -1,7 +1,7 @@
 package jake2.render;
 
 import jake2.client.Dimension;
-import jake2.client.refdef_t;
+import jake2.client.TRefDef;
 import jake2.render.opengl.GLDriver;
 
 
@@ -17,17 +17,17 @@ public interface RenderAPI {
 
     void R_BeginRegistration(String map);
 
-    model_t R_RegisterModel(String name);
+    TModel R_RegisterModel(String name);
 
-    image_t R_RegisterSkin(String name);
+    TImage R_RegisterSkin(String name);
 
-    image_t Draw_FindPic(String name);
+    TImage Draw_FindPic(String name);
 
     void R_SetSky(String name, float rotate, float[] axis);
 
     void R_EndRegistration();
 
-    void R_RenderFrame(refdef_t fd);
+    void R_RenderFrame(TRefDef fd);
 
     void Draw_GetPicSize(Dimension dim, String name);
 

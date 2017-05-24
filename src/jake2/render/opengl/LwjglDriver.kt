@@ -33,7 +33,6 @@ import jake2.render.Base
 
 import jake2.sys.GlfwKeyboardImpl
 import jake2.sys.Keyboard
-import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI
 import org.lwjgl.opengl.GL
@@ -50,7 +49,7 @@ import org.lwjgl.opengl.GL11
  * @author dsanders/cwei
  */
 abstract class LwjglDriver protected constructor()// see LwjglRenderer
-    : LwjglGL(), GLDriver {
+    : GLDriver {
 
     protected var keyboard: Keyboard = GlfwKeyboardImpl() //new LWJGLKBD();
 
@@ -359,7 +358,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
     }
 
     override fun endFrame() {
-        glFlush()
+        GL11.glFlush()
         // swap buffers
         glfwSwapBuffers(window)
         //Display.update();

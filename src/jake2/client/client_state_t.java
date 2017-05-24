@@ -25,8 +25,8 @@ package jake2.client;
 import jake2.Defines;
 import jake2.game.cmodel_t;
 import jake2.game.usercmd_t;
-import jake2.render.image_t;
-import jake2.render.model_t;
+import jake2.render.TImage;
+import jake2.render.TModel;
 import jake2.sound.TSound;
 
 import java.nio.ByteBuffer;
@@ -89,7 +89,7 @@ public class client_state_t {
 	// is rendering at.  always <= cls.realtime
 	float lerpfrac; // between oldframe and frame
 
-	refdef_t refdef = new refdef_t();
+	TRefDef refdef = new TRefDef();
 
 	float[] v_forward = { 0, 0, 0 };
 	float[] v_right = { 0, 0, 0 };
@@ -125,11 +125,11 @@ public class client_state_t {
 	//
 	// locally derived information from server state
 	//
-	model_t model_draw[] = new model_t[Defines.MAX_MODELS];
+	TModel model_draw[] = new TModel[Defines.MAX_MODELS];
 	cmodel_t model_clip[] = new cmodel_t[Defines.MAX_MODELS];
 
 	public TSound sound_precache[] = new TSound[Defines.MAX_SOUNDS];
-	image_t image_precache[] = new image_t[Defines.MAX_IMAGES];
+	TImage image_precache[] = new TImage[Defines.MAX_IMAGES];
 
 	clientinfo_t clientinfo[] = new clientinfo_t[Defines.MAX_CLIENTS];
 	clientinfo_t baseclientinfo = new clientinfo_t();

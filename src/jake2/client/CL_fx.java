@@ -1817,7 +1817,7 @@ public class CL_fx {
 	 * =============== CL_BfgParticles ===============
 	 */
 	//#define BEAMLENGTH 16
-	static void BfgParticles(entity_t ent) {
+	static void BfgParticles(TEntity ent) {
 		int i;
 		cparticle_t p;
 		float angle;
@@ -1882,7 +1882,7 @@ public class CL_fx {
 	 * =============== CL_TrapParticles ===============
 	 */
 	//	   RAFAEL
-	static void TrapParticles(entity_t ent) {
+	static void TrapParticles(TEntity ent) {
 		float len;
 		int j;
 		cparticle_t p;

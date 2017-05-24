@@ -39,37 +39,37 @@ import java.nio.*;
 import java.util.Arrays;
 import java.util.Vector;
 
+import static jake2.render.Base.*;
+
 /**
  * Model
  *  
  * @author cwei
  */
-public abstract class Model extends Surf {
+public class Model {
 	
 	// models.c -- model loading and caching
 
-	model_t	loadmodel;
+	TModel loadmodel;
 	int modfilelen;
 
 	byte[] mod_novis = new byte[Defines.MAX_MAP_LEAFS/8];
 
 	static final int MAX_MOD_KNOWN = 512;
-	model_t[] mod_known = new model_t[MAX_MOD_KNOWN];
+	TModel[] mod_known = new TModel[MAX_MOD_KNOWN];
 	int mod_numknown;
 
 	// the inline * models from the current map are kept seperate
-	model_t[] mod_inline = new model_t[MAX_MOD_KNOWN];
+	TModel[] mod_inline = new TModel[MAX_MOD_KNOWN];
 	
-	abstract void GL_SubdivideSurface(msurface_t surface); // Warp.java
-
 	/*
 	===============
 	Mod_PointInLeaf
 	===============
 	*/
-	mleaf_t Mod_PointInLeaf(float[] p, model_t model)
+	TMLeaf Mod_PointInLeaf(float[] p, TModel model)
 	{
-		mnode_t node;
+		TMNode node;
 		float	d;
 		cplane_t plane;
 	
@@ -80,7 +80,7 @@ public abstract class Model extends Surf {
 		while (true)
 		{
 			if (node.contents != -1)
-				return (mleaf_t)node;
+				return (TMLeaf)node;
 				
 			plane = node.plane;
 			d = Math3D.DotProduct(p, plane.normal) - plane.dist;
@@ -101,7 +101,7 @@ public abstract class Model extends Surf {
 	Mod_DecompressVis
 	===================
 	*/
-	byte[] Mod_DecompressVis(byte[] in, int offset, model_t model)
+	byte[] Mod_DecompressVis(byte[] in, int offset, TModel model)
 	{
 		int c;
 		byte[] out;
@@ -148,7 +148,7 @@ public abstract class Model extends Surf {
 	Mod_ClusterPVS
 	==============
 	*/
-	byte[] Mod_ClusterPVS(int cluster, model_t model)
+	byte[] Mod_ClusterPVS(int cluster, TModel model)
 	{
 		if (cluster == -1 || model.vis == null)
 			return mod_novis;
@@ -167,7 +167,7 @@ public abstract class Model extends Surf {
 	void Mod_Modellist_f()
 	{
 		int i;
-		model_t	mod;
+		TModel mod;
 		int total;
 
 		total = 0;
@@ -193,7 +193,7 @@ public abstract class Model extends Surf {
 	{
 		// init mod_known
 		for (int i=0; i < MAX_MOD_KNOWN; i++) {
-			mod_known[i] = new model_t();
+			mod_known[i] = new TModel();
 		}
 		Arrays.fill(mod_novis, (byte)0xff);
 	}
@@ -207,9 +207,9 @@ public abstract class Model extends Surf {
 	Loads in a model for the given name
 	==================
 	*/
-	model_t Mod_ForName(String name, boolean crash)
+	TModel Mod_ForName(String name, boolean crash)
 	{
-		model_t mod = null;
+		TModel mod = null;
 		int		i;
 	
 		if (name == null || name.length() == 0)
@@ -221,7 +221,7 @@ public abstract class Model extends Surf {
 		if (name.charAt(0) == '*')
 		{
 			i = Integer.parseInt(name.substring(1));
-			if (i < 1 || r_worldmodel == null || i >= r_worldmodel.numsubmodels)
+			if (i < 1 || RenderAPIImpl.main.r_worldmodel == null || i >= RenderAPIImpl.main.r_worldmodel.numsubmodels)
 				Com.Error (Defines.ERR_DROP, "bad inline model number");
 			return mod_inline[i];
 		}
@@ -376,17 +376,14 @@ public abstract class Model extends Surf {
 	Mod_LoadVertexes
 	=================
 	*/
-	void Mod_LoadVertexes(TLump l)
-	{
-		mvertex_t[] vertexes;
-		int i, count;
+	void Mod_LoadVertexes(TLump l) {
 
-		if ( (l.filelen % mvertex_t.DISK_SIZE) != 0)
+		if ( (l.filelen % TVertex.DISK_SIZE) != 0)
 			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
-		count = l.filelen / mvertex_t.DISK_SIZE;
-		
-		vertexes = new mvertex_t[count];
+		final int count = l.filelen / TVertex.DISK_SIZE;
+
+		TVertex[] vertexes = new TVertex[count];
 
 		loadmodel.vertexes = vertexes;
 		loadmodel.numvertexes = count;
@@ -394,9 +391,8 @@ public abstract class Model extends Surf {
 		ByteBuffer bb = ByteBuffer.wrap(mod_base, l.fileofs, l.filelen);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 
-		for ( i=0 ; i<count ; i++)
-		{
-			vertexes[i] = new mvertex_t(bb);
+		for (int  i=0 ; i<count ; i++) {
+			vertexes[i] = new TVertex(bb);
 		}
 	}
 
@@ -432,10 +428,10 @@ public abstract class Model extends Surf {
 	    
 	    int count = l.filelen / qfiles.dmodel_t.SIZE;
 	    // out = Hunk_Alloc ( count*sizeof(*out));
-	    mmodel_t out;
-	    mmodel_t[] outs = new mmodel_t[count];
+	    TMapModel out;
+	    TMapModel[] outs = new TMapModel[count];
 	    for (i = 0; i < count; i++) {
-	        outs[i] = new mmodel_t();
+	        outs[i] = new TMapModel();
 	    }
 	    
 	    loadmodel.submodels = outs;
@@ -469,15 +465,15 @@ public abstract class Model extends Surf {
 	*/
 	void Mod_LoadEdges (TLump l)
 	{
-		medge_t[] edges;
+		TMEdge[] edges;
 		int i, count;
 
-		if ( (l.filelen % medge_t.DISK_SIZE) != 0)
+		if ( (l.filelen % TMEdge.DISK_SIZE) != 0)
 			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
-		count = l.filelen / medge_t.DISK_SIZE;
+		count = l.filelen / TMEdge.DISK_SIZE;
 		// out = Hunk_Alloc ( (count + 1) * sizeof(*out));	
-		edges = new medge_t[count + 1];
+		edges = new TMEdge[count + 1];
 
 		loadmodel.edges = edges;
 		loadmodel.numedges = count;
@@ -487,7 +483,7 @@ public abstract class Model extends Surf {
 
 		for ( i=0 ; i<count ; i++)
 		{
-			edges[i] = new medge_t(bb);
+			edges[i] = new TMEdge(bb);
 		}
 	}
 
@@ -499,8 +495,8 @@ public abstract class Model extends Surf {
 	void Mod_LoadTexinfo(TLump l)
 	{
 		TTexInfo in;
-		mtexinfo_t[] out;
-		mtexinfo_t step;
+		TMapTexInfo[] out;
+		TMapTexInfo step;
 		int i, count;
 		int next;
 		String name;
@@ -510,9 +506,9 @@ public abstract class Model extends Surf {
 
 		count = l.filelen / TTexInfo.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));
-		out = new mtexinfo_t[count];
+		out = new TMapTexInfo[count];
 		for ( i=0 ; i<count ; i++) {
-			out[i] = new mtexinfo_t();
+			out[i] = new TMapTexInfo();
 		}
 
 		loadmodel.texinfo = out;
@@ -534,10 +530,10 @@ public abstract class Model extends Surf {
 
 			name = "textures/" +  in.texture + ".wal";
 
-			out[i].image = GL_FindImage(name, it_wall);
+			out[i].image = RenderAPIImpl.image.GL_FindImage(name, it_wall);
 			if (out[i].image == null) {
 				VID.Printf(Defines.PRINT_ALL, "Couldn't load " + name + '\n');
-				out[i].image = r_notexture;
+				out[i].image = RenderAPIImpl.main.r_notexture;
 			}
 		}
 
@@ -556,21 +552,21 @@ public abstract class Model extends Surf {
 	Fills in s.texturemins[] and s.extents[]
 	================
 	*/
-	void CalcSurfaceExtents(msurface_t s)
+	void CalcSurfaceExtents(TMapSurface s)
 	{
 		float[] mins = {0, 0};
 		float[] maxs = {0, 0};
 		float val;
 
 		int j, e;
-		mvertex_t v;
+		TVertex v;
 		int[] bmins = {0, 0};
 		int[] bmaxs = {0, 0};
 
 		mins[0] = mins[1] = 999999;
 		maxs[0] = maxs[1] = -99999;
 
-		mtexinfo_t tex = s.texinfo;
+		TMapTexInfo tex = s.texinfo;
 	
 		for (int i=0 ; i<s.numedges ; i++)
 		{
@@ -621,9 +617,9 @@ public abstract class Model extends Surf {
 	    
 	    int count = l.filelen / qfiles.dface_t.SIZE;
 	    // out = Hunk_Alloc ( count*sizeof(*out));
-	    msurface_t[] outs = new msurface_t[count];
+	    TMapSurface[] outs = new TMapSurface[count];
 	    for (i = 0; i < count; i++) {
-	        outs[i] = new msurface_t();
+	        outs[i] = new TMapSurface();
 	    }
 	    
 	    loadmodel.surfaces = outs;
@@ -632,12 +628,12 @@ public abstract class Model extends Surf {
 	    ByteBuffer bb = ByteBuffer.wrap(mod_base, l.fileofs, l.filelen);
 	    bb.order(ByteOrder.LITTLE_ENDIAN);
 	    
-	    currentmodel = loadmodel;
+	    RenderAPIImpl.main.currentmodel = loadmodel;
 	    
-	    GL_BeginBuildingLightmaps(loadmodel);
+	    RenderAPIImpl.surf.GL_BeginBuildingLightmaps(loadmodel);
 	    
 	    qfiles.dface_t in;
-	    msurface_t out;
+	    TMapSurface out;
 	    
 	    for (surfnum = 0; surfnum < count; surfnum++) {
 	        in = new qfiles.dface_t(bb);
@@ -687,19 +683,19 @@ public abstract class Model extends Surf {
 	                out.extents[i] = 16384;
 	                out.texturemins[i] = -8192;
 	            }
-	            GL_SubdivideSurface(out); // cut up polygon for warps
+	            RenderAPIImpl.warp.GL_SubdivideSurface(out); // cut up polygon for warps
 	        }
 	        
 	        // create lightmaps and polygons
 	        if ((out.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33
 	                | Defines.SURF_TRANS66 | Defines.SURF_WARP)) == 0)
-	            GL_CreateSurfaceLightmap(out);
+				RenderAPIImpl.surf.GL_CreateSurfaceLightmap(out);
 	        
 	        if ((out.texinfo.flags & Defines.SURF_WARP) == 0)
-	            GL_BuildPolygonFromSurface(out);
+				RenderAPIImpl.surf.GL_BuildPolygonFromSurface(out);
 	        
 	    }
-	    GL_EndBuildingLightmaps();
+		RenderAPIImpl.surf.GL_EndBuildingLightmaps();
 	}
 
 
@@ -708,7 +704,7 @@ public abstract class Model extends Surf {
 	Mod_SetParent
 	=================
 	*/
-	void Mod_SetParent(mnode_t node, mnode_t parent)
+	void Mod_SetParent(TMNode node, TMNode parent)
 	{
 		node.parent = parent;
 		if (node.contents != -1) return;
@@ -725,14 +721,14 @@ public abstract class Model extends Surf {
 	{
 		int i, j, count, p;
 		qfiles.dnode_t in;
-		mnode_t[] out;
+		TMNode[] out;
 
 		if ((l.filelen % qfiles.dnode_t.SIZE) != 0)
 			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 		
 		count = l.filelen / qfiles.dnode_t.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));	
-		out = new mnode_t[count];
+		out = new TMNode[count];
 
 		loadmodel.nodes = out;
 		loadmodel.numnodes = count;
@@ -741,7 +737,7 @@ public abstract class Model extends Surf {
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 		
 		// initialize the tree array
-		for ( i=0 ; i<count ; i++) out[i] = new mnode_t(); // do first before linking 
+		for ( i=0 ; i<count ; i++) out[i] = new TMNode(); // do first before linking
 
 		// fill and link the nodes
 		for ( i=0 ; i<count ; i++)
@@ -766,7 +762,7 @@ public abstract class Model extends Surf {
 				if (p >= 0)
 					out[i].children[j] = loadmodel.nodes[p];
 				else
-					out[i].children[j] = loadmodel.leafs[-1 - p]; // mleaf_t extends mnode_t
+					out[i].children[j] = loadmodel.leafs[-1 - p]; // TMLeaf extends TMNode
 			}
 		}
 	
@@ -781,7 +777,7 @@ public abstract class Model extends Surf {
 	void Mod_LoadLeafs(TLump l)
 	{
 		qfiles.dleaf_t in;
-		mleaf_t[] out;
+		TMLeaf[] out;
 		int i, j, count;
 
 		if ((l.filelen % qfiles.dleaf_t.SIZE) != 0)
@@ -789,7 +785,7 @@ public abstract class Model extends Surf {
 
 		count = l.filelen / qfiles.dleaf_t.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));
-		out = new mleaf_t[count];	
+		out = new TMLeaf[count];
 
 		loadmodel.leafs = out;
 		loadmodel.numleafs = count;
@@ -800,7 +796,7 @@ public abstract class Model extends Surf {
 		for ( i=0 ; i<count ; i++)
 		{
 			in = new qfiles.dleaf_t(bb);
-			out[i] = new mleaf_t();
+			out[i] = new TMLeaf();
 			for (j=0 ; j<3 ; j++)
 			{
 				out[i].mins[j] = in.mins[j];
@@ -827,13 +823,13 @@ public abstract class Model extends Surf {
 	{	
 		int i, j, count;
 
-		msurface_t[] out; 
+		TMapSurface[] out;
 
 		if ((l.filelen % Defines.SIZE_OF_SHORT) != 0)
 			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 		count = l.filelen / Defines.SIZE_OF_SHORT;
 		// out = Hunk_Alloc ( count*sizeof(*out));	
-		out = new msurface_t[count];
+		out = new TMapSurface[count];
 
 		loadmodel.marksurfaces = out;
 		loadmodel.nummarksurfaces = count;
@@ -932,11 +928,11 @@ public abstract class Model extends Surf {
 	Mod_LoadBrushModel
 	=================
 	*/
-	void Mod_LoadBrushModel(model_t mod, ByteBuffer buffer)
+	void Mod_LoadBrushModel(TModel mod, ByteBuffer buffer)
 	{
 		int i;
 		qfiles.dheader_t	header;
-		mmodel_t bm;
+		TMapModel bm;
 	
 		loadmodel.type = mod_brush;
 		if (loadmodel != mod_known[0])
@@ -968,7 +964,7 @@ public abstract class Model extends Surf {
 		//
 		// set up the submodels
 		//
-		model_t	starmod;
+		TModel starmod;
 
 		for (i=0 ; i<mod.numsubmodels ; i++)
 		{
@@ -1006,7 +1002,7 @@ public abstract class Model extends Surf {
 	Mod_LoadAliasModel
 	=================
 	*/
-	void Mod_LoadAliasModel (model_t mod, ByteBuffer buffer)
+	void Mod_LoadAliasModel (TModel mod, ByteBuffer buffer)
 	{
 		int i;
 		qfiles.dmdl_t pheader;
@@ -1096,7 +1092,7 @@ public abstract class Model extends Surf {
 			if (n > -1) {
 				skinNames[i] = skinNames[i].substring(0, n);
 			}	
-			mod.skins[i] = GL_FindImage(skinNames[i], it_skin);
+			mod.skins[i] = RenderAPIImpl.image.GL_FindImage(skinNames[i], it_skin);
 		}
 		
 		// set the model arrays
@@ -1131,7 +1127,7 @@ public abstract class Model extends Surf {
 	Mod_LoadSpriteModel
 	=================
 	*/
-	void Mod_LoadSpriteModel(model_t mod, ByteBuffer buffer)
+	void Mod_LoadSpriteModel(TModel mod, ByteBuffer buffer)
 	{
 		qfiles.dsprite_t sprout = new qfiles.dsprite_t(buffer);
 		
@@ -1145,7 +1141,7 @@ public abstract class Model extends Surf {
 
 		for (int i=0 ; i<sprout.numframes ; i++)
 		{
-			mod.skins[i] = GL_FindImage(sprout.frames[i].name,	it_sprite);
+			mod.skins[i] = RenderAPIImpl.image.GL_FindImage(sprout.frames[i].name,	it_sprite);
 		}
 
 		mod.type = mod_sprite;
@@ -1168,8 +1164,8 @@ public abstract class Model extends Surf {
 
 		TVar flushmap;
 
-		registration_sequence++;
-		r_oldviewcluster = -1;		// force markleafs
+		RenderAPIImpl.main.registration_sequence++;
+		RenderAPIImpl.main.r_oldviewcluster = -1;		// force markleafs
 
 		String fullname = "maps/" + model + ".bsp";
 
@@ -1178,9 +1174,9 @@ public abstract class Model extends Surf {
 		flushmap = ConsoleVar.Get("flushmap", "0", 0);
 		if ( !mod_known[0].name.equals(fullname) || flushmap.value != 0.0f)
 			Mod_Free(mod_known[0]);
-		r_worldmodel = Mod_ForName(fullname, true);
+		RenderAPIImpl.main.r_worldmodel = Mod_ForName(fullname, true);
 
-		r_viewcluster = -1;
+		RenderAPIImpl.main.r_viewcluster = -1;
 	}
 
 
@@ -1190,9 +1186,9 @@ public abstract class Model extends Surf {
 
 	@@@@@@@@@@@@@@@@@@@@@
 	*/
-	public model_t R_RegisterModel(String name)
+	public TModel R_RegisterModel(String name)
 	{
-		model_t	mod = null;
+		TModel mod = null;
 		int		i;
 		qfiles.dsprite_t sprout;
 		qfiles.dmdl_t pheader;
@@ -1200,20 +1196,20 @@ public abstract class Model extends Surf {
 		mod = Mod_ForName(name, false);
 		if (mod != null)
 		{
-			mod.registration_sequence = registration_sequence;
+			mod.registration_sequence = RenderAPIImpl.main.registration_sequence;
 
 			// register any images used by the models
 			if (mod.type == mod_sprite)
 			{
 				sprout = (qfiles.dsprite_t)mod.extradata;
 				for (i=0 ; i<sprout.numframes ; i++)
-					mod.skins[i] = GL_FindImage(sprout.frames[i].name, it_sprite);
+					mod.skins[i] = RenderAPIImpl.image.GL_FindImage(sprout.frames[i].name, it_sprite);
 			}
 			else if (mod.type == mod_alias)
 			{
 				pheader = (qfiles.dmdl_t)mod.extradata;
 				for (i=0 ; i<pheader.num_skins ; i++)
-					mod.skins[i] = GL_FindImage(pheader.skinNames[i], it_skin);
+					mod.skins[i] = RenderAPIImpl.image.GL_FindImage(pheader.skinNames[i], it_skin);
 				// PGM
 				mod.numframes = pheader.num_frames;
 				// PGM
@@ -1221,7 +1217,7 @@ public abstract class Model extends Surf {
 			else if (mod.type == mod_brush)
 			{
 				for (i=0 ; i<mod.numtexinfo ; i++)
-					mod.texinfo[i].image.registration_sequence = registration_sequence;
+					mod.texinfo[i].image.registration_sequence = RenderAPIImpl.main.registration_sequence;
 			}
 		}
 		return mod;
@@ -1236,14 +1232,14 @@ public abstract class Model extends Surf {
 	*/
 	public void R_EndRegistration()
 	{
-		model_t	mod;
+		TModel mod;
 
 		for (int i=0; i<mod_numknown ; i++)
 		{
 			mod = mod_known[i];
 			if (mod.name.length() == 0)
 				continue;
-			if (mod.registration_sequence != registration_sequence)
+			if (mod.registration_sequence != RenderAPIImpl.main.registration_sequence)
 			{	// don't need this model
 				Mod_Free(mod);
 			} else {
@@ -1252,7 +1248,7 @@ public abstract class Model extends Surf {
 					precompileGLCmds((qfiles.dmdl_t)mod.extradata);
 			}
 		}
-		GL_FreeUnusedImages();
+		RenderAPIImpl.image.GL_FreeUnusedImages();
 		//modelMemoryUsage();
 	}
 
@@ -1265,7 +1261,7 @@ public abstract class Model extends Surf {
 	Mod_Free
 	================
 	*/
-	void Mod_Free (model_t mod)
+	void Mod_Free (TModel mod)
 	{
 		mod.clear();
 	}

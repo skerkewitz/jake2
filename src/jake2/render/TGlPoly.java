@@ -19,26 +19,26 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: glpoly_t.java,v 1.3 2005-01-09 22:32:10 cawe Exp $
+// $Id: TGlPoly.java,v 1.3 2005-01-09 22:32:10 cawe Exp $
 
 package jake2.render;
 
 import jake2.util.Lib;
 
-public abstract class glpoly_t {
+public abstract class TGlPoly {
 	public final static int STRIDE = 7;
 	public final static int BYTE_STRIDE = 7 * Lib.SIZEOF_FLOAT;
 	public final static int MAX_VERTICES = 64;
 	
-	public glpoly_t next;
-	public glpoly_t chain;
+	public TGlPoly next;
+	public TGlPoly chain;
 	public int numverts;
 	public int flags; // for SURF_UNDERWATER (not needed anymore?)
 	
 	// the array position (glDrawArrays) 
 	public int pos = 0;
 	
-	protected glpoly_t() {
+	protected TGlPoly() {
 	}
 	
 	public abstract float x(int index);

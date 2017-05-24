@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: entity_t.java,v 1.2 2005-01-16 13:56:49 cawe Exp $
+// $Id: TEntity.java,v 1.2 2005-01-16 13:56:49 cawe Exp $
 
 package jake2.client;
 
@@ -27,9 +27,9 @@ import jake2.render.*;
 import jake2.util.Math3D;
 
 // ok!
-public class entity_t implements Cloneable{
+public class TEntity implements Cloneable{
 	//ptr
-	public model_t model; // opaque type outside refresh
+	public TModel model; // opaque type outside refresh
 	public float angles[] = { 0, 0, 0 };
 
 	/*
@@ -54,11 +54,11 @@ public class entity_t implements Cloneable{
 	public float alpha; // ignore if RF_TRANSLUCENT isn't set
 
 	// reference
-	public image_t skin; // NULL for inline skin
+	public TImage skin; // NULL for inline skin
 	public int flags;
 	
 	
-	public void set(entity_t src) {
+	public void set(TEntity src) {
 		this.model = src.model;
 		Math3D.VectorCopy(src.angles, this.angles);
 		Math3D.VectorCopy(src.origin, this.origin);

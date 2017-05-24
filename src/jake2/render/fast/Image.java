@@ -30,11 +30,11 @@ import jake2.client.particle_t;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
-import jake2.render.image_t;
+import jake2.render.RenderAPIImpl;
+import jake2.render.TImage;
 import jake2.util.Lib;
 import jake2.util.Vargs;
-import org.lwjgl.opengl.EXTSharedTexturePalette;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.*;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -43,17 +43,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static jake2.client.VID.gl_ext_palettedtexture;
+import static jake2.client.VID.vid_gamma;
+import static jake2.render.Base.*;
+
 /**
  * Image
  * 
  * @author cwei
  */
-public abstract class Image extends Main {
+public class Image {
 
-	image_t draw_chars;
+	TImage draw_chars;
 
-	image_t[] gltextures = new image_t[MAX_GLTEXTURES];
-	//Map gltextures = new Hashtable(MAX_GLTEXTURES); // image_t
+	TImage[] gltextures = new TImage[MAX_GLTEXTURES];
+	//Map gltextures = new Hashtable(MAX_GLTEXTURES); // TImage
 	int numgltextures;
 	int base_textureid; // gltextures[i] = base_textureid+i
 
@@ -76,11 +80,11 @@ public abstract class Image extends Main {
 	int gl_filter_min = GL11.GL_LINEAR_MIPMAP_NEAREST;
 	int gl_filter_max = GL11.GL_LINEAR;
 	
-	Image() {
+	public Image() {
 		// init the texture data
 		for (int i = 0; i < gltextures.length; i++)
 		{
-			gltextures[i] = new image_t(i);
+			gltextures[i] = new TImage(i);
 		}
 		numgltextures = 0;
 	}
@@ -92,7 +96,7 @@ public abstract class Image extends Main {
 		int i;
 		//byte[] temptable = new byte[768];
 
-		if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f)
+		if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f)
 		{
 			ByteBuffer temptable = Lib.newByteBuffer(768);
 			for (i = 0; i < 256; i++) {
@@ -101,32 +105,32 @@ public abstract class Image extends Main {
 				temptable.put(i * 3 + 2, (byte) ((palette[i] >> 16) & 0xff));
 			}
 
-			gl.glColorTable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT, GL11.GL_RGB, 256, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, temptable);
+			ARBImaging.glColorTable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT, GL11.GL_RGB, 256, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, temptable);
 		}
 	}
 
 	void GL_EnableMultitexture(boolean enable) {
 		if (enable) {
-			GL_SelectTexture(TEXTURE1);
-			gl.glEnable(GL11.GL_TEXTURE_2D);
+			GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+			GL11.glEnable(GL11.GL_TEXTURE_2D);
 			GL_TexEnv(GL11.GL_REPLACE);
 		}
 		else {
-			GL_SelectTexture(TEXTURE1);
-			gl.glDisable(GL11.GL_TEXTURE_2D);
+			GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+			GL11.glDisable(GL11.GL_TEXTURE_2D);
 			GL_TexEnv(GL11.GL_REPLACE);
 		}
-		GL_SelectTexture(TEXTURE0);
+		GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
 		GL_TexEnv(GL11.GL_REPLACE);
 	}
 
 	void GL_SelectTexture(int texture /* GLenum */) {
-		int tmu = (texture == TEXTURE0) ? 0 : 1;
+		int tmu = (texture == RenderAPIImpl.main.TEXTURE0) ? 0 : 1;
 
-		if (tmu != gl_state.currenttmu) {
-			gl_state.currenttmu = tmu;
-			gl.glActiveTextureARB(texture);
-			gl.glClientActiveTextureARB(texture);
+		if (tmu != RenderAPIImpl.main.gl_state.currenttmu) {
+			RenderAPIImpl.main.gl_state.currenttmu = tmu;
+			ARBMultitexture.glActiveTextureARB(texture);
+			ARBMultitexture.glClientActiveTextureARB(texture);
 		}
 
 	}
@@ -136,33 +140,33 @@ public abstract class Image extends Main {
 	void GL_TexEnv(int mode /* GLenum */
 	) {
 
-		if (mode != lastmodes[gl_state.currenttmu]) {
-			gl.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
-			lastmodes[gl_state.currenttmu] = mode;
+		if (mode != lastmodes[RenderAPIImpl.main.gl_state.currenttmu]) {
+			GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
+			lastmodes[RenderAPIImpl.main.gl_state.currenttmu] = mode;
 		}
 	}
 
 	void GL_Bind(int texnum) {
 
-		if ((gl_nobind.value != 0) && (draw_chars != null)) {
+		if ((RenderAPIImpl.main.gl_nobind.value != 0) && (draw_chars != null)) {
 			// performance evaluation option
 			texnum = draw_chars.texnum;
 		}
-		if (gl_state.currenttextures[gl_state.currenttmu] == texnum)
+		if (RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] == texnum)
 			return;
 
-		gl_state.currenttextures[gl_state.currenttmu] = texnum;
-		gl.glBindTexture(GL11.GL_TEXTURE_2D, texnum);
+		RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] = texnum;
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texnum);
 	}
 
 	void GL_MBind(int target /* GLenum */, int texnum) {
 		GL_SelectTexture(target);
-		if (target == TEXTURE0) {
-			if (gl_state.currenttextures[0] == texnum)
+		if (target == RenderAPIImpl.main.TEXTURE0) {
+			if (RenderAPIImpl.main.gl_state.currenttextures[0] == texnum)
 				return;
 		}
 		else {
-			if (gl_state.currenttextures[1] == texnum)
+			if (RenderAPIImpl.main.gl_state.currenttextures[1] == texnum)
 				return;
 		}
 		GL_Bind(texnum);
@@ -247,15 +251,15 @@ public abstract class Image extends Main {
 		gl_filter_min = modes[i].minimize;
 		gl_filter_max = modes[i].maximize;
 
-		image_t glt;
+		TImage glt;
 		// change all the existing mipmap texture objects
 		for (i = 0; i < numgltextures; i++) {
 			glt = gltextures[i];
 
 			if (glt.type != it_pic && glt.type != it_sky) {
 				GL_Bind(glt.texnum);
-				gl.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
-				gl.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 			}
 		}
 	}
@@ -308,7 +312,7 @@ public abstract class Image extends Main {
 	*/
 	void GL_ImageList_f() {
 
-		image_t image;
+		TImage image;
 		int texels;
 		final String[] palstrings = { "RGB", "PAL" };
 
@@ -764,8 +768,8 @@ public abstract class Image extends Main {
 			// attempt to find opaque black
 			for (i = 0; i < 256; ++i)
 				// TODO check this
-				if (d_8to24table[i]  == 0xFF000000) { // alpha 1.0
-				//if (d_8to24table[i] == (255 << 0)) // alpha 1.0
+				if (RenderAPIImpl.main.d_8to24table[i]  == 0xFF000000) { // alpha 1.0
+				//if (RenderAPIImpl.main.d_8to24table[i] == (255 << 0)) // alpha 1.0
 					filledcolor = i;
 					break;
 				}
@@ -1018,7 +1022,7 @@ public abstract class Image extends Main {
 
 			c = r | (g << 5) | (b << 11);
 
-			paletted_texture.put(i, gl_state.d_16to8table[c]);
+			paletted_texture.put(i, RenderAPIImpl.main.gl_state.d_16to8table[c]);
 		}
 	}
 
@@ -1051,16 +1055,16 @@ public abstract class Image extends Main {
 		uploaded_paletted = false;
 
 		for (scaled_width = 1; scaled_width < width; scaled_width <<= 1);
-		if (gl_round_down.value > 0.0f && scaled_width > width && mipmap)
+		if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_width > width && mipmap)
 			scaled_width >>= 1;
 		for (scaled_height = 1; scaled_height < height; scaled_height <<= 1);
-		if (gl_round_down.value > 0.0f && scaled_height > height && mipmap)
+		if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_height > height && mipmap)
 			scaled_height >>= 1;
 
 		// let people sample down the world textures for speed
 		if (mipmap) {
-			scaled_width >>= (int) gl_picmip.value;
-			scaled_height >>= (int) gl_picmip.value;
+			scaled_width >>= (int) RenderAPIImpl.main.gl_picmip.value;
+			scaled_height >>= (int) RenderAPIImpl.main.gl_picmip.value;
 		}
 
 		// don't ever bother with >256 textures
@@ -1104,10 +1108,10 @@ public abstract class Image extends Main {
 		try {
 			if (scaled_width == width && scaled_height == height) {
 				if (!mipmap) {
-					if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+					if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
 						uploaded_paletted = true;
 						GL_BuildPalettedTexture(paletted_texture, data, scaled_width, scaled_height);
-						gl.glTexImage2D(
+						GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
 							0,
 							GL_COLOR_INDEX8_EXT,
@@ -1120,7 +1124,7 @@ public abstract class Image extends Main {
 					}
 					else {
 						tex.rewind(); tex.put(data); tex.rewind();
-						gl.glTexImage2D(
+						GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
 							0,
 							comp,
@@ -1142,10 +1146,10 @@ public abstract class Image extends Main {
 
 			GL_LightScaleTexture(scaled, scaled_width, scaled_height, !mipmap);
 
-			if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
+			if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
 				uploaded_paletted = true;
 				GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
-				gl.glTexImage2D(
+				GL11.glTexImage2D(
                         GL11.GL_TEXTURE_2D,
 					0,
 					GL_COLOR_INDEX8_EXT,
@@ -1158,7 +1162,7 @@ public abstract class Image extends Main {
 			}
 			else {
 				tex.rewind(); tex.put(scaled); tex.rewind();
-				gl.glTexImage2D(GL11.GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, tex);
+				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, tex);
 			}
 
 			if (mipmap) {
@@ -1174,10 +1178,10 @@ public abstract class Image extends Main {
 						scaled_height = 1;
 
 					miplevel++;
-					if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+					if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
 						uploaded_paletted = true;
 						GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
-						gl.glTexImage2D(
+						GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
 							miplevel,
 							GL_COLOR_INDEX8_EXT,
@@ -1190,7 +1194,7 @@ public abstract class Image extends Main {
 					}
 					else {
 						tex.rewind(); tex.put(scaled); tex.rewind();
-						gl.glTexImage2D(
+						GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
 							miplevel,
 							comp,
@@ -1210,12 +1214,12 @@ public abstract class Image extends Main {
 		}
 
 		if (mipmap) {
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 		}
 		else {
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 		}
 
 		return (samples == gl_alpha_format);
@@ -1240,11 +1244,11 @@ public abstract class Image extends Main {
 		if (s > trans.length)
 			Com.Error(Defines.ERR_DROP, "GL_Upload8: too large");
 
-		if (qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
-			gl.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
+		if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
+			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
 
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
-			gl.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 			// TODO check this
 			return false;
@@ -1253,7 +1257,7 @@ public abstract class Image extends Main {
 			int p;
 			for (int i = 0; i < s; i++) {
 				p = data[i] & 0xff;
-				trans[i] = d_8to24table[p];
+				trans[i] = RenderAPIImpl.main.d_8to24table[p];
 
 				if (p == 255) { // transparent, so scan around for another color
 					// to avoid alpha fringes
@@ -1270,11 +1274,11 @@ public abstract class Image extends Main {
 						p = 0;
 					// copy rgb components
 
-					// ((byte *)&trans[i])[0] = ((byte *)&d_8to24table[p])[0];
-					// ((byte *)&trans[i])[1] = ((byte *)&d_8to24table[p])[1];
-					// ((byte *)&trans[i])[2] = ((byte *)&d_8to24table[p])[2];
+					// ((byte *)&trans[i])[0] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[0];
+					// ((byte *)&trans[i])[1] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[1];
+					// ((byte *)&trans[i])[2] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[2];
 
-					trans[i] = d_8to24table[p] & 0x00FFFFFF; // only rgb
+					trans[i] = RenderAPIImpl.main.d_8to24table[p] & 0x00FFFFFF; // only rgb
 				}
 			}
 
@@ -1289,11 +1293,11 @@ public abstract class Image extends Main {
 	This is also used as an entry point for the generated r_notexture
 	================
 	*/
-	image_t GL_LoadPic(String name, byte[] pic, int width, int height, int type, int bits) {
-		image_t image;
+	TImage GL_LoadPic(String name, byte[] pic, int width, int height, int type, int bits) {
+		TImage image;
 		int i;
 
-		// find a free image_t
+		// find a free TImage
 		for (i = 0; i<numgltextures ; i++)
 		{
 			image = gltextures[i];
@@ -1314,7 +1318,7 @@ public abstract class Image extends Main {
 			Com.Error(Defines.ERR_DROP, "Draw_LoadPic: \"" + name + "\" is too long");
 
 		image.name = name;
-		image.registration_sequence = registration_sequence;
+		image.registration_sequence = RenderAPIImpl.main.registration_sequence;
 
 		image.width = width;
 		image.height = height;
@@ -1423,14 +1427,14 @@ public abstract class Image extends Main {
 	GL_LoadWal
 	================
 	*/
-	image_t GL_LoadWal(String name) {
+	TImage GL_LoadWal(String name) {
 
-		image_t image = null;
+		TImage image = null;
 
 		byte[] raw = FileSystem.LoadFile(name);
 		if (raw == null) {
 			VID.Printf(Defines.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
-			return r_notexture;
+			return RenderAPIImpl.main.r_notexture;
 		}
 
 		qfiles.miptex_t mt = new qfiles.miptex_t(raw);
@@ -1452,15 +1456,15 @@ public abstract class Image extends Main {
 	Finds or loads the given image
 	===============
 	*/
-	image_t GL_FindImage(String name, int type) {
+	TImage GL_FindImage(String name, int type) {
 
 		if (name == null || name.length() < 1)
 			return null;
         
         // look for it
-        image_t image = (image_t) imageCache.get(name);
+        TImage image = (TImage) imageCache.get(name);
         if (image != null) {
-            image.registration_sequence = registration_sequence;
+            image.registration_sequence = RenderAPIImpl.main.registration_sequence;
             return image;
         }
 
@@ -1511,7 +1515,7 @@ public abstract class Image extends Main {
 	R_RegisterSkin
 	===============
 	*/
-	public image_t R_RegisterSkin(String name) {
+	public TImage R_RegisterSkin(String name) {
 		return GL_FindImage(name, it_skin);
 	}
 
@@ -1528,17 +1532,17 @@ public abstract class Image extends Main {
 	void GL_FreeUnusedImages() {
 
 		// never free r_notexture or particle texture
-		r_notexture.registration_sequence = registration_sequence;
-		r_particletexture.registration_sequence = registration_sequence;
+		RenderAPIImpl.main.r_notexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
+		RenderAPIImpl.main.r_particletexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
 
-		image_t image = null;
+		TImage image = null;
 
 		for (int i = 0; i < numgltextures; i++) {
 			image = gltextures[i];
 			// used this sequence
-			if (image.registration_sequence == registration_sequence)
+			if (image.registration_sequence == RenderAPIImpl.main.registration_sequence)
 				continue;
-			// free image_t slot
+			// free TImage slot
 			if (image.registration_sequence == 0)
 				continue;
 			// don't free pics
@@ -1548,7 +1552,7 @@ public abstract class Image extends Main {
 			// free it
 			texnumBuffer.clear();
 			texnumBuffer.put(0,image.texnum);
-			gl.glDeleteTextures(texnumBuffer);
+			GL11.glDeleteTextures(texnumBuffer);
             
             imageCache.remove(image.name);
 			image.clear();
@@ -1579,12 +1583,12 @@ public abstract class Image extends Main {
 			g = pal[j++] & 0xFF;
 			b = pal[j++] & 0xFF;
 
-			d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
+			RenderAPIImpl.main.d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
 		}
 
-		d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
+		RenderAPIImpl.main.d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
 
-		particle_t.setColorPalette(d_8to24table);
+		particle_t.setColorPalette(RenderAPIImpl.main.d_8to24table);
 	}
 
 	/*
@@ -1596,7 +1600,7 @@ public abstract class Image extends Main {
 		int i, j;
 		float g = vid_gamma.value;
 
-		registration_sequence = 1;
+		RenderAPIImpl.main.registration_sequence = 1;
 
 		// init intensity conversions
 		intensity = ConsoleVar.Get("intensity", "2", 0);
@@ -1604,17 +1608,17 @@ public abstract class Image extends Main {
 		if (intensity.value <= 1)
 			ConsoleVar.Set("intensity", "1");
 
-		gl_state.inverse_intensity = 1 / intensity.value;
+		RenderAPIImpl.main.gl_state.inverse_intensity = 1 / intensity.value;
 
 		Draw_GetPalette();
 
-		if (qglColorTableEXT) {
-			gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
-			if (gl_state.d_16to8table == null)
+		if (RenderAPIImpl.main.qglColorTableEXT) {
+			RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
+			if (RenderAPIImpl.main.gl_state.d_16to8table == null)
 				Com.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
 		}
 
-		if ((gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
+		if ((RenderAPIImpl.main.gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
 			g = 1.0F;
 		}
 
@@ -1648,19 +1652,19 @@ public abstract class Image extends Main {
 	===============
 	*/
 	void GL_ShutdownImages() {
-		image_t image;
+		TImage image;
 		
 		for (int i=0; i < numgltextures ; i++)
 		{
 			image = gltextures[i];
 			
 			if (image.registration_sequence == 0)
-	   			continue; // free image_t slot
+	   			continue; // free TImage slot
             
 			// free it
 			texnumBuffer.clear();
 			texnumBuffer.put(0,image.texnum);
-			gl.glDeleteTextures(texnumBuffer);
+			GL11.glDeleteTextures(texnumBuffer);
             
             imageCache.remove(image.name);
 	  		image.clear();

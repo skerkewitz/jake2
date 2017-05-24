@@ -30,7 +30,7 @@ import jake2.Globals;
 import jake2.game.player_state_t;
 import jake2.qcommon.Com;
 import jake2.qcommon.TSizeBuffer;
-import jake2.render.model_t;
+import jake2.render.TModel;
 import jake2.sound.Sound;
 import jake2.sound.TSound;
 import jake2.util.Lib;
@@ -44,7 +44,7 @@ public class CL_tent {
     static class explosion_t {
         int type;
 
-        entity_t ent = new entity_t();
+        TEntity ent = new TEntity();
 
         int frames;
 
@@ -88,7 +88,7 @@ public class CL_tent {
 
         int dest_entity;
 
-        model_t model;
+        TModel model;
 
         int endtime;
 
@@ -116,7 +116,7 @@ public class CL_tent {
     }
 
     static class laser_t {
-        entity_t ent = new entity_t();
+        TEntity ent = new TEntity();
 
         int endtime;
 
@@ -180,39 +180,39 @@ public class CL_tent {
 
     static TSound cl_sfx_footsteps[] = new TSound[4];
 
-    static model_t cl_mod_explode;
+    static TModel cl_mod_explode;
 
-    static model_t cl_mod_smoke;
+    static TModel cl_mod_smoke;
 
-    static model_t cl_mod_flash;
+    static TModel cl_mod_flash;
 
-    static model_t cl_mod_parasite_segment;
+    static TModel cl_mod_parasite_segment;
 
-    static model_t cl_mod_grapple_cable;
+    static TModel cl_mod_grapple_cable;
 
-    static model_t cl_mod_parasite_tip;
+    static TModel cl_mod_parasite_tip;
 
-    static model_t cl_mod_explo4;
+    static TModel cl_mod_explo4;
 
-    static model_t cl_mod_bfg_explo;
+    static TModel cl_mod_bfg_explo;
 
-    static model_t cl_mod_powerscreen;
+    static TModel cl_mod_powerscreen;
 
     //	   RAFAEL
-    static model_t cl_mod_plasmaexplo;
+    static TModel cl_mod_plasmaexplo;
 
     //	  ROGUE
     static TSound cl_sfx_lightning;
 
     static TSound cl_sfx_disrexp;
 
-    static model_t cl_mod_lightning;
+    static TModel cl_mod_lightning;
 
-    static model_t cl_mod_heatbeam;
+    static TModel cl_mod_heatbeam;
 
-    static model_t cl_mod_monster_heatbeam;
+    static TModel cl_mod_monster_heatbeam;
 
-    static model_t cl_mod_explo4_big;
+    static TModel cl_mod_explo4_big;
 
     //	  ROGUE
     /*
@@ -389,7 +389,7 @@ public class CL_tent {
      * CL_ParseBeam
      * =================
      */
-    static int ParseBeam(model_t model) {
+    static int ParseBeam(TModel model) {
         int ent;
         float[] start = new float[3];
         float[] end = new float[3];
@@ -434,7 +434,7 @@ public class CL_tent {
     /*
      * ================= CL_ParseBeam2 =================
      */
-    static int ParseBeam2(model_t model) {
+    static int ParseBeam2(TModel model) {
         int ent;
         float[] start = new float[3];
         float[] end = new float[3];
@@ -485,7 +485,7 @@ public class CL_tent {
      * ================= CL_ParsePlayerBeam - adds to the cl_playerbeam array
      * instead of the cl_beams array =================
      */
-    static int ParsePlayerBeam(model_t model) {
+    static int ParsePlayerBeam(TModel model) {
         int ent;
         float[] start = new float[3];
         float[] end = new float[3];
@@ -550,7 +550,7 @@ public class CL_tent {
     /*
      * ================= CL_ParseLightning =================
      */
-    static int ParseLightning(model_t model) {
+    static int ParseLightning(TModel model) {
         int srcEnt, destEnt;
         beam_t[] b;
         int i;
@@ -1299,7 +1299,7 @@ public class CL_tent {
 
     // stack variable
     // dist, org
-    private static final entity_t ent = new entity_t();
+    private static final TEntity ent = new TEntity();
     /*
      * ================= CL_AddBeams =================
      */
@@ -1427,7 +1427,7 @@ public class CL_tent {
      */
     static void AddPlayerBeams() {
         float d;
-        //entity_t ent = new entity_t();
+        //TEntity ent = new TEntity();
         float yaw, pitch;
         float forward;
         float len, steps;
@@ -1658,7 +1658,7 @@ public class CL_tent {
      * ================= CL_AddExplosions =================
      */
     static void AddExplosions() {
-        entity_t ent;
+        TEntity ent;
         int i;
         explosion_t[] ex;
         float frac;

@@ -36,7 +36,7 @@ import java.util.Vector;
  */
 public class Renderer {
 
-    static RenderAPI renderer = new jake2.render.fast.Misc();
+    static RenderAPI renderer = new RenderAPIImpl();
 
     static Vector drivers = new Vector(3);
 

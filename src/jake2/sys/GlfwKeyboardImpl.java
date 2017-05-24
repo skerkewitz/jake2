@@ -20,27 +20,21 @@ public class GlfwKeyboardImpl extends Keyboard {
         glfwSetCursorPos(LwjglDriver.Companion.getWindow(), 320, 240);
 
         glfwSetKeyCallback(window_, (window, key, scancode, action, mods) -> {
-//            QSystem.out.println("key " + key);
+            System.out.println("key " + key + " scancode " + scancode);
             int key1 = XLateKey(key, scancode);
             if (key1 > 0) {
                 Do_Key_Event(key1, action == GLFW_PRESS || action == GLFW_REPEAT);
             }
         });
 
-//        glfwSetCharCallback(window_, (window, codepoint) -> {
-//            QSystem.out.println("codepoint " + codepoint + " " + (char)(codepoint));
-//
-////            int key = codepoint;
-////            if (key >= 'A' && key <= 'Z') {
-////                key = key - 'A' + 'a';
-////            }
-////
-////            if (key > 255) key = 0;
-////
-////            Do_Key_Event(key, true);
-//
-//
-//        });
+        glfwSetCharCallback(window_, (window, codepoint) -> {
+            System.out.println("codepoint " + codepoint + " " + (char)(codepoint));
+
+           if (codepoint > 0 && codepoint < 255) {
+                Key.charEvent(codepoint);
+           }
+
+        });
 
         glfwSetMouseButtonCallback(window_, (window, button, action, mods) -> {
 //            QSystem.out.println("mousebutton " + button);
@@ -227,11 +221,15 @@ public class GlfwKeyboardImpl extends Keyboard {
 
             case GLFW_KEY_PAUSE:return Key.K_PAUSE;
 
-//            case GLFW_KEY_SHIFT: key = Key.K_SHIFT; break;
-//            case GLFW_KEY_CONTROL: key = Key.K_CTRL; break;
+            case GLFW_KEY_LEFT_SHIFT:
+            case GLFW_KEY_RIGHT_SHIFT:
+                return Key.K_SHIFT;
+
+            case GLFW_KEY_LEFT_CONTROL:
+            case GLFW_KEY_RIGHT_CONTROL: return Key.K_CTRL;
 //
-//            case GLFW_KEY_ALT:
-//            case GLFW_KEY_ALT_GRAPH: key = Key.K_ALT; break;
+            case GLFW_KEY_LEFT_ALT:
+            case GLFW_KEY_RIGHT_ALT: return Key.K_ALT;
 
 //	00700                 case XK_KP_Begin: key = K_KP_5; break;
 //	00701

@@ -31,7 +31,7 @@ import jake2.io.FileSystem;
 import jake2.network.TNetAddr;
 import jake2.qcommon.TSizeBuffer;
 import jake2.render.DummyRenderer;
-import jake2.render.model_t;
+import jake2.render.TModel;
 
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
@@ -349,7 +349,7 @@ public class Globals implements Defines {
 
 	public static boolean userinfo_modified = false;
 
-	public static final console_t con = new console_t();
+	public static final TConsole con = new TConsole();
 	public static TVar con_notifytime;
 	public static viddef_t viddef = new viddef_t();
 	// Renderer interface used by VID, SCR, ...
@@ -373,7 +373,7 @@ public class Globals implements Defines {
 	public static int sys_frame_time;
 	public static int chat_bufferlen = 0;
 	public static int gun_frame;
-	public static model_t gun_model;
+	public static TModel gun_model;
 	public static TNetAddr net_from = new TNetAddr();
 	
 	// logfile

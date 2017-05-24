@@ -591,7 +591,7 @@ public class CL_ents {
 	 */
 
 	// stack variable
-	private static final entity_t ent = new entity_t();
+	private static final TEntity ent = new TEntity();
 	/*
 	 * =============== 
 	 * CL_AddPacketEntities
@@ -1026,7 +1026,7 @@ public class CL_ents {
 	}
 	
 	// stack variable
-	private static final entity_t gun = new entity_t();
+	private static final TEntity gun = new TEntity();
 	/*
 	 * ============== CL_AddViewWeapon ==============
 	 */

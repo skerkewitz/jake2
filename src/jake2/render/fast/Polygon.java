@@ -25,7 +25,7 @@
  */
 package jake2.render.fast;
 
-import jake2.render.glpoly_t;
+import jake2.render.TGlPoly;
 import jake2.util.Lib;
 
 import java.nio.FloatBuffer;
@@ -35,7 +35,7 @@ import java.nio.FloatBuffer;
  * 
  * @author cwei
  */
-public final class Polygon extends glpoly_t {
+public final class Polygon extends TGlPoly {
 
     private final static int MAX_POLYS = 20000;
 
@@ -58,7 +58,7 @@ public final class Polygon extends glpoly_t {
         }
     }
 
-    static glpoly_t create(int numverts) {
+    static TGlPoly create(int numverts) {
         Polygon poly = polyCache[polyCount++];
         poly.clear();
         poly.numverts = numverts;

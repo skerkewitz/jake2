@@ -19,23 +19,26 @@
  */
 
 // Created on 20.11.2003 by RST.
-// $Id: mvertex_t.java,v 1.2 2004-09-22 19:22:15 salomo Exp $
+// $Id: TMEdge.java,v 1.2 2004-09-22 19:22:15 salomo Exp $
 package jake2.render;
 
 import jake2.Defines;
 
 import java.nio.ByteBuffer;
 
-public class mvertex_t {
-    public static final int DISK_SIZE = 3 * Defines.SIZE_OF_FLOAT;
+public class TMEdge {
 
-    public static final int MEM_SIZE = 3 * Defines.SIZE_OF_FLOAT;
+    public static final int DISK_SIZE = 2 * Defines.SIZE_OF_SHORT;
 
-    public float[] position = { 0, 0, 0 };
+    public static final int MEM_SIZE = 3 * Defines.SIZE_OF_INT;
 
-    public mvertex_t(ByteBuffer b) {
-        position[0] = b.getFloat();
-        position[1] = b.getFloat();
-        position[2] = b.getFloat();
+    // unsigned short
+    public int[] v = new int[2];
+
+    public int cachededgeoffset;
+
+    public TMEdge(ByteBuffer b) {
+        v[0] = b.getShort() & 0xFFFF;
+        v[1] = b.getShort() & 0xFFFF;
     }
 }
