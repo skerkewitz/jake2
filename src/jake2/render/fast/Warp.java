@@ -655,7 +655,7 @@ public class Warp {
 			|| skymins[1][i] >= skymaxs[1][i])
 				continue;
 
-			RenderAPIImpl.image.GL_Bind(sky_images[skytexorder[i]].texnum);
+			RenderAPIImpl.image.bindTexture(sky_images[skytexorder[i]].texnum);
 
 			GL11.glBegin(GL11.GL_QUADS);
 			MakeSkyVec(skymins[0][i], skymins[1][i], i);

@@ -29,12 +29,16 @@ import jake2.client.VID;
 import jake2.client.particle_t;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
-import jake2.qcommon.*;
+import jake2.qcommon.Com;
+import jake2.qcommon.ConsoleVar;
+import jake2.qcommon.qfiles;
 import jake2.render.RenderAPIImpl;
 import jake2.render.TImage;
 import jake2.util.Lib;
-import jake2.util.Vargs;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.ARBImaging;
+import org.lwjgl.opengl.ARBMultitexture;
+import org.lwjgl.opengl.EXTSharedTexturePalette;
+import org.lwjgl.opengl.GL11;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -49,311 +53,93 @@ import static jake2.render.Base.*;
 
 /**
  * Image
- * 
+ *
  * @author cwei
  */
 public class Image {
 
-	TImage draw_chars;
+    static final TGlMode modes[] = {
+            new TGlMode("GL_NEAREST", GL11.GL_NEAREST, GL11.GL_NEAREST),
+            new TGlMode("GL_LINEAR", GL11.GL_LINEAR, GL11.GL_LINEAR),
+            new TGlMode("GL_NEAREST_MIPMAP_NEAREST", GL11.GL_NEAREST_MIPMAP_NEAREST, GL11.GL_NEAREST),
+            new TGlMode("GL_LINEAR_MIPMAP_NEAREST", GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR),
+            new TGlMode("GL_NEAREST_MIPMAP_LINEAR", GL11.GL_NEAREST_MIPMAP_LINEAR, GL11.GL_NEAREST),
+            new TGlMode("GL_LINEAR_MIPMAP_LINEAR", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)
+    };
+    static final int NUM_GL_MODES = modes.length;
+    static final gltmode_t[] gl_alpha_modes =
+            {
+                    new gltmode_t("default", 4),
+                    new gltmode_t("GL_RGBA", GL11.GL_RGBA),
+                    new gltmode_t("GL_RGBA8", GL11.GL_RGBA8),
+                    new gltmode_t("GL_RGB5_A1", GL11.GL_RGB5_A1),
+                    new gltmode_t("GL_RGBA4", GL11.GL_RGBA4),
+                    new gltmode_t("GL_RGBA2", GL11.GL_RGBA2),
+            };
+    static final int NUM_GL_ALPHA_MODES = gl_alpha_modes.length;
+    static final gltmode_t[] gl_solid_modes =
+            {
+                    new gltmode_t("default", 3),
+                    new gltmode_t("GL_RGB", GL11.GL_RGB),
+                    new gltmode_t("GL_RGB8", GL11.GL_RGB8),
+                    new gltmode_t("GL_RGB5", GL11.GL_RGB5),
+                    new gltmode_t("GL_RGB4", GL11.GL_RGB4),
+                    new gltmode_t("GL_R3_G3_B2", GL11.GL_R3_G3_B2),
+            };
+    static final int NUM_GL_SOLID_MODES = gl_solid_modes.length;
+    static final int MAX_SCRAPS = 1;
 
-	TImage[] gltextures = new TImage[MAX_GLTEXTURES];
-	//Map gltextures = new Hashtable(MAX_GLTEXTURES); // TImage
-	int numgltextures;
-	int base_textureid; // gltextures[i] = base_textureid+i
+    //
+    //	qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky );
+    //	qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap);
+    //
+    static final int BLOCK_WIDTH = 256;
+    static final int BLOCK_HEIGHT = 256;
+    // must be a power of 2
+    static final int FLOODFILL_FIFO_SIZE = 0x1000;
+    static final int FLOODFILL_FIFO_MASK = FLOODFILL_FIFO_SIZE - 1;
+    //	void FLOODFILL_STEP( int off, int dx, int dy )
+    //	{
+    //		if (pos[off] == fillcolor)
+    //		{
+    //			pos[off] = 255;
+    //			fifo[inpt].x = x + dx; fifo[inpt].y = y + dy;
+    //			inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+    //		}
+    //		else if (pos[off] != 255) fdc = pos[off];
+    //	}
+    static floodfill_t[] fifo = new floodfill_t[FLOODFILL_FIFO_SIZE];
 
-	byte[] intensitytable = new byte[256];
-	byte[] gammatable = new byte[256];
+    static {
+        for (int j = 0; j < fifo.length; j++) {
+            fifo[j] = new floodfill_t();
+        }
+    }
 
-	TVar intensity;
-
-	//
-	//	qboolean GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean is_sky );
-	//	qboolean GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap);
-	//
-
-	int gl_solid_format = 3;
-	int gl_alpha_format = 4;
-
-	int gl_tex_solid_format = 3;
-	int gl_tex_alpha_format = 4;
-
-	int gl_filter_min = GL11.GL_LINEAR_MIPMAP_NEAREST;
-	int gl_filter_max = GL11.GL_LINEAR;
-	
-	public Image() {
-		// init the texture data
-		for (int i = 0; i < gltextures.length; i++)
-		{
-			gltextures[i] = new TImage(i);
-		}
-		numgltextures = 0;
-	}
-
-	void GL_SetTexturePalette(int[] palette) {
-
-		assert(palette != null && palette.length == 256) : "int palette[256] bug";
-
-		int i;
-		//byte[] temptable = new byte[768];
-
-		if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f)
-		{
-			ByteBuffer temptable = Lib.newByteBuffer(768);
-			for (i = 0; i < 256; i++) {
-				temptable.put(i * 3 + 0, (byte) ((palette[i] >> 0) & 0xff));
-				temptable.put(i * 3 + 1, (byte) ((palette[i] >> 8) & 0xff));
-				temptable.put(i * 3 + 2, (byte) ((palette[i] >> 16) & 0xff));
-			}
-
-			ARBImaging.glColorTable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT, GL11.GL_RGB, 256, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, temptable);
-		}
-	}
-
-	void GL_EnableMultitexture(boolean enable) {
-		if (enable) {
-			GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
-			GL11.glEnable(GL11.GL_TEXTURE_2D);
-			GL_TexEnv(GL11.GL_REPLACE);
-		}
-		else {
-			GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
-			GL11.glDisable(GL11.GL_TEXTURE_2D);
-			GL_TexEnv(GL11.GL_REPLACE);
-		}
-		GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
-		GL_TexEnv(GL11.GL_REPLACE);
-	}
-
-	void GL_SelectTexture(int texture /* GLenum */) {
-		int tmu = (texture == RenderAPIImpl.main.TEXTURE0) ? 0 : 1;
-
-		if (tmu != RenderAPIImpl.main.gl_state.currenttmu) {
-			RenderAPIImpl.main.gl_state.currenttmu = tmu;
-			ARBMultitexture.glActiveTextureARB(texture);
-			ARBMultitexture.glClientActiveTextureARB(texture);
-		}
-
-	}
-
-	int[] lastmodes = { -1, -1 };
-
-	void GL_TexEnv(int mode /* GLenum */
-	) {
-
-		if (mode != lastmodes[RenderAPIImpl.main.gl_state.currenttmu]) {
-			GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
-			lastmodes[RenderAPIImpl.main.gl_state.currenttmu] = mode;
-		}
-	}
-
-	void GL_Bind(int texnum) {
-
-		if ((RenderAPIImpl.main.gl_nobind.value != 0) && (draw_chars != null)) {
-			// performance evaluation option
-			texnum = draw_chars.texnum;
-		}
-		if (RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] == texnum)
-			return;
-
-		RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] = texnum;
-		GL11.glBindTexture(GL11.GL_TEXTURE_2D, texnum);
-	}
-
-	void GL_MBind(int target /* GLenum */, int texnum) {
-		GL_SelectTexture(target);
-		if (target == RenderAPIImpl.main.TEXTURE0) {
-			if (RenderAPIImpl.main.gl_state.currenttextures[0] == texnum)
-				return;
-		}
-		else {
-			if (RenderAPIImpl.main.gl_state.currenttextures[1] == texnum)
-				return;
-		}
-		GL_Bind(texnum);
-	}
-
-	// glmode_t
-	static class glmode_t {
-		String name;
-		int minimize, maximize;
-
-		glmode_t(String name, int minimize, int maximze) {
-			this.name = name;
-			this.minimize = minimize;
-			this.maximize = maximze;
-		}
-	}
-
-	static final glmode_t modes[] =
-		{
-			new glmode_t("GL_NEAREST", GL11.GL_NEAREST, GL11.GL_NEAREST),
-			new glmode_t("GL_LINEAR", GL11.GL_LINEAR, GL11.GL_LINEAR),
-			new glmode_t("GL_NEAREST_MIPMAP_NEAREST", GL11.GL_NEAREST_MIPMAP_NEAREST, GL11.GL_NEAREST),
-			new glmode_t("GL_LINEAR_MIPMAP_NEAREST", GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR),
-			new glmode_t("GL_NEAREST_MIPMAP_LINEAR", GL11.GL_NEAREST_MIPMAP_LINEAR, GL11.GL_NEAREST),
-			new glmode_t("GL_LINEAR_MIPMAP_LINEAR", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)};
-
-	static final int NUM_GL_MODES = modes.length;
-
-	// gltmode_t
-	static class gltmode_t {
-		String name;
-		int mode;
-
-		gltmode_t(String name, int mode) {
-			this.name = name;
-			this.mode = mode;
-		}
-	}
-
-	static final gltmode_t[] gl_alpha_modes =
-		{
-			new gltmode_t("default", 4),
-			new gltmode_t("GL_RGBA", GL11.GL_RGBA),
-			new gltmode_t("GL_RGBA8", GL11.GL_RGBA8),
-			new gltmode_t("GL_RGB5_A1", GL11.GL_RGB5_A1),
-			new gltmode_t("GL_RGBA4", GL11.GL_RGBA4),
-			new gltmode_t("GL_RGBA2", GL11.GL_RGBA2),
-			};
-
-	static final int NUM_GL_ALPHA_MODES = gl_alpha_modes.length;
-
-	static final gltmode_t[] gl_solid_modes =
-		{
-			new gltmode_t("default", 3),
-			new gltmode_t("GL_RGB", GL11.GL_RGB),
-			new gltmode_t("GL_RGB8", GL11.GL_RGB8),
-			new gltmode_t("GL_RGB5", GL11.GL_RGB5),
-			new gltmode_t("GL_RGB4", GL11.GL_RGB4),
-			new gltmode_t("GL_R3_G3_B2", GL11.GL_R3_G3_B2),
-	};
-
-	static final int NUM_GL_SOLID_MODES = gl_solid_modes.length;
+    final int[] p1 = new int[1024];
+    final int[] p2 = new int[1024];
+    TImage draw_chars;
+    TImage[] gltextures = new TImage[MAX_GLTEXTURES];
+    //Map gltextures = new Hashtable(MAX_GLTEXTURES); // TImage
+    int numgltextures;
+    int base_textureid; // gltextures[i] = base_textureid+i
+    byte[] intensitytable = new byte[256];
+    byte[] gammatable = new byte[256];
+    TVar intensity;
+    int gl_solid_format = 3;
+    int gl_alpha_format = 4;
+    int gl_tex_solid_format = 3;
+    int gl_tex_alpha_format = 4;
+    int gl_filter_min = GL11.GL_LINEAR_MIPMAP_NEAREST;
+    int gl_filter_max = GL11.GL_LINEAR;
+    int[] lastmodes = {-1, -1};
+    int[][] scrap_allocated = new int[MAX_SCRAPS][BLOCK_WIDTH];
+    byte[][] scrap_texels = new byte[MAX_SCRAPS][BLOCK_WIDTH * BLOCK_HEIGHT];
+    boolean scrap_dirty;
+    int scrap_uploads = 0;
 
 	/*
-	===============
-	GL_TextureMode
-	===============
-	*/
-	void GL_TextureMode(String string) {
-
-		int i;
-		for (i = 0; i < NUM_GL_MODES; i++) {
-			if (modes[i].name.equalsIgnoreCase(string))
-				break;
-		}
-
-		if (i == NUM_GL_MODES) {
-			VID.Printf(Defines.PRINT_ALL, "bad filter name: [" + string + "]\n");
-			return;
-		}
-
-		gl_filter_min = modes[i].minimize;
-		gl_filter_max = modes[i].maximize;
-
-		TImage glt;
-		// change all the existing mipmap texture objects
-		for (i = 0; i < numgltextures; i++) {
-			glt = gltextures[i];
-
-			if (glt.type != it_pic && glt.type != it_sky) {
-				GL_Bind(glt.texnum);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
-				GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
-			}
-		}
-	}
-
-	/*
-	===============
-	GL_TextureAlphaMode
-	===============
-	*/
-	void GL_TextureAlphaMode(String string) {
-
-		int i;
-		for (i = 0; i < NUM_GL_ALPHA_MODES; i++) {
-			if (gl_alpha_modes[i].name.equalsIgnoreCase(string))
-				break;
-		}
-
-		if (i == NUM_GL_ALPHA_MODES) {
-			VID.Printf(Defines.PRINT_ALL, "bad alpha texture mode name: [" + string + "]\n");
-			return;
-		}
-
-		gl_tex_alpha_format = gl_alpha_modes[i].mode;
-	}
-
-	/*
-	===============
-	GL_TextureSolidMode
-	===============
-	*/
-	void GL_TextureSolidMode(String string) {
-		int i;
-		for (i = 0; i < NUM_GL_SOLID_MODES; i++) {
-			if (gl_solid_modes[i].name.equalsIgnoreCase(string))
-				break;
-		}
-
-		if (i == NUM_GL_SOLID_MODES) {
-			VID.Printf(Defines.PRINT_ALL, "bad solid texture mode name: [" + string + "]\n");
-			return;
-		}
-
-		gl_tex_solid_format = gl_solid_modes[i].mode;
-	}
-
-	/*
-	===============
-	GL_ImageList_f
-	===============
-	*/
-	void GL_ImageList_f() {
-
-		TImage image;
-		int texels;
-		final String[] palstrings = { "RGB", "PAL" };
-
-		VID.Printf(Defines.PRINT_ALL, "------------------\n");
-		texels = 0;
-
-		for (int i = 0; i < numgltextures; i++) {
-			image = gltextures[i];
-			if (image.texnum <= 0)
-				continue;
-
-			texels += image.upload_width * image.upload_height;
-			switch (image.type) {
-				case it_skin :
-					VID.Printf(Defines.PRINT_ALL, "M");
-					break;
-				case it_sprite :
-					VID.Printf(Defines.PRINT_ALL, "S");
-					break;
-				case it_wall :
-					VID.Printf(Defines.PRINT_ALL, "W");
-					break;
-				case it_pic :
-					VID.Printf(Defines.PRINT_ALL, "P");
-					break;
-				default :
-					VID.Printf(Defines.PRINT_ALL, " ");
-					break;
-			}
-
-			VID.Printf(
-				Defines.PRINT_ALL,
-				" %3i %3i %s: %s\n",
-				new Vargs(4).add(image.upload_width).add(image.upload_height).add(palstrings[(image.paletted) ? 1 : 0]).add(
-					image.name));
-		}
-		VID.Printf(Defines.PRINT_ALL, "Total texel count (not counting mipmaps): " + texels + '\n');
-	}
-
-	/*
-	=============================================================================
+    =============================================================================
 	
 	  scrap allocation
 	
@@ -362,69 +148,24 @@ public class Image {
 	
 	=============================================================================
 	*/
+    int upload_width, upload_height;
+    boolean uploaded_paletted;
+    /*
+    ===============
+    GL_Upload32
 
-	static final int MAX_SCRAPS = 1;
-	static final int BLOCK_WIDTH = 256;
-	static final int BLOCK_HEIGHT = 256;
-
-	int[][] scrap_allocated = new int[MAX_SCRAPS][BLOCK_WIDTH];
-	byte[][] scrap_texels = new byte[MAX_SCRAPS][BLOCK_WIDTH * BLOCK_HEIGHT];
-	boolean scrap_dirty;
-
-	static class pos_t {
-		int x, y;
-
-		pos_t(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-	}
-
-	// returns a texture number and the position inside it
-	int Scrap_AllocBlock(int w, int h, pos_t pos) {
-		int i, j;
-		int best, best2;
-		int texnum;
-
-		for (texnum = 0; texnum < MAX_SCRAPS; texnum++) {
-			best = BLOCK_HEIGHT;
-
-			for (i = 0; i < BLOCK_WIDTH - w; i++) {
-				best2 = 0;
-
-				for (j = 0; j < w; j++) {
-					if (scrap_allocated[texnum][i + j] >= best)
-						break;
-					if (scrap_allocated[texnum][i + j] > best2)
-						best2 = scrap_allocated[texnum][i + j];
-				}
-				if (j == w) { // this is a valid spot
-					pos.x = i;
-					pos.y = best = best2;
-				}
-			}
-
-			if (best + h > BLOCK_HEIGHT)
-				continue;
-
-			for (i = 0; i < w; i++)
-				scrap_allocated[texnum][pos.x + i] = best + h;
-
-			return texnum;
-		}
-
-		return -1;
-		// Sys_Error ("Scrap_AllocBlock: full");
-	}
-
-	int scrap_uploads = 0;
-
-	void Scrap_Upload() {
-		scrap_uploads++;
-		GL_Bind(TEXNUM_SCRAPS);
-		GL_Upload8(scrap_texels[0], BLOCK_WIDTH, BLOCK_HEIGHT, false, false);
-		scrap_dirty = false;
-	}
+    Returns has_alpha
+    ===============
+    */
+    int[] scaled = new int[256 * 256];
+    //byte[] paletted_texture = new byte[256 * 256];
+    ByteBuffer paletted_texture = Lib.newByteBuffer(256 * 256);
+    IntBuffer tex = Lib.newIntBuffer(512 * 256, ByteOrder.LITTLE_ENDIAN);
+    int[] trans = new int[512 * 256];
+    Map imageCache = new HashMap(MAX_GLTEXTURES);
+    IntBuffer texnumBuffer = Lib.newIntBuffer(1);
+    private Throwable gotoBreakOut = new Throwable();
+    private Throwable gotoDone = gotoBreakOut;
 
 	/*
 	=================================================================
@@ -434,270 +175,57 @@ public class Image {
 	=================================================================
 	*/
 
-	/*
-	==============
-	LoadPCX
-	==============
-	*/
-	byte[] LoadPCX(String filename, byte[][] palette, Dimension dim) {
-		qfiles.pcx_t pcx;
+    public Image() {
+        // init the texture data
+        for (int i = 0; i < gltextures.length; i++) {
+            gltextures[i] = new TImage(i);
+        }
+        numgltextures = 0;
+    }
 
-		//
-		// load the file
-		//
-		byte[] raw = FileSystem.LoadFile(filename);
+    void GL_SetTexturePalette(int[] palette) {
 
-		if (raw == null) {
-			VID.Printf(Defines.PRINT_DEVELOPER, "Bad pcx file " + filename + '\n');
-			return null;
-		}
+        assert (palette != null && palette.length == 256) : "int palette[256] bug";
 
-		//
-		// parse the PCX file
-		//
-		pcx = new qfiles.pcx_t(raw);
+        int i;
+        //byte[] temptable = new byte[768];
 
-		if (pcx.manufacturer != 0x0a
-			|| pcx.version != 5
-			|| pcx.encoding != 1
-			|| pcx.bits_per_pixel != 8
-			|| pcx.xmax >= 640
-			|| pcx.ymax >= 480) {
+        if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f) {
+            ByteBuffer temptable = Lib.newByteBuffer(768);
+            for (i = 0; i < 256; i++) {
+                temptable.put(i * 3 + 0, (byte) ((palette[i] >> 0) & 0xff));
+                temptable.put(i * 3 + 1, (byte) ((palette[i] >> 8) & 0xff));
+                temptable.put(i * 3 + 2, (byte) ((palette[i] >> 16) & 0xff));
+            }
 
-			VID.Printf(Defines.PRINT_ALL, "Bad pcx file " + filename + '\n');
-			return null;
-		}
+            ARBImaging.glColorTable(EXTSharedTexturePalette.GL_SHARED_TEXTURE_PALETTE_EXT, GL11.GL_RGB, 256, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, temptable);
+        }
+    }
 
-		int width = pcx.xmax - pcx.xmin + 1;
-		int height = pcx.ymax - pcx.ymin + 1;
+    void GL_EnableMultitexture(boolean enable) {
+        if (enable) {
+            GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            GL_TexEnv(GL11.GL_REPLACE);
+        } else {
+            GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL_TexEnv(GL11.GL_REPLACE);
+        }
+        GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
+        GL_TexEnv(GL11.GL_REPLACE);
+    }
 
-		byte[] pix = new byte[width * height];
+    void GL_SelectTexture(int texture /* GLenum */) {
+        int tmu = (texture == RenderAPIImpl.main.TEXTURE0) ? 0 : 1;
 
-		if (palette != null) {
-			palette[0] = new byte[768];
-			System.arraycopy(raw, raw.length - 768, palette[0], 0, 768);
-		}
+        if (tmu != RenderAPIImpl.main.gl_state.currenttmu) {
+            RenderAPIImpl.main.gl_state.currenttmu = tmu;
+            ARBMultitexture.glActiveTextureARB(texture);
+            ARBMultitexture.glClientActiveTextureARB(texture);
+        }
 
-		if (dim != null) {
-			dim.width = width;
-			dim.height = height;
-		}
-
-		//
-		// decode pcx
-		//
-		int count = 0;
-		byte dataByte = 0;
-		int runLength = 0;
-		int x, y;
-
-		for (y = 0; y < height; y++) {
-			for (x = 0; x < width;) {
-
-				dataByte = pcx.data.get();
-
-				if ((dataByte & 0xC0) == 0xC0) {
-					runLength = dataByte & 0x3F;
-					dataByte = pcx.data.get();
-					// write runLength pixel
-					while (runLength-- > 0) {
-						pix[count++] = dataByte;
-						x++;
-					}
-				}
-				else {
-					// write one pixel
-					pix[count++] = dataByte;
-					x++;
-				}
-			}
-		}
-		return pix;
-	}
-	
-	private Throwable gotoBreakOut = new Throwable();
-	private Throwable gotoDone = gotoBreakOut;
-
-	//	/*
-	//	=========================================================
-	//
-	//	TARGA LOADING
-	//
-	//	=========================================================
-	//	*/
-	/*
-	=============
-	LoadTGA
-	=============
-	*/
-	byte[] LoadTGA(String name, Dimension dim) {
-		int columns, rows, numPixels;
-		int pixbuf; // index into pic
-		int row, column;
-		byte[] raw;
-		ByteBuffer buf_p;
-		qfiles.tga_t targa_header;
-		byte[] pic = null;
-
-		//
-		// load the file
-		//
-		raw = FileSystem.LoadFile(name);
-		
-		if (raw == null)
-		{
-			VID.Printf(Defines.PRINT_DEVELOPER, "Bad tga file "+ name +'\n');
-			return null;
-		}
-		
-		targa_header = new qfiles.tga_t(raw);
-		
-		if (targa_header.image_type != 2 && targa_header.image_type != 10) 
-			Com.Error(Defines.ERR_DROP, "LoadTGA: Only type 2 and 10 targa RGB images supported\n");
-		
-		if (targa_header.colormap_type != 0 || (targa_header.pixel_size != 32 && targa_header.pixel_size != 24))
-			Com.Error (Defines.ERR_DROP, "LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
-		
-		columns = targa_header.width;
-		rows = targa_header.height;
-		numPixels = columns * rows;
-		
-		if (dim != null) {
-			dim.width = columns;
-			dim.height = rows;
-		}
-		
-		pic = new byte[numPixels * 4]; // targa_rgba;
-		
-		if (targa_header.id_length != 0)
-			targa_header.data.position(targa_header.id_length);  // skip TARGA image comment
-		
-		buf_p = targa_header.data;
-			
-		byte red,green,blue,alphabyte;
-		red = green = blue = alphabyte = 0;
-		int packetHeader, packetSize, j;
-		
-		if (targa_header.image_type==2) {  // Uncompressed, RGB images
-			for(row=rows-1; row>=0; row--) {
-				
-				pixbuf = row * columns * 4;
-				
-				for(column=0; column<columns; column++) {
-					switch (targa_header.pixel_size) {
-						case 24:
-									
-							blue = buf_p.get();
-							green = buf_p.get();
-							red = buf_p.get();
-							pic[pixbuf++] = red;
-							pic[pixbuf++] = green;
-							pic[pixbuf++] = blue;
-							pic[pixbuf++] = (byte)255;
-							break;
-						case 32:
-							blue = buf_p.get();
-							green = buf_p.get();
-							red = buf_p.get();
-							alphabyte = buf_p.get();
-							pic[pixbuf++] = red;
-							pic[pixbuf++] = green;
-							pic[pixbuf++] = blue;
-							pic[pixbuf++] = alphabyte;
-							break;
-					}
-				}
-			}
-		}
-		else if (targa_header.image_type==10) {   // Runlength encoded RGB images
-			for(row=rows-1; row>=0; row--) {
-				
-				pixbuf = row * columns * 4;
-				try {
-
-					for(column=0; column<columns; ) {
-					
-						packetHeader= buf_p.get() & 0xFF;
-						packetSize = 1 + (packetHeader & 0x7f);
-					
-						if ((packetHeader & 0x80) != 0) {        // run-length packet
-							switch (targa_header.pixel_size) {
-								case 24:
-									blue = buf_p.get();
-									green = buf_p.get();
-									red = buf_p.get();
-									alphabyte = (byte)255;
-									break;
-								case 32:
-									blue = buf_p.get();
-									green = buf_p.get();
-									red = buf_p.get();
-									alphabyte = buf_p.get();
-									break;
-							}
-				
-							for(j=0;j<packetSize;j++) {
-								pic[pixbuf++]=red;
-								pic[pixbuf++]=green;
-								pic[pixbuf++]=blue;
-								pic[pixbuf++]=alphabyte;
-								column++;
-								if (column==columns) { // run spans across rows
-									column=0;
-									if (row>0)
-										row--;
-									else
-										// goto label breakOut;
-										throw gotoBreakOut;
-			
-									pixbuf = row * columns * 4;
-								}
-							}
-						}
-						else { // non run-length packet
-							for(j=0;j<packetSize;j++) {
-								switch (targa_header.pixel_size) {
-									case 24:
-										blue = buf_p.get();
-										green = buf_p.get();
-										red = buf_p.get();
-										pic[pixbuf++] = red;
-										pic[pixbuf++] = green;
-										pic[pixbuf++] = blue;
-										pic[pixbuf++] = (byte)255;
-										break;
-									case 32:
-										blue = buf_p.get();
-										green = buf_p.get();
-										red = buf_p.get();
-										alphabyte = buf_p.get();
-										pic[pixbuf++] = red;
-										pic[pixbuf++] = green;
-										pic[pixbuf++] = blue;
-										pic[pixbuf++] = alphabyte;
-										break;
-								}
-								column++;
-								if (column==columns) { // pixel packet run spans across rows
-									column=0;
-									if (row>0)
-										row--;
-									else
-										// goto label breakOut;
-										throw gotoBreakOut;
-			
-									pixbuf = row * columns * 4;
-								}						
-							}
-						}
-					}
-				} catch (Throwable e){
-					// label breakOut:
-				}
-			}
-		}
-		return pic;
-	}
+    }
 
 	/*
 	====================================================================
@@ -715,515 +243,976 @@ public class Image {
 	=================
 	*/
 
-	static class floodfill_t {
-		short x, y;
-	}
+    void GL_TexEnv(int mode /* GLenum */
+    ) {
 
-	// must be a power of 2
-	static final int FLOODFILL_FIFO_SIZE = 0x1000;
-	static final int FLOODFILL_FIFO_MASK = FLOODFILL_FIFO_SIZE - 1;
-	//
-	//	#define FLOODFILL_STEP( off, dx, dy ) \
-	//	{ \
-	//		if (pos[off] == fillcolor) \
-	//		{ \
-	//			pos[off] = 255; \
-	//			fifo[inpt].x = x + (dx), fifo[inpt].y = y + (dy); \
-	//			inpt = (inpt + 1) & FLOODFILL_FIFO_MASK; \
-	//		} \
-	//		else if (pos[off] != 255) fdc = pos[off]; \
-	//	}
+        if (mode != lastmodes[RenderAPIImpl.main.gl_state.currenttmu]) {
+            GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
+            lastmodes[RenderAPIImpl.main.gl_state.currenttmu] = mode;
+        }
+    }
 
-	//	void FLOODFILL_STEP( int off, int dx, int dy )
-	//	{
-	//		if (pos[off] == fillcolor)
-	//		{
-	//			pos[off] = 255;
-	//			fifo[inpt].x = x + dx; fifo[inpt].y = y + dy;
-	//			inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
-	//		}
-	//		else if (pos[off] != 255) fdc = pos[off];
-	//	}
-	static floodfill_t[] fifo = new floodfill_t[FLOODFILL_FIFO_SIZE];
-	static {
-		for (int j = 0; j < fifo.length; j++) {
-			fifo[j] = new floodfill_t();
-		}		
-	}
-	// TODO check this: R_FloodFillSkin( byte[] skin, int skinwidth, int skinheight)
-	void R_FloodFillSkin(byte[] skin, int skinwidth, int skinheight) {
-		//		byte				fillcolor = *skin; // assume this is the pixel to fill
-		int fillcolor = skin[0] & 0xff;
+    void bindTexture(int textureId) {
+
+        if ((RenderAPIImpl.main.gl_nobind.value != 0) && (draw_chars != null)) {
+            // performance evaluation option
+            textureId = draw_chars.texnum;
+        }
+        if (RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] == textureId)
+            return;
+
+        RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] = textureId;
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
+    }
+
+    void GL_MBind(int target /* GLenum */, int texnum) {
+        GL_SelectTexture(target);
+        if (target == RenderAPIImpl.main.TEXTURE0) {
+            if (RenderAPIImpl.main.gl_state.currenttextures[0] == texnum)
+                return;
+        } else {
+            if (RenderAPIImpl.main.gl_state.currenttextures[1] == texnum)
+                return;
+        }
+        bindTexture(texnum);
+    }
+    //
+    //	#define FLOODFILL_STEP( off, dx, dy ) \
+    //	{ \
+    //		if (pos[off] == fillcolor) \
+    //		{ \
+    //			pos[off] = 255; \
+    //			fifo[inpt].x = x + (dx), fifo[inpt].y = y + (dy); \
+    //			inpt = (inpt + 1) & FLOODFILL_FIFO_MASK; \
+    //		} \
+    //		else if (pos[off] != 255) fdc = pos[off]; \
+    //	}
+
+    /*
+    ===============
+    GL_TextureMode
+    ===============
+    */
+    void GL_TextureMode(String string) {
+
+        int i;
+        for (i = 0; i < NUM_GL_MODES; i++) {
+            if (modes[i].name.equalsIgnoreCase(string)) {
+                break;
+            }
+        }
+
+        if (i == NUM_GL_MODES) {
+            VID.Printf(VID.PRINT_ALL, "bad filter name: [" + string + "]\n");
+            return;
+        }
+
+        gl_filter_min = modes[i].minimize;
+        gl_filter_max = modes[i].maximize;
+
+
+        // change all the existing mipmap texture objects
+        for (i = 0; i < numgltextures; i++) {
+            TImage glt = gltextures[i];
+            if (glt.type != it_pic && glt.type != it_sky) {
+                bindTexture(glt.texnum);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+            }
+        }
+    }
+
+    /*
+    ===============
+    GL_TextureAlphaMode
+    ===============
+    */
+    void GL_TextureAlphaMode(String string) {
+
+        int i;
+        for (i = 0; i < NUM_GL_ALPHA_MODES; i++) {
+            if (gl_alpha_modes[i].name.equalsIgnoreCase(string))
+                break;
+        }
+
+        if (i == NUM_GL_ALPHA_MODES) {
+            VID.Printf(VID.PRINT_ALL, "bad alpha texture mode name: [" + string + "]\n");
+            return;
+        }
+
+        gl_tex_alpha_format = gl_alpha_modes[i].mode;
+    }
+
+    /*
+    ===============
+    GL_TextureSolidMode
+    ===============
+    */
+    void GL_TextureSolidMode(String string) {
+        int i;
+        for (i = 0; i < NUM_GL_SOLID_MODES; i++) {
+            if (gl_solid_modes[i].name.equalsIgnoreCase(string))
+                break;
+        }
+
+        if (i == NUM_GL_SOLID_MODES) {
+            VID.Printf(VID.PRINT_ALL, "bad solid texture mode name: [" + string + "]\n");
+            return;
+        }
+
+        gl_tex_solid_format = gl_solid_modes[i].mode;
+    }
+
+    // ==================================================
+
+    /*
+    ===============
+    GL_ImageList_f
+    ===============
+    */
+    void GL_ImageList_f() {
+
+        TImage image;
+        int texels;
+        final String[] palstrings = {"RGB", "PAL"};
+
+        VID.Printf(VID.PRINT_ALL, "------------------\n");
+        texels = 0;
+
+        for (int i = 0; i < numgltextures; i++) {
+            image = gltextures[i];
+            if (image.texnum <= 0)
+                continue;
+
+            texels += image.upload_width * image.upload_height;
+            switch (image.type) {
+                case it_skin:
+                    VID.Printf(VID.PRINT_ALL, "M");
+                    break;
+                case it_sprite:
+                    VID.Printf(VID.PRINT_ALL, "S");
+                    break;
+                case it_wall:
+                    VID.Printf(VID.PRINT_ALL, "W");
+                    break;
+                case it_pic:
+                    VID.Printf(VID.PRINT_ALL, "P");
+                    break;
+                default:
+                    VID.Printf(VID.PRINT_ALL, " ");
+                    break;
+            }
+
+            VID.Printf(
+                    VID.PRINT_ALL,
+                    " %3i %3i %s: %s\n",
+                    4, image.upload_width, image.upload_height, palstrings[(image.paletted) ? 1 : 0],
+                                 image.name);
+        }
+        VID.Printf(VID.PRINT_ALL, "Total texel count (not counting mipmaps): " + texels + '\n');
+    }
+
+    // returns a texture number and the position inside it
+    int Scrap_AllocBlock(int w, int h, pos_t pos) {
+        int i, j;
+        int best, best2;
+        int texnum;
+
+        for (texnum = 0; texnum < MAX_SCRAPS; texnum++) {
+            best = BLOCK_HEIGHT;
+
+            for (i = 0; i < BLOCK_WIDTH - w; i++) {
+                best2 = 0;
+
+                for (j = 0; j < w; j++) {
+                    if (scrap_allocated[texnum][i + j] >= best)
+                        break;
+                    if (scrap_allocated[texnum][i + j] > best2)
+                        best2 = scrap_allocated[texnum][i + j];
+                }
+                if (j == w) { // this is a valid spot
+                    pos.x = i;
+                    pos.y = best = best2;
+                }
+            }
+
+            if (best + h > BLOCK_HEIGHT)
+                continue;
+
+            for (i = 0; i < w; i++)
+                scrap_allocated[texnum][pos.x + i] = best + h;
+
+            return texnum;
+        }
+
+        return -1;
+        // Sys_Error ("Scrap_AllocBlock: full");
+    }
+
+    void Scrap_Upload() {
+        scrap_uploads++;
+        bindTexture(TEXNUM_SCRAPS);
+        GL_Upload8(scrap_texels[0], BLOCK_WIDTH, BLOCK_HEIGHT, false, false);
+        scrap_dirty = false;
+    }
+
+    /*
+    ==============
+    LoadPCX
+    ==============
+    */
+    byte[] LoadPCX(String filename, byte[][] palette, Dimension dim) {
+        qfiles.pcx_t pcx;
+
+        //
+        // load the file
+        //
+        byte[] raw = FileSystem.LoadFile(filename);
+
+        if (raw == null) {
+            VID.Printf(VID.PRINT_DEVELOPER, "Bad pcx file " + filename + '\n');
+            return null;
+        }
+
+        //
+        // parse the PCX file
+        //
+        pcx = new qfiles.pcx_t(raw);
+
+        if (pcx.manufacturer != 0x0a
+                || pcx.version != 5
+                || pcx.encoding != 1
+                || pcx.bits_per_pixel != 8
+                || pcx.xmax >= 640
+                || pcx.ymax >= 480) {
+
+            VID.Printf(VID.PRINT_ALL, "Bad pcx file " + filename + '\n');
+            return null;
+        }
+
+        int width = pcx.xmax - pcx.xmin + 1;
+        int height = pcx.ymax - pcx.ymin + 1;
+
+        byte[] pix = new byte[width * height];
+
+        if (palette != null) {
+            palette[0] = new byte[768];
+            System.arraycopy(raw, raw.length - 768, palette[0], 0, 768);
+        }
+
+        if (dim != null) {
+            dim.width = width;
+            dim.height = height;
+        }
+
+        //
+        // decode pcx
+        //
+        int count = 0;
+        byte dataByte = 0;
+        int runLength = 0;
+        int x, y;
+
+        for (y = 0; y < height; y++) {
+            for (x = 0; x < width; ) {
+
+                dataByte = pcx.data.get();
+
+                if ((dataByte & 0xC0) == 0xC0) {
+                    runLength = dataByte & 0x3F;
+                    dataByte = pcx.data.get();
+                    // write runLength pixel
+                    while (runLength-- > 0) {
+                        pix[count++] = dataByte;
+                        x++;
+                    }
+                } else {
+                    // write one pixel
+                    pix[count++] = dataByte;
+                    x++;
+                }
+            }
+        }
+        return pix;
+    }
+
+    //	/*
+    //	=========================================================
+    //
+    //	TARGA LOADING
+    //
+    //	=========================================================
+    //	*/
+	/*
+	=============
+	LoadTGA
+	=============
+	*/
+    byte[] LoadTGA(String name, Dimension dim) {
+        int columns, rows, numPixels;
+        int pixbuf; // index into pic
+        int row, column;
+        byte[] raw;
+        ByteBuffer buf_p;
+        qfiles.tga_t targa_header;
+        byte[] pic = null;
+
+        //
+        // load the file
+        //
+        raw = FileSystem.LoadFile(name);
+
+        if (raw == null) {
+            VID.Printf(VID.PRINT_DEVELOPER, "Bad tga file " + name + '\n');
+            return null;
+        }
+
+        targa_header = new qfiles.tga_t(raw);
+
+        if (targa_header.image_type != 2 && targa_header.image_type != 10)
+            Com.Error(Defines.ERR_DROP, "LoadTGA: Only type 2 and 10 targa RGB images supported\n");
+
+        if (targa_header.colormap_type != 0 || (targa_header.pixel_size != 32 && targa_header.pixel_size != 24))
+            Com.Error(Defines.ERR_DROP, "LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
+
+        columns = targa_header.width;
+        rows = targa_header.height;
+        numPixels = columns * rows;
+
+        if (dim != null) {
+            dim.width = columns;
+            dim.height = rows;
+        }
+
+        pic = new byte[numPixels * 4]; // targa_rgba;
+
+        if (targa_header.id_length != 0)
+            targa_header.data.position(targa_header.id_length);  // skip TARGA image comment
+
+        buf_p = targa_header.data;
+
+        byte red, green, blue, alphabyte;
+        red = green = blue = alphabyte = 0;
+        int packetHeader, packetSize, j;
+
+        if (targa_header.image_type == 2) {  // Uncompressed, RGB images
+            for (row = rows - 1; row >= 0; row--) {
+
+                pixbuf = row * columns * 4;
+
+                for (column = 0; column < columns; column++) {
+                    switch (targa_header.pixel_size) {
+                        case 24:
+
+                            blue = buf_p.get();
+                            green = buf_p.get();
+                            red = buf_p.get();
+                            pic[pixbuf++] = red;
+                            pic[pixbuf++] = green;
+                            pic[pixbuf++] = blue;
+                            pic[pixbuf++] = (byte) 255;
+                            break;
+                        case 32:
+                            blue = buf_p.get();
+                            green = buf_p.get();
+                            red = buf_p.get();
+                            alphabyte = buf_p.get();
+                            pic[pixbuf++] = red;
+                            pic[pixbuf++] = green;
+                            pic[pixbuf++] = blue;
+                            pic[pixbuf++] = alphabyte;
+                            break;
+                    }
+                }
+            }
+        } else if (targa_header.image_type == 10) {   // Runlength encoded RGB images
+            for (row = rows - 1; row >= 0; row--) {
+
+                pixbuf = row * columns * 4;
+                try {
+
+                    for (column = 0; column < columns; ) {
+
+                        packetHeader = buf_p.get() & 0xFF;
+                        packetSize = 1 + (packetHeader & 0x7f);
+
+                        if ((packetHeader & 0x80) != 0) {        // run-length packet
+                            switch (targa_header.pixel_size) {
+                                case 24:
+                                    blue = buf_p.get();
+                                    green = buf_p.get();
+                                    red = buf_p.get();
+                                    alphabyte = (byte) 255;
+                                    break;
+                                case 32:
+                                    blue = buf_p.get();
+                                    green = buf_p.get();
+                                    red = buf_p.get();
+                                    alphabyte = buf_p.get();
+                                    break;
+                            }
+
+                            for (j = 0; j < packetSize; j++) {
+                                pic[pixbuf++] = red;
+                                pic[pixbuf++] = green;
+                                pic[pixbuf++] = blue;
+                                pic[pixbuf++] = alphabyte;
+                                column++;
+                                if (column == columns) { // run spans across rows
+                                    column = 0;
+                                    if (row > 0)
+                                        row--;
+                                    else
+                                        // goto label breakOut;
+                                        throw gotoBreakOut;
+
+                                    pixbuf = row * columns * 4;
+                                }
+                            }
+                        } else { // non run-length packet
+                            for (j = 0; j < packetSize; j++) {
+                                switch (targa_header.pixel_size) {
+                                    case 24:
+                                        blue = buf_p.get();
+                                        green = buf_p.get();
+                                        red = buf_p.get();
+                                        pic[pixbuf++] = red;
+                                        pic[pixbuf++] = green;
+                                        pic[pixbuf++] = blue;
+                                        pic[pixbuf++] = (byte) 255;
+                                        break;
+                                    case 32:
+                                        blue = buf_p.get();
+                                        green = buf_p.get();
+                                        red = buf_p.get();
+                                        alphabyte = buf_p.get();
+                                        pic[pixbuf++] = red;
+                                        pic[pixbuf++] = green;
+                                        pic[pixbuf++] = blue;
+                                        pic[pixbuf++] = alphabyte;
+                                        break;
+                                }
+                                column++;
+                                if (column == columns) { // pixel packet run spans across rows
+                                    column = 0;
+                                    if (row > 0)
+                                        row--;
+                                    else
+                                        // goto label breakOut;
+                                        throw gotoBreakOut;
+
+                                    pixbuf = row * columns * 4;
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable e) {
+                    // label breakOut:
+                }
+            }
+        }
+        return pic;
+    }
+
+    // TODO check this: R_FloodFillSkin( byte[] skin, int skinwidth, int skinheight)
+    void R_FloodFillSkin(byte[] skin, int skinwidth, int skinheight) {
+        //		byte				fillcolor = *skin; // assume this is the pixel to fill
+        int fillcolor = skin[0] & 0xff;
 //		floodfill_t[] fifo = new floodfill_t[FLOODFILL_FIFO_SIZE];
-		int inpt = 0, outpt = 0;
-		int filledcolor = -1;
-		int i;
+        int inpt = 0, outpt = 0;
+        int filledcolor = -1;
+        int i;
 
 //		for (int j = 0; j < fifo.length; j++) {
 //			fifo[j] = new floodfill_t();
 //		}
 
-		if (filledcolor == -1) {
-			filledcolor = 0;
-			// attempt to find opaque black
-			for (i = 0; i < 256; ++i)
-				// TODO check this
-				if (RenderAPIImpl.main.d_8to24table[i]  == 0xFF000000) { // alpha 1.0
-				//if (RenderAPIImpl.main.d_8to24table[i] == (255 << 0)) // alpha 1.0
-					filledcolor = i;
-					break;
-				}
-		}
+        if (filledcolor == -1) {
+            filledcolor = 0;
+            // attempt to find opaque black
+            for (i = 0; i < 256; ++i)
+                // TODO check this
+                if (RenderAPIImpl.main.d_8to24table[i] == 0xFF000000) { // alpha 1.0
+                    //if (RenderAPIImpl.main.d_8to24table[i] == (255 << 0)) // alpha 1.0
+                    filledcolor = i;
+                    break;
+                }
+        }
 
-		// can't fill to filled color or to transparent color (used as visited marker)
-		if ((fillcolor == filledcolor) || (fillcolor == 255)) {
-			return;
-		}
+        // can't fill to filled color or to transparent color (used as visited marker)
+        if ((fillcolor == filledcolor) || (fillcolor == 255)) {
+            return;
+        }
 
-		fifo[inpt].x = 0;
-		fifo[inpt].y = 0;
-		inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+        fifo[inpt].x = 0;
+        fifo[inpt].y = 0;
+        inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
 
-		while (outpt != inpt) {
-			int x = fifo[outpt].x;
-			int y = fifo[outpt].y;
-			int fdc = filledcolor;
-			//			byte		*pos = &skin[x + skinwidth * y];
-			int pos = x + skinwidth * y;
-			//
-			outpt = (outpt + 1) & FLOODFILL_FIFO_MASK;
+        while (outpt != inpt) {
+            int x = fifo[outpt].x;
+            int y = fifo[outpt].y;
+            int fdc = filledcolor;
+            //			byte		*pos = &skin[x + skinwidth * y];
+            int pos = x + skinwidth * y;
+            //
+            outpt = (outpt + 1) & FLOODFILL_FIFO_MASK;
 
-			int off, dx, dy;
+            int off, dx, dy;
 
-			if (x > 0) {
-				// FLOODFILL_STEP( -1, -1, 0 );
-				off = -1;
-				dx = -1;
-				dy = 0;
-				if (skin[pos + off] == (byte) fillcolor) {
-					skin[pos + off] = (byte) 255;
-					fifo[inpt].x = (short) (x + dx);
-					fifo[inpt].y = (short) (y + dy);
-					inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
-				}
-				else if (skin[pos + off] != (byte) 255)
-					fdc = skin[pos + off] & 0xff;
-			}
+            if (x > 0) {
+                // FLOODFILL_STEP( -1, -1, 0 );
+                off = -1;
+                dx = -1;
+                dy = 0;
+                if (skin[pos + off] == (byte) fillcolor) {
+                    skin[pos + off] = (byte) 255;
+                    fifo[inpt].x = (short) (x + dx);
+                    fifo[inpt].y = (short) (y + dy);
+                    inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+                } else if (skin[pos + off] != (byte) 255)
+                    fdc = skin[pos + off] & 0xff;
+            }
 
-			if (x < skinwidth - 1) {
-				// FLOODFILL_STEP( 1, 1, 0 );
-				off = 1;
-				dx = 1;
-				dy = 0;
-				if (skin[pos + off] == (byte) fillcolor) {
-					skin[pos + off] = (byte) 255;
-					fifo[inpt].x = (short) (x + dx);
-					fifo[inpt].y = (short) (y + dy);
-					inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
-				}
-				else if (skin[pos + off] != (byte) 255)
-					fdc = skin[pos + off] & 0xff;
-			}
+            if (x < skinwidth - 1) {
+                // FLOODFILL_STEP( 1, 1, 0 );
+                off = 1;
+                dx = 1;
+                dy = 0;
+                if (skin[pos + off] == (byte) fillcolor) {
+                    skin[pos + off] = (byte) 255;
+                    fifo[inpt].x = (short) (x + dx);
+                    fifo[inpt].y = (short) (y + dy);
+                    inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+                } else if (skin[pos + off] != (byte) 255)
+                    fdc = skin[pos + off] & 0xff;
+            }
 
-			if (y > 0) {
-				// FLOODFILL_STEP( -skinwidth, 0, -1 );
-				off = -skinwidth;
-				dx = 0;
-				dy = -1;
-				if (skin[pos + off] == (byte) fillcolor) {
-					skin[pos + off] = (byte) 255;
-					fifo[inpt].x = (short) (x + dx);
-					fifo[inpt].y = (short) (y + dy);
-					inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
-				}
-				else if (skin[pos + off] != (byte) 255)
-					fdc = skin[pos + off] & 0xff;
-			}
+            if (y > 0) {
+                // FLOODFILL_STEP( -skinwidth, 0, -1 );
+                off = -skinwidth;
+                dx = 0;
+                dy = -1;
+                if (skin[pos + off] == (byte) fillcolor) {
+                    skin[pos + off] = (byte) 255;
+                    fifo[inpt].x = (short) (x + dx);
+                    fifo[inpt].y = (short) (y + dy);
+                    inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+                } else if (skin[pos + off] != (byte) 255)
+                    fdc = skin[pos + off] & 0xff;
+            }
 
-			if (y < skinheight - 1) {
-				// FLOODFILL_STEP( skinwidth, 0, 1 );
-				off = skinwidth;
-				dx = 0;
-				dy = 1;
-				if (skin[pos + off] == (byte) fillcolor) {
-					skin[pos + off] = (byte) 255;
-					fifo[inpt].x = (short) (x + dx);
-					fifo[inpt].y = (short) (y + dy);
-					inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
-				}
-				else if (skin[pos + off] != (byte) 255)
-					fdc = skin[pos + off] & 0xff;
+            if (y < skinheight - 1) {
+                // FLOODFILL_STEP( skinwidth, 0, 1 );
+                off = skinwidth;
+                dx = 0;
+                dy = 1;
+                if (skin[pos + off] == (byte) fillcolor) {
+                    skin[pos + off] = (byte) 255;
+                    fifo[inpt].x = (short) (x + dx);
+                    fifo[inpt].y = (short) (y + dy);
+                    inpt = (inpt + 1) & FLOODFILL_FIFO_MASK;
+                } else if (skin[pos + off] != (byte) 255)
+                    fdc = skin[pos + off] & 0xff;
 
-			}
+            }
 
-			skin[x + skinwidth * y] = (byte) fdc;
-		}
-	}
-
-	// ==================================================
-
-    final int[] p1 = new int[1024];
-    final int[] p2 = new int[1024];
+            skin[x + skinwidth * y] = (byte) fdc;
+        }
+    }
 
     /*
      * GL_ResampleTexture
      */
     void GL_ResampleTexture(int[] in, int inwidth, int inheight, int[] out,
-	    int outwidth, int outheight) {
+                            int outwidth, int outheight) {
 
-	Arrays.fill(p1, 0);
-	Arrays.fill(p2, 0);
+        Arrays.fill(p1, 0);
+        Arrays.fill(p2, 0);
 
-	int fracstep = (inwidth * 0x10000) / outwidth;
+        int fracstep = (inwidth * 0x10000) / outwidth;
 
-	int i, j;
-	int frac = fracstep >> 2;
-	for (i = 0; i < outwidth; i++) {
-	    p1[i] = frac >> 16;
-	    frac += fracstep;
-	}
-	frac = 3 * (fracstep >> 2);
-	for (i = 0; i < outwidth; i++) {
-	    p2[i] = frac >> 16;
-	    frac += fracstep;
-	}
+        int i, j;
+        int frac = fracstep >> 2;
+        for (i = 0; i < outwidth; i++) {
+            p1[i] = frac >> 16;
+            frac += fracstep;
+        }
+        frac = 3 * (fracstep >> 2);
+        for (i = 0; i < outwidth; i++) {
+            p2[i] = frac >> 16;
+            frac += fracstep;
+        }
 
-	int outp = 0;
-	int r, g, b, a;
-	int inrow, inrow2;
-	int pix1, pix2, pix3, pix4;
+        int outp = 0;
+        int r, g, b, a;
+        int inrow, inrow2;
+        int pix1, pix2, pix3, pix4;
 
-	for (i = 0; i < outheight; i++) {
-	    inrow = inwidth * (int) ((i + 0.25f) * inheight / outheight);
-	    inrow2 = inwidth * (int) ((i + 0.75f) * inheight / outheight);
-	    frac = fracstep >> 1;
-	    for (j = 0; j < outwidth; j++) {
-		pix1 = in[inrow + p1[j]];
-		pix2 = in[inrow + p2[j]];
-		pix3 = in[inrow2 + p1[j]];
-		pix4 = in[inrow2 + p2[j]];
+        for (i = 0; i < outheight; i++) {
+            inrow = inwidth * (int) ((i + 0.25f) * inheight / outheight);
+            inrow2 = inwidth * (int) ((i + 0.75f) * inheight / outheight);
+            frac = fracstep >> 1;
+            for (j = 0; j < outwidth; j++) {
+                pix1 = in[inrow + p1[j]];
+                pix2 = in[inrow + p2[j]];
+                pix3 = in[inrow2 + p1[j]];
+                pix4 = in[inrow2 + p2[j]];
 
-		r = (((pix1 >> 0) & 0xFF) + ((pix2 >> 0) & 0xFF)
-			+ ((pix3 >> 0) & 0xFF) + ((pix4 >> 0) & 0xFF)) >> 2;
-		g = (((pix1 >> 8) & 0xFF) + ((pix2 >> 8) & 0xFF)
-			+ ((pix3 >> 8) & 0xFF) + ((pix4 >> 8) & 0xFF)) >> 2;
-		b = (((pix1 >> 16) & 0xFF) + ((pix2 >> 16) & 0xFF)
-			+ ((pix3 >> 16) & 0xFF) + ((pix4 >> 16) & 0xFF)) >> 2;
-		a = (((pix1 >> 24) & 0xFF) + ((pix2 >> 24) & 0xFF)
-			+ ((pix3 >> 24) & 0xFF) + ((pix4 >> 24) & 0xFF)) >> 2;
+                r = (((pix1 >> 0) & 0xFF) + ((pix2 >> 0) & 0xFF)
+                        + ((pix3 >> 0) & 0xFF) + ((pix4 >> 0) & 0xFF)) >> 2;
+                g = (((pix1 >> 8) & 0xFF) + ((pix2 >> 8) & 0xFF)
+                        + ((pix3 >> 8) & 0xFF) + ((pix4 >> 8) & 0xFF)) >> 2;
+                b = (((pix1 >> 16) & 0xFF) + ((pix2 >> 16) & 0xFF)
+                        + ((pix3 >> 16) & 0xFF) + ((pix4 >> 16) & 0xFF)) >> 2;
+                a = (((pix1 >> 24) & 0xFF) + ((pix2 >> 24) & 0xFF)
+                        + ((pix3 >> 24) & 0xFF) + ((pix4 >> 24) & 0xFF)) >> 2;
 
-		out[outp++] = (a << 24) | (b << 16) | (g << 8) | r;
-	    }
-	}
+                out[outp++] = (a << 24) | (b << 16) | (g << 8) | r;
+            }
+        }
     }
 
-	/*
-	================
-	GL_LightScaleTexture
-	
-	Scale up the pixel values in a texture to increase the
-	lighting range
-	================
-	*/
-	void GL_LightScaleTexture(int[] in, int inwidth, int inheight, boolean only_gamma) {
-		if (only_gamma) {
-			int i, c;
-			int r, g, b, color;
+    /*
+    ================
+    GL_LightScaleTexture
 
-			c = inwidth * inheight;
-			for (i = 0; i < c; i++) {
-				color = in[i];
-				r = (color >> 0) & 0xFF;
-				g = (color >> 8) & 0xFF;
-				b = (color >> 16) & 0xFF;
+    Scale up the pixel values in a texture to increase the
+    lighting range
+    ================
+    */
+    void GL_LightScaleTexture(int[] in, int inwidth, int inheight, boolean only_gamma) {
+        if (only_gamma) {
+            int i, c;
+            int r, g, b, color;
 
-				r = gammatable[r] & 0xFF;
-				g = gammatable[g] & 0xFF;
-				b = gammatable[b] & 0xFF;
+            c = inwidth * inheight;
+            for (i = 0; i < c; i++) {
+                color = in[i];
+                r = (color >> 0) & 0xFF;
+                g = (color >> 8) & 0xFF;
+                b = (color >> 16) & 0xFF;
 
-				in[i] = (r << 0) | (g << 8) | (b << 16) | (color & 0xFF000000);
-			}
-		}
-		else {
-			int i, c;
-			int r, g, b, color;
+                r = gammatable[r] & 0xFF;
+                g = gammatable[g] & 0xFF;
+                b = gammatable[b] & 0xFF;
 
-			c = inwidth * inheight;
-			for (i = 0; i < c; i++) {
-				color = in[i];
-				r = (color >> 0) & 0xFF;
-				g = (color >> 8) & 0xFF;
-				b = (color >> 16) & 0xFF;
+                in[i] = (r << 0) | (g << 8) | (b << 16) | (color & 0xFF000000);
+            }
+        } else {
+            int i, c;
+            int r, g, b, color;
 
-				r = gammatable[intensitytable[r] & 0xFF] & 0xFF;
-				g = gammatable[intensitytable[g] & 0xFF] & 0xFF;
-				b = gammatable[intensitytable[b] & 0xFF] & 0xFF;
+            c = inwidth * inheight;
+            for (i = 0; i < c; i++) {
+                color = in[i];
+                r = (color >> 0) & 0xFF;
+                g = (color >> 8) & 0xFF;
+                b = (color >> 16) & 0xFF;
 
-				in[i] = (r << 0) | (g << 8) | (b << 16) | (color & 0xFF000000);
-			}
+                r = gammatable[intensitytable[r] & 0xFF] & 0xFF;
+                g = gammatable[intensitytable[g] & 0xFF] & 0xFF;
+                b = gammatable[intensitytable[b] & 0xFF] & 0xFF;
 
-		}
-	}
+                in[i] = (r << 0) | (g << 8) | (b << 16) | (color & 0xFF000000);
+            }
 
-	/*
-	================
-	GL_MipMap
-	
-	Operates in place, quartering the size of the texture
-	================
-	*/
-	void GL_MipMap(int[] in, int width, int height) {
-		int i, j;
-		int[] out;
+        }
+    }
 
-		out = in;
+    /*
+    ================
+    GL_MipMap
 
-		int inIndex = 0;
-		int outIndex = 0;
+    Operates in place, quartering the size of the texture
+    ================
+    */
+    void GL_MipMap(int[] in, int width, int height) {
+        int i, j;
+        int[] out;
 
-		int r, g, b, a;
-		int p1, p2, p3, p4;
+        out = in;
 
-		for (i = 0; i < height; i += 2, inIndex += width) {
-			for (j = 0; j < width; j += 2, outIndex += 1, inIndex += 2) {
+        int inIndex = 0;
+        int outIndex = 0;
 
-				p1 = in[inIndex + 0];
-				p2 = in[inIndex + 1];
-				p3 = in[inIndex + width + 0];
-				p4 = in[inIndex + width + 1];
+        int r, g, b, a;
+        int p1, p2, p3, p4;
 
-				r = (((p1 >> 0) & 0xFF) + ((p2 >> 0) & 0xFF) + ((p3 >> 0) & 0xFF) + ((p4 >> 0) & 0xFF)) >> 2;
-				g = (((p1 >> 8) & 0xFF) + ((p2 >> 8) & 0xFF) + ((p3 >> 8) & 0xFF) + ((p4 >> 8) & 0xFF)) >> 2;
-				b = (((p1 >> 16) & 0xFF) + ((p2 >> 16) & 0xFF) + ((p3 >> 16) & 0xFF) + ((p4 >> 16) & 0xFF)) >> 2;
-				a = (((p1 >> 24) & 0xFF) + ((p2 >> 24) & 0xFF) + ((p3 >> 24) & 0xFF) + ((p4 >> 24) & 0xFF)) >> 2;
+        for (i = 0; i < height; i += 2, inIndex += width) {
+            for (j = 0; j < width; j += 2, outIndex += 1, inIndex += 2) {
 
-				out[outIndex] = (r << 0) | (g << 8) | (b << 16) | (a << 24);
-			}
-		}
-	}
+                p1 = in[inIndex + 0];
+                p2 = in[inIndex + 1];
+                p3 = in[inIndex + width + 0];
+                p4 = in[inIndex + width + 1];
 
-	/*
-	===============
-	GL_Upload32
-	
-	Returns has_alpha
-	===============
-	*/
-	void GL_BuildPalettedTexture(ByteBuffer paletted_texture, int[] scaled, int scaled_width, int scaled_height) {
+                r = (((p1 >> 0) & 0xFF) + ((p2 >> 0) & 0xFF) + ((p3 >> 0) & 0xFF) + ((p4 >> 0) & 0xFF)) >> 2;
+                g = (((p1 >> 8) & 0xFF) + ((p2 >> 8) & 0xFF) + ((p3 >> 8) & 0xFF) + ((p4 >> 8) & 0xFF)) >> 2;
+                b = (((p1 >> 16) & 0xFF) + ((p2 >> 16) & 0xFF) + ((p3 >> 16) & 0xFF) + ((p4 >> 16) & 0xFF)) >> 2;
+                a = (((p1 >> 24) & 0xFF) + ((p2 >> 24) & 0xFF) + ((p3 >> 24) & 0xFF) + ((p4 >> 24) & 0xFF)) >> 2;
 
-		int r, g, b, c;
-		int size = scaled_width * scaled_height;
+                out[outIndex] = (r << 0) | (g << 8) | (b << 16) | (a << 24);
+            }
+        }
+    }
 
-		for (int i = 0; i < size; i++) {
+    /*
+    ===============
+    GL_Upload32
 
-			r = (scaled[i] >> 3) & 31;
-			g = (scaled[i] >> 10) & 63;
-			b = (scaled[i] >> 19) & 31;
+    Returns has_alpha
+    ===============
+    */
+    void GL_BuildPalettedTexture(ByteBuffer paletted_texture, int[] scaled, int scaled_width, int scaled_height) {
 
-			c = r | (g << 5) | (b << 11);
+        int r, g, b, c;
+        int size = scaled_width * scaled_height;
 
-			paletted_texture.put(i, RenderAPIImpl.main.gl_state.d_16to8table[c]);
-		}
-	}
+        for (int i = 0; i < size; i++) {
 
-	int upload_width, upload_height;
-	boolean uploaded_paletted;
+            r = (scaled[i] >> 3) & 31;
+            g = (scaled[i] >> 10) & 63;
+            b = (scaled[i] >> 19) & 31;
 
-	/*
-	===============
-	GL_Upload32
-	
-	Returns has_alpha
-	===============
-	*/
-	int[] scaled = new int[256 * 256];
-	//byte[] paletted_texture = new byte[256 * 256];
-	ByteBuffer paletted_texture = Lib.newByteBuffer(256*256);
-	IntBuffer tex = Lib.newIntBuffer(512 * 256, ByteOrder.LITTLE_ENDIAN);
+            c = r | (g << 5) | (b << 11);
 
-	boolean GL_Upload32(int[] data, int width, int height, boolean mipmap) {
-		int samples;
-		int scaled_width, scaled_height;
-		int i, c;
-		int comp;
+            paletted_texture.put(i, RenderAPIImpl.main.gl_state.d_16to8table[c]);
+        }
+    }
 
-		Arrays.fill(scaled, 0);
-		// Arrays.fill(paletted_texture, (byte)0);
-		paletted_texture.clear();
-		for (int j=0; j<256*256; j++) paletted_texture.put(j,(byte)0);
+    boolean GL_Upload32(int[] data, int width, int height, boolean mipmap) {
+        int samples;
+        int scaled_width, scaled_height;
+        int i, c;
+        int comp;
 
-		uploaded_paletted = false;
+        Arrays.fill(scaled, 0);
+        // Arrays.fill(paletted_texture, (byte)0);
+        paletted_texture.clear();
+        for (int j = 0; j < 256 * 256; j++) paletted_texture.put(j, (byte) 0);
 
-		for (scaled_width = 1; scaled_width < width; scaled_width <<= 1);
-		if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_width > width && mipmap)
-			scaled_width >>= 1;
-		for (scaled_height = 1; scaled_height < height; scaled_height <<= 1);
-		if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_height > height && mipmap)
-			scaled_height >>= 1;
+        uploaded_paletted = false;
 
-		// let people sample down the world textures for speed
-		if (mipmap) {
-			scaled_width >>= (int) RenderAPIImpl.main.gl_picmip.value;
-			scaled_height >>= (int) RenderAPIImpl.main.gl_picmip.value;
-		}
+        for (scaled_width = 1; scaled_width < width; scaled_width <<= 1) ;
+        if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_width > width && mipmap)
+            scaled_width >>= 1;
+        for (scaled_height = 1; scaled_height < height; scaled_height <<= 1) ;
+        if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_height > height && mipmap)
+            scaled_height >>= 1;
 
-		// don't ever bother with >256 textures
-		if (scaled_width > 256)
-			scaled_width = 256;
-		if (scaled_height > 256)
-			scaled_height = 256;
+        // let people sample down the world textures for speed
+        if (mipmap) {
+            scaled_width >>= (int) RenderAPIImpl.main.gl_picmip.value;
+            scaled_height >>= (int) RenderAPIImpl.main.gl_picmip.value;
+        }
 
-		if (scaled_width < 1)
-			scaled_width = 1;
-		if (scaled_height < 1)
-			scaled_height = 1;
+        // don't ever bother with >256 textures
+        if (scaled_width > 256)
+            scaled_width = 256;
+        if (scaled_height > 256)
+            scaled_height = 256;
 
-		upload_width = scaled_width;
-		upload_height = scaled_height;
+        if (scaled_width < 1)
+            scaled_width = 1;
+        if (scaled_height < 1)
+            scaled_height = 1;
 
-		if (scaled_width * scaled_height > 256 * 256)
-			Com.Error(Defines.ERR_DROP, "GL_Upload32: too big");
+        upload_width = scaled_width;
+        upload_height = scaled_height;
 
-		// scan the texture for any non-255 alpha
-		c = width * height;
-		samples = gl_solid_format;
+        if (scaled_width * scaled_height > 256 * 256)
+            Com.Error(Defines.ERR_DROP, "GL_Upload32: too big");
 
-		for (i = 0; i < c; i++) {
-			if ((data[i] & 0xff000000) != 0xff000000) {
-				samples = gl_alpha_format;
-				break;
-			}
-		}
+        // scan the texture for any non-255 alpha
+        c = width * height;
+        samples = gl_solid_format;
 
-		if (samples == gl_solid_format)
-			comp = gl_tex_solid_format;
-		else if (samples == gl_alpha_format)
-			comp = gl_tex_alpha_format;
-		else {
-			VID.Printf(Defines.PRINT_ALL, "Unknown number of texture components " + samples + '\n');
-			comp = samples;
-		}
+        for (i = 0; i < c; i++) {
+            if ((data[i] & 0xff000000) != 0xff000000) {
+                samples = gl_alpha_format;
+                break;
+            }
+        }
 
-		// simulates a goto
-		try {
-			if (scaled_width == width && scaled_height == height) {
-				if (!mipmap) {
-					if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
-						uploaded_paletted = true;
-						GL_BuildPalettedTexture(paletted_texture, data, scaled_width, scaled_height);
-						GL11.glTexImage2D(
+        if (samples == gl_solid_format)
+            comp = gl_tex_solid_format;
+        else if (samples == gl_alpha_format)
+            comp = gl_tex_alpha_format;
+        else {
+            VID.Printf(VID.PRINT_ALL, "Unknown number of texture components " + samples + '\n');
+            comp = samples;
+        }
+
+        // simulates a goto
+        try {
+            if (scaled_width == width && scaled_height == height) {
+                if (!mipmap) {
+                    if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+                        uploaded_paletted = true;
+                        GL_BuildPalettedTexture(paletted_texture, data, scaled_width, scaled_height);
+                        GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
-							0,
-							GL_COLOR_INDEX8_EXT,
-							scaled_width,
-							scaled_height,
-							0,
+                                0,
+                                GL_COLOR_INDEX8_EXT,
+                                scaled_width,
+                                scaled_height,
+                                0,
                                 GL11.GL_COLOR_INDEX,
                                 GL11.GL_UNSIGNED_BYTE,
-							paletted_texture);
-					}
-					else {
-						tex.rewind(); tex.put(data); tex.rewind();
-						GL11.glTexImage2D(
+                                paletted_texture);
+                    } else {
+                        tex.rewind();
+                        tex.put(data);
+                        tex.rewind();
+                        GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
-							0,
-							comp,
-							scaled_width,
-							scaled_height,
-							0,
+                                0,
+                                comp,
+                                scaled_width,
+                                scaled_height,
+                                0,
                                 GL11.GL_RGBA,
                                 GL11.GL_UNSIGNED_BYTE,
-							tex);
-					}
-					//goto done;
-					throw gotoDone;
-				}
-				//memcpy (scaled, data, width*height*4); were bytes
-				System.arraycopy(data, 0, scaled, 0, width * height);
-			}
-			else
-				GL_ResampleTexture(data, width, height, scaled, scaled_width, scaled_height);
+                                tex);
+                    }
+                    //goto done;
+                    throw gotoDone;
+                }
+                //memcpy (scaled, data, width*height*4); were bytes
+                System.arraycopy(data, 0, scaled, 0, width * height);
+            } else
+                GL_ResampleTexture(data, width, height, scaled, scaled_width, scaled_height);
 
-			GL_LightScaleTexture(scaled, scaled_width, scaled_height, !mipmap);
+            GL_LightScaleTexture(scaled, scaled_width, scaled_height, !mipmap);
 
-			if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
-				uploaded_paletted = true;
-				GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
-				GL11.glTexImage2D(
+            if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
+                uploaded_paletted = true;
+                GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
+                GL11.glTexImage2D(
                         GL11.GL_TEXTURE_2D,
-					0,
-					GL_COLOR_INDEX8_EXT,
-					scaled_width,
-					scaled_height,
-					0,
+                        0,
+                        GL_COLOR_INDEX8_EXT,
+                        scaled_width,
+                        scaled_height,
+                        0,
                         GL11.GL_COLOR_INDEX,
                         GL11.GL_UNSIGNED_BYTE,
-					paletted_texture);
-			}
-			else {
-				tex.rewind(); tex.put(scaled); tex.rewind();
-				GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, tex);
-			}
+                        paletted_texture);
+            } else {
+                tex.rewind();
+                tex.put(scaled);
+                tex.rewind();
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, comp, scaled_width, scaled_height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, tex);
+            }
 
-			if (mipmap) {
-				int miplevel;
-				miplevel = 0;
-				while (scaled_width > 1 || scaled_height > 1) {
-					GL_MipMap(scaled, scaled_width, scaled_height);
-					scaled_width >>= 1;
-					scaled_height >>= 1;
-					if (scaled_width < 1)
-						scaled_width = 1;
-					if (scaled_height < 1)
-						scaled_height = 1;
+            if (mipmap) {
+                int miplevel;
+                miplevel = 0;
+                while (scaled_width > 1 || scaled_height > 1) {
+                    GL_MipMap(scaled, scaled_width, scaled_height);
+                    scaled_width >>= 1;
+                    scaled_height >>= 1;
+                    if (scaled_width < 1)
+                        scaled_width = 1;
+                    if (scaled_height < 1)
+                        scaled_height = 1;
 
-					miplevel++;
-					if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
-						uploaded_paletted = true;
-						GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
-						GL11.glTexImage2D(
+                    miplevel++;
+                    if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+                        uploaded_paletted = true;
+                        GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
+                        GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
-							miplevel,
-							GL_COLOR_INDEX8_EXT,
-							scaled_width,
-							scaled_height,
-							0,
+                                miplevel,
+                                GL_COLOR_INDEX8_EXT,
+                                scaled_width,
+                                scaled_height,
+                                0,
                                 GL11.GL_COLOR_INDEX,
                                 GL11.GL_UNSIGNED_BYTE,
-							paletted_texture);
-					}
-					else {
-						tex.rewind(); tex.put(scaled); tex.rewind();
-						GL11.glTexImage2D(
+                                paletted_texture);
+                    } else {
+                        tex.rewind();
+                        tex.put(scaled);
+                        tex.rewind();
+                        GL11.glTexImage2D(
                                 GL11.GL_TEXTURE_2D,
-							miplevel,
-							comp,
-							scaled_width,
-							scaled_height,
-							0,
+                                miplevel,
+                                comp,
+                                scaled_width,
+                                scaled_height,
+                                0,
                                 GL11.GL_RGBA,
                                 GL11.GL_UNSIGNED_BYTE,
-							tex);
-					}
-				}
-			}
-			// label done:
-		}
-		catch (Throwable e) {
-			// replaces label done
-		}
+                                tex);
+                    }
+                }
+            }
+            // label done:
+        } catch (Throwable e) {
+            // replaces label done
+        }
 
-		if (mipmap) {
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
-		}
-		else {
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
-		}
+        if (mipmap) {
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_min);
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+        } else {
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+        }
 
-		return (samples == gl_alpha_format);
-	}
+        return (samples == gl_alpha_format);
+    }
+
+    boolean GL_Upload8(byte[] data, int width, int height, boolean mipmap, boolean is_sky) {
+
+        Arrays.fill(trans, 0);
+
+        int s = width * height;
+
+        if (s > trans.length)
+            Com.Error(Defines.ERR_DROP, "GL_Upload8: too large");
+
+        if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
+
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
+            GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+
+            // TODO check this
+            return false;
+        } else {
+            int p;
+            for (int i = 0; i < s; i++) {
+                p = data[i] & 0xff;
+                trans[i] = RenderAPIImpl.main.d_8to24table[p];
+
+                if (p == 255) { // transparent, so scan around for another color
+                    // to avoid alpha fringes
+                    // FIXME: do a full flood fill so mips work...
+                    if (i > width && (data[i - width] & 0xff) != 255)
+                        p = data[i - width] & 0xff;
+                    else if (i < s - width && (data[i + width] & 0xff) != 255)
+                        p = data[i + width] & 0xff;
+                    else if (i > 0 && (data[i - 1] & 0xff) != 255)
+                        p = data[i - 1] & 0xff;
+                    else if (i < s - 1 && (data[i + 1] & 0xff) != 255)
+                        p = data[i + 1] & 0xff;
+                    else
+                        p = 0;
+                    // copy rgb components
+
+                    // ((byte *)&trans[i])[0] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[0];
+                    // ((byte *)&trans[i])[1] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[1];
+                    // ((byte *)&trans[i])[2] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[2];
+
+                    trans[i] = RenderAPIImpl.main.d_8to24table[p] & 0x00FFFFFF; // only rgb
+                }
+            }
+
+            return GL_Upload32(trans, width, height, mipmap);
+        }
+    }
 
 	/*
 	===============
@@ -1233,234 +1222,174 @@ public class Image {
 	===============
 	*/
 
-	int[] trans = new int[512 * 256];
+    /*
+    ================
+    GL_LoadPic
 
-	boolean GL_Upload8(byte[] data, int width, int height, boolean mipmap, boolean is_sky) {
-		
-		Arrays.fill(trans, 0);
+    This is also used as an entry point for the generated r_notexture
+    ================
+    */
+    TImage GL_LoadPic(String name, byte[] pic, int width, int height, int type, int bits) {
+        TImage image;
+        int i;
 
-		int s = width * height;
+        // find a free TImage
+        for (i = 0; i < numgltextures; i++) {
+            image = gltextures[i];
+            if (image.texnum == 0)
+                break;
+        }
 
-		if (s > trans.length)
-			Com.Error(Defines.ERR_DROP, "GL_Upload8: too large");
+        if (i == numgltextures) {
+            if (numgltextures == MAX_GLTEXTURES)
+                Com.Error(Defines.ERR_DROP, "MAX_GLTEXTURES");
 
-		if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
-			GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
+            numgltextures++;
+        }
+        image = gltextures[i];
 
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, gl_filter_max);
+        if (name.length() > Defines.MAX_QPATH)
+            Com.Error(Defines.ERR_DROP, "Draw_LoadPic: \"" + name + "\" is too long");
 
-			// TODO check this
-			return false;
-		}
-		else {
-			int p;
-			for (int i = 0; i < s; i++) {
-				p = data[i] & 0xff;
-				trans[i] = RenderAPIImpl.main.d_8to24table[p];
+        image.name = name;
+        image.registration_sequence = RenderAPIImpl.main.registration_sequence;
 
-				if (p == 255) { // transparent, so scan around for another color
-					// to avoid alpha fringes
-					// FIXME: do a full flood fill so mips work...
-					if (i > width && (data[i - width] & 0xff) != 255)
-						p = data[i - width] & 0xff;
-					else if (i < s - width && (data[i + width] & 0xff) != 255)
-						p = data[i + width] & 0xff;
-					else if (i > 0 && (data[i - 1] & 0xff) != 255)
-						p = data[i - 1] & 0xff;
-					else if (i < s - 1 && (data[i + 1] & 0xff) != 255)
-						p = data[i + 1] & 0xff;
-					else
-						p = 0;
-					// copy rgb components
-
-					// ((byte *)&trans[i])[0] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[0];
-					// ((byte *)&trans[i])[1] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[1];
-					// ((byte *)&trans[i])[2] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[2];
-
-					trans[i] = RenderAPIImpl.main.d_8to24table[p] & 0x00FFFFFF; // only rgb
-				}
-			}
-
-			return GL_Upload32(trans, width, height, mipmap);
-		}
-	}
-
-	/*
-	================
-	GL_LoadPic
-	
-	This is also used as an entry point for the generated r_notexture
-	================
-	*/
-	TImage GL_LoadPic(String name, byte[] pic, int width, int height, int type, int bits) {
-		TImage image;
-		int i;
-
-		// find a free TImage
-		for (i = 0; i<numgltextures ; i++)
-		{
-			image = gltextures[i];
-			if (image.texnum == 0)
-				break;
-		}
-
-		if (i == numgltextures)
-		{
-			if (numgltextures == MAX_GLTEXTURES)
-				Com.Error (Defines.ERR_DROP, "MAX_GLTEXTURES");
-			
-			numgltextures++;
-		}
-		image = gltextures[i];
-
-		if (name.length() > Defines.MAX_QPATH)
-			Com.Error(Defines.ERR_DROP, "Draw_LoadPic: \"" + name + "\" is too long");
-
-		image.name = name;
-		image.registration_sequence = RenderAPIImpl.main.registration_sequence;
-
-		image.width = width;
-		image.height = height;
-		image.type = type;
+        image.width = width;
+        image.height = height;
+        image.type = type;
 
 
-		if (type == it_skin && bits == 8)
-			R_FloodFillSkin(pic, width, height);
+        if (type == it_skin && bits == 8)
+            R_FloodFillSkin(pic, width, height);
 
-		// load little pics into the scrap
-		if (image.type == it_pic && bits == 8 && image.width < 64 && image.height < 64) {
-			pos_t pos = new pos_t(0, 0);
-			int j, k;
+        // load little pics into the scrap
+        if (image.type == it_pic && bits == 8 && image.width < 64 && image.height < 64) {
+            pos_t pos = new pos_t(0, 0);
+            int j, k;
 
-			int texnum = Scrap_AllocBlock(image.width, image.height, pos);
+            int texnum = Scrap_AllocBlock(image.width, image.height, pos);
 
-			if (texnum == -1) {
-				// replace goto nonscrap
+            if (texnum == -1) {
+                // replace goto nonscrap
 
-				image.scrap = false;
-				
-				image.texnum = TEXNUM_IMAGES + image.getId(); // image pos in array
-				GL_Bind(image.texnum);
+                image.scrap = false;
 
-				if (bits == 8) {
-					image.has_alpha =
-						GL_Upload8(pic, width, height, (image.type != it_pic && image.type != it_sky), image.type == it_sky);
-				}
-				else {
-					int[] tmp = new int[pic.length / 4];
+                image.texnum = TEXNUM_IMAGES + image.getId(); // image pos in array
+                bindTexture(image.texnum);
 
-					for (i = 0; i < tmp.length; i++) {
-						tmp[i] = ((pic[4 * i + 0] & 0xFF) << 0); // & 0x000000FF;
-						tmp[i] |= ((pic[4 * i + 1] & 0xFF) << 8); // & 0x0000FF00;
-						tmp[i] |= ((pic[4 * i + 2] & 0xFF) << 16); // & 0x00FF0000;
-						tmp[i] |= ((pic[4 * i + 3] & 0xFF) << 24); // & 0xFF000000;
-					}
+                if (bits == 8) {
+                    image.has_alpha =
+                            GL_Upload8(pic, width, height, (image.type != it_pic && image.type != it_sky), image.type == it_sky);
+                } else {
+                    int[] tmp = new int[pic.length / 4];
 
-					image.has_alpha = GL_Upload32(tmp, width, height, (image.type != it_pic && image.type != it_sky));
-				}
+                    for (i = 0; i < tmp.length; i++) {
+                        tmp[i] = ((pic[4 * i + 0] & 0xFF) << 0); // & 0x000000FF;
+                        tmp[i] |= ((pic[4 * i + 1] & 0xFF) << 8); // & 0x0000FF00;
+                        tmp[i] |= ((pic[4 * i + 2] & 0xFF) << 16); // & 0x00FF0000;
+                        tmp[i] |= ((pic[4 * i + 3] & 0xFF) << 24); // & 0xFF000000;
+                    }
 
-				image.upload_width = upload_width; // after power of 2 and scales
-				image.upload_height = upload_height;
-				image.paletted = uploaded_paletted;
-				image.sl = 0;
-				image.sh = 1;
-				image.tl = 0;
-				image.th = 1;
+                    image.has_alpha = GL_Upload32(tmp, width, height, (image.type != it_pic && image.type != it_sky));
+                }
 
-				return image;
-			}
+                image.upload_width = upload_width; // after power of 2 and scales
+                image.upload_height = upload_height;
+                image.paletted = uploaded_paletted;
+                image.sl = 0;
+                image.sh = 1;
+                image.tl = 0;
+                image.th = 1;
 
-			scrap_dirty = true;
+                return image;
+            }
 
-			// copy the texels into the scrap block
-			k = 0;
-			for (i = 0; i < image.height; i++)
-				for (j = 0; j < image.width; j++, k++)
-					scrap_texels[texnum][(pos.y + i) * BLOCK_WIDTH + pos.x + j] = pic[k];
+            scrap_dirty = true;
 
-			image.texnum = TEXNUM_SCRAPS + texnum;
-			image.scrap = true;
-			image.has_alpha = true;
-			image.sl = (pos.x + 0.01f) / (float) BLOCK_WIDTH;
-			image.sh = (pos.x + image.width - 0.01f) / (float) BLOCK_WIDTH;
-			image.tl = (pos.y + 0.01f) / (float) BLOCK_WIDTH;
-			image.th = (pos.y + image.height - 0.01f) / (float) BLOCK_WIDTH;
+            // copy the texels into the scrap block
+            k = 0;
+            for (i = 0; i < image.height; i++)
+                for (j = 0; j < image.width; j++, k++)
+                    scrap_texels[texnum][(pos.y + i) * BLOCK_WIDTH + pos.x + j] = pic[k];
 
-		}
-		else {
-			// this was label nonscrap
+            image.texnum = TEXNUM_SCRAPS + texnum;
+            image.scrap = true;
+            image.has_alpha = true;
+            image.sl = (pos.x + 0.01f) / (float) BLOCK_WIDTH;
+            image.sh = (pos.x + image.width - 0.01f) / (float) BLOCK_WIDTH;
+            image.tl = (pos.y + 0.01f) / (float) BLOCK_WIDTH;
+            image.th = (pos.y + image.height - 0.01f) / (float) BLOCK_WIDTH;
 
-			image.scrap = false;
+        } else {
+            // this was label nonscrap
 
-			image.texnum = TEXNUM_IMAGES + image.getId(); //image pos in array
-			GL_Bind(image.texnum);
+            image.scrap = false;
 
-			if (bits == 8) {
-				image.has_alpha = GL_Upload8(pic, width, height, (image.type != it_pic && image.type != it_sky), image.type == it_sky);
-			}
-			else {
-				int[] tmp = new int[pic.length / 4];
+            image.texnum = TEXNUM_IMAGES + image.getId(); //image pos in array
+            bindTexture(image.texnum);
 
-				for (i = 0; i < tmp.length; i++) {
-					tmp[i] = ((pic[4 * i + 0] & 0xFF) << 0); // & 0x000000FF;
-					tmp[i] |= ((pic[4 * i + 1] & 0xFF) << 8); // & 0x0000FF00;
-					tmp[i] |= ((pic[4 * i + 2] & 0xFF) << 16); // & 0x00FF0000;
-					tmp[i] |= ((pic[4 * i + 3] & 0xFF) << 24); // & 0xFF000000;
-				}
+            if (bits == 8) {
+                image.has_alpha = GL_Upload8(pic, width, height, (image.type != it_pic && image.type != it_sky), image.type == it_sky);
+            } else {
+                int[] tmp = new int[pic.length / 4];
 
-				image.has_alpha = GL_Upload32(tmp, width, height, (image.type != it_pic && image.type != it_sky));
-			}
-			image.upload_width = upload_width; // after power of 2 and scales
-			image.upload_height = upload_height;
-			image.paletted = uploaded_paletted;
-			image.sl = 0;
-			image.sh = 1;
-			image.tl = 0;
-			image.th = 1;
-		}
-		return image;
-	}
+                for (i = 0; i < tmp.length; i++) {
+                    tmp[i] = ((pic[4 * i + 0] & 0xFF) << 0); // & 0x000000FF;
+                    tmp[i] |= ((pic[4 * i + 1] & 0xFF) << 8); // & 0x0000FF00;
+                    tmp[i] |= ((pic[4 * i + 2] & 0xFF) << 16); // & 0x00FF0000;
+                    tmp[i] |= ((pic[4 * i + 3] & 0xFF) << 24); // & 0xFF000000;
+                }
 
-	/*
-	================
-	GL_LoadWal
-	================
-	*/
-	TImage GL_LoadWal(String name) {
+                image.has_alpha = GL_Upload32(tmp, width, height, (image.type != it_pic && image.type != it_sky));
+            }
+            image.upload_width = upload_width; // after power of 2 and scales
+            image.upload_height = upload_height;
+            image.paletted = uploaded_paletted;
+            image.sl = 0;
+            image.sh = 1;
+            image.tl = 0;
+            image.th = 1;
+        }
+        return image;
+    }
 
-		TImage image = null;
+    /*
+    ================
+    GL_LoadWal
+    ================
+    */
+    TImage GL_LoadWal(String name) {
 
-		byte[] raw = FileSystem.LoadFile(name);
-		if (raw == null) {
-			VID.Printf(Defines.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
-			return RenderAPIImpl.main.r_notexture;
-		}
+        TImage image = null;
 
-		qfiles.miptex_t mt = new qfiles.miptex_t(raw);
+        byte[] raw = FileSystem.LoadFile(name);
+        if (raw == null) {
+            VID.Printf(VID.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
+            return RenderAPIImpl.main.r_notexture;
+        }
 
-		byte[] pix = new byte[mt.width * mt.height];
-		System.arraycopy(raw, mt.offsets[0], pix, 0, pix.length);
+        qfiles.miptex_t mt = new qfiles.miptex_t(raw);
 
-		image = GL_LoadPic(name, pix, mt.width, mt.height, it_wall, 8);
+        byte[] pix = new byte[mt.width * mt.height];
+        System.arraycopy(raw, mt.offsets[0], pix, 0, pix.length);
 
-		return image;
-	}
-    
-    Map imageCache = new HashMap(MAX_GLTEXTURES);
+        image = GL_LoadPic(name, pix, mt.width, mt.height, it_wall, 8);
 
-	/*
-	===============
-	GL_FindImage
-	
-	Finds or loads the given image
-	===============
-	*/
-	TImage GL_FindImage(String name, int type) {
+        return image;
+    }
 
-		if (name == null || name.length() < 1)
-			return null;
-        
+    /*
+    ===============
+    GL_FindImage
+
+    Finds or loads the given image
+    ===============
+    */
+    TImage GL_FindImage(String name, int type) {
+
+        if (name == null || name.length() < 1)
+            return null;
+
         // look for it
         TImage image = (TImage) imageCache.get(name);
         if (image != null) {
@@ -1468,207 +1397,236 @@ public class Image {
             return image;
         }
 
-		//
-		// load the pic from disk
-		//
-		image = null;
-		byte[] pic = null;
-		Dimension dim = new Dimension();
+        //
+        // load the pic from disk
+        //
+        image = null;
+        byte[] pic = null;
+        Dimension dim = new Dimension();
 
-		if (name.endsWith(".pcx")) {
+        if (name.endsWith(".pcx")) {
 
-			pic = LoadPCX(name, null, dim);
-			if (pic == null)
-				return null;
-			image = GL_LoadPic(name, pic, dim.width, dim.height, type, 8);
+            pic = LoadPCX(name, null, dim);
+            if (pic == null)
+                return null;
+            image = GL_LoadPic(name, pic, dim.width, dim.height, type, 8);
 
-		}
-		else if (name.endsWith(".wal")) {
+        } else if (name.endsWith(".wal")) {
 
-			image = GL_LoadWal(name);
+            image = GL_LoadWal(name);
 
-		}
-		else if (name.endsWith(".tga")) {
+        } else if (name.endsWith(".tga")) {
 
-			pic = LoadTGA(name, dim);
+            pic = LoadTGA(name, dim);
 
-			if (pic == null)
-				return null;
+            if (pic == null)
+                return null;
 
-			image = GL_LoadPic(name, pic, dim.width, dim.height, type, 32);
+            image = GL_LoadPic(name, pic, dim.width, dim.height, type, 32);
 
-		} else {
-		
-			pic = LoadPCX("pics/" + name + ".pcx", null, dim);
-			if (pic == null)
-				return null;
-			image = GL_LoadPic(name, pic, dim.width, dim.height, type, 8);
-			
-		}
-		
-		imageCache.put(image.name, image);
-		return image;
-	}
+        } else {
 
-	/*
-	===============
-	R_RegisterSkin
-	===============
-	*/
-	public TImage R_RegisterSkin(String name) {
-		return GL_FindImage(name, it_skin);
-	}
+            pic = LoadPCX("pics/" + name + ".pcx", null, dim);
+            if (pic == null)
+                return null;
+            image = GL_LoadPic(name, pic, dim.width, dim.height, type, 8);
 
-	IntBuffer texnumBuffer=Lib.newIntBuffer(1);
-	
-	/*
-	================
-	GL_FreeUnusedImages
-	
-	Any image that was not touched on this registration sequence
-	will be freed.
-	================
-	*/
-	void GL_FreeUnusedImages() {
+        }
 
-		// never free r_notexture or particle texture
-		RenderAPIImpl.main.r_notexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
-		RenderAPIImpl.main.r_particletexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
+        imageCache.put(image.name, image);
+        return image;
+    }
 
-		TImage image = null;
+    /*
+    ===============
+    R_RegisterSkin
+    ===============
+    */
+    public TImage R_RegisterSkin(String name) {
+        return GL_FindImage(name, it_skin);
+    }
 
-		for (int i = 0; i < numgltextures; i++) {
-			image = gltextures[i];
-			// used this sequence
-			if (image.registration_sequence == RenderAPIImpl.main.registration_sequence)
-				continue;
-			// free TImage slot
-			if (image.registration_sequence == 0)
-				continue;
-			// don't free pics
-			if (image.type == it_pic)
-				continue;
+    /*
+    ================
+    GL_FreeUnusedImages
 
-			// free it
-			texnumBuffer.clear();
-			texnumBuffer.put(0,image.texnum);
-			GL11.glDeleteTextures(texnumBuffer);
-            
+    Any image that was not touched on this registration sequence
+    will be freed.
+    ================
+    */
+    void GL_FreeUnusedImages() {
+
+        // never free r_notexture or particle texture
+        RenderAPIImpl.main.r_notexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
+        RenderAPIImpl.main.r_particletexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
+
+        TImage image = null;
+
+        for (int i = 0; i < numgltextures; i++) {
+            image = gltextures[i];
+            // used this sequence
+            if (image.registration_sequence == RenderAPIImpl.main.registration_sequence)
+                continue;
+            // free TImage slot
+            if (image.registration_sequence == 0)
+                continue;
+            // don't free pics
+            if (image.type == it_pic)
+                continue;
+
+            // free it
+            texnumBuffer.clear();
+            texnumBuffer.put(0, image.texnum);
+            GL11.glDeleteTextures(texnumBuffer);
+
             imageCache.remove(image.name);
-			image.clear();
-		}
-	}
+            image.clear();
+        }
+    }
 
-	/*
-	===============
-	Draw_GetPalette
-	===============
-	*/
-	protected void Draw_GetPalette() {
-		int r, g, b;
-		byte[][] palette = new byte[1][]; //new byte[768];
+    /*
+    ===============
+    Draw_GetPalette
+    ===============
+    */
+    protected void Draw_GetPalette() {
+        int r, g, b;
+        byte[][] palette = new byte[1][]; //new byte[768];
 
-		// get the palette
+        // get the palette
 
-		LoadPCX("pics/colormap.pcx", palette, null);
+        LoadPCX("pics/colormap.pcx", palette, null);
 
-		if (palette[0] == null || palette[0].length != 768)
-			Com.Error(Defines.ERR_FATAL, "Couldn't load pics/colormap.pcx");
+        if (palette[0] == null || palette[0].length != 768)
+            Com.Error(Defines.ERR_FATAL, "Couldn't load pics/colormap.pcx");
 
-		byte[] pal = palette[0];
+        byte[] pal = palette[0];
 
-		int j = 0;
-		for (int i = 0; i < 256; i++) {
-			r = pal[j++] & 0xFF;
-			g = pal[j++] & 0xFF;
-			b = pal[j++] & 0xFF;
+        int j = 0;
+        for (int i = 0; i < 256; i++) {
+            r = pal[j++] & 0xFF;
+            g = pal[j++] & 0xFF;
+            b = pal[j++] & 0xFF;
 
-			RenderAPIImpl.main.d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
-		}
+            RenderAPIImpl.main.d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
+        }
 
-		RenderAPIImpl.main.d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
+        RenderAPIImpl.main.d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
 
-		particle_t.setColorPalette(RenderAPIImpl.main.d_8to24table);
-	}
+        particle_t.setColorPalette(RenderAPIImpl.main.d_8to24table);
+    }
 
-	/*
-	===============
-	GL_InitImages
-	===============
-	*/
-	void GL_InitImages() {
-		int i, j;
-		float g = vid_gamma.value;
+    /*
+    ===============
+    GL_InitImages
+    ===============
+    */
+    void GL_InitImages() {
+        int i, j;
+        float g = vid_gamma.value;
 
-		RenderAPIImpl.main.registration_sequence = 1;
+        RenderAPIImpl.main.registration_sequence = 1;
 
-		// init intensity conversions
-		intensity = ConsoleVar.Get("intensity", "2", 0);
+        // init intensity conversions
+        intensity = ConsoleVar.Get("intensity", "2", 0);
 
-		if (intensity.value <= 1)
-			ConsoleVar.Set("intensity", "1");
+        if (intensity.value <= 1)
+            ConsoleVar.Set("intensity", "1");
 
-		RenderAPIImpl.main.gl_state.inverse_intensity = 1 / intensity.value;
+        RenderAPIImpl.main.gl_state.inverse_intensity = 1 / intensity.value;
 
-		Draw_GetPalette();
+        Draw_GetPalette();
 
-		if (RenderAPIImpl.main.qglColorTableEXT) {
-			RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
-			if (RenderAPIImpl.main.gl_state.d_16to8table == null)
-				Com.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
-		}
+        if (RenderAPIImpl.main.qglColorTableEXT) {
+            RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
+            if (RenderAPIImpl.main.gl_state.d_16to8table == null)
+                Com.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
+        }
 
-		if ((RenderAPIImpl.main.gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
-			g = 1.0F;
-		}
+        if ((RenderAPIImpl.main.gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
+            g = 1.0F;
+        }
 
-		for (i = 0; i < 256; i++) {
+        for (i = 0; i < 256; i++) {
 
-			if (g == 1.0f) {
-				gammatable[i] = (byte) i;
-			}
-			else {
+            if (g == 1.0f) {
+                gammatable[i] = (byte) i;
+            } else {
 
-				int inf = (int) (255.0f * Math.pow((i + 0.5) / 255.5, g) + 0.5);
-				if (inf < 0)
-					inf = 0;
-				if (inf > 255)
-					inf = 255;
-				gammatable[i] = (byte) inf;
-			}
-		}
+                int inf = (int) (255.0f * Math.pow((i + 0.5) / 255.5, g) + 0.5);
+                if (inf < 0)
+                    inf = 0;
+                if (inf > 255)
+                    inf = 255;
+                gammatable[i] = (byte) inf;
+            }
+        }
 
-		for (i = 0; i < 256; i++) {
-			j = (int) (i * intensity.value);
-			if (j > 255)
-				j = 255;
-			intensitytable[i] = (byte) j;
-		}
-	}
+        for (i = 0; i < 256; i++) {
+            j = (int) (i * intensity.value);
+            if (j > 255)
+                j = 255;
+            intensitytable[i] = (byte) j;
+        }
+    }
 
-	/*
-	===============
-	GL_ShutdownImages
-	===============
-	*/
-	void GL_ShutdownImages() {
-		TImage image;
-		
-		for (int i=0; i < numgltextures ; i++)
-		{
-			image = gltextures[i];
-			
-			if (image.registration_sequence == 0)
-	   			continue; // free TImage slot
-            
-			// free it
-			texnumBuffer.clear();
-			texnumBuffer.put(0,image.texnum);
-			GL11.glDeleteTextures(texnumBuffer);
-            
+    /*
+    ===============
+    shutdown
+    ===============
+    */
+    void shutdown() {
+
+        for (int i = 0; i < numgltextures; i++) {
+            TImage image = gltextures[i];
+
+            if (image.registration_sequence == 0)
+                continue; // free TImage slot
+
+            // free it
+            texnumBuffer.clear();
+            texnumBuffer.put(0, image.texnum);
+            GL11.glDeleteTextures(texnumBuffer);
+
             imageCache.remove(image.name);
-	  		image.clear();
-		}
-	}
+            image.clear();
+        }
+    }
+
+    // TGlMode
+    private static class TGlMode {
+        String name;
+        int minimize, maximize;
+
+        TGlMode(String name, int minimize, int maximze) {
+            this.name = name;
+            this.minimize = minimize;
+            this.maximize = maximze;
+        }
+    }
+
+    // gltmode_t
+    static class gltmode_t {
+        String name;
+        int mode;
+
+        gltmode_t(String name, int mode) {
+            this.name = name;
+            this.mode = mode;
+        }
+    }
+
+    static class pos_t {
+        int x, y;
+
+        pos_t(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    static class floodfill_t {
+        short x, y;
+    }
 
 }

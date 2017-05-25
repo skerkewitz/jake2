@@ -35,7 +35,6 @@ import jake2.server.SV_MAIN
 import jake2.sys.*
 import jake2.sys.NET
 import jake2.sys.QSystem
-import jake2.util.Vargs
 
 import java.io.FileWriter
 import java.io.IOException
@@ -108,12 +107,7 @@ class Qcommon : Globals() {
                 Globals.logfile_active = ConsoleVar.Get("logfile", "0", 0)
                 Globals.showtrace = ConsoleVar.Get("showtrace", "0", 0)
                 Globals.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
-                val s = Com.sprintf("%4.2f %s %s %s",
-                        Vargs(4)
-                                .add(Globals.VERSION)
-                                .add(CPUSTRING)
-                                .add(Globals.__DATE__)
-                                .add(BUILDSTRING))
+                val s = Com.sprintf("%4.2f %s %s %s", Globals.VERSION, CPUSTRING, Globals.__DATE__, BUILDSTRING)
 
                 ConsoleVar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
 
@@ -227,9 +221,7 @@ class Qcommon : Globals() {
                 }
 
                 if (Globals.showtrace.value != 0.0f) {
-                    Com.Printf("%4i traces  %4i points\n",
-                            Vargs(2).add(Globals.c_traces)
-                                    .add(Globals.c_pointcontents))
+                    Com.Printf("%4i traces  %4i points\n", 2, Globals.c_traces, Globals.c_pointcontents)
 
 
                     Globals.c_traces = 0
@@ -266,8 +258,7 @@ class Qcommon : Globals() {
                     sv -= gm
                     cl -= rf
 
-                    Com.Printf("all:%3i sv:%3i gm:%3i cl:%3i rf:%3i\n",
-                            Vargs(5).add(all).add(sv).add(gm).add(cl).add(rf))
+                    Com.Printf("all:%3i sv:%3i gm:%3i cl:%3i rf:%3i\n", 5, all, sv, gm, cl, rf)
                 }
 
             } catch (e: QuakeException) {

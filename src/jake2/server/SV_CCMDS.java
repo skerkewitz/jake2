@@ -39,7 +39,6 @@ import jake2.sys.NET;
 import jake2.sys.QSystem;
 import jake2.util.Lib;
 import jake2.io.QuakeFile;
-import jake2.util.Vargs;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -389,9 +388,8 @@ public class SV_CCMDS {
 				comment =
 					Com.sprintf(
 						"%2i:%2i %2i/%2i  ",
-						new Vargs().add(c.get(Calendar.HOUR_OF_DAY)).add(c.get(Calendar.MINUTE)).add(
-							c.get(Calendar.MONTH) + 1).add(
-							c.get(Calendar.DAY_OF_MONTH)));
+							c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.MONTH) + 1,
+							c.get(Calendar.DAY_OF_MONTH));
 				comment += SV_INIT.sv.configstrings[Defines.CS_NAME];
 			}
 			else {
@@ -765,8 +763,8 @@ public class SV_CCMDS {
 			if (0 == cl.state)
 				continue;
 
-			Com.Printf("%3i ", new Vargs().add(i));
-			Com.Printf("%5i ", new Vargs().add(cl.edict.client.ps.stats[Defines.STAT_FRAGS]));
+			Com.Printf("%3i ", i);
+			Com.Printf("%5i ", cl.edict.client.ps.stats[Defines.STAT_FRAGS]);
 
 			if (cl.state == Defines.cs_connected)
 				Com.Printf("CNCT ");
@@ -774,15 +772,15 @@ public class SV_CCMDS {
 				Com.Printf("ZMBI ");
 			else {
 				ping = cl.ping < 9999 ? cl.ping : 9999;
-				Com.Printf("%4i ", new Vargs().add(ping));
+				Com.Printf("%4i ", ping);
 			}
 
-			Com.Printf("%s", new Vargs().add(cl.name));
+			Com.Printf("%s", cl.name);
 			l = 16 - cl.name.length();
 			for (j = 0; j < l; j++)
 				Com.Printf(" ");
 
-			Com.Printf("%7i ", new Vargs().add(SV_INIT.svs.realtime - cl.lastmessage));
+			Com.Printf("%7i ", SV_INIT.svs.realtime - cl.lastmessage);
 
 			s = NET.AdrToString(cl.netchan.remote_address);
 			Com.Printf(s);
@@ -790,7 +788,7 @@ public class SV_CCMDS {
 			for (j = 0; j < l; j++)
 				Com.Printf(" ");
 
-			Com.Printf("%5i", new Vargs().add(cl.netchan.qport));
+			Com.Printf("%5i", cl.netchan.qport);
 
 			Com.Printf("\n");
 		}
@@ -1012,92 +1010,28 @@ public class SV_CCMDS {
 	==================
 	*/
 	public static void SV_InitOperatorCommands() {
-		Cmd.AddCommand("heartbeat", new xcommand_t() {
-			public void execute() {
-				SV_Heartbeat_f();
-			}
-		});
-		Cmd.AddCommand("kick", new xcommand_t() {
-			public void execute() {
-				SV_Kick_f();
-			}
-		});
-		Cmd.AddCommand("status", new xcommand_t() {
-			public void execute() {
-				SV_Status_f();
-			}
-		});
-		Cmd.AddCommand("serverinfo", new xcommand_t() {
-			public void execute() {
-				SV_Serverinfo_f();
-			}
-		});
-		Cmd.AddCommand("dumpuser", new xcommand_t() {
-			public void execute() {
-				SV_DumpUser_f();
-			}
-		});
+		Cmd.AddCommand("heartbeat", () -> SV_Heartbeat_f());
+		Cmd.AddCommand("kick", () -> SV_Kick_f());
+		Cmd.AddCommand("status", () -> SV_Status_f());
+		Cmd.AddCommand("serverinfo", () -> SV_Serverinfo_f());
+		Cmd.AddCommand("dumpuser", () -> SV_DumpUser_f());
 
-		Cmd.AddCommand("map", new xcommand_t() {
-			public void execute() {
-				SV_Map_f();
-			}
-		});
-		Cmd.AddCommand("demomap", new xcommand_t() {
-			public void execute() {
-				SV_DemoMap_f();
-			}
-		});
-		Cmd.AddCommand("gamemap", new xcommand_t() {
-			public void execute() {
-				SV_GameMap_f();
-			}
-		});
-		Cmd.AddCommand("setmaster", new xcommand_t() {
-			public void execute() {
-				SV_SetMaster_f();
-			}
-		});
+		Cmd.AddCommand("map", () -> SV_Map_f());
+		Cmd.AddCommand("demomap", () -> SV_DemoMap_f());
+		Cmd.AddCommand("gamemap", () -> SV_GameMap_f());
+		Cmd.AddCommand("setmaster", () -> SV_SetMaster_f());
 
 		if (Globals.dedicated.value != 0)
-			Cmd.AddCommand("say", new xcommand_t() {
-			public void execute() {
-				SV_ConSay_f();
-			}
-		});
+			Cmd.AddCommand("say", () -> SV_ConSay_f());
 
-		Cmd.AddCommand("serverrecord", new xcommand_t() {
-			public void execute() {
-				SV_ServerRecord_f();
-			}
-		});
-		Cmd.AddCommand("serverstop", new xcommand_t() {
-			public void execute() {
-				SV_ServerStop_f();
-			}
-		});
+		Cmd.AddCommand("serverrecord", () -> SV_ServerRecord_f());
+		Cmd.AddCommand("serverstop", () -> SV_ServerStop_f());
 
-		Cmd.AddCommand("save", new xcommand_t() {
-			public void execute() {
-				SV_Savegame_f();
-			}
-		});
-		Cmd.AddCommand("load", new xcommand_t() {
-			public void execute() {
-				SV_Loadgame_f();
-			}
-		});
+		Cmd.AddCommand("save", () -> SV_Savegame_f());
+		Cmd.AddCommand("load", () -> SV_Loadgame_f());
 
-		Cmd.AddCommand("killserver", new xcommand_t() {
-			public void execute() {
-				SV_KillServer_f();
-			}
-		});
+		Cmd.AddCommand("killserver", () -> SV_KillServer_f());
 
-		Cmd.AddCommand("sv", new xcommand_t() {
-			public void execute() {
-				SV_ServerCommand_f();
-			}
-		});
+		Cmd.AddCommand("sv", () -> SV_ServerCommand_f());
 	}
 }

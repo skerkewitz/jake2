@@ -30,7 +30,7 @@ import jake2.game.TVar;
 import jake2.qcommon.Cbuf;
 import jake2.qcommon.Com;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.xcommand_t;
+import jake2.qcommon.TXCommand;
 import jake2.sys.QSystem;
 
 import java.io.*;
@@ -107,21 +107,9 @@ public final class FileSystem {
      * InitFilesystem
      */
     public FileSystem() {
-        Cmd.AddCommand("path", new xcommand_t() {
-            public void execute() {
-                Path_f();
-            }
-        });
-        Cmd.AddCommand("link", new xcommand_t() {
-            public void execute() {
-                Link_f();
-            }
-        });
-        Cmd.AddCommand("dir", new xcommand_t() {
-            public void execute() {
-                Dir_f();
-            }
-        });
+        Cmd.AddCommand("path", () -> Path_f());
+        Cmd.AddCommand("link", () -> Link_f());
+        Cmd.AddCommand("dir", () -> Dir_f());
 
         fs_userdir = java.lang.System.getProperty("user.home") + "/.jake2";
         FileSystem.CreatePath(fs_userdir + "/");

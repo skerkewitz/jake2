@@ -37,7 +37,7 @@ public class client_state_t {
 		for (int n = 0; n < Defines.CMD_BACKUP; n++)
 			cmds[n] = new usercmd_t();
 		for (int i = 0; i < frames.length; i++) {
-			frames[i] = new frame_t();
+			frames[i] = new TFrame();
 		}
 
 		for (int n = 0; n < Defines.MAX_CONFIGSTRINGS; n++)
@@ -74,9 +74,9 @@ public class client_state_t {
 	float[] predicted_angles={0,0,0};
 	float[] prediction_error={0,0,0};
 
-	public frame_t frame = new frame_t(); // received from server
+	public TFrame frame = new TFrame(); // received from server
 	int surpressCount; // number of messages rate supressed
-	frame_t frames[] = new frame_t[Defines.UPDATE_BACKUP];
+	TFrame frames[] = new TFrame[Defines.UPDATE_BACKUP];
 
 	// the client maintains its own idea of view angles, which are
 	// sent to the server each frame.  It is cleared to 0 upon entering each level.

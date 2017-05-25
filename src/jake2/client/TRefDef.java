@@ -36,7 +36,7 @@ public class TRefDef {
 
     public byte areabits[];            // if not NULL, only areas with set bits will be drawn
 
-    public lightstyle_t lightstyles[];    // [MAX_LIGHTSTYLES]
+    public TLightStyle lightstyles[];    // [MAX_LIGHTSTYLES]
 
     public int num_entities;
     public TEntity entities[];

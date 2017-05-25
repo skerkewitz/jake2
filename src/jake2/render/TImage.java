@@ -26,53 +26,53 @@ package jake2.render;
 import jake2.Defines;
 
 public class TImage {
-	
-	public static final int MAX_NAME_SIZE = Defines.MAX_QPATH;
-	
-	// used to get the pos in array
-	// added by cwei
-	private int id;
-	
-	// quake 2 variables
-	public String name=""; // game path, including extension
-	// enum imagetype_t
-	public int type;
-	public int width, height; // source image
-	public int upload_width, upload_height; // after power of two and picmip
-	public int registration_sequence; // 0 = free
-	public TMapSurface texturechain; // for sort-by-texture world drawing
-	public int texnum; // gl texture binding
-	public float sl, tl, sh, th; // 0,0 - 1,1 unless part of the scrap
-	public boolean scrap;
-	public boolean has_alpha;
 
-	public boolean paletted;
-	
-	public TImage(int id) {
-		this.id = id;
-	}
-	
-	public void clear() {
-		// don't clear the id
-		// wichtig !!!
-		name = "";
-		type = 0;
-		width = height = 0;
-		upload_width = upload_height = 0;
-		registration_sequence = 0; // 0 = free
-		texturechain = null;
-		texnum = 0; // gl texture binding
-		sl =  tl = sh = th = 0;
-		scrap = false;
-		has_alpha = false;
-		paletted = false;
-	}
+    public static final int MAX_NAME_SIZE = Defines.MAX_QPATH;
 
-	public int getId() {
-		return id;
-	}
-	
-	public String toString() {
-		return name + ":" + texnum;
-	}
+    // used to get the pos in array
+    // added by cwei
+    private int id;
+
+    // quake 2 variables
+    public String name = ""; // game path, including extension
+    // enum imagetype_t
+    public int type;
+    public int width, height; // source image
+    public int upload_width, upload_height; // after power of two and picmip
+    public int registration_sequence; // 0 = free
+    public TMapSurface texturechain; // for sort-by-texture world drawing
+    public int texnum; // gl texture binding
+    public float sl, tl, sh, th; // 0,0 - 1,1 unless part of the scrap
+    public boolean scrap;
+    public boolean has_alpha;
+
+    public boolean paletted;
+
+    public TImage(int id) {
+        this.id = id;
+    }
+
+    public void clear() {
+        // don't clear the id
+        // wichtig !!!
+        name = "";
+        type = 0;
+        width = height = 0;
+        upload_width = upload_height = 0;
+        registration_sequence = 0; // 0 = free
+        texturechain = null;
+        texnum = 0; // gl texture binding
+        sl = tl = sh = th = 0;
+        scrap = false;
+        has_alpha = false;
+        paletted = false;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String toString() {
+        return name + ":" + texnum;
+    }
 }

@@ -91,10 +91,6 @@ public interface Defines {
     int ERR_DROP = 1; // print to console and disconnect from game
     int ERR_DISCONNECT = 2; // don't kill server
 
-    int PRINT_ALL = 0;
-    int PRINT_DEVELOPER = 1; // only print when "developer 1"
-    int PRINT_ALERT = 2;
-
     //	key / value info strings
     int MAX_INFO_KEY = 64;
     int MAX_INFO_VALUE = 64;

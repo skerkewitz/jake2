@@ -177,7 +177,7 @@ public class CL_ents {
 	 * Parses deltas from the given base and adds the resulting entity to the
 	 * current frame ==================
 	 */
-	public static void DeltaEntity(frame_t frame, int newnum, entity_state_t old, int bits) {
+	public static void DeltaEntity(TFrame frame, int newnum, entity_state_t old, int bits) {
 		centity_t ent;
 		entity_state_t state;
 
@@ -232,7 +232,7 @@ public class CL_ents {
 	 * An svc_packetentities has just been parsed, deal with the rest of the
 	 * data stream. ==================
 	 */
-	public static void ParsePacketEntities(frame_t oldframe, frame_t newframe) {
+	public static void ParsePacketEntities(TFrame oldframe, TFrame newframe) {
 		int newnum;
 		int bits = 0;
 
@@ -352,7 +352,7 @@ public class CL_ents {
 	/*
 	 * =================== CL_ParsePlayerstate ===================
 	 */
-	public static void ParsePlayerstate(frame_t oldframe, frame_t newframe) {
+	public static void ParsePlayerstate(TFrame oldframe, TFrame newframe) {
 		int flags;
 		player_state_t state;
 		int i;
@@ -468,7 +468,7 @@ public class CL_ents {
 	 * 
 	 * ==================
 	 */
-	public static void FireEntityEvents(frame_t frame) {
+	public static void FireEntityEvents(TFrame frame) {
 		entity_state_t s1;
 		int pnum, num;
 
@@ -490,7 +490,7 @@ public class CL_ents {
 	public static void ParseFrame() {
 		int cmd;
 		int len;
-		frame_t old;
+		TFrame old;
 
 		//memset( cl.frame, 0, sizeof(cl.frame));
 		Globals.cl.frame.reset();
@@ -597,7 +597,7 @@ public class CL_ents {
 	 * CL_AddPacketEntities
 	 * ===============
 	 */
-	static void AddPacketEntities(frame_t frame) {
+	static void AddPacketEntities(TFrame frame) {
 		entity_state_t s1;
 		float autorotate;
 		int i;
@@ -1084,7 +1084,7 @@ public class CL_ents {
 	static void CalcViewValues() {
 		int i;
 		float lerp, backlerp;
-		frame_t oldframe;
+		TFrame oldframe;
 		player_state_t ps, ops;
 
 		// find the previous frame to interpolate from

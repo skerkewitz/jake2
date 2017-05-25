@@ -56,7 +56,7 @@ public class Draw {
     void Draw_InitLocal() {
         // load console characters (don't bilerp characters)
         RenderAPIImpl.image.draw_chars = RenderAPIImpl.image.GL_FindImage("pics/conchars.pcx", it_pic);
-        RenderAPIImpl.image.GL_Bind(RenderAPIImpl.image.draw_chars.texnum);
+        RenderAPIImpl.image.bindTexture(RenderAPIImpl.image.draw_chars.texnum);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
     }
@@ -85,7 +85,7 @@ public class Draw {
         float fcol = col * 0.0625f;
         float size = 0.0625f;
 
-        RenderAPIImpl.image.GL_Bind(RenderAPIImpl.image.draw_chars.texnum);
+        RenderAPIImpl.image.bindTexture(RenderAPIImpl.image.draw_chars.texnum);
 
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2f(fcol, frow);
@@ -137,7 +137,7 @@ public class Draw {
 
         image = Draw_FindPic(pic);
         if (image == null) {
-            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            VID.Printf(VID.PRINT_ALL, "Can't find pic: " + pic + '\n');
             return;
         }
 
@@ -147,7 +147,7 @@ public class Draw {
         if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-        RenderAPIImpl.image.GL_Bind(image.texnum);
+        RenderAPIImpl.image.bindTexture(image.texnum);
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2f(image.sl, image.tl);
         GL11.glVertex2f(x, y);
@@ -174,7 +174,7 @@ public class Draw {
 
         image = Draw_FindPic(pic);
         if (image == null) {
-            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            VID.Printf(VID.PRINT_ALL, "Can't find pic: " + pic + '\n');
             return;
         }
         if (RenderAPIImpl.image.scrap_dirty)
@@ -183,7 +183,7 @@ public class Draw {
         if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-        RenderAPIImpl.image.GL_Bind(image.texnum);
+        RenderAPIImpl.image.bindTexture(image.texnum);
 
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2f(image.sl, image.tl);
@@ -213,14 +213,14 @@ public class Draw {
 
         image = Draw_FindPic(pic);
         if (image == null) {
-            VID.Printf(Defines.PRINT_ALL, "Can't find pic: " + pic + '\n');
+            VID.Printf(VID.PRINT_ALL, "Can't find pic: " + pic + '\n');
             return;
         }
 
         if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
-        RenderAPIImpl.image.GL_Bind(image.texnum);
+        RenderAPIImpl.image.bindTexture(image.texnum);
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glTexCoord2f(x / 64.0f, y / 64.0f);
         GL11.glVertex2f(x, y);
@@ -314,7 +314,7 @@ public class Draw {
         int row;
         float t;
 
-        RenderAPIImpl.image.GL_Bind(0);
+        RenderAPIImpl.image.bindTexture(0);
 
         if (rows <= 256) {
             hscale = 1;

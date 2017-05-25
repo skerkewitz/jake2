@@ -127,7 +127,7 @@ public class CL_parse {
      * 
      * Request a download from the server ===============
      */
-    public static xcommand_t Download_f = new xcommand_t() {
+    public static TXCommand Download_f = new TXCommand() {
         public void execute() {
             String filename;
 

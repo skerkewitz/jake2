@@ -14,10 +14,9 @@ import jake2.game.entity_state_t;
 import jake2.qcommon.Com;
 import jake2.qcommon.ConsoleVar;
 import jake2.io.FileSystem;
-import jake2.qcommon.xcommand_t;
+import jake2.qcommon.TXCommand;
 import jake2.sound.*;
 import jake2.util.Lib;
-import jake2.util.Vargs;
 import org.lwjgl.openal.*;
 
 import java.nio.*;
@@ -68,26 +67,10 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         int count = Channel.init(buffers);
         Com.Printf("... using " + count + " channels\n");
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
-        Cmd.AddCommand("play", new xcommand_t() {
-            public void execute() {
-                Play();
-            }
-        });
-        Cmd.AddCommand("stopsound", new xcommand_t() {
-            public void execute() {
-                StopAllSounds();
-            }
-        });
-        Cmd.AddCommand("soundlist", new xcommand_t() {
-            public void execute() {
-                SoundList();
-            }
-        });
-        Cmd.AddCommand("soundinfo", new xcommand_t() {
-            public void execute() {
-                SoundInfo_f();
-            }
-        });
+        Cmd.AddCommand("play", () -> Play());
+        Cmd.AddCommand("stopsound", () -> StopAllSounds());
+        Cmd.AddCommand("soundlist", () -> SoundList());
+        Cmd.AddCommand("soundinfo", () -> SoundInfo_f());
 
         num_sfx = 0;
 
@@ -586,7 +569,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
                     Com.Printf("L");
                 else
                     Com.Printf(" ");
-                Com.Printf("(%2db) %6i : %s\n", new Vargs(3).add(sc.width * 8).add(size).add(sfx.getName()));
+                Com.Printf("(%2db) %6i : %s\n", sc.width * 8, size, sfx.getName());
             } else {
                 if (sfx.getName().charAt(0) == '*')
                     Com.Printf("  placeholder : " + sfx.getName() + "\n");
@@ -598,11 +581,9 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     }
 
     void SoundInfo_f() {
-
-        Com.Printf("%5d stereo\n", new Vargs(1).add(1));
-        Com.Printf("%5d samples\n", new Vargs(1).add(22050));
-        Com.Printf("%5d samplebits\n", new Vargs(1).add(16));
-        Com.Printf("%5d speed\n", new Vargs(1).add(44100));
+        Com.Printf("%5d stereo\n", 1);
+        Com.Printf("%5d samples\n", 22050);
+        Com.Printf("%5d samplebits\n", 16);
+        Com.Printf("%5d speed\n", 44100);
     }
-
 }

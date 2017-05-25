@@ -34,7 +34,6 @@ import jake2.render.Renderer;
 import jake2.sound.Sound;
 import jake2.sys.IN;
 import jake2.sys.Keyboard;
-import jake2.util.Vargs;
 
 
 /**
@@ -45,6 +44,11 @@ import jake2.util.Vargs;
  * @author cwei
  */
 public class VID extends Globals {
+
+	public static final int PRINT_ALL = 0;
+	public static final int PRINT_DEVELOPER = 1; // only print when "developer 1"
+	public static final int PRINT_ALERT = 2;
+
 	//	   Main windowed and fullscreen graphics interface module. This module
 	//	   is used for both the software and OpenGL rendering versions of the
 	//	   Quake refresh engine.
@@ -78,35 +82,15 @@ public class VID extends Globals {
 	==========================================================================
 	*/
 
-	public static void Printf(int print_level, String fmt) {
-		Printf(print_level, fmt, null);	
-	}
 
-	public static void Printf(int print_level, String fmt, Vargs vargs) {
-		// static qboolean inupdate;
-		if (print_level == Defines.PRINT_ALL)
+	public static void Printf(int print_level, String fmt, Object ... vargs) {
+		if (print_level == PRINT_ALL)
 			Com.Printf(fmt, vargs);
 		else
 			Com.DPrintf(fmt, vargs);
 	}
 
 	// ==========================================================================
-
-	/*
-	============
-	VID_Restart_f
-
-	Console command to re-start the video mode and refresh DLL. We do this
-	simply by setting the modified flag for the vid_ref variable, which will
-	cause the entire video mode and refresh DLL to be reset on the next frame.
-	============
-	*/
-	static void Restart_f() {
-		vid_modes[11].width = (int) vid_width.value;
-		vid_modes[11].height = (int) vid_height.value;
-
-		vid_ref.modified = true;
-	}
 
 	/*
 	** VID_GetModeInfo
@@ -317,10 +301,10 @@ public class VID extends Globals {
 		vid_modes[11].height = (int)vid_height.value;
 		
 		/* Add some console commands that we want to handle */
-		Cmd.AddCommand ("vid_restart", new xcommand_t() {
-			public void execute() {
-				Restart_f();
-			}
+		Cmd.AddCommand ("vid_restart", () -> {
+			vid_modes[11].width = (int) vid_width.value;
+			vid_modes[11].height = (int) vid_height.value;
+			vid_ref.modified = true;
 		});
 
 		/* Disable the 3Dfx splash screen */

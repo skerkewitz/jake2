@@ -171,17 +171,17 @@ public class Model {
 		int total;
 
 		total = 0;
-		VID.Printf(Defines.PRINT_ALL,"Loaded models:\n");
+		VID.Printf(VID.PRINT_ALL,"Loaded models:\n");
 		for (i=0; i < mod_numknown ; i++)
 		{
 			mod = mod_known[i];
 			if (mod.name.length() == 0)
 				continue;
 
-			VID.Printf (Defines.PRINT_ALL, "%8i : %s\n", new Vargs(2).add(mod.extradatasize).add(mod.name));
+			VID.Printf (VID.PRINT_ALL, "%8i : %s\n", mod.extradatasize, mod.name);
 			total += mod.extradatasize;
 		}
-		VID.Printf (Defines.PRINT_ALL, "Total resident: " + total +'\n');
+		VID.Printf (VID.PRINT_ALL, "Total resident: " + total +'\n');
 	}
 
 	/*
@@ -532,7 +532,7 @@ public class Model {
 
 			out[i].image = RenderAPIImpl.image.GL_FindImage(name, it_wall);
 			if (out[i].image == null) {
-				VID.Printf(Defines.PRINT_ALL, "Couldn't load " + name + '\n');
+				VID.Printf(VID.PRINT_ALL, "Couldn't load " + name + '\n');
 				out[i].image = RenderAPIImpl.main.r_notexture;
 			}
 		}
@@ -1014,8 +1014,7 @@ public class Model {
 		pheader = new qfiles.dmdl_t(buffer);
 
 		if (pheader.version != qfiles.ALIAS_VERSION)
-			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)",
-					 new Vargs(3).add(mod.name).add(pheader.version).add(qfiles.ALIAS_VERSION));
+			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, pheader.version, qfiles.ALIAS_VERSION);
 
 		if (pheader.skinheight > MAX_LBM_HEIGHT)
 			Com.Error(Defines.ERR_DROP, "model "+ mod.name +" has a skin taller than " + MAX_LBM_HEIGHT);
@@ -1132,12 +1131,10 @@ public class Model {
 		qfiles.dsprite_t sprout = new qfiles.dsprite_t(buffer);
 		
 		if (sprout.version != qfiles.SPRITE_VERSION)
-			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)",
-				new Vargs(3).add(mod.name).add(sprout.version).add(qfiles.SPRITE_VERSION));
+			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, sprout.version, qfiles.SPRITE_VERSION);
 
 		if (sprout.numframes > qfiles.MAX_MD2SKINS)
-			Com.Error(Defines.ERR_DROP, "%s has too many frames (%i > %i)",
-				new Vargs(3).add(mod.name).add(sprout.numframes).add(qfiles.MAX_MD2SKINS));
+			Com.Error(Defines.ERR_DROP, "%s has too many frames (%i > %i)", mod.name, sprout.numframes, qfiles.MAX_MD2SKINS);
 
 		for (int i=0 ; i<sprout.numframes ; i++)
 		{

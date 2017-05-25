@@ -250,7 +250,7 @@ public class Main {
 		GL11.glColor4f(1, 1, 1, alpha);
 
 
-		RenderAPIImpl.image.GL_Bind(currentmodel.skins[e.frame].texnum);
+		RenderAPIImpl.image.bindTexture(currentmodel.skins[e.frame].texnum);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
 
 		if (alpha == 1.0)
@@ -426,7 +426,7 @@ public class Main {
 		Math3D.VectorScale(vecUp, 1.5f, up);
 		Math3D.VectorScale(vecRight, 1.5f, right);
 
-		RenderAPIImpl.image.GL_Bind(r_particletexture.texnum);
+		RenderAPIImpl.image.bindTexture(r_particletexture.texnum);
 		GL11.glDepthMask(false); // no z buffering
 		GL11.glEnable(GL11.GL_BLEND);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
@@ -817,9 +817,9 @@ public class Main {
 
 		if (r_speeds.value != 0.0f) {
 			VID.Printf(
-				Defines.PRINT_ALL,
+				VID.PRINT_ALL,
 				"%4i wpoly %4i epoly %i tex %i lmaps\n",
-				new Vargs(4).add(c_brush_polys).add(c_alias_polys).add(c_visible_textures).add(c_visible_lightmaps));
+				4, c_brush_polys, c_alias_polys, c_visible_textures, c_visible_lightmaps);
 		}
 	}
 
@@ -950,27 +950,10 @@ public class Main {
 		vid_gamma = ConsoleVar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
 		vid_ref = ConsoleVar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
 
-		Cmd.AddCommand("imagelist", new xcommand_t() {
-			public void execute() {
-				RenderAPIImpl.image.GL_ImageList_f();
-			}
-		});
-
-		Cmd.AddCommand("screenshot", new xcommand_t() {
-			public void execute() {
-				RenderAPIImpl.glImpl.screenshot();
-			}
-		});
-		Cmd.AddCommand("modellist", new xcommand_t() {
-			public void execute() {
-				RenderAPIImpl.model.Mod_Modellist_f();
-			}
-		});
-		Cmd.AddCommand("gl_strings", new xcommand_t() {
-			public void execute() {
-				RenderAPIImpl.misc.GL_Strings_f();
-			}
-		});
+		Cmd.AddCommand("imagelist", () -> RenderAPIImpl.image.GL_ImageList_f());
+		Cmd.AddCommand("screenshot", () -> RenderAPIImpl.glImpl.screenshot());
+		Cmd.AddCommand("modellist", () -> RenderAPIImpl.model.Mod_Modellist_f());
+		Cmd.AddCommand("gl_strings", () -> RenderAPIImpl.misc.GL_Strings_f());
 	}
 
 	/**
@@ -992,19 +975,19 @@ public class Main {
 			if (err == rserr_invalid_fullscreen) {
 				ConsoleVar.SetValue("VID.vid_fullscreen", 0);
 				VID.vid_fullscreen.modified = false;
-				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n");
+				VID.Printf(VID.PRINT_ALL, "ref_gl::R_SetMode() - fullscreen unavailable in this mode\n");
 				if ((err = RenderAPIImpl.glImpl.setMode(dim, (int) gl_mode.value, false)) == rserr_ok)
 					return true;
 			}
 			else if (err == rserr_invalid_mode) {
 				ConsoleVar.SetValue("gl_mode", gl_state.prev_mode);
 				gl_mode.modified = false;
-				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - invalid mode\n");
+				VID.Printf(VID.PRINT_ALL, "ref_gl::R_SetMode() - invalid mode\n");
 			}
 
 			// try setting it back to something safe
 			if ((err = RenderAPIImpl.glImpl.setMode(dim, gl_state.prev_mode, false)) != rserr_ok) {
-				VID.Printf(Defines.PRINT_ALL, "ref_gl::R_SetMode() - could not revert to safe mode\n");
+				VID.Printf(VID.PRINT_ALL, "ref_gl::R_SetMode() - could not revert to safe mode\n");
 				return false;
 			}
 		}
@@ -1031,7 +1014,7 @@ public class Main {
 			r_turbsin[j] = Warp.SIN[j] * 0.5f;
 		}
 
-		VID.Printf(Defines.PRINT_ALL, "ref_gl version: " + REF_VERSION + '\n');
+		VID.Printf(VID.PRINT_ALL, "ref_gl version: " + REF_VERSION + '\n');
 
 		RenderAPIImpl.image.Draw_GetPalette();
 
@@ -1042,7 +1025,7 @@ public class Main {
 
 		// create the window and set up the context
 		if (!R_SetMode()) {
-			VID.Printf(Defines.PRINT_ALL, "ref_gl::R_Init() - could not R_SetMode()\n");
+			VID.Printf(VID.PRINT_ALL, "ref_gl::R_Init() - could not R_SetMode()\n");
 			return false;
 		}
 		return true;
@@ -1058,13 +1041,13 @@ public class Main {
 		** get our various GL strings
 //		*/
 		gl_config.vendor_string = GL11.glGetString(GL11.GL_VENDOR);
-		VID.Printf(Defines.PRINT_ALL, "GL_VENDOR: " + gl_config.vendor_string + '\n');
+		VID.Printf(VID.PRINT_ALL, "GL_VENDOR: " + gl_config.vendor_string + '\n');
 		gl_config.renderer_string = GL11.glGetString(GL11.GL_RENDERER);
-		VID.Printf(Defines.PRINT_ALL, "GL_RENDERER: " + gl_config.renderer_string + '\n');
+		VID.Printf(VID.PRINT_ALL, "GL_RENDERER: " + gl_config.renderer_string + '\n');
 		gl_config.version_string = GL11.glGetString(GL11.GL_VERSION);
-		VID.Printf(Defines.PRINT_ALL, "GL_VERSION: " + gl_config.version_string + '\n');
+		VID.Printf(VID.PRINT_ALL, "GL_VERSION: " + gl_config.version_string + '\n');
 		gl_config.extensions_string = GL11.glGetString(GL11.GL_EXTENSIONS);
-		VID.Printf(Defines.PRINT_ALL, "GL_EXTENSIONS: " + gl_config.extensions_string + '\n');
+		VID.Printf(VID.PRINT_ALL, "GL_EXTENSIONS: " + gl_config.extensions_string + '\n');
 
 		gl_config.parseOpenGLVersion();
 
@@ -1098,7 +1081,7 @@ public class Main {
 		if (monolightmap.length() < 2 || monolightmap.charAt(1) != 'F') {
 			if (gl_config.renderer == GL_RENDERER_PERMEDIA2) {
 				ConsoleVar.Set("gl_monolightmap", "A");
-				VID.Printf(Defines.PRINT_ALL, "...using gl_monolightmap 'a'\n");
+				VID.Printf(VID.PRINT_ALL, "...using gl_monolightmap 'a'\n");
 			}
 			else if ((gl_config.renderer & GL_RENDERER_POWERVR) != 0) {
 				ConsoleVar.Set("gl_monolightmap", "0");
@@ -1130,32 +1113,32 @@ public class Main {
 		}
 
 		if (gl_config.allow_cds)
-			VID.Printf(Defines.PRINT_ALL, "...allowing CDS\n");
+			VID.Printf(VID.PRINT_ALL, "...allowing CDS\n");
 		else
-			VID.Printf(Defines.PRINT_ALL, "...disabling CDS\n");
+			VID.Printf(VID.PRINT_ALL, "...disabling CDS\n");
 
 		/*
 		** grab extensions
 		*/
 		if (gl_config.extensions_string.indexOf("GL_EXT_compiled_vertex_array") >= 0
 			|| gl_config.extensions_string.indexOf("GL_SGI_compiled_vertex_array") >= 0) {
-			VID.Printf(Defines.PRINT_ALL, "...enabling GL_EXT_compiled_vertex_array\n");
+			VID.Printf(VID.PRINT_ALL, "...enabling GL_EXT_compiled_vertex_array\n");
 			//		 qGL11.glLockArraysEXT = ( void * ) qwglGetProcAddress( "glLockArraysEXT" );
             qglLockArraysEXT = gl_ext_compiled_vertex_array.value != 0.0f;
 			//		 qGL11.glUnlockArraysEXT = ( void * ) qwglGetProcAddress( "glUnlockArraysEXT" );
 			//qglUnlockArraysEXT = true;
 		}
 		else {
-			VID.Printf(Defines.PRINT_ALL, "...GL_EXT_compiled_vertex_array not found\n");
+			VID.Printf(VID.PRINT_ALL, "...GL_EXT_compiled_vertex_array not found\n");
 			qglLockArraysEXT = false;
 		}
 
 		if (gl_config.extensions_string.indexOf("WGL_EXT_swap_control") >= 0) {
 			qwglSwapIntervalEXT = true;
-			VID.Printf(Defines.PRINT_ALL, "...enabling WGL_EXT_swap_control\n");
+			VID.Printf(VID.PRINT_ALL, "...enabling WGL_EXT_swap_control\n");
 		} else {
 			qwglSwapIntervalEXT = false;
-			VID.Printf(Defines.PRINT_ALL, "...WGL_EXT_swap_control not found\n");
+			VID.Printf(VID.PRINT_ALL, "...WGL_EXT_swap_control not found\n");
 		}
 
 		if (gl_config.extensions_string.indexOf("GL_EXT_point_parameters") >= 0) {
@@ -1163,14 +1146,14 @@ public class Main {
 				//			 qGL11.glPointParameterfEXT = ( void (APIENTRY *)( GLenum, GLfloat ) ) qwglGetProcAddress( "glPointParameterfEXT" );
 				qglPointParameterfEXT = true;
 				//			 qGL11.glPointParameterfvEXT = ( void (APIENTRY *)( GLenum, const GLfloat * ) ) qwglGetProcAddress( "glPointParameterfvEXT" );
-				VID.Printf(Defines.PRINT_ALL, "...using GL_EXT_point_parameters\n");
+				VID.Printf(VID.PRINT_ALL, "...using GL_EXT_point_parameters\n");
 			}
 			else {
-				VID.Printf(Defines.PRINT_ALL, "...ignoring GL_EXT_point_parameters\n");
+				VID.Printf(VID.PRINT_ALL, "...ignoring GL_EXT_point_parameters\n");
 			}
 		}
 		else {
-			VID.Printf(Defines.PRINT_ALL, "...GL_EXT_point_parameters not found\n");
+			VID.Printf(VID.PRINT_ALL, "...GL_EXT_point_parameters not found\n");
 		}
 
 		// #ifdef __linux__
@@ -1197,16 +1180,16 @@ public class Main {
 			&& gl_config.extensions_string.indexOf("GL_EXT_paletted_texture") >= 0
 			&& gl_config.extensions_string.indexOf("GL_EXT_shared_texture_palette") >= 0) {
 			if (gl_ext_palettedtexture.value != 0.0f) {
-				VID.Printf(Defines.PRINT_ALL, "...using GL_EXT_shared_texture_palette\n");
+				VID.Printf(VID.PRINT_ALL, "...using GL_EXT_shared_texture_palette\n");
 				qglColorTableEXT = false; // true; TODO jogl bug
 			}
 			else {
-				VID.Printf(Defines.PRINT_ALL, "...ignoring GL_EXT_shared_texture_palette\n");
+				VID.Printf(VID.PRINT_ALL, "...ignoring GL_EXT_shared_texture_palette\n");
 				qglColorTableEXT = false;
 			}
 		}
 		else {
-			VID.Printf(Defines.PRINT_ALL, "...GL_EXT_shared_texture_palette not found\n");
+			VID.Printf(VID.PRINT_ALL, "...GL_EXT_shared_texture_palette not found\n");
 		}
 
 		if (gl_config.extensions_string.indexOf("GL_ARB_multitexture") >= 0) {
@@ -1214,7 +1197,7 @@ public class Main {
 			try {
 				ARBMultitexture.glClientActiveTextureARB(ARBMultitexture.GL_TEXTURE0_ARB);
 				// seems to work correctly
-				VID.Printf(Defines.PRINT_ALL, "...using GL_ARB_multitexture\n");
+				VID.Printf(VID.PRINT_ALL, "...using GL_ARB_multitexture\n");
 				qglActiveTextureARB = true;
 				TEXTURE0 = ARBMultitexture.GL_TEXTURE0_ARB;
 				TEXTURE1 = ARBMultitexture.GL_TEXTURE1_ARB;
@@ -1224,11 +1207,11 @@ public class Main {
 		}
 		else {
 			qglActiveTextureARB = false;
-			VID.Printf(Defines.PRINT_ALL, "...GL_ARB_multitexture not found\n");
+			VID.Printf(VID.PRINT_ALL, "...GL_ARB_multitexture not found\n");
 		}
 
 		if (!(qglActiveTextureARB)) {
-            VID.Printf(Defines.PRINT_ALL, "Missing multi-texturing!\n");
+            VID.Printf(VID.PRINT_ALL, "Missing multi-texturing!\n");
             return false;
         }
 
@@ -1242,9 +1225,9 @@ public class Main {
 		int err = GL11.glGetError();
 		if (err != GL11.GL_NO_ERROR)
 			VID.Printf(
-				Defines.PRINT_ALL,
+				VID.PRINT_ALL,
 				"GL11.glGetError() = 0x%x\n\t%s\n",
-				new Vargs(2).add(err).add("" + GL11.glGetString(err)));
+				2, err, "" + GL11.glGetString(err));
 
         RenderAPIImpl.glImpl.endFrame();
 		return true;
@@ -1261,7 +1244,7 @@ public class Main {
 
 		RenderAPIImpl.model.Mod_FreeAll();
 
-		RenderAPIImpl.image.GL_ShutdownImages();
+		RenderAPIImpl.image.shutdown();
 
 		/*
 		 * shut down OS specific OpenGL stuff like contexts, etc.
@@ -1319,7 +1302,7 @@ public class Main {
 				Com_sprintf( envbuffer, sizeof(envbuffer), "SST_GAMMA=%f", g );
 				putenv( envbuffer );
 				*/
-				VID.Printf(Defines.PRINT_DEVELOPER, "gamma anpassung fuer VOODOO nicht gesetzt");
+				VID.Printf(VID.PRINT_DEVELOPER, "gamma anpassung fuer VOODOO nicht gesetzt");
 			}
 		}
 

@@ -1,7 +1,7 @@
 package jake2.render.opengl
 
 import jake2.client.Dimension
-import jake2.qcommon.xcommand_t
+import jake2.qcommon.TXCommand
 
 interface GLDriver {
 
@@ -23,7 +23,7 @@ interface GLDriver {
 
     //    java.awt.DisplayMode[] getModeList();
 
-    fun updateScreen(callback: xcommand_t)
+    fun updateScreen(callback: TXCommand)
 
     fun screenshot()
 

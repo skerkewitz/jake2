@@ -32,7 +32,6 @@ import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.sys.Timer;
 import jake2.util.Math3D;
-import jake2.util.Vargs;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -64,14 +63,14 @@ public final class V extends Globals {
 
     //static particle_t[] r_particles = new particle_t[MAX_PARTICLES];
 
-    static lightstyle_t[] r_lightstyles = new lightstyle_t[MAX_LIGHTSTYLES];
+    static TLightStyle[] r_lightstyles = new TLightStyle[MAX_LIGHTSTYLES];
     static {
         for (int i = 0; i < r_dlights.length; i++)
             r_dlights[i] = new TDynamicLight();
         for (int i = 0; i < r_entities.length; i++)
             r_entities[i] = new TEntity();
         for (int i = 0; i < r_lightstyles.length; i++)
-            r_lightstyles[i] = new lightstyle_t();
+            r_lightstyles[i] = new TLightStyle();
     }
 
     /*
@@ -142,7 +141,7 @@ public final class V extends Globals {
      * =====================
      */
     static void AddLightStyle(int style, float r, float g, float b) {
-        lightstyle_t ls;
+        TLightStyle ls;
 
         if (style < 0 || style > MAX_LIGHTSTYLES)
             Com.Error(ERR_DROP, "Bad light style " + style);
@@ -241,14 +240,14 @@ public final class V extends Globals {
         }
     }
 
-    static xcommand_t Gun_Next_f = new xcommand_t() {
+    static TXCommand Gun_Next_f = new TXCommand() {
         public void execute() {
             gun_frame++;
             Com.Printf("frame " + gun_frame + "\n");
         }
     };
 
-    static xcommand_t Gun_Prev_f = new xcommand_t() {
+    static TXCommand Gun_Prev_f = new TXCommand() {
         public void execute() {
             gun_frame--;
             if (gun_frame < 0)
@@ -257,7 +256,7 @@ public final class V extends Globals {
         }
     };
 
-    static xcommand_t Gun_Model_f = new xcommand_t() {
+    static TXCommand Gun_Model_f = new TXCommand() {
         public void execute() {
             if (Cmd.Argc() != 2) {
                 gun_model = null;
@@ -366,8 +365,7 @@ public final class V extends Globals {
 
         re.RenderFrame(cl.refdef);
         if (cl_stats.value != 0.0f)
-            Com.Printf("ent:%i  lt:%i  part:%i\n", new Vargs(3).add(
-                    r_numentities).add(r_numdlights).add(r_numparticles));
+            Com.Printf("ent:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
         if (log_stats.value != 0.0f && (log_stats_file != null))
             try {
                 log_stats_file.write(r_numentities + "," + r_numdlights + ","
@@ -385,12 +383,13 @@ public final class V extends Globals {
     /*
      * ============= V_Viewpos_f =============
      */
-    static xcommand_t Viewpos_f = new xcommand_t() {
+    static TXCommand Viewpos_f = new TXCommand() {
         public void execute() {
-            Com.Printf("(%i %i %i) : %i\n", new Vargs(4).add(
-                    (int) cl.refdef.vieworg[0]).add((int) cl.refdef.vieworg[1])
-                    .add((int) cl.refdef.vieworg[2]).add(
-                            (int) cl.refdef.viewangles[YAW]));
+            Com.Printf("(%i %i %i) : %i\n",
+                    (int) cl.refdef.vieworg[0],
+                    (int) cl.refdef.vieworg[1],
+                    (int) cl.refdef.vieworg[2],
+                    (int) cl.refdef.viewangles[YAW]);
         }
     };
 

@@ -193,7 +193,7 @@ public class Surf {
 
 		if ((fa.flags & Defines.SURF_DRAWTURB) != 0)
 		{	
-			RenderAPIImpl.image.GL_Bind( image.texnum );
+			RenderAPIImpl.image.bindTexture( image.texnum );
 
 			// warp texture, no lightmaps
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
@@ -208,7 +208,7 @@ public class Surf {
 		}
 		else
 		{
-			RenderAPIImpl.image.GL_Bind( image.texnum );
+			RenderAPIImpl.image.bindTexture( image.texnum );
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 		}
 
@@ -265,7 +265,7 @@ public class Surf {
 				RenderAPIImpl.light.R_BuildLightMap( fa, temp2, smax);
 				RenderAPIImpl.light.R_SetCacheState( fa );
 
-				RenderAPIImpl.image.GL_Bind( RenderAPIImpl.main.gl_state.lightmap_textures + fa.lightmaptexturenum );
+				RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + fa.lightmaptexturenum );
 
 				GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0,
 								  fa.light_s, fa.light_t, 
@@ -316,7 +316,7 @@ public class Surf {
 
 		for (TMapSurface s = r_alpha_surfaces; s != null ; s=s.texturechain)
 		{
-			RenderAPIImpl.image.GL_Bind(s.texinfo.image.texnum);
+			RenderAPIImpl.image.bindTexture(s.texinfo.image.texnum);
 			RenderAPIImpl.main.c_brush_polys++;
 			if ((s.texinfo.flags & Defines.SURF_TRANS33) != 0)
 				GL11.glColor4f (intens, intens, intens, 0.33f);
@@ -988,7 +988,7 @@ public class Surf {
 	{
 		int texture = ( dynamic ) ? 0 : gl_lms.current_lightmap_texture;
 
-		RenderAPIImpl.image.GL_Bind( RenderAPIImpl.main.gl_state.lightmap_textures + texture );
+		RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + texture );
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
@@ -1173,7 +1173,7 @@ public class Surf {
 		RenderAPIImpl.light.R_BuildLightMap(surf, base.slice(), BLOCK_WIDTH);
 	}
 
-	lightstyle_t[] lightstyles;
+	TLightStyle[] lightstyles;
 	private final IntBuffer dummy = Lib.newIntBuffer(128*128);
 
 	/**
@@ -1181,15 +1181,15 @@ public class Surf {
 	 */
 	void GL_BeginBuildingLightmaps(TModel m)
 	{
-		// static lightstyle_t	lightstyles[MAX_LIGHTSTYLES];
+		// static TLightStyle	lightstyles[MAX_LIGHTSTYLES];
 		int i;
 
 		// init lightstyles
 		if ( lightstyles == null ) {
-			lightstyles = new lightstyle_t[Defines.MAX_LIGHTSTYLES];
+			lightstyles = new TLightStyle[Defines.MAX_LIGHTSTYLES];
 			for (i = 0; i < lightstyles.length; i++)
 			{
-				lightstyles[i] = new lightstyle_t();				
+				lightstyles[i] = new TLightStyle();
 			}
 		}
 
@@ -1264,7 +1264,7 @@ public class Surf {
 		/*
 		** initialize the dynamic lightmap texture
 		*/
-		RenderAPIImpl.image.GL_Bind( RenderAPIImpl.main.gl_state.lightmap_textures + 0 );
+		RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + 0 );
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,

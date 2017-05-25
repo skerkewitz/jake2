@@ -25,10 +25,9 @@
  */
 package jake2.render.opengl
 
-import jake2.Defines
 import jake2.client.Dimension
 import jake2.client.VID
-import jake2.qcommon.xcommand_t
+import jake2.qcommon.TXCommand
 import jake2.render.Base
 
 import jake2.sys.GlfwKeyboardImpl
@@ -205,9 +204,9 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
 
         //		Dimension newDim = new Dimension();
 
-        VID.Printf(Defines.PRINT_ALL, "Initializing OpenGL display\n")
+        VID.Printf(VID.PRINT_ALL, "Initializing OpenGL display\n")
 
-        VID.Printf(Defines.PRINT_ALL, "...setting mode $mode:")
+        VID.Printf(VID.PRINT_ALL, "...setting mode $mode:")
 
         // Setup an error callback. The default implementation
         // will print the error message in QSystem.err.
@@ -268,7 +267,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
 
         val newDim = dim
 
-        VID.Printf(Defines.PRINT_ALL, " " + newDim.width + " " + newDim.height
+        VID.Printf(VID.PRINT_ALL, " " + newDim.width + " " + newDim.height
                 + '\n')
 
         // destroy the existing window
@@ -381,7 +380,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
 
      * @param callback
      */
-    override fun updateScreen(callback: xcommand_t) {
+    override fun updateScreen(callback: TXCommand) {
         callback.execute()
     }
 

@@ -436,7 +436,7 @@ public final class Light {
         int i, j;
         int nummaps;
         float[] bl;
-        //lightstyle_t style;
+        //TLightStyle style;
 
         if ((surf.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33
                 | Defines.SURF_TRANS66 | Defines.SURF_WARP)) != 0)

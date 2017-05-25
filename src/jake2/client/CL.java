@@ -93,7 +93,7 @@ public final class CL {
      * 
      * Stop recording a demo.
      */
-    static xcommand_t Stop_f = new xcommand_t() {
+    static TXCommand Stop_f = new TXCommand() {
         public void execute() {
             try {
 
@@ -124,7 +124,7 @@ public final class CL {
      * record &lt;demoname&gt;
      * Begins recording a demo from the current position.
      */
-    static xcommand_t Record_f = new xcommand_t() {
+    static TXCommand Record_f = new TXCommand() {
         public void execute() {
             try {
                 String name;
@@ -233,7 +233,7 @@ public final class CL {
     /**
      * ForwardToServer_f
      */
-    static xcommand_t ForwardToServer_f = new xcommand_t() {
+    static TXCommand ForwardToServer_f = new TXCommand() {
         public void execute() {
             if (Globals.cls.state != Defines.ca_connected
                     && Globals.cls.state != Defines.ca_active) {
@@ -252,7 +252,7 @@ public final class CL {
     /**
      * Pause_f
      */
-    static xcommand_t Pause_f = new xcommand_t() {
+    static TXCommand Pause_f = new TXCommand() {
         public void execute() {
             // never pause in multiplayer
 
@@ -269,7 +269,7 @@ public final class CL {
     /**
      * Quit_f
      */
-    static xcommand_t Quit_f = new xcommand_t() {
+    static TXCommand Quit_f = new TXCommand() {
         public void execute() {
             Disconnect();
             Com.Quit();
@@ -279,7 +279,7 @@ public final class CL {
     /**
      * Connect_f
      */
-    static xcommand_t Connect_f = new xcommand_t() {
+    static TXCommand Connect_f = new TXCommand() {
         public void execute() {
             String server;
 
@@ -314,7 +314,7 @@ public final class CL {
      * 
      * Send the rest of the command line over as an unconnected command.
      */
-    static xcommand_t Rcon_f = new xcommand_t() {
+    static TXCommand Rcon_f = new TXCommand() {
         public void execute() {
 
             if (Globals.rcon_client_password.string.length() == 0) {
@@ -360,7 +360,7 @@ public final class CL {
         }
     };
 
-    static xcommand_t Disconnect_f = new xcommand_t() {
+    static TXCommand Disconnect_f = new TXCommand() {
         public void execute() {
             Com.Error(Defines.ERR_DROP, "Disconnected from server");
         }
@@ -371,7 +371,7 @@ public final class CL {
      * 
      * Just sent as a hint to the client that they should drop to full console.
      */
-    static xcommand_t Changing_f = new xcommand_t() {
+    static TXCommand Changing_f = new TXCommand() {
         public void execute() {
             //ZOID
             //if we are downloading, we don't change!
@@ -392,7 +392,7 @@ public final class CL {
      * 
      * The server is changing levels.
      */
-    static xcommand_t Reconnect_f = new xcommand_t() {
+    static TXCommand Reconnect_f = new TXCommand() {
         public void execute() {
             //ZOID
             //if we are downloading, we don't change! This so we don't suddenly
@@ -425,7 +425,7 @@ public final class CL {
     /**
      * PingServers_f
      */
-    static xcommand_t PingServers_f = new xcommand_t() {
+    static TXCommand PingServers_f = new TXCommand() {
         public void execute() {
             int i;
             TNetAddr adr = new TNetAddr();
@@ -486,7 +486,7 @@ public final class CL {
      * 
      * Load or download any custom player skins and models.
      */
-    static xcommand_t Skins_f = new xcommand_t() {
+    static TXCommand Skins_f = new TXCommand() {
         public void execute() {
             int i;
 
@@ -506,7 +506,7 @@ public final class CL {
     /**
      * Userinfo_f
      */
-    static xcommand_t Userinfo_f = new xcommand_t() {
+    static TXCommand Userinfo_f = new TXCommand() {
         public void execute() {
             Com.Printf("User info settings:\n");
             Info.Print(ConsoleVar.Userinfo());
@@ -519,7 +519,7 @@ public final class CL {
      * Restart the sound subsystem so it can pick up new parameters and flush
      * all sounds.
      */
-    static xcommand_t Snd_Restart_f = new xcommand_t() {
+    static TXCommand Snd_Restart_f = new TXCommand() {
         public void execute() {
             Sound.Shutdown();
             Sound.Init();
@@ -539,7 +539,7 @@ public final class CL {
      * The server will send this command right before allowing the client into
      * the server.
      */
-    static xcommand_t Precache_f = new xcommand_t() {
+    static TXCommand Precache_f = new TXCommand() {
         public void execute() {
             // Yet another hack to let old demos work the old precache sequence.
             if (Cmd.Argc() < 2) {
@@ -700,9 +700,7 @@ public final class CL {
             time = Timer.Milliseconds() - Globals.cl.timedemo_start;
             if (time > 0)
                 Com.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
-                        new Vargs(3).add(Globals.cl.timedemo_frames).add(
-                                time / 1000.0).add(
-                                Globals.cl.timedemo_frames * 1000.0 / time));
+                        Globals.cl.timedemo_frames, time / 1000.0,  Globals.cl.timedemo_frames * 1000.0 / time);
         }
 
         Math3D.VectorClear(Globals.cl.refdef.blend);

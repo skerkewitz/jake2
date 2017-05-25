@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 27.11.2003 by RST.
-// $Id: frame_t.java,v 1.3 2004-07-09 06:50:50 hzi Exp $
+// $Id: TFrame.java,v 1.3 2004-07-09 06:50:50 hzi Exp $
 
 package jake2.client;
 
@@ -27,7 +27,7 @@ import jake2.game.player_state_t;
 
 import java.util.Arrays;
 
-public class frame_t {
+public class TFrame {
 		
 	public static final int MAX_MAP_AREAS = 256; 
 		
@@ -40,7 +40,7 @@ public class frame_t {
 	public int				num_entities;
 	public int				parse_entities;	// non-masked index into cl_parse_entities array
 		
-	public void set(frame_t from) {
+	public void set(TFrame from) {
 		valid = from.valid;
 		serverframe = from.serverframe;
 		deltaframe = from.deltaframe;

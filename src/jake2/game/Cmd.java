@@ -41,101 +41,89 @@ import java.util.Vector;
  * Cmd
  */
 public final class Cmd {
-    static xcommand_t List_f = new xcommand_t() {
-        public void execute() {
-            cmd_function_t cmd = Cmd.cmd_functions;
-            int i = 0;
+    static TXCommand List_f = () -> {
+        cmd_function_t cmd = Cmd.cmd_functions;
+        int i = 0;
 
-            while (cmd != null) {
-                Com.Printf(cmd.name + '\n');
-                i++;
-                cmd = cmd.next;
-            }
-            Com.Printf(i + " commands\n");
+        while (cmd != null) {
+            Com.Printf(cmd.name + '\n');
+            i++;
+            cmd = cmd.next;
         }
+        Com.Printf(i + " commands\n");
     };
 
-    static xcommand_t Exec_f = new xcommand_t() {
-        public void execute() {
-            if (Cmd.Argc() != 2) {
-                Com.Printf("exec <filename> : execute a script file\n");
-                return;
-            }
-
-            byte[] f = null;
-            f = FileSystem.LoadFile(Cmd.Argv(1));
-            if (f == null) {
-                Com.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
-                return;
-            }
-            Com.Printf("execing " + Cmd.Argv(1) + "\n");
-
-            Cbuf.InsertText(new String(f));
-
-            FileSystem.FreeFile(f);
+    static TXCommand Exec_f = () -> {
+        if (Cmd.Argc() != 2) {
+            Com.Printf("exec <filename> : execute a script file\n");
+            return;
         }
+
+        byte[] f = null;
+        f = FileSystem.LoadFile(Cmd.Argv(1));
+        if (f == null) {
+            Com.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
+            return;
+        }
+        Com.Printf("execing " + Cmd.Argv(1) + "\n");
+
+        Cbuf.InsertText(new String(f));
+
+        FileSystem.FreeFile(f);
     };
 
-    static xcommand_t Echo_f = new xcommand_t() {
-        public void execute() {
-            for (int i = 1; i < Cmd.Argc(); i++) {
-                Com.Printf(Cmd.Argv(i) + " ");
-            }
-            Com.Printf("'\n");
+    static TXCommand Echo_f = () -> {
+        for (int i = 1; i < Cmd.Argc(); i++) {
+            Com.Printf(Cmd.Argv(i) + " ");
         }
+        Com.Printf("'\n");
     };
 
-    static xcommand_t Alias_f = new xcommand_t() {
-        public void execute() {
-            cmdalias_t a = null;
-            if (Cmd.Argc() == 1) {
-                Com.Printf("Current alias commands:\n");
-                for (a = Globals.cmd_alias; a != null; a = a.next) {
-                    Com.Printf(a.name + " : " + a.value);
-                }
-                return;
-            }
-
-            String s = Cmd.Argv(1);
-            if (s.length() > Defines.MAX_ALIAS_NAME) {
-                Com.Printf("Alias name is too long\n");
-                return;
-            }
-
-            // if the alias already exists, reuse it
+    static TXCommand Alias_f = () -> {
+        cmdalias_t a = null;
+        if (Cmd.Argc() == 1) {
+            Com.Printf("Current alias commands:\n");
             for (a = Globals.cmd_alias; a != null; a = a.next) {
-                if (s.equalsIgnoreCase(a.name)) {
-                    a.value = null;
-                    break;
-                }
+                Com.Printf(a.name + " : " + a.value);
             }
-
-            if (a == null) {
-                a = new cmdalias_t();
-                a.next = Globals.cmd_alias;
-                Globals.cmd_alias = a;
-            }
-            a.name = s;
-
-            // copy the rest of the command line
-            String cmd = "";
-            int c = Cmd.Argc();
-            for (int i = 2; i < c; i++) {
-                cmd = cmd + Cmd.Argv(i);
-                if (i != (c - 1))
-                    cmd = cmd + " ";
-            }
-            cmd = cmd + "\n";
-
-            a.value = cmd;
+            return;
         }
+
+        String s = Cmd.Argv(1);
+        if (s.length() > Defines.MAX_ALIAS_NAME) {
+            Com.Printf("Alias name is too long\n");
+            return;
+        }
+
+        // if the alias already exists, reuse it
+        for (a = Globals.cmd_alias; a != null; a = a.next) {
+            if (s.equalsIgnoreCase(a.name)) {
+                a.value = null;
+                break;
+            }
+        }
+
+        if (a == null) {
+            a = new cmdalias_t();
+            a.next = Globals.cmd_alias;
+            Globals.cmd_alias = a;
+        }
+        a.name = s;
+
+        // copy the rest of the command line
+        String cmd = "";
+        int c = Cmd.Argc();
+        for (int i = 2; i < c; i++) {
+            cmd = cmd + Cmd.Argv(i);
+            if (i != (c - 1))
+                cmd = cmd + " ";
+        }
+        cmd = cmd + "\n";
+
+        a.value = cmd;
     };
 
-    public static xcommand_t Wait_f = new xcommand_t() {
-        public void execute() {
-            Globals.cmd_wait = true;
-        }
-    };
+    public static TXCommand Wait_f = () -> Globals.cmd_wait = true;
 
     public static cmd_function_t cmd_functions = null;
 
@@ -307,7 +295,7 @@ public final class Cmd {
         }
     }
 
-    public static void AddCommand(String cmd_name, xcommand_t function) {
+    public static void AddCommand(String cmd_name, TXCommand function) {
         cmd_function_t cmd;
         //Com.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
         // fail if the command is a variable name

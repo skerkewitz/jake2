@@ -1435,7 +1435,7 @@ public class CL_tent {
         float model_length;
 
         float hand_multiplier;
-        frame_t oldframe;
+        TFrame oldframe;
         player_state_t ps, ops;
 
         //	  PMM

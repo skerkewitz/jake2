@@ -24,7 +24,6 @@
 
 package jake2.client;
 
-import jake2.Defines;
 import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
@@ -32,7 +31,6 @@ import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
 import jake2.sys.Timer;
-import jake2.util.Vargs;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -437,27 +435,27 @@ public final class SCR extends Globals {
         //
         // register our commands
         //
-        Cmd.AddCommand("timerefresh", new xcommand_t() {
+        Cmd.AddCommand("timerefresh", new TXCommand() {
             public void execute() {
                 TimeRefresh_f();
             }
         });
-        Cmd.AddCommand("loading", new xcommand_t() {
+        Cmd.AddCommand("loading", new TXCommand() {
             public void execute() {
                 Loading_f();
             }
         });
-        Cmd.AddCommand("sizeup", new xcommand_t() {
+        Cmd.AddCommand("sizeup", new TXCommand() {
             public void execute() {
                 SizeUp_f();
             }
         });
-        Cmd.AddCommand("sizedown", new xcommand_t() {
+        Cmd.AddCommand("sizedown", new TXCommand() {
             public void execute() {
                 SizeDown_f();
             }
         });
-        Cmd.AddCommand("sky", new xcommand_t() {
+        Cmd.AddCommand("sky", new TXCommand() {
             public void execute() {
                 Sky_f();
             }
@@ -638,8 +636,7 @@ public final class SCR extends Globals {
 
         stop = Timer.Milliseconds();
         time = (stop - start) / 1000.0f;
-        Com.Printf("%f seconds (%f fps)\n", new Vargs(2).add(time).add(
-                128.0f / time));
+        Com.Printf("%f seconds (%f fps)\n", time, 128.0f / time);
     }
 
     static void DirtyScreen() {
@@ -1002,8 +999,7 @@ public final class SCR extends Globals {
                     ping = 999;
 
                 // sprintf(block, "%3d %3d %-12.12s", score, ping, ci->name);
-                String block = Com.sprintf("%3d %3d %-12.12s", new Vargs(3)
-                        .add(score).add(ping).add(ci.name));
+                String block = Com.sprintf("%3d %3d %-12.12s", score, ping, ci.name);
 
                 if (value == cl.playernum)
                     Console.DrawAltString(x, y, block);
@@ -1300,7 +1296,7 @@ public final class SCR extends Globals {
                 crosshair_pic);
     }
 
-    private static xcommand_t updateScreenCallback = new xcommand_t() {
+    private static TXCommand updateScreenCallback = new TXCommand() {
         public void execute() {
             UpdateScreen2();
         }
@@ -1396,7 +1392,7 @@ public final class SCR extends Globals {
         ByteBuffer raw = FileSystem.LoadMappedFile(filename);
 
         if (raw == null) {
-            VID.Printf(Defines.PRINT_DEVELOPER, "Bad pcx file " + filename
+            VID.Printf(VID.PRINT_DEVELOPER, "Bad pcx file " + filename
                     + '\n');
             return 0;
         }
@@ -1408,7 +1404,7 @@ public final class SCR extends Globals {
                 || pcx.bits_per_pixel != 8 || pcx.xmax >= 640
                 || pcx.ymax >= 480) {
 
-            VID.Printf(Defines.PRINT_ALL, "Bad pcx file " + filename + '\n');
+            VID.Printf(VID.PRINT_ALL, "Bad pcx file " + filename + '\n');
             return 0;
         }
 

@@ -30,463 +30,396 @@ import jake2.Globals;
 import jake2.client.CL;
 import jake2.client.Console;
 import jake2.game.Cmd;
-import jake2.io.*;
+import jake2.io.FileSystem;
 import jake2.server.SV_MAIN;
 import jake2.sys.QSystem;
-import jake2.util.*;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 
 /**
  * Com
- *
  */
-public final class Com
-{
+public final class Com {
 
     static String debugContext = "";
     static String _debugContext = "";
-    
-	static int com_argc;
-	static String[] com_argv= new String[Defines.MAX_NUM_ARGVS];
 
-	public abstract static class RD_Flusher
-	{
-		public abstract void rd_flush(int target, StringBuffer buffer);
-	}
+    static int com_argc;
+    static String[] com_argv = new String[Defines.MAX_NUM_ARGVS];
 
-	static int rd_target;
-	static StringBuffer rd_buffer;
-	static int rd_buffersize;
-	static RD_Flusher rd_flusher;
+    public abstract static class RD_Flusher {
+        public abstract void rd_flush(int target, StringBuffer buffer);
+    }
 
-	public static void BeginRedirect(int target, StringBuffer buffer, int buffersize, RD_Flusher flush)
-	{
-		if (0 == target || null == buffer || 0 == buffersize || null == flush)
-			return;
+    static int rd_target;
+    static StringBuffer rd_buffer;
+    static int rd_buffersize;
+    static RD_Flusher rd_flusher;
 
-		rd_target= target;
-		rd_buffer= buffer;
-		rd_buffersize= buffersize;
-		rd_flusher= flush;
+    public static void BeginRedirect(int target, StringBuffer buffer, int buffersize, RD_Flusher flush) {
+        if (0 == target || null == buffer || 0 == buffersize || null == flush)
+            return;
 
-		rd_buffer.setLength(0);
-	}
+        rd_target = target;
+        rd_buffer = buffer;
+        rd_buffersize = buffersize;
+        rd_flusher = flush;
 
-	public static void EndRedirect()
-	{
-		rd_flusher.rd_flush(rd_target, rd_buffer);
+        rd_buffer.setLength(0);
+    }
 
-		rd_target= 0;
-		rd_buffer= null;
-		rd_buffersize= 0;
-		rd_flusher= null;
-	}
+    public static void EndRedirect() {
+        rd_flusher.rd_flush(rd_target, rd_buffer);
 
-	static boolean recursive= false;
+        rd_target = 0;
+        rd_buffer = null;
+        rd_buffersize = 0;
+        rd_flusher = null;
+    }
 
-	static String msg= "";
+    static boolean recursive = false;
 
-	// helper class to replace the pointer-pointer
-	public static class ParseHelp
-	{
-		public ParseHelp(String in)
-		{
-			if (in == null)
-			{
-				data= null;
-				length = 0;
-			}
-			else
-			{
-				data= in.toCharArray();
-				length = data.length;
-			}
-			index= 0;
-		}
+    static String msg = "";
 
-		public ParseHelp(char in[])
-		{
-			this(in, 0);
-		}
+    // helper class to replace the pointer-pointer
+    public static class ParseHelp {
+        public ParseHelp(String in) {
+            if (in == null) {
+                data = null;
+                length = 0;
+            } else {
+                data = in.toCharArray();
+                length = data.length;
+            }
+            index = 0;
+        }
 
-		public ParseHelp(char in[], int offset)
-		{
-			data= in;
-			index= offset;
-			if (data != null) length = data.length;
-			else length = 0;
-		}
+        public ParseHelp(char in[]) {
+            this(in, 0);
+        }
 
-		public char getchar()
-		{
-		    if (index < length) {
-		        return data[index];
-		    }
-		    return 0;			
-		}
+        public ParseHelp(char in[], int offset) {
+            data = in;
+            index = offset;
+            if (data != null) length = data.length;
+            else length = 0;
+        }
 
-		public char nextchar()
-		{
-			// faster than if
-		    index++;
-		    if (index < length) {
-		        return data[index];
-		    }
-		    return 0;
-		}
-		
-		public char prevchar() {
-			if (index > 0) 
-			{
-				index--;
-				return data[index];
-			}
-			return 0;					
-		}
+        public char getchar() {
+            if (index < length) {
+                return data[index];
+            }
+            return 0;
+        }
 
-		public boolean isEof()
-		{
-			return index >= length;
-		}
+        public char nextchar() {
+            // faster than if
+            index++;
+            if (index < length) {
+                return data[index];
+            }
+            return 0;
+        }
 
-		public int index;
-		public char data[];
-		private int length;
+        public char prevchar() {
+            if (index > 0) {
+                index--;
+                return data[index];
+            }
+            return 0;
+        }
 
-		public char skipwhites()
-		{
-			char c = 0;
-			while ( index < length && ((c= data[index]) <= ' ') && c != 0)
-				index++;
-			return c;
-		}
+        public boolean isEof() {
+            return index >= length;
+        }
 
-		public char skipwhitestoeol()
-		{
-			char c = 0;
-			while ( index < length &&((c= data[index]) <= ' ') && c != '\n' && c != 0)
-				index++;
-			return c;
-		}
+        public int index;
+        public char data[];
+        private int length;
 
-		public char skiptoeol()
-		{
-			char c = 0;
-			while ( index < length &&(c= data[index]) != '\n' && c != 0)
-				index++;
-			return c;
-		}
-	}
+        public char skipwhites() {
+            char c = 0;
+            while (index < length && ((c = data[index]) <= ' ') && c != 0)
+                index++;
+            return c;
+        }
 
-	public static char com_token[]= new char[Defines.MAX_TOKEN_CHARS];
+        public char skipwhitestoeol() {
+            char c = 0;
+            while (index < length && ((c = data[index]) <= ' ') && c != '\n' && c != 0)
+                index++;
+            return c;
+        }
 
-	// See GameSpanw.ED_ParseEdict() to see how to use it now.
-	public static String Parse(ParseHelp hlp) {
-		int c;
-		int len = 0;
+        public char skiptoeol() {
+            char c = 0;
+            while (index < length && (c = data[index]) != '\n' && c != 0)
+                index++;
+            return c;
+        }
+    }
 
-		if (hlp.data == null) {
-			return "";
-		}
+    public static char com_token[] = new char[Defines.MAX_TOKEN_CHARS];
 
-		while (true) {
-			//	   skip whitespace
-			hlp.skipwhites();
-			if (hlp.isEof()) {
-			    hlp.data = null;
-			    return "";
-			}
+    // See GameSpanw.ED_ParseEdict() to see how to use it now.
+    public static String Parse(ParseHelp hlp) {
+        int c;
+        int len = 0;
 
-			//	   skip // comments
-			if (hlp.getchar() == '/') {
-				if (hlp.nextchar() == '/') {
-					hlp.skiptoeol();
-					// goto skip whitespace
-					continue;
-				} else {
-					hlp.prevchar();
-					break;
-				}
-			} else
-				break;
-		}
+        if (hlp.data == null) {
+            return "";
+        }
 
-		//	   handle quoted strings specially
-		if (hlp.getchar() == '\"') {
-			hlp.nextchar();
-			while (true) {
-				c = hlp.getchar();
-				hlp.nextchar();
-				if (c == '\"' || c == 0) {
-					return new String(com_token, 0, len);
-				}
-				if (len < Defines.MAX_TOKEN_CHARS) {
-					com_token[len] = (char) c;
-					len++;
-				}
-			}
-		}
+        while (true) {
+            //	   skip whitespace
+            hlp.skipwhites();
+            if (hlp.isEof()) {
+                hlp.data = null;
+                return "";
+            }
 
-		//	   parse a regular word
-		c = hlp.getchar();
-		do {
-			if (len < Defines.MAX_TOKEN_CHARS) {
-				com_token[len] = (char) c;
-				len++;
-			}
-			c = hlp.nextchar();
-		} while (c > 32);
+            //	   skip // comments
+            if (hlp.getchar() == '/') {
+                if (hlp.nextchar() == '/') {
+                    hlp.skiptoeol();
+                    // goto skip whitespace
+                    continue;
+                } else {
+                    hlp.prevchar();
+                    break;
+                }
+            } else
+                break;
+        }
 
-		if (len == Defines.MAX_TOKEN_CHARS) {
-			Com.Printf("Token exceeded " + Defines.MAX_TOKEN_CHARS + " chars, discarded.\n");
-			len = 0;
-		}
+        //	   handle quoted strings specially
+        if (hlp.getchar() == '\"') {
+            hlp.nextchar();
+            while (true) {
+                c = hlp.getchar();
+                hlp.nextchar();
+                if (c == '\"' || c == 0) {
+                    return new String(com_token, 0, len);
+                }
+                if (len < Defines.MAX_TOKEN_CHARS) {
+                    com_token[len] = (char) c;
+                    len++;
+                }
+            }
+        }
 
-		return new String(com_token, 0, len);
-	}
+        //	   parse a regular word
+        c = hlp.getchar();
+        do {
+            if (len < Defines.MAX_TOKEN_CHARS) {
+                com_token[len] = (char) c;
+                len++;
+            }
+            c = hlp.nextchar();
+        } while (c > 32);
 
-	public static xcommand_t Error_f= new xcommand_t()
-	{
-		public void execute() throws QuakeException
-		{
-			Error(Defines.ERR_FATAL, Cmd.Argv(1));
-		}
-	};
+        if (len == Defines.MAX_TOKEN_CHARS) {
+            Com.Printf("Token exceeded " + Defines.MAX_TOKEN_CHARS + " chars, discarded.\n");
+            len = 0;
+        }
 
-	public static void Error(int code, String fmt) throws QuakeException
-	{
-		Error(code, fmt, null);
-	}
+        return new String(com_token, 0, len);
+    }
 
-	public static void Error(int code, String fmt, Vargs vargs) throws QuakeException
-	{
-		// va_list argptr;
-		// static char msg[MAXPRINTMSG];
+    public static TXCommand Error_f = () -> Error(Defines.ERR_FATAL, Cmd.Argv(1));
 
-		if (recursive)
-		{
-			QSystem.Error("recursive error after: " + msg);
-		}
-		recursive= true;
 
-		msg= sprintf(fmt, vargs);
+    public static void Error(int code, String fmt) throws QuakeException {
+        Error(code, fmt, null);
+    }
 
-		if (code == Defines.ERR_DISCONNECT)
-		{
-			CL.Drop();
-			recursive= false;
-			throw new QuakeException();
-		}
-		else if (code == Defines.ERR_DROP)
-		{
-			Com.Printf("********************\nERROR: " + msg + "\n********************\n");
-			SV_MAIN.SV_Shutdown("Server crashed: " + msg + "\n", false);
-			CL.Drop();
-			recursive= false;
-			throw new QuakeException();
-		}
-		else
-		{
-			SV_MAIN.SV_Shutdown("Server fatal crashed: %s" + msg + "\n", false);
-			CL.Shutdown();
-		}
+    public static void Error(int code, String fmt, Object ... vargs) throws QuakeException {
+        // va_list argptr;
+        // static char msg[MAXPRINTMSG];
 
-		QSystem.Error(msg);
-	}
+        if (recursive) {
+            QSystem.Error("recursive error after: " + msg);
+        }
+        recursive = true;
 
-	/**
-	 * Com_InitArgv checks the number of command line arguments
-	 * and copies all arguments with valid length into com_argv.
-	 */
-	static void InitArgv(String[] args) throws QuakeException
-	{
+        msg = String.format(fmt, vargs);
 
-		if (args.length > Defines.MAX_NUM_ARGVS)
-		{
-			Com.Error(Defines.ERR_FATAL, "argc > MAX_NUM_ARGVS");
-		}
+        if (code == Defines.ERR_DISCONNECT) {
+            CL.Drop();
+            recursive = false;
+            throw new QuakeException();
+        } else if (code == Defines.ERR_DROP) {
+            Com.Printf("********************\nERROR: " + msg + "\n********************\n");
+            SV_MAIN.SV_Shutdown("Server crashed: " + msg + "\n", false);
+            CL.Drop();
+            recursive = false;
+            throw new QuakeException();
+        } else {
+            SV_MAIN.SV_Shutdown("Server fatal crashed: %s" + msg + "\n", false);
+            CL.Shutdown();
+        }
 
-		Com.com_argc= args.length;
-		for (int i= 0; i < Com.com_argc; i++)
-		{
-			if (args[i].length() >= Defines.MAX_TOKEN_CHARS)
-				Com.com_argv[i]= "";
-			else
-				Com.com_argv[i]= args[i];
-		}
-	}
+        QSystem.Error(msg);
+    }
 
-	public static void DPrintf(String fmt)
-	{
-	    _debugContext = debugContext;
-		DPrintf(fmt, null);
-		_debugContext = "";
-	}
-	
-	public static void dprintln(String fmt)
-	{
-		DPrintf(_debugContext + fmt + "\n", null);
-	}
+    /**
+     * Com_InitArgv checks the number of command line arguments
+     * and copies all arguments with valid length into com_argv.
+     */
+    static void InitArgv(String[] args) throws QuakeException {
 
-	public static void Printf(String fmt)
-	{
-		Printf(_debugContext + fmt, null);
-	}
+        if (args.length > Defines.MAX_NUM_ARGVS) {
+            Com.Error(Defines.ERR_FATAL, "argc > MAX_NUM_ARGVS");
+        }
 
-	public static void DPrintf(String fmt, Vargs vargs)
-	{
-		if (Globals.developer == null || Globals.developer.value == 0)
-			return; // don't confuse non-developers with techie stuff...
-		_debugContext = debugContext;
-		Printf(fmt, vargs);
-		_debugContext="";
-	}
+        Com.com_argc = args.length;
+        for (int i = 0; i < Com.com_argc; i++) {
+            if (args[i].length() >= Defines.MAX_TOKEN_CHARS)
+                Com.com_argv[i] = "";
+            else
+                Com.com_argv[i] = args[i];
+        }
+    }
 
-	/** Prints out messages, which can also be redirected to a remote client. */
-	public static void Printf(String fmt, Vargs vargs)
-	{
-		String msg= sprintf(_debugContext + fmt, vargs);
-		if (rd_target != 0)
-		{
-			if ((msg.length() + rd_buffer.length()) > (rd_buffersize - 1))
-			{
-				rd_flusher.rd_flush(rd_target, rd_buffer);
-				rd_buffer.setLength(0);
-			}
-			rd_buffer.append(msg);
-			return;
-		}
+    public static void DPrintf(String fmt) {
+        _debugContext = debugContext;
+        DPrintf(fmt, null);
+        _debugContext = "";
+    }
 
-		Console.Print(msg);
+    public static void dprintln(String fmt) {
+        DPrintf(_debugContext + fmt + "\n", null);
+    }
 
-		// also echo to debugging console
-		QSystem.ConsoleOutput(msg);
+    public static void Printf(String fmt) {
+        Printf(_debugContext + fmt, null);
+    }
 
-		// logfile
-		if (Globals.logfile_active != null && Globals.logfile_active.value != 0)
-		{
-			String name;
+    public static void DPrintf(String fmt, Object ... vargs) {
+        if (Globals.developer == null || Globals.developer.value == 0)
+            return; // don't confuse non-developers with techie stuff...
+        _debugContext = debugContext;
+        Printf(fmt, vargs);
+        _debugContext = "";
+    }
 
-			if (Globals.logfile == null)
-			{
-				name= FileSystem.Gamedir() + "/qconsole.log";
-				if (Globals.logfile_active.value > 2)
-					try
-					{
-						Globals.logfile = new RandomAccessFile(name, "rw");
-						Globals.logfile.seek(Globals.logfile.length());
-					}
-					catch (Exception e)
-					{
-						// TODO: do quake2 error handling!
-						e.printStackTrace();
-					}
-				else
-					try
-					{
-						Globals.logfile= new RandomAccessFile(name, "rw");
-					}
-					catch (FileNotFoundException e1)
-					{
-						// TODO: do quake2 error handling!
-						e1.printStackTrace();
-					}
-			}
-			if (Globals.logfile != null)
-				try
-				{
-					Globals.logfile.writeChars(msg);
-				}
-				catch (IOException e)
-				{
-					// TODO: do quake2 error handling!
-					e.printStackTrace();
-				}
-			if (Globals.logfile_active.value > 1); // do nothing
-			// fflush (logfile);		// force it to save every time
-		}
-	}
+    /**
+     * Prints out messages, which can also be redirected to a remote client.
+     */
+    public static void Printf(String fmt, Object ... vargs) {
+        String msg = String.format(_debugContext + fmt, vargs);
+        if (rd_target != 0) {
+            if ((msg.length() + rd_buffer.length()) > (rd_buffersize - 1)) {
+                rd_flusher.rd_flush(rd_target, rd_buffer);
+                rd_buffer.setLength(0);
+            }
+            rd_buffer.append(msg);
+            return;
+        }
 
-	public static void Println(String fmt)
-	{
-		Printf(_debugContext + fmt + "\n");
-	}
+        Console.Print(msg);
 
-	public static String sprintf(String fmt, Vargs vargs)
-	{
-		String msg= "";
-		if (vargs == null || vargs.size() == 0)
-		{
-			msg= fmt;
-		}
-		else
-		{
-			msg= new PrintfFormat(fmt).sprintf(vargs.toArray());
-		}
-		return msg;
-	}
+        // also echo to debugging console
+        QSystem.ConsoleOutput(msg);
 
-	public static int Argc()
-	{
-		return Com.com_argc;
-	}
+        // logfile
+        if (Globals.logfile_active != null && Globals.logfile_active.value != 0) {
+            String name;
 
-	public static String Argv(int arg)
-	{
-		if (arg < 0 || arg >= Com.com_argc || Com.com_argv[arg].length() < 1)
-			return "";
-		return Com.com_argv[arg];
-	}
+            if (Globals.logfile == null) {
+                name = FileSystem.Gamedir() + "/qconsole.log";
+                if (Globals.logfile_active.value > 2)
+                    try {
+                        Globals.logfile = new RandomAccessFile(name, "rw");
+                        Globals.logfile.seek(Globals.logfile.length());
+                    } catch (Exception e) {
+                        // TODO: do quake2 error handling!
+                        e.printStackTrace();
+                    }
+                else
+                    try {
+                        Globals.logfile = new RandomAccessFile(name, "rw");
+                    } catch (FileNotFoundException e1) {
+                        // TODO: do quake2 error handling!
+                        e1.printStackTrace();
+                    }
+            }
+            if (Globals.logfile != null)
+                try {
+                    Globals.logfile.writeChars(msg);
+                } catch (IOException e) {
+                    // TODO: do quake2 error handling!
+                    e.printStackTrace();
+                }
+            if (Globals.logfile_active.value > 1) ; // do nothing
+            // fflush (logfile);		// force it to save every time
+        }
+    }
 
-	public static void ClearArgv(int arg)
-	{
-		if (arg < 0 || arg >= Com.com_argc || Com.com_argv[arg].length() < 1)
-			return;
-		Com.com_argv[arg]= "";
-	}
+    public static void Println(String fmt) {
+        Printf(_debugContext + fmt + "\n");
+    }
 
-	public static void Quit()
-	{
-		SV_MAIN.SV_Shutdown("Server quit\n", false);
-		CL.Shutdown();
+    public static String sprintf(String fmt, Object ... vargs) {
+        if (vargs == null || vargs.length == 0) {
+            return fmt;
+        }
 
-		if (Globals.logfile != null)
-		{
-			try
-			{
-				Globals.logfile.close();
-			}
-			catch (IOException e)
-			{
-			}
-			Globals.logfile= null;
-		}
+        return String.format(fmt, vargs);
+    }
 
-		QSystem.Quit();
-	}
+    public static int Argc() {
+        return Com.com_argc;
+    }
 
-	public static void SetServerState(int i)
-	{
-		Globals.server_state= i;
-	}
+    public static String Argv(int arg) {
+        if (arg < 0 || arg >= Com.com_argc || Com.com_argv[arg].length() < 1)
+            return "";
+        return Com.com_argv[arg];
+    }
 
-	public static int BlockChecksum(byte[] buf, int length)
-	{
-		return MD4.Com_BlockChecksum(buf, length);
-	}
+    public static void ClearArgv(int arg) {
+        if (arg < 0 || arg >= Com.com_argc || Com.com_argv[arg].length() < 1)
+            return;
+        Com.com_argv[arg] = "";
+    }
 
-	public static String StripExtension(String string) {
-		int i = string.lastIndexOf('.');
-		if (i < 0)
-			return string;
-		return string.substring(0, i);
-	}
+    public static void Quit() {
+        SV_MAIN.SV_Shutdown("Server quit\n", false);
+        CL.Shutdown();
 
-	/**
-	 * CRC table. 
-	 */
-	static byte chktbl[] = { (byte) 0x84, (byte) 0x47, (byte) 0x51, (byte) 0xc1,
+        if (Globals.logfile != null) {
+            try {
+                Globals.logfile.close();
+            } catch (IOException e) {
+            }
+            Globals.logfile = null;
+        }
+
+        QSystem.Quit();
+    }
+
+    public static void SetServerState(int i) {
+        Globals.server_state = i;
+    }
+
+    public static int BlockChecksum(byte[] buf, int length) {
+        return MD4.Com_BlockChecksum(buf, length);
+    }
+
+    public static String StripExtension(String string) {
+        int i = string.lastIndexOf('.');
+        if (i < 0)
+            return string;
+        return string.substring(0, i);
+    }
+
+    /**
+     * CRC table.
+     */
+    static byte chktbl[] = {(byte) 0x84, (byte) 0x47, (byte) 0x51, (byte) 0xc1,
             (byte) 0x93, (byte) 0x22, (byte) 0x21, (byte) 0x24, (byte) 0x2f,
             (byte) 0x66, (byte) 0x60, (byte) 0x4d, (byte) 0xb0, (byte) 0x7c,
             (byte) 0xda, (byte) 0x88, (byte) 0x54, (byte) 0x15, (byte) 0x2b,
@@ -681,42 +614,41 @@ public final class Com
             (byte) 0x32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0 };
-	
-	static byte chkb[] = new byte [60 + 4];
-	
-	/**
-	 * Calculates a crc checksum-sequence over an array.
-	 */
-	public static byte BlockSequenceCRCByte(byte base[], int offset, int length, int sequence)
-	{
-		if (sequence < 0)
-			QSystem.Error("sequence < 0, this shouldn't happen\n");
+            0, 0};
 
-		//p_ndx = (sequence % (sizeof(chktbl) - 4));
-		int p_ndx = (sequence % (1024 - 4));
-		
-		//memcpy(chkb, base, length);
-		length = Math.min(60, length);
-		java.lang.System.arraycopy(base, offset , chkb, 0, length);
-		
-		chkb[length] = chktbl[p_ndx + 0];
-		chkb[length + 1] = chktbl[p_ndx + 1];
-		chkb[length + 2] = chktbl[p_ndx + 2];
-		chkb[length + 3] = chktbl[p_ndx + 3];
-		
-		length += 4;
+    static byte chkb[] = new byte[60 + 4];
 
-		// unsigned short
-		int crc = CRC.CRC_Block(chkb, length);
+    /**
+     * Calculates a crc checksum-sequence over an array.
+     */
+    public static byte BlockSequenceCRCByte(byte base[], int offset, int length, int sequence) {
+        if (sequence < 0)
+            QSystem.Error("sequence < 0, this shouldn't happen\n");
 
-		int x = 0;
-		for (int n=0; n < length; n++)
-			x += chkb[n] & 0xFF;
+        //p_ndx = (sequence % (sizeof(chktbl) - 4));
+        int p_ndx = (sequence % (1024 - 4));
 
-		crc ^= x;
+        //memcpy(chkb, base, length);
+        length = Math.min(60, length);
+        java.lang.System.arraycopy(base, offset, chkb, 0, length);
 
-		return (byte)(crc & 0xFF);
-	}
+        chkb[length] = chktbl[p_ndx + 0];
+        chkb[length + 1] = chktbl[p_ndx + 1];
+        chkb[length + 2] = chktbl[p_ndx + 2];
+        chkb[length + 3] = chktbl[p_ndx + 3];
+
+        length += 4;
+
+        // unsigned short
+        int crc = CRC.CRC_Block(chkb, length);
+
+        int x = 0;
+        for (int n = 0; n < length; n++)
+            x += chkb[n] & 0xFF;
+
+        crc ^= x;
+
+        return (byte) (crc & 0xFF);
+    }
 
 }

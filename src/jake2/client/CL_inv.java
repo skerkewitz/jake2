@@ -32,7 +32,6 @@ import jake2.Globals;
 import jake2.qcommon.Com;
 import jake2.qcommon.TSizeBuffer;
 import jake2.util.Lib;
-import jake2.util.Vargs;
 
 /**
  * CL_inv
@@ -129,8 +128,7 @@ public class CL_inv {
 					break;
 				}
 
-			string = Com.sprintf("%6s %3i %s", new Vargs(3).add(bind).add(Globals.cl.inventory[item]).add(
-					Globals.cl.configstrings[Defines.CS_ITEMS + item]));
+			string = Com.sprintf("%6s %3i %s", bind, Globals.cl.inventory[item], Globals.cl.configstrings[Defines.CS_ITEMS + item]);
 			if (item != selected)
 				string = getHighBitString(string);
 			else // draw a blinky cursor by the selected item

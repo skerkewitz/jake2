@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.client;
 
-import jake2.qcommon.xcommand_t;
+import jake2.qcommon.TXCommand;
 import jake2.render.TImage;
 import jake2.render.TModel;
 import jake2.sys.Keyboard;
@@ -101,7 +101,7 @@ public interface refexport_t {
 	 * 
 	 *
 	 */
-	void updateScreen(xcommand_t callback);
+	void updateScreen(TXCommand callback);
 	
 	int apiVersion();
 	

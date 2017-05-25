@@ -223,67 +223,59 @@ public class ConsoleVar {
      * Set command, sets variables.
      */
     
-    static xcommand_t Set_f = new xcommand_t() {
-        public void execute() {
-            int c;
-            int flags;
+    static TXCommand Set_f = () -> {
 
-            c = Cmd.Argc();
-            if (c != 3 && c != 4) {
-                Com.Printf("usage: set <variable> <value> [u / s]\n");
-                return;
-            }
-
-            if (c == 4) {
-                if (Cmd.Argv(3).equals("u"))
-                    flags = TVar.CVAR_FLAG_USERINFO;
-                else if (Cmd.Argv(3).equals("s"))
-                    flags = TVar.CVAR_FLAG_SERVERINFO;
-                else {
-                    Com.Printf("flags can only be 'u' or 's'\n");
-                    return;
-                }
-                ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
-            } else
-                ConsoleVar.Set(Cmd.Argv(1), Cmd.Argv(2));
-
+        int c = Cmd.Argc();
+        if (c != 3 && c != 4) {
+            Com.Printf("usage: set <variable> <value> [u / s]\n");
+            return;
         }
 
+        if (c == 4) {
+            int flags;
+            if (Cmd.Argv(3).equals("u"))
+                flags = TVar.CVAR_FLAG_USERINFO;
+            else if (Cmd.Argv(3).equals("s"))
+                flags = TVar.CVAR_FLAG_SERVERINFO;
+            else {
+                Com.Printf("flags can only be 'u' or 's'\n");
+                return;
+            }
+            ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
+        } else
+            ConsoleVar.Set(Cmd.Argv(1), Cmd.Argv(2));
     };
 
 
     /**
      * List command, lists all available commands.
      */
-    static xcommand_t List_f = new xcommand_t() {
-        public void execute() {
-            int i = 0;
-            for (TVar var : cvar_vars) {
-                if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
-                    Com.Printf("*");
-                else
-                    Com.Printf(" ");
-                if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
-                    Com.Printf("U");
-                else
-                    Com.Printf(" ");
-                if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
-                    Com.Printf("Sound");
-                else
-                    Com.Printf(" ");
-                if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
-                    Com.Printf("-");
-                else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
-                    Com.Printf("L");
-                else
-                    Com.Printf(" ");
-                Com.Printf(" " + var.name + " \"" + var.string + "\"\n");
-                i += 1;
-            }
-            Com.Printf(i + " cvars\n");
+    static TXCommand List_f = () -> {
+        int i = 0;
+        for (TVar var : cvar_vars) {
+            if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
+                Com.Printf("*");
+            else
+                Com.Printf(" ");
+            if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
+                Com.Printf("U");
+            else
+                Com.Printf(" ");
+            if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
+                Com.Printf("Sound");
+            else
+                Com.Printf(" ");
+            if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
+                Com.Printf("-");
+            else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
+                Com.Printf("L");
+            else
+                Com.Printf(" ");
+            Com.Printf(" " + var.name + " \"" + var.string + "\"\n");
+            i += 1;
         }
+        Com.Printf(i + " cvars\n");
     };
-
 
 
     /** 

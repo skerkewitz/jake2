@@ -35,14 +35,13 @@ import jake2.game.Cmd;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.util.Lib;
-import jake2.util.Vargs;
 
 /**
  * Console
  */
 public final class Console extends Globals {
 
-    public static xcommand_t ToggleConsole_f = new xcommand_t() {
+    public static TXCommand ToggleConsole_f = new TXCommand() {
 	public void execute() {
 	    SCR.EndLoadingPlaque(); // get rid of loading plaque
 
@@ -74,13 +73,13 @@ public final class Console extends Globals {
 	}
     };
 
-    public static xcommand_t Clear_f = new xcommand_t() {
+    public static TXCommand Clear_f = new TXCommand() {
 	public void execute() {
 	    Arrays.fill(Globals.con.text, (byte) ' ');
 	}
     };
 
-    public static xcommand_t Dump_f = new xcommand_t() {
+    public static TXCommand Dump_f = new TXCommand() {
 	public void execute() {
 
 	    int l, x;
@@ -247,7 +246,7 @@ public final class Console extends Globals {
     /*
      * ================ Con_ToggleChat_f ================
      */
-    static xcommand_t ToggleChat_f = new xcommand_t() {
+    static TXCommand ToggleChat_f = new TXCommand() {
 	public void execute() {
 	    Key.ClearTyping();
 
@@ -266,7 +265,7 @@ public final class Console extends Globals {
     /*
      * ================ Con_MessageMode_f ================
      */
-    static xcommand_t MessageMode_f = new xcommand_t() {
+    static TXCommand MessageMode_f = new TXCommand() {
 	public void execute() {
 	    chat_team = false;
 	    cls.key_dest = key_message;
@@ -276,7 +275,7 @@ public final class Console extends Globals {
     /*
      * ================ Con_MessageMode2_f ================
      */
-    static xcommand_t MessageMode2_f = new xcommand_t() {
+    static TXCommand MessageMode2_f = new TXCommand() {
 	public void execute() {
 	    chat_team = true;
 	    cls.key_dest = key_message;
@@ -519,7 +518,7 @@ public final class Console extends Globals {
 	SCR.AddDirtyPoint(0, 0);
 	SCR.AddDirtyPoint(width - 1, lines - 1);
 
-	String version = Com.sprintf("v%4.2f", new Vargs(1).add(VERSION));
+	String version = Com.sprintf("v%4.2f", VERSION);
 	for (int x = 0; x < 5; x++)
 	    re
 		    .DrawChar(width - 44 + x * 8, lines - 12, 128 + version

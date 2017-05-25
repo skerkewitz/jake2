@@ -728,7 +728,7 @@ public class Key extends Globals {
 		return;
 	}
 
-	public static xcommand_t Bind_f = new xcommand_t() {
+	public static TXCommand Bind_f = new TXCommand() {
 		public void execute() {
 			Key_Bind_f();
 		}
@@ -776,7 +776,7 @@ public class Key extends Globals {
 		Globals.keybindings[keynum] = binding;
 	}
 
-	static xcommand_t Unbind_f = new xcommand_t() {
+	static TXCommand Unbind_f = new TXCommand() {
 		public void execute() {
 			Key_Unbind_f();
 		}
@@ -798,7 +798,7 @@ public class Key extends Globals {
 		Key.SetBinding(b, null);
 	}
 
-	static xcommand_t Unbindall_f = new xcommand_t() {
+	static TXCommand Unbindall_f = new TXCommand() {
 		public void execute() {
 			Key_Unbindall_f();
 		}
@@ -809,7 +809,7 @@ public class Key extends Globals {
 			Key.SetBinding(i, null);
 	}
 
-	static xcommand_t Bindlist_f = new xcommand_t() {
+	static TXCommand Bindlist_f = new TXCommand() {
 		public void execute() {
 			Key_Bindlist_f();
 		}

@@ -340,12 +340,12 @@ public class Mesh {
 	qfiles.dmdl_t paliashdr = (qfiles.dmdl_t) RenderAPIImpl.main.currentmodel.extradata;
 
 	if ((e.frame >= paliashdr.num_frames) || (e.frame < 0)) {
-	    VID.Printf(Defines.PRINT_ALL, "R_CullAliasModel "
+	    VID.Printf(VID.PRINT_ALL, "R_CullAliasModel "
 		    + RenderAPIImpl.main.currentmodel.name + ": no such frame " + e.frame + '\n');
 	    e.frame = 0;
 	}
 	if ((e.oldframe >= paliashdr.num_frames) || (e.oldframe < 0)) {
-	    VID.Printf(Defines.PRINT_ALL, "R_CullAliasModel "
+	    VID.Printf(VID.PRINT_ALL, "R_CullAliasModel "
 		    + RenderAPIImpl.main.currentmodel.name + ": no such oldframe " + e.oldframe
 		    + '\n');
 	    e.oldframe = 0;
@@ -627,7 +627,7 @@ public class Mesh {
 	}
 	if (skin == null)
 	    skin = RenderAPIImpl.main.r_notexture; // fallback...
-		RenderAPIImpl.image.GL_Bind(skin.texnum);
+		RenderAPIImpl.image.bindTexture(skin.texnum);
 
 	// draw it
 
@@ -640,7 +640,7 @@ public class Mesh {
 
 	if ((RenderAPIImpl.main.currententity.frame >= paliashdr.num_frames)
 		|| (RenderAPIImpl.main.currententity.frame < 0)) {
-	    VID.Printf(Defines.PRINT_ALL, "R_DrawAliasModel "
+	    VID.Printf(VID.PRINT_ALL, "R_DrawAliasModel "
 		    + RenderAPIImpl.main.currentmodel.name + ": no such frame "
 		    + RenderAPIImpl.main.currententity.frame + '\n');
 	    RenderAPIImpl.main.currententity.frame = 0;
@@ -649,7 +649,7 @@ public class Mesh {
 
 	if ((RenderAPIImpl.main.currententity.oldframe >= paliashdr.num_frames)
 		|| (RenderAPIImpl.main.currententity.oldframe < 0)) {
-	    VID.Printf(Defines.PRINT_ALL, "R_DrawAliasModel "
+	    VID.Printf(VID.PRINT_ALL, "R_DrawAliasModel "
 		    + RenderAPIImpl.main.currentmodel.name + ": no such oldframe "
 		    + RenderAPIImpl.main.currententity.oldframe + '\n');
 	    RenderAPIImpl.main.currententity.frame = 0;
