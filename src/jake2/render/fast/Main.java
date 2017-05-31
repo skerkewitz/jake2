@@ -372,7 +372,7 @@ public class Main {
 						RenderAPIImpl.main.R_DrawSpriteModel(currententity);
 						break;
 					default :
-						Com.Error(Defines.ERR_DROP, "Bad modeltype");
+						Command.Error(Defines.ERR_DROP, "Bad modeltype");
 						break;
 				}
 			}
@@ -406,7 +406,7 @@ public class Main {
 						R_DrawSpriteModel(currententity);
 						break;
 					default :
-						Com.Error(Defines.ERR_DROP, "Bad modeltype");
+						Command.Error(Defines.ERR_DROP, "Bad modeltype");
 						break;
 				}
 			}
@@ -433,8 +433,8 @@ public class Main {
 
 		GL11.glBegin(GL11.GL_TRIANGLES);
 
-		FloatBuffer sourceVertices = particle_t.vertexArray;
-		IntBuffer sourceColors = particle_t.colorArray;
+		FloatBuffer sourceVertices = TParticle.vertexArray;
+		IntBuffer sourceColors = TParticle.colorArray;
 		float scale;
 		int color;
 		for (int j = 0, i = 0; i < num_particles; i++) {
@@ -484,9 +484,9 @@ public class Main {
 		if (gl_ext_pointparameters.value != 0.0f && qglPointParameterfEXT) {
 
 			//GL11.GL11.glEnableClientState(GL_VERTEX_ARRAY);
-			GL11.glVertexPointer(3, GL11.GL_INT, 0, particle_t.vertexArray);
+			GL11.glVertexPointer(3, GL11.GL_INT, 0, TParticle.vertexArray);
 			GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-			GL11.glColorPointer(4, GL11.GL_INT, 0, particle_t.getColorAsByteBuffer());
+			GL11.glColorPointer(4, GL11.GL_INT, 0, TParticle.getColorAsByteBuffer());
 			
 			GL11.glDepthMask(false);
 			GL11.glEnable(GL11.GL_BLEND);
@@ -779,11 +779,11 @@ public class Main {
 
 		// included by cwei
 		if (r_newrefdef == null) {
-			Com.Error(Defines.ERR_DROP, "R_RenderView: TRefDef fd is null");
+			Command.Error(Defines.ERR_DROP, "R_RenderView: TRefDef fd is null");
 		}
 
 		if (r_worldmodel == null && (r_newrefdef.rdflags & Defines.RDF_NOWORLDMODEL) == 0)
-			Com.Error(Defines.ERR_DROP, "R_RenderView: NULL worldmodel");
+			Command.Error(Defines.ERR_DROP, "R_RenderView: NULL worldmodel");
 
 		if (r_speeds.value != 0.0f) {
 			c_brush_polys = 0;

@@ -337,7 +337,7 @@ public class GlfwKeyboardImpl extends Keyboard {
 //    private static void handleCreateAndConfigureNotify(Component component) {
 //        // Probably could unify this code better, but for now just
 //        // leave the two code paths separate
-//        if (!Globals.appletMode) {
+//        if (!Context.appletMode) {
 //            win_x = 0;
 //            win_y = 0;
 //            win_w2 = component.getWidth() / 2;

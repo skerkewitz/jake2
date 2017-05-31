@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.game;
 
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 
 import java.util.Hashtable;
 
@@ -47,7 +47,7 @@ public abstract class SuperAdapter {
 
 		// try to create the adapter
 		if (sa == null) {
-			Com.DPrintf("SuperAdapter.getFromID():adapter not found->" + key + "\n");
+			Command.DPrintf("SuperAdapter.getFromID():adapter not found->" + key + "\n");
 		}
 
 		return sa;

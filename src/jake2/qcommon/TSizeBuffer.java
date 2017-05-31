@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.entity_state_t;
 import jake2.game.usercmd_t;
 import jake2.util.Lib;
@@ -53,8 +53,8 @@ public final class TSizeBuffer {
 
         b = ReadByte(sb);
         if (b >= Defines.NUMVERTEXNORMALS)
-            Com.Error(Defines.ERR_DROP, "MSF_ReadDir: out of range");
-        Math3D.VectorCopy(Globals.bytedirs[b], dir);
+            Command.Error(Defines.ERR_DROP, "MSF_ReadDir: out of range");
+        Math3D.VectorCopy(Context.bytedirs[b], dir);
     }
 
     public static void BeginReading(TSizeBuffer msg) {
@@ -104,7 +104,7 @@ public final class TSizeBuffer {
         int c;
 
         if (msg_read.readcount + 4 > msg_read.cursize) {
-            Com.Printf("buffer underrun in ReadLong!");
+            Command.Printf("buffer underrun in ReadLong!");
             c = -1;
         }
 
@@ -139,7 +139,7 @@ public final class TSizeBuffer {
         } while (l < 2047);
 
         String ret = new String(readbuf, 0, l);
-        // Com.dprintln("MSG.ReadString:[" + ret + "]");
+        // Command.dprintln("MSG.ReadString:[" + ret + "]");
         return ret;
     }
 
@@ -158,7 +158,7 @@ public final class TSizeBuffer {
         } while (l < 2047);
 
         String ret = new String(readbuf, 0, l).trim();
-        Com.dprintln("MSG.ReadStringLine:[" + ret.replace('\0', '@') + "]");
+        Command.dprintln("MSG.ReadStringLine:[" + ret.replace('\0', '@') + "]");
         return ret;
     }
 
@@ -289,7 +289,7 @@ public final class TSizeBuffer {
         bestd = 0;
         best = 0;
         for (i = 0; i < Defines.NUMVERTEXNORMALS; i++) {
-            d = Math3D.DotProduct(dir, Globals.bytedirs[i]);
+            d = Math3D.DotProduct(dir, Context.bytedirs[i]);
             if (d > bestd) {
                 bestd = d;
                 best = i;
@@ -306,9 +306,9 @@ public final class TSizeBuffer {
         int bits;
 
         if (0 == to.number)
-            Com.Error(Defines.ERR_FATAL, "Unset entity number");
+            Command.Error(Defines.ERR_FATAL, "Unset entity number");
         if (to.number >= Defines.MAX_EDICTS)
-            Com.Error(Defines.ERR_FATAL, "Entity number >= MAX_EDICTS");
+            Command.Error(Defines.ERR_FATAL, "Entity number >= MAX_EDICTS");
 
         // send an update
         bits = 0;
@@ -580,12 +580,12 @@ public final class TSizeBuffer {
 
         if (this.cursize + length > this.maxsize) {
             if (!this.allowoverflow)
-                Com.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowoverflow set");
+                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowoverflow set");
 
             if (length > this.maxsize)
-                Com.Error(Defines.ERR_FATAL, "SZ_GetSpace: " + length + " is > full buffer size");
+                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: " + length + " is > full buffer size");
 
-            Com.Printf("SZ_GetSpace: overflow\n");
+            Command.Printf("SZ_GetSpace: overflow\n");
             this.clear();
             this.overflowed = true;
         }
@@ -613,7 +613,7 @@ public final class TSizeBuffer {
 
     //
     public void print(String data) {
-        Com.dprintln("SZ.print():<" + data + ">");
+        Command.dprintln("SZ.print():<" + data + ">");
         int length = data.length();
         byte str[] = Lib.stringToBytes(data);
 

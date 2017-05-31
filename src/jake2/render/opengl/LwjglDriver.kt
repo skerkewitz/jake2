@@ -68,7 +68,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
     //		try {
     //			modes = Display.getAvailableDisplayModes();
     //		} catch (LWJGLException e) {
-    //			Com.Println(e.getMessage());
+    //			Command.Println(e.getMessage());
     //			return new java.awt.DisplayMode[0];
     //		}
     //		LinkedList l = new LinkedList();
@@ -114,7 +114,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
     //		try {
     //			modes = Display.getAvailableDisplayModes();
     //		} catch (LWJGLException e) {
-    //			Com.Println(e.getMessage());
+    //			Command.Println(e.getMessage());
     //			return new DisplayMode[0];
     //		}
     //

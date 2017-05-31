@@ -307,7 +307,7 @@ public class SV_ENTS {
         client_frame_t frame, oldframe;
         int lastframe;
 
-        //Com.Printf ("%i . %i\n", new
+        //Command.Printf ("%i . %i\n", new
         // Vargs().add(client.lastframe).add(sv.framenum));
         // this is the frame we are creating
         frame = client.frames[SV_INIT.sv.framenum & Defines.UPDATE_MASK];
@@ -361,7 +361,7 @@ public class SV_ENTS {
         count = CM.CM_BoxLeafnums(mins, maxs, leafs, 64, null);
 
         if (count < 1)
-            Com.Error(Defines.ERR_FATAL, "SV_FatPVS: count < 1");
+            Command.Error(Defines.ERR_FATAL, "SV_FatPVS: count < 1");
 
         longs = (CM.CM_NumClusters() + 31) >> 5;
 
@@ -512,7 +512,7 @@ public class SV_ENTS {
                     % SV_INIT.svs.num_client_entities;
             state = SV_INIT.svs.client_entities[ix];
             if (ent.s.number != e) {
-                Com.DPrintf("FIXING ENT.Sound.NUMBER!!!\n");
+                Command.DPrintf("FIXING ENT.Sound.NUMBER!!!\n");
                 ent.s.number = e;
             }
 
@@ -582,7 +582,7 @@ public class SV_ENTS {
             //fwrite (buf.data, buf.cursize, 1, svs.demofile);
             SV_INIT.svs.demofile.write(buf.data, 0, buf.cursize);
         } catch (IOException e1) {
-            Com.Printf("Error writing demo file:" + e);
+            Command.Printf("Error writing demo file:" + e);
         }
     }
 }

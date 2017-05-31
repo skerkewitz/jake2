@@ -23,7 +23,7 @@
 package jake2.game.monsters;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.game.EntDieAdapter;
 import jake2.game.EntInteractAdapter;
@@ -1922,7 +1922,7 @@ public class M_Boss32 {
             Math3D.VectorSubtract(player.s.origin, self.s.origin, vec);
             self.s.angles[Defines.YAW] = Math3D.vectoyaw(vec);
             Math3D.VectorNormalize(vec);
-            Math3D.VectorMA(Globals.vec3_origin, 400, vec, self.velocity);
+            Math3D.VectorMA(Context.vec3_origin, 400, vec, self.velocity);
             self.velocity[2] = 200;
             self.groundentity = null;
 

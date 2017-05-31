@@ -25,8 +25,10 @@
  */
 package jake2
 
+import jake2.client.Context
 import jake2.game.TVar
-import jake2.qcommon.Com
+import jake2.qcommon.Command
+import jake2.qcommon.CommandLineOptions
 import jake2.qcommon.ConsoleVar
 import jake2.qcommon.Qcommon
 import jake2.render.opengl.LwjglDriver
@@ -72,7 +74,7 @@ object Jake2 {
                     break
 
                 if (args[n] == "1" || args[n] == "\"1\"") {
-                    Com.Printf("Starting in dedicated mode.\n")
+                    Command.Printf("Starting in dedicated mode.\n")
                     dedicated = true
                 }
             }
@@ -81,14 +83,13 @@ object Jake2 {
 
         // TODO: check if dedicated is set in config file
 
-        Globals.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+        Context.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
 
         if (dedicated)
-            Globals.dedicated.value = 1.0f
-
+            Context.dedicated.value = 1.0f
 
         //    	// open the q2dialog, if we are not in dedicated mode.
-        //    	if (Globals.dedicated.value != 1.0f)
+        //    	if (Context.dedicated.value != 1.0f)
         //    	{
         //    		Q2Dialog = new Q2DataDialog();
         //    		Locale.setDefault(Locale.US);
@@ -96,15 +97,10 @@ object Jake2 {
         //    	}
 
         // in C the first arg is the filename
-        val argc = if (args == null) 1 else args.size + 1
-        val c_args = arrayOfNulls<String>(argc)
-        c_args[0] = "Jake2"
-        if (argc > 1) {
-            System.arraycopy(args, 0, c_args, 1, argc - 1)
-        }
-        Qcommon.Init(c_args)
+        val commandLineOptions = CommandLineOptions(arrayOf("jake2") + args)
+        Qcommon.Init(commandLineOptions)
 
-        Globals.nostdout = ConsoleVar.Get("nostdout", "0", 0)
+        Context.nostdout = ConsoleVar.Get("nostdout", "0", 0)
 
         var oldtime = Timer.Milliseconds()
         var newtime: Int

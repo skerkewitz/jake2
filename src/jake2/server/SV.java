@@ -26,13 +26,13 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.client.M;
 import jake2.game.GameBase;
 import jake2.game.edict_t;
 import jake2.game.pushed_t;
 import jake2.game.trace_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -90,7 +90,7 @@ public final class SV {
         ent.nextthink = 0;
 
         if (ent.think == null)
-            Com.Error(Defines.ERR_FATAL, "NULL ent.think");
+            Command.Error(Defines.ERR_FATAL, "NULL ent.think");
 
         ent.think.think(ent);
 
@@ -155,7 +155,7 @@ public final class SV {
                     ent, mask);
 
             if (trace.allsolid) { // entity is trapped in another solid
-                Math3D.VectorCopy(Globals.vec3_origin, ent.velocity);
+                Math3D.VectorCopy(Context.vec3_origin, ent.velocity);
                 return 3;
             }
 
@@ -193,7 +193,7 @@ public final class SV {
             // cliped to another plane
             if (numplanes >= MAX_CLIP_PLANES) { // this shouldn't
                                                          // really happen
-                Math3D.VectorCopy(Globals.vec3_origin, ent.velocity);
+                Math3D.VectorCopy(Context.vec3_origin, ent.velocity);
                 return 3;
             }
 
@@ -223,7 +223,7 @@ public final class SV {
                 if (numplanes != 2) {
                     //					gi.dprintf ("clip velocity, numplanes ==
                     // %i\n",numplanes);
-                    Math3D.VectorCopy(Globals.vec3_origin, ent.velocity);
+                    Math3D.VectorCopy(Context.vec3_origin, ent.velocity);
                     return 7;
                 }
                 Math3D.CrossProduct(planes[0], planes[1], dir);
@@ -236,7 +236,7 @@ public final class SV {
             //	   to avoid tiny occilations in sloping corners
             //
             if (Math3D.DotProduct(ent.velocity, primal_velocity) <= 0) {
-                Math3D.VectorCopy(Globals.vec3_origin, ent.velocity);
+                Math3D.VectorCopy(Context.vec3_origin, ent.velocity);
                 return blocked;
             }
         }
@@ -337,7 +337,7 @@ public final class SV {
         }
 
         //	   we need this for pushing things later
-        Math3D.VectorSubtract(Globals.vec3_origin, amove, org);
+        Math3D.VectorSubtract(Context.vec3_origin, amove, org);
         Math3D.AngleVectors(org, forward, right, up);
 
         //	   save the pusher's original position
@@ -606,8 +606,8 @@ public final class SV {
                         || ent.movetype != Defines.MOVETYPE_BOUNCE) {
                     ent.groundentity = trace.ent;
                     ent.groundentity_linkcount = trace.ent.linkcount;
-                    Math3D.VectorCopy(Globals.vec3_origin, ent.velocity);
-                    Math3D.VectorCopy(Globals.vec3_origin, ent.avelocity);
+                    Math3D.VectorCopy(Context.vec3_origin, ent.velocity);
+                    Math3D.VectorCopy(Context.vec3_origin, ent.avelocity);
                 }
             }
 
@@ -1005,7 +1005,7 @@ public final class SV {
 
         //FIXME: how did we get here with no enemy
         if (enemy == null) {
-            Com.DPrintf("SV_NewChaseDir without enemy!\n");
+            Command.DPrintf("SV_NewChaseDir without enemy!\n");
             return;
         }
         olddir = Math3D.anglemod((int) (actor.ideal_yaw / 45) * 45);

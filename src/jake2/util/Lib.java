@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.util;
 
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.qcommon.*;
 import jake2.io.FileSystem;
 
@@ -45,27 +45,27 @@ public class Lib {
 	
 	/** Converts a vector to a beatiful string. */
 	public static String vtofsbeaty(float[] v) {
-		return Com.sprintf("%8.2f %8.2f %8.2f", v[0], v[1], v[2]);
+		return Command.sprintf("%8.2f %8.2f %8.2f", v[0], v[1], v[2]);
 	}
 	
 	/** Like in  libc. */
 	public static short rand() {
-		return (short)Globals.rnd.nextInt(Short.MAX_VALUE+1);
+		return (short) Context.rnd.nextInt(Short.MAX_VALUE+1);
 	}
 	
 	/** Like in libc. */
 	public static float crandom() {
-		return (Globals.rnd.nextFloat() - 0.5f) * 2.0f;
+		return (Context.rnd.nextFloat() - 0.5f) * 2.0f;
 	}
 	
 	/** Like in libc. */
 	public static float random() {
-		return Globals.rnd.nextFloat();
+		return Context.rnd.nextFloat();
 	}
 	
 	/** Like in libc. */
 	public static float crand() {
-		return (Globals.rnd.nextFloat() - 0.5f) * 2.0f;
+		return (Context.rnd.nextFloat() - 0.5f) * 2.0f;
 	}
 	
 	/** Like in libc. */
@@ -194,7 +194,7 @@ public class Lib {
 	/** Prints a vector to the quake console. */
 	public static void printv(String in, float arr[]) {
 		for (int n = 0; n < arr.length; n++) {
-			Com.Println(in + "[" + n + "]: " + arr[n]);
+			Command.Println(in + "[" + n + "]: " + arr[n]);
 		}
 	}
 	
@@ -220,7 +220,7 @@ public class Lib {
 			return new RandomAccessFile(name, mode);
 		}
 		catch (Exception e) {
-			Com.DPrintf("Could not open file:" + name);
+			Command.DPrintf("Could not open file:" + name);
 			return null;
 		}
 	}

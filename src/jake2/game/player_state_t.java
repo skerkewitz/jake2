@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -189,14 +189,14 @@ public class player_state_t {
 		Lib.printv("gunangles", gunangles);
 		Lib.printv("gunoffset", gunoffset);
 
-		Com.Println("gunindex: " + gunindex);
-		Com.Println("gunframe: " + gunframe);
+		Command.Println("gunindex: " + gunindex);
+		Command.Println("gunframe: " + gunframe);
 
 		Lib.printv("blend", blend);
 
-		Com.Println("fov: " + fov);
+		Command.Println("fov: " + fov);
 
-		Com.Println("rdflags: " + rdflags);
+		Command.Println("rdflags: " + rdflags);
 
 		for (int n= 0; n < Defines.MAX_STATS; n++)
 			System.out.println("stats[" + n + "]: " + stats[n]);

@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 
 import jake2.*;
 import jake2.client.*;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.server.*;
 import jake2.util.*;
 
@@ -172,7 +172,7 @@ public class GameBase {
         for (; from.i < num_edicts; from.i++) {
             from.o = g_edicts[from.i];
             if (from.o.classname == null) {
-                Com.Printf("edict with classname = null" + from.o.index);
+                Command.Printf("edict with classname = null" + from.o.index);
             }
 
             if (!from.o.inuse)

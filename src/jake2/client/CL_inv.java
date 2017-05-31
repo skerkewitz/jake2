@@ -28,8 +28,7 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.TSizeBuffer;
 import jake2.util.Lib;
 
@@ -45,7 +44,7 @@ public class CL_inv {
 		int i;
 
 		for (i = 0; i < Defines.MAX_ITEMS; i++)
-			Globals.cl.inventory[i] = TSizeBuffer.ReadShort(Globals.net_message);
+			Context.cl.inventory[i] = TSizeBuffer.ReadShort(Context.net_message);
 	}
 
 	/*
@@ -53,7 +52,7 @@ public class CL_inv {
 	 */
 	static void Inv_DrawString(int x, int y, String string) {
 		for (int i = 0; i < string.length(); i++) {
-			Globals.re.DrawChar(x, y, string.charAt(i));
+			Context.re.DrawChar(x, y, string.charAt(i));
 			x += 8;
 		}
 	}
@@ -82,14 +81,14 @@ public class CL_inv {
 		int selected;
 		int top;
 
-		selected = Globals.cl.frame.playerstate.stats[Defines.STAT_SELECTED_ITEM];
+		selected = Context.cl.frame.playerstate.stats[Defines.STAT_SELECTED_ITEM];
 
 		num = 0;
 		selected_num = 0;
 		for (i = 0; i < Defines.MAX_ITEMS; i++) {
 			if (i == selected)
 				selected_num = num;
-			if (Globals.cl.inventory[i] != 0) {
+			if (Context.cl.inventory[i] != 0) {
 				index[num] = i;
 				num++;
 			}
@@ -102,13 +101,13 @@ public class CL_inv {
 		if (top < 0)
 			top = 0;
 
-		x = (Globals.viddef.getWidth() - 256) / 2;
-		y = (Globals.viddef.getHeight() - 240) / 2;
+		x = (Context.viddef.getWidth() - 256) / 2;
+		y = (Context.viddef.getHeight() - 240) / 2;
 
 		// repaint everything next frame
 		SCR.DirtyScreen();
 
-		Globals.re.DrawPic(x, y + 8, "inventory");
+		Context.re.DrawPic(x, y + 8, "inventory");
 
 		y += 24;
 		x += 24;
@@ -120,21 +119,21 @@ public class CL_inv {
 			// search for a binding
 			//Com_sprintf (binding, sizeof(binding), "use %s",
 			// cl.configstrings[CS_ITEMS+item]);
-			binding = "use " + Globals.cl.configstrings[Defines.CS_ITEMS + item];
+			binding = "use " + Context.cl.configstrings[Defines.CS_ITEMS + item];
 			bind = "";
 			for (j = 0; j < 256; j++)
-				if (Globals.keybindings[j] != null && Globals.keybindings[j].equals(binding)) {
+				if (Key.keybindings[j] != null && Key.keybindings[j].equals(binding)) {
 					bind = Key.KeynumToString(j);
 					break;
 				}
 
-			string = Com.sprintf("%6s %3i %s", bind, Globals.cl.inventory[item], Globals.cl.configstrings[Defines.CS_ITEMS + item]);
+			string = Command.sprintf("%6s %3i %s", bind, Context.cl.inventory[item], Context.cl.configstrings[Defines.CS_ITEMS + item]);
 			if (item != selected)
 				string = getHighBitString(string);
 			else // draw a blinky cursor by the selected item
 			{
-				if ((Globals.cls.realtime * 10 & 1) != 0)
-					Globals.re.DrawChar(x - 8, y, 15);
+				if ((Context.cls.realtime * 10 & 1) != 0)
+					Context.re.DrawChar(x - 8, y, 15);
 			}
 			Inv_DrawString(x, y, string);
 			y += 8;

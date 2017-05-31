@@ -28,7 +28,7 @@ package jake2.render.fast;
 import jake2.Defines;
 import jake2.client.Dimension;
 import jake2.client.VID;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.render.RenderAPIImpl;
 import jake2.render.TImage;
 import jake2.util.Lib;
@@ -247,7 +247,7 @@ public class Draw {
     public void Draw_Fill(int x, int y, int w, int h, int colorIndex) {
 
         if (colorIndex > 255)
-            Com.Error(Defines.ERR_FATAL, "Draw_Fill: bad color");
+            Command.Error(Defines.ERR_FATAL, "Draw_Fill: bad color");
 
         GL11.glDisable(GL11.GL_TEXTURE_2D);
 

@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package jake2.sound.lwjgl;
 
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.util.Math3D;
 
 /**
@@ -102,7 +102,7 @@ public class PlaySound {
         PlaySound ps = null;
         while (true) {
             ps = playableList.next;
-            if (ps == playableList || ps.beginTime > Globals.cl.time)
+            if (ps == playableList || ps.beginTime > Context.cl.time)
                 return null;
             PlaySound.release(ps);
             return ps;
@@ -147,7 +147,7 @@ public class PlaySound {
 
         if (ps != null) {
             // find the right sound type
-            if (entnum == Globals.cl.playernum + 1) {
+            if (entnum == Context.cl.playernum + 1) {
                 ps.type = Channel.LISTENER;
             } else if (origin != null) {
                 ps.type = Channel.FIXED;
@@ -160,7 +160,7 @@ public class PlaySound {
             ps.bufferId = bufferId;
             ps.volume = volume;
             ps.attenuation = attenuation;
-            ps.beginTime = Globals.cl.time + (long)(timeoffset * 1000);
+            ps.beginTime = Context.cl.time + (long)(timeoffset * 1000);
             PlaySound.add(ps);
         } else {
             System.err.println("PlaySounds out of Limit");

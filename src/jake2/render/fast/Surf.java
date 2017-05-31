@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.client.*;
 import jake2.common.TDynamicLight;
 import jake2.game.cplane_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.render.*;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -1021,7 +1021,7 @@ public class Surf {
 					GL11.GL_UNSIGNED_BYTE,
 						   gl_lms.lightmap_buffer );
 			if ( ++gl_lms.current_lightmap_texture == MAX_LIGHTMAPS )
-				Com.Error( Defines.ERR_DROP, "LM_UploadBlock() - MAX_LIGHTMAPS exceeded\n" );
+				Command.Error( Defines.ERR_DROP, "LM_UploadBlock() - MAX_LIGHTMAPS exceeded\n" );
 				
 			//debugLightmap(gl_lms.lightmap_buffer, 128, 128, 4);
 		}
@@ -1156,7 +1156,7 @@ public class Surf {
 			lightPos = new Image.pos_t(surf.light_s, surf.light_t);
 			if ( !LM_AllocBlock( smax, tmax, lightPos ) )
 			{
-				Com.Error( Defines.ERR_FATAL, "Consecutive calls to LM_AllocBlock(" + smax +"," + tmax +") failed\n");
+				Command.Error( Defines.ERR_FATAL, "Consecutive calls to LM_AllocBlock(" + smax +"," + tmax +") failed\n");
 			}
 		}
 		

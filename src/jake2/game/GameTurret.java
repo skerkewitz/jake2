@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.monsters.M_Infantry;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -185,8 +185,8 @@ public class GameTurret {
                     attacker = self.teammaster.owner;
                 else
                     attacker = self.teammaster;
-                GameCombat.T_Damage(other, self, attacker, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin,
+                GameCombat.T_Damage(other, self, attacker, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin,
                         self.teammaster.dmg, 10, 0, Defines.MOD_CRUSH);
             }
         }

@@ -26,7 +26,7 @@
 
 package jake2.qcommon;
 
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.game.Info;
 import jake2.game.TVar;
@@ -35,9 +35,9 @@ import jake2.util.Lib;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * ConsoleVar implements console variables. The original code is located in cvar.c
@@ -56,7 +56,7 @@ public class ConsoleVar {
 
         if ((flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
             if (!InfoValidate(name)) {
-                Com.Printf("invalid info cvar name\n");
+                Command.Printf("invalid info cvar name\n");
                 return null;
             }
         }
@@ -72,7 +72,7 @@ public class ConsoleVar {
 
         if ((flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
             if (!InfoValidate(value)) {
-                Com.Printf("invalid info cvar value\n");
+                Command.Printf("invalid info cvar value\n");
                 return null;
             }
         }
@@ -124,7 +124,7 @@ public class ConsoleVar {
         var.modified = true;
 
         if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
-            Globals.userinfo_modified = true; // transmit at next oportunity
+            Context.userinfo_modified = true; // transmit at next oportunity
 
         var.string = value;
         var.value = Lib.atof(var.string);
@@ -161,14 +161,14 @@ public class ConsoleVar {
 
         if ((var.flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
             if (!InfoValidate(value)) {
-                Com.Printf("invalid info cvar value\n");
+                Command.Printf("invalid info cvar value\n");
                 return var;
             }
         }
 
         if (!force) {
             if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0) {
-                Com.Printf(var_name + " is write protected.\n");
+                Command.Printf(var_name + " is write protected.\n");
                 return var;
             }
 
@@ -182,8 +182,8 @@ public class ConsoleVar {
                         return var;
                 }
 
-                if (Globals.server_state != 0) {
-                    Com.Printf(var_name + " will be changed for next game.\n");
+                if (Context.server_state != 0) {
+                    Command.Printf(var_name + " will be changed for next game.\n");
                     var.latched_string = value;
                 } else {
                     var.string = value;
@@ -207,7 +207,7 @@ public class ConsoleVar {
         var.modified = true;
 
         if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
-            Globals.userinfo_modified = true; // transmit at next oportunity
+            Context.userinfo_modified = true; // transmit at next oportunity
 
         var.string = value;
         try {
@@ -227,7 +227,7 @@ public class ConsoleVar {
 
         int c = Cmd.Argc();
         if (c != 3 && c != 4) {
-            Com.Printf("usage: set <variable> <value> [u / s]\n");
+            Command.Printf("usage: set <variable> <value> [u / s]\n");
             return;
         }
 
@@ -238,7 +238,7 @@ public class ConsoleVar {
             else if (Cmd.Argv(3).equals("s"))
                 flags = TVar.CVAR_FLAG_SERVERINFO;
             else {
-                Com.Printf("flags can only be 'u' or 's'\n");
+                Command.Printf("flags can only be 'u' or 's'\n");
                 return;
             }
             ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
@@ -254,27 +254,27 @@ public class ConsoleVar {
         int i = 0;
         for (TVar var : cvar_vars) {
             if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
-                Com.Printf("*");
+                Command.Printf("*");
             else
-                Com.Printf(" ");
+                Command.Printf(" ");
             if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
-                Com.Printf("U");
+                Command.Printf("U");
             else
-                Com.Printf(" ");
+                Command.Printf(" ");
             if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
-                Com.Printf("Sound");
+                Command.Printf("Sound");
             else
-                Com.Printf(" ");
+                Command.Printf(" ");
             if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
-                Com.Printf("-");
+                Command.Printf("-");
             else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
-                Com.Printf("L");
+                Command.Printf("L");
             else
-                Com.Printf(" ");
-            Com.Printf(" " + var.name + " \"" + var.string + "\"\n");
+                Command.Printf(" ");
+            Command.Printf(" " + var.name + " \"" + var.string + "\"\n");
             i += 1;
         }
-        Com.Printf(i + " cvars\n");
+        Command.Printf(i + " cvars\n");
     };
 
 
@@ -320,7 +320,7 @@ public class ConsoleVar {
 
         // perform a variable print or set
         if (Cmd.Argc() == 1) {
-            Com.Printf("\"" + v.name + "\" is \"" + v.string + "\"\n");
+            Command.Printf("\"" + v.name + "\" is \"" + v.string + "\"\n");
             return true;
         }
 
@@ -407,9 +407,9 @@ public class ConsoleVar {
     /**
      * Variable typing auto completition.
      */
-    public static Vector CompleteVariable(String partial) {
+    public static List<String>  CompleteVariable(String partial) {
 
-        Vector vars = new Vector();
+        List<String> vars = new ArrayList<>();
 
         // check match
         for(TVar var : cvar_vars) {

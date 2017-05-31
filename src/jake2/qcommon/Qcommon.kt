@@ -25,8 +25,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package jake2.qcommon
 
-import jake2.Globals
+import jake2.client.Context
 import jake2.client.*
+import jake2.client.Context.fileSystem
 import jake2.game.Cmd
 import jake2.game.TVar
 import jake2.io.FileSystem
@@ -43,24 +44,26 @@ import java.io.IOException
  * Qcommon contains some  basic routines for the game engine
  * namely initialization, shutdown and frame generation.
  */
-class Qcommon : Globals() {
+class Qcommon {
     companion object {
 
         val BUILDSTRING = "Java " + System.getProperty("java.version")
         val CPUSTRING = System.getProperty("os.arch")
 
+        public var commandLineOptions: CommandLineOptions? = null
+
         /**
          * This function initializes the different subsystems of
          * the game engine. The setjmp/longjmp mechanism of the original
          * was replaced with exceptions.
-         * @param args the original unmodified command line arguments
+         * @param commandLineOptions the original unmodified command line arguments
          */
-        @JvmStatic fun Init(args: Array<String?>) {
+        @JvmStatic fun Init(commandLineOptions: CommandLineOptions) {
             try {
 
                 // prepare enough of the subsystems to handle
                 // cvar and command buffer management
-                Com.InitArgv(args)
+                this.commandLineOptions = commandLineOptions
 
                 Cbuf.Init()
 
@@ -76,12 +79,12 @@ class Qcommon : Globals() {
                 Cbuf.AddEarlyCommands(false)
                 Cbuf.Execute()
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing filesystem...");
 
                 fileSystem = FileSystem()
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("loading config...");
 
                 reconfigure(false)
@@ -89,7 +92,7 @@ class Qcommon : Globals() {
                 fileSystem.setCDDir() // use cddir from config.cfg
                 fileSystem.markBaseSearchPaths() // mark the default search paths
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.testQ2Data(); // test for valid baseq2
 
                 reconfigure(true) // reload default.cfg and config.cfg
@@ -97,31 +100,31 @@ class Qcommon : Globals() {
                 //
                 // init commands and vars
                 //
-                Cmd.AddCommand("error", Com.Error_f)
+                Cmd.AddCommand("error", Command.Error_f)
 
-                Globals.host_speeds = ConsoleVar.Get("host_speeds", "0", 0)
-                Globals.log_stats = ConsoleVar.Get("log_stats", "0", 0)
-                Globals.developer = ConsoleVar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
-                Globals.timescale = ConsoleVar.Get("timescale", "0", 0)
-                Globals.fixedtime = ConsoleVar.Get("fixedtime", "0", 0)
-                Globals.logfile_active = ConsoleVar.Get("logfile", "0", 0)
-                Globals.showtrace = ConsoleVar.Get("showtrace", "0", 0)
-                Globals.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
-                val s = Com.sprintf("%4.2f %s %s %s", Globals.VERSION, CPUSTRING, Globals.__DATE__, BUILDSTRING)
+                Context.host_speeds = ConsoleVar.Get("host_speeds", "0", 0)
+                Context.log_stats = ConsoleVar.Get("log_stats", "0", 0)
+                Context.developer = ConsoleVar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
+                Context.timescale = ConsoleVar.Get("timescale", "0", 0)
+                Context.fixedtime = ConsoleVar.Get("fixedtime", "0", 0)
+                Context.logfile_active = ConsoleVar.Get("logfile", "0", 0)
+                Context.showtrace = ConsoleVar.Get("showtrace", "0", 0)
+                Context.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+                val s = Command.sprintf("%4.2f %s %s %s", Context.VERSION, CPUSTRING, Context.__DATE__, BUILDSTRING)
 
                 ConsoleVar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
 
                 NET.Init()    //ok
                 Netchan.Netchan_Init()    //ok
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing server subsystem...");
                 SV_MAIN.SV_Init()    //ok
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing client subsystem...");
 
                 val home = System.getProperty("user.home")
@@ -136,7 +139,7 @@ class Qcommon : Globals() {
                 // add + commands from command line
                 if (!Cbuf.AddLateCommands()) {
                     // if the user didn't give any commands, run default action
-                    if (Globals.dedicated.value == 0f)
+                    if (Context.dedicated.value == 0f)
                         Cbuf.AddText("d1\n")
                     else
                         Cbuf.AddText("dedicated_start\n")
@@ -148,12 +151,12 @@ class Qcommon : Globals() {
                     SCR.EndLoadingPlaque()
                 }
 
-                Com.Printf("====== Quake2 Initialized ======\n\n")
+                Command.Printf("====== Quake2 Initialized ======\n\n")
 
                 // save config when configuration is completed
                 CL.WriteConfiguration()
 
-                //			if (Globals.dedicated.value != 1.0f)
+                //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.dispose();
 
             } catch (e: QuakeException) {
@@ -171,29 +174,29 @@ class Qcommon : Globals() {
             var msec = msec
             try {
 
-                if (Globals.log_stats.modified) {
-                    Globals.log_stats.modified = false
+                if (Context.log_stats.modified) {
+                    Context.log_stats.modified = false
 
-                    if (Globals.log_stats.value != 0.0f) {
+                    if (Context.log_stats.value != 0.0f) {
 
-                        if (Globals.log_stats_file != null) {
+                        if (Context.log_stats_file != null) {
                             try {
-                                Globals.log_stats_file.close()
+                                Context.log_stats_file.close()
                             } catch (e: IOException) {
                             }
 
-                            Globals.log_stats_file = null
+                            Context.log_stats_file = null
                         }
 
                         try {
-                            Globals.log_stats_file = FileWriter("stats.log")
+                            Context.log_stats_file = FileWriter("stats.log")
                         } catch (e: IOException) {
-                            Globals.log_stats_file = null
+                            Context.log_stats_file = null
                         }
 
-                        if (Globals.log_stats_file != null) {
+                        if (Context.log_stats_file != null) {
                             try {
-                                Globals.log_stats_file.write("entities,dlights,parts,frame time\n")
+                                Context.log_stats_file.write("entities,dlights,parts,frame time\n")
                             } catch (e: IOException) {
                             }
 
@@ -201,32 +204,32 @@ class Qcommon : Globals() {
 
                     } else {
 
-                        if (Globals.log_stats_file != null) {
+                        if (Context.log_stats_file != null) {
                             try {
-                                Globals.log_stats_file.close()
+                                Context.log_stats_file.close()
                             } catch (e: IOException) {
                             }
 
-                            Globals.log_stats_file = null
+                            Context.log_stats_file = null
                         }
                     }
                 }
 
-                if (Globals.fixedtime.value != 0.0f) {
-                    msec = Globals.fixedtime.value.toInt()
-                } else if (Globals.timescale.value != 0.0f) {
-                    msec *= Globals.timescale.value.toInt()
+                if (Context.fixedtime.value != 0.0f) {
+                    msec = Context.fixedtime.value.toInt()
+                } else if (Context.timescale.value != 0.0f) {
+                    msec *= Context.timescale.value.toInt()
                     if (msec < 1)
                         msec = 1
                 }
 
-                if (Globals.showtrace.value != 0.0f) {
-                    Com.Printf("%4i traces  %4i points\n", 2, Globals.c_traces, Globals.c_pointcontents)
+                if (Context.showtrace.value != 0.0f) {
+                    Command.Printf("%4i traces  %4i points\n", 2, Context.c_traces, Context.c_pointcontents)
 
 
-                    Globals.c_traces = 0
-                    Globals.c_brush_traces = 0
-                    Globals.c_pointcontents = 0
+                    Context.c_traces = 0
+                    Context.c_brush_traces = 0
+                    Context.c_pointcontents = 0
                 }
 
                 Cbuf.Execute()
@@ -235,34 +238,34 @@ class Qcommon : Globals() {
                 var time_between = 0
                 var time_after = 0
 
-                if (Globals.host_speeds.value != 0.0f)
+                if (Context.host_speeds.value != 0.0f)
                     time_before = Timer.Milliseconds()
 
-                Com.debugContext = "SV:"
+                Command.debugContext = "SV:"
                 SV_MAIN.SV_Frame(msec.toLong())
 
-                if (Globals.host_speeds.value != 0.0f)
+                if (Context.host_speeds.value != 0.0f)
                     time_between = Timer.Milliseconds()
 
-                Com.debugContext = "CL:"
+                Command.debugContext = "CL:"
                 CL.Frame(msec)
 
-                if (Globals.host_speeds.value != 0.0f) {
+                if (Context.host_speeds.value != 0.0f) {
                     time_after = Timer.Milliseconds()
 
                     val all = time_after - time_before
                     var sv = time_between - time_before
                     var cl = time_after - time_between
-                    val gm = Globals.time_after_game - Globals.time_before_game
-                    val rf = Globals.time_after_ref - Globals.time_before_ref
+                    val gm = Context.time_after_game - Context.time_before_game
+                    val rf = Context.time_after_ref - Context.time_before_ref
                     sv -= gm
                     cl -= rf
 
-                    Com.Printf("all:%3i sv:%3i gm:%3i cl:%3i rf:%3i\n", 5, all, sv, gm, cl, rf)
+                    Command.Printf("all:%3i sv:%3i gm:%3i cl:%3i rf:%3i\n", 5, all, sv, gm, cl, rf)
                 }
 
             } catch (e: QuakeException) {
-                Com.DPrintf("longjmp exception:" + e)
+                Command.DPrintf("longjmp exception:" + e)
             }
 
         }

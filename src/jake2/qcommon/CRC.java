@@ -104,7 +104,7 @@ public class CRC
 				System.out.println("crc:" + (CRC_Block(data, 21) & 0xffff));
 				System.out.println("----");
 				for (int n=0; n < 5; n++)
-					System.out.println("seq:" + (Com.BlockSequenceCRCByte( data,0, 21,n*10) & 0xff));
+					System.out.println("seq:" + (Command.BlockSequenceCRCByte( data,0, 21,n*10) & 0xff));
 				
 	}
 	

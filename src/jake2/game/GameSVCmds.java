@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -265,7 +265,7 @@ public class GameSVCmds {
             }
 
         } catch (IOException e) {
-            Com.Printf("IOError in SVCmd_WriteIP_f:" + e);
+            Command.Printf("IOError in SVCmd_WriteIP_f:" + e);
         }
 
         Lib.fclose(f);
@@ -275,7 +275,7 @@ public class GameSVCmds {
      * ServerCommand
      * 
      * ServerCommand will be called when an "sv" command is issued. The game can
-     * issue gi.argc() / gi.argv() commands to get the rest of the parameters
+     * issue gi.count() / gi.argv() commands to get the rest of the parameters
      */
     public static void ServerCommand() {
         String cmd;

@@ -26,7 +26,7 @@
 package jake2.qcommon;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.util.Lib;
 
@@ -71,16 +71,16 @@ public final class Cbuf {
      */
     static void AddEarlyCommands(boolean clear) {
 
-        for (int i = 0; i < Com.Argc(); i++) {
-            String s = Com.Argv(i);
+        CommandLineOptions commandLineOptions = Qcommon.Companion.getCommandLineOptions();
+        for (int i = 0; i < commandLineOptions.count(); i++) {
+            String s = commandLineOptions.valueAt(i);
             if (!s.equals("+set"))
                 continue;
-            Cbuf.AddText("set " + Com.Argv(i + 1) + " " + Com.Argv(i + 2)
-                    + "\n");
+            Cbuf.AddText("set " + commandLineOptions.valueAt(i + 1) + " " + commandLineOptions.valueAt(i + 2) + "\n");
             if (clear) {
-                Com.ClearArgv(i);
-                Com.ClearArgv(i + 1);
-                Com.ClearArgv(i + 2);
+                commandLineOptions.clearValueAt(i);
+                commandLineOptions.clearValueAt(i + 1);
+                commandLineOptions.clearValueAt(i + 2);
             }
             i += 2;
         }
@@ -96,16 +96,16 @@ public final class Cbuf {
 
         // build the combined string to parse from
         int s = 0;
-        int argc = Com.Argc();
+        int argc = Qcommon.Companion.getCommandLineOptions().count();
         for (i = 1; i < argc; i++) {
-            s += Com.Argv(i).length();
+            s += Qcommon.Companion.getCommandLineOptions().valueAt(i).length();
         }
         if (s == 0)
             return false;
 
         String text = "";
         for (i = 1; i < argc; i++) {
-            text += Com.Argv(i);
+            text += Qcommon.Companion.getCommandLineOptions().valueAt(i);
             if (i != argc - 1)
                 text += " ";
         }
@@ -142,7 +142,7 @@ public final class Cbuf {
         int l = text.length();
 
         if (cmd_text.cursize + l >= cmd_text.maxsize) {
-            Com.Printf("Cbuf_AddText: overflow\n");
+            Command.Printf("Cbuf_AddText: overflow\n");
             return;
         }
         cmd_text.write(Lib.stringToBytes(text), l);
@@ -155,7 +155,7 @@ public final class Cbuf {
 
         byte[] text = null;
 
-        Globals.alias_count = 0; // don't allow infinite alias loops
+        Context.alias_count = 0; // don't allow infinite alias loops
 
         while (cmd_text.cursize != 0) {
             // find a \n or ; line break
@@ -187,7 +187,7 @@ public final class Cbuf {
             else {
                 i++;
                 cmd_text.cursize -= i;
-                //byte[] tmp = new byte[Globals.cmd_text.cursize];
+                //byte[] tmp = new byte[Context.cmd_text.cursize];
 
                 System.arraycopy(text, i, tmp, 0, cmd_text.cursize);
                 System.arraycopy(tmp, 0, text, 0, cmd_text.cursize);
@@ -201,10 +201,10 @@ public final class Cbuf {
             String cmd = new String(line, 0, len);
             Cmd.ExecuteString(cmd);
 
-            if (Globals.cmd_wait) {
+            if (Context.cmd_wait) {
                 // skip out while text still remains in buffer, leaving it
                 // for next frame
-                Globals.cmd_wait = false;
+                Context.cmd_wait = false;
                 break;
             }
         }
@@ -222,7 +222,7 @@ public final class Cbuf {
             Cbuf.AddText(text);
             break;
         default:
-            Com.Error(Defines.ERR_FATAL, "Cbuf_ExecuteText: bad exec_when");
+            Command.Error(Defines.ERR_FATAL, "Cbuf_ExecuteText: bad exec_when");
         }
     }
 
@@ -230,9 +230,9 @@ public final class Cbuf {
      * ============ Cbuf_CopyToDefer ============
      */
     public static void CopyToDefer() {
-        System.arraycopy(cmd_text_buf, 0, Globals.defer_text_buf, 0,
+        System.arraycopy(cmd_text_buf, 0, Context.defer_text_buf, 0,
                 cmd_text.cursize);
-        Globals.defer_text_buf[cmd_text.cursize] = 0;
+        Context.defer_text_buf[cmd_text.cursize] = 0;
         cmd_text.cursize = 0;
     }
 
@@ -240,8 +240,8 @@ public final class Cbuf {
      * ============ Cbuf_InsertFromDefer ============
      */
     public static void InsertFromDefer() {
-        InsertText(new String(Globals.defer_text_buf).trim());
-        Globals.defer_text_buf[0] = 0;
+        InsertText(new String(Context.defer_text_buf).trim());
+        Context.defer_text_buf[0] = 0;
     }
 
 }

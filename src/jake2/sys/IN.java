@@ -25,20 +25,23 @@
  */
 package jake2.sys;
 
-import jake2.Globals;
 import jake2.client.CL_input;
+import jake2.client.Context;
 import jake2.client.Key;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.usercmd_t;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.TXCommand;
 import jake2.util.Math3D;
+
+import static jake2.Defines.*;
+import static jake2.client.Context.cl;
+import static jake2.client.Context.cls;
 
 /**
  * IN
  */
-public final class IN extends Globals {
+public final class IN {
 
     static boolean mouse_avail = true;
 
@@ -75,12 +78,12 @@ public final class IN extends Globals {
     }
 
     private static void install_grabs() {
-		Globals.re.getKeyboardHandler().installGrabs();
+		Context.re.getKeyboardHandler().installGrabs();
 		ignorefirst = true;
     }
 
     private static void uninstall_grabs() {
-		Globals.re.getKeyboardHandler().uninstallGrabs();
+		Context.re.getKeyboardHandler().uninstallGrabs();
     }
 
     public static void toggleMouse() {
@@ -94,8 +97,8 @@ public final class IN extends Globals {
     }
 
     public static void Init() {
-        in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        in_joystick = ConsoleVar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.in_joystick = ConsoleVar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
     }
 
     public static void Shutdown() {
@@ -104,15 +107,15 @@ public final class IN extends Globals {
 
     public static void Real_IN_Init() {
         // mouse variables
-        Globals.m_filter = ConsoleVar.Get("m_filter", "0", 0);
-        Globals.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.freelook = ConsoleVar.Get("freelook", "1", 0);
-        Globals.lookstrafe = ConsoleVar.Get("lookstrafe", "0", 0);
-        Globals.sensitivity = ConsoleVar.Get("sensitivity", "3", 0);
-        Globals.m_pitch = ConsoleVar.Get("m_pitch", "0.022", 0);
-        Globals.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
-        Globals.m_forward = ConsoleVar.Get("m_forward", "1", 0);
-        Globals.m_side = ConsoleVar.Get("m_side", "0.8", 0);
+        Context.m_filter = ConsoleVar.Get("m_filter", "0", 0);
+        Context.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.freelook = ConsoleVar.Get("freelook", "1", 0);
+        Context.lookstrafe = ConsoleVar.Get("lookstrafe", "0", 0);
+        Context.sensitivity = ConsoleVar.Get("sensitivity", "3", 0);
+        Context.m_pitch = ConsoleVar.Get("m_pitch", "0.022", 0);
+        Context.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
+        Context.m_forward = ConsoleVar.Get("m_forward", "1", 0);
+        Context.m_side = ConsoleVar.Get("m_side", "0.8", 0);
 
         Cmd.AddCommand("+mlook", () -> MLookDown());
         Cmd.AddCommand("-mlook", () -> MLookUp());
@@ -128,7 +131,7 @@ public final class IN extends Globals {
 		if (!IN.mouse_avail) 
 			return;
 	
-		Keyboard keyboard =Globals.re.getKeyboardHandler();
+		Keyboard keyboard = Context.re.getKeyboardHandler();
 		for (i=0 ; i<3 ; i++) {
 			if ( (IN.mouse_buttonstate & (1<<i)) != 0 && (IN.mouse_oldbuttonstate & (1<<i)) == 0 )
 				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, true);
@@ -157,7 +160,7 @@ public final class IN extends Globals {
         if (!IN.mouse_avail)
             return;
 
-        if (Globals.m_filter.value != 0.0f) {
+        if (Context.m_filter.value != 0.0f) {
             Keyboard.mx = (Keyboard.mx + IN.old_mouse_x) / 2;
             Keyboard.my = (Keyboard.my + IN.old_mouse_y) / 2;
         }
@@ -165,22 +168,22 @@ public final class IN extends Globals {
         IN.old_mouse_x = Keyboard.mx;
         IN.old_mouse_y = Keyboard.my;
 
-        Keyboard.mx = (int) (Keyboard.mx * Globals.sensitivity.value);
-        Keyboard.my = (int) (Keyboard.my * Globals.sensitivity.value);
+        Keyboard.mx = (int) (Keyboard.mx * Context.sensitivity.value);
+        Keyboard.my = (int) (Keyboard.my * Context.sensitivity.value);
 
         // add mouse X/Y movement to cmd
         if ((CL_input.in_strafe.state & 1) != 0
-                || ((Globals.lookstrafe.value != 0) && IN.mlooking)) {
-            cmd.sidemove += Globals.m_side.value * Keyboard.mx;
+                || ((Context.lookstrafe.value != 0) && IN.mlooking)) {
+            cmd.sidemove += Context.m_side.value * Keyboard.mx;
         } else {
-            Globals.cl.viewangles[YAW] -= Globals.m_yaw.value * Keyboard.mx;
+            cl.viewangles[YAW] -= Context.m_yaw.value * Keyboard.mx;
         }
 
-        if ((IN.mlooking || Globals.freelook.value != 0.0f)
+        if ((IN.mlooking || Context.freelook.value != 0.0f)
                 && (CL_input.in_strafe.state & 1) == 0) {
-            Globals.cl.viewangles[PITCH] += Globals.m_pitch.value * Keyboard.my;
+            cl.viewangles[PITCH] += Context.m_pitch.value * Keyboard.my;
         } else {
-            cmd.forwardmove -= Globals.m_forward.value * Keyboard.my;
+            cmd.forwardmove -= Context.m_forward.value * Keyboard.my;
         }
         Keyboard.mx = Keyboard.my = 0;
     }
@@ -195,7 +198,7 @@ public final class IN extends Globals {
     }
 
     static void Force_CenterView_f() {
-        Globals.cl.viewangles[PITCH] = 0;
+        cl.viewangles[PITCH] = 0;
     }
 
 }

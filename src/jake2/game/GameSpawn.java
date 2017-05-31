@@ -24,7 +24,7 @@ package jake2.game;
 
 import jake2.Defines;
 import jake2.game.monsters.*;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 
 public class GameSpawn {
@@ -336,7 +336,7 @@ public class GameSpawn {
     static void ED_ParseField(String key, String value, edict_t ent) {
 
         if (key.equals("nextmap"))
-            Com.Println("nextmap: " + value);
+            Command.Println("nextmap: " + value);
         if (!GameBase.st.set(key, value))
             if (!ent.setField(key, value))
                 GameBase.gi.dprintf("??? The key [" + key
@@ -351,7 +351,7 @@ public class GameSpawn {
      * should be a properly initialized empty edict.
      */
 
-    static void ED_ParseEdict(Com.ParseHelp ph, edict_t ent) {
+    static void ED_ParseEdict(Command.ParseHelp ph, edict_t ent) {
 
         boolean init;
         String keyname;
@@ -362,7 +362,7 @@ public class GameSpawn {
         while (true) {
 
             // parse key
-            com_token = Com.Parse(ph);
+            com_token = Command.Parse(ph);
             if (com_token.equals("}"))
                 break;
 
@@ -372,7 +372,7 @@ public class GameSpawn {
             keyname = com_token;
 
             // parse value
-            com_token = Com.Parse(ph);
+            com_token = Command.Parse(ph);
 
             if (ph.isEof())
                 GameBase.gi.error("ED_ParseEntity: EOF without closing brace");
@@ -456,7 +456,7 @@ public class GameSpawn {
     public static void SpawnEntities(String mapname, String entities,
             String spawnpoint) {
         
-        Com.dprintln("SpawnEntities(), mapname=" + mapname);
+        Command.dprintln("SpawnEntities(), mapname=" + mapname);
         edict_t ent;
         int inhibit;
         String com_token;
@@ -489,11 +489,11 @@ public class GameSpawn {
         ent = null;
         inhibit = 0; 
 
-        Com.ParseHelp ph = new Com.ParseHelp(entities);
+        Command.ParseHelp ph = new Command.ParseHelp(entities);
 
         while (true) { // parse the opening brace
 
-            com_token = Com.Parse(ph);
+            com_token = Command.Parse(ph);
             if (ph.isEof())
                 break;
             if (!com_token.startsWith("{"))
@@ -506,7 +506,7 @@ public class GameSpawn {
                 ent = GameUtil.G_Spawn();
 
             ED_ParseEdict(ph, ent);
-            Com.DPrintf("spawning ent[" + ent.index + "], classname=" + 
+            Command.DPrintf("spawning ent[" + ent.index + "], classname=" +
                     ent.classname + ", flags= " + Integer.toHexString(ent.spawnflags));
             
             // yet another map hack
@@ -521,7 +521,7 @@ public class GameSpawn {
                 if (GameBase.deathmatch.value != 0) {
                     if ((ent.spawnflags & Defines.SPAWNFLAG_NOT_DEATHMATCH) != 0) {
                         
-                        Com.DPrintf("->inhibited.\n");
+                        Command.DPrintf("->inhibited.\n");
                         GameUtil.G_FreeEdict(ent);
                         inhibit++;
                         continue;
@@ -535,7 +535,7 @@ public class GameSpawn {
                             || ((GameBase.skill.value == 1) && (ent.spawnflags & Defines.SPAWNFLAG_NOT_MEDIUM) != 0)
                             || (((GameBase.skill.value == 2) || (GameBase.skill.value == 3)) && (ent.spawnflags & Defines.SPAWNFLAG_NOT_HARD) != 0)) {
                         
-                        Com.DPrintf("->inhibited.\n");
+                        Command.DPrintf("->inhibited.\n");
                         GameUtil.G_FreeEdict(ent);
                         inhibit++;
                         
@@ -549,10 +549,10 @@ public class GameSpawn {
                         | Defines.SPAWNFLAG_NOT_COOP | Defines.SPAWNFLAG_NOT_DEATHMATCH);
             }
             ED_CallSpawn(ent);
-            Com.DPrintf("\n");
+            Command.DPrintf("\n");
         }
-        Com.DPrintf("player skill level:" + GameBase.skill.value + "\n");
-        Com.DPrintf(inhibit + " entities inhibited.\n");
+        Command.DPrintf("player skill level:" + GameBase.skill.value + "\n");
+        Command.DPrintf(inhibit + " entities inhibited.\n");
         i = 1;
         G_FindTeams();
         PlayerTrail.Init();

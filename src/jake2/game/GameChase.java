@@ -24,7 +24,7 @@ package jake2.game;
 
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.server.SV_WORLD;
 import jake2.util.Math3D;
 
@@ -73,8 +73,8 @@ public class GameChase {
         if (targ.groundentity == null)
             o[2] += 16;
     
-        trace = GameBase.gi.trace(ownerv, Globals.vec3_origin,
-                Globals.vec3_origin, o, targ, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(ownerv, Context.vec3_origin,
+                Context.vec3_origin, o, targ, Defines.MASK_SOLID);
     
         Math3D.VectorCopy(trace.endpos, goal);
     
@@ -83,8 +83,8 @@ public class GameChase {
         // pad for floors and ceilings
         Math3D.VectorCopy(goal, o);
         o[2] += 6;
-        trace = GameBase.gi.trace(goal, Globals.vec3_origin,
-                Globals.vec3_origin, o, targ, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(goal, Context.vec3_origin,
+                Context.vec3_origin, o, targ, Defines.MASK_SOLID);
         if (trace.fraction < 1) {
             Math3D.VectorCopy(trace.endpos, goal);
             goal[2] -= 6;
@@ -92,8 +92,8 @@ public class GameChase {
     
         Math3D.VectorCopy(goal, o);
         o[2] -= 6;
-        trace = GameBase.gi.trace(goal, Globals.vec3_origin,
-                Globals.vec3_origin, o, targ, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(goal, Context.vec3_origin,
+                Context.vec3_origin, o, targ, Defines.MASK_SOLID);
         if (trace.fraction < 1) {
             Math3D.VectorCopy(trace.endpos, goal);
             goal[2] += 6;

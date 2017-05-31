@@ -25,7 +25,7 @@ package jake2.game;
 import java.util.Calendar;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.client.M;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -1130,8 +1130,8 @@ public class GameMisc {
                 return;
             if (other.takedamage == Defines.DAMAGE_NO)
                 return;
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    self.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    self.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -1242,7 +1242,7 @@ public class GameMisc {
         public String getID() { return "func_explosive_use";}
         public void use(edict_t self, edict_t other, edict_t activator) {
             func_explosive_explode.die(self, self, other, self.health,
-                    Globals.vec3_origin);
+                    Context.vec3_origin);
         }
     };
 
@@ -1889,7 +1889,7 @@ public class GameMisc {
             if (self.s.frame == 10) {
                 self.think = GameUtil.G_FreeEdictA;
                 self.nextthink = GameBase.level.time + 8
-                        + Globals.rnd.nextFloat() * 10;
+                        + Context.rnd.nextFloat() * 10;
             }
             return true;
         }

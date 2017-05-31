@@ -23,7 +23,7 @@
 package jake2.qcommon;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.server.SV;
 import jake2.util.Math3D;
@@ -154,7 +154,7 @@ public class PMove {
             // slide along this plane
             if (numplanes >= SV.MAX_CLIP_PLANES) { 
             	// this shouldn't really happen
-                Math3D.VectorCopy(Globals.vec3_origin, pml.velocity);
+                Math3D.VectorCopy(Context.vec3_origin, pml.velocity);
                 break;
             }
 
@@ -179,8 +179,8 @@ public class PMove {
             } else { 
             	// go along the crease
                 if (numplanes != 2) {
-                    // Com.printf("clip velocity, numplanes == " + numplanes + "\n");
-                    Math3D.VectorCopy(Globals.vec3_origin, pml.velocity);
+                    // Command.printf("clip velocity, numplanes == " + numplanes + "\n");
+                    Math3D.VectorCopy(Context.vec3_origin, pml.velocity);
                     break;
                 }
                 Math3D.CrossProduct(planes[0], planes[1], dir);
@@ -192,7 +192,7 @@ public class PMove {
             // if velocity is against the original velocity, stop dead
             // to avoid tiny occilations in sloping corners
             if (Math3D.DotProduct(pml.velocity, primal_velocity) <= 0) {
-                Math3D.VectorCopy(Globals.vec3_origin, pml.velocity);
+                Math3D.VectorCopy(Context.vec3_origin, pml.velocity);
                 break;
             }
         }
@@ -749,7 +749,7 @@ public class PMove {
 
         speed = Math3D.VectorLength(pml.velocity);
         if (speed < 1) {
-            Math3D.VectorCopy(Globals.vec3_origin, pml.velocity);
+            Math3D.VectorCopy(Context.vec3_origin, pml.velocity);
         } else {
             drop = 0;
 
@@ -929,7 +929,7 @@ public class PMove {
 
         // go back to the last position
         Math3D.VectorCopy(pml.previous_origin, pm.s.origin);
-        // Com.DPrintf("using previous_origin\n");
+        // Command.DPrintf("using previous_origin\n");
     }
 
     /** 
@@ -959,7 +959,7 @@ public class PMove {
             }
         }
 
-        Com.DPrintf("Bad InitialSnapPosition\n");
+        Command.DPrintf("Bad InitialSnapPosition\n");
     }
 
     /**

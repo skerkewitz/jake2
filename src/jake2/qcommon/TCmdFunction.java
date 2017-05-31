@@ -26,10 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon;
 
 /**
- * cmd_function_t
+ * TCmdFunction
  */
-public final class cmd_function_t {
-	public cmd_function_t next = null;
-	public String name = null;
-	public TXCommand function;
+public final class TCmdFunction {
+
+    public final String name;
+    public final TXCommand function;
+
+    public TCmdFunction(String name, TXCommand function) {
+        this.name = name;
+        this.function = function;
+    }
 }

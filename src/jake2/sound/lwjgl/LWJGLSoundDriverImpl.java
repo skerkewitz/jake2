@@ -7,14 +7,13 @@
 package jake2.sound.lwjgl;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.entity_state_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.io.FileSystem;
-import jake2.qcommon.TXCommand;
 import jake2.sound.*;
 import jake2.util.Lib;
 import org.lwjgl.openal.*;
@@ -22,6 +21,7 @@ import org.lwjgl.openal.*;
 import java.nio.*;
 import java.util.List;
 
+import static jake2.Defines.CS_PLAYERSKINS;
 import static org.lwjgl.openal.ALC10.*;
 import static org.lwjgl.openal.ALC11.*;
 import static org.lwjgl.openal.EXTThreadLocalContext.alcSetThreadContext;
@@ -57,7 +57,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
             initOpenAL();
             checkError();
         } catch (Exception e) {
-            Com.Printf(e.getMessage() + '\n');
+            Command.Printf(e.getMessage() + '\n');
             return false;
         }
 
@@ -65,7 +65,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         s_volume = ConsoleVar.Get("s_volume", "0.7", TVar.CVAR_FLAG_ARCHIVE);
         AL10.alGenBuffers(buffers);
         int count = Channel.init(buffers);
-        Com.Printf("... using " + count + " channels\n");
+        Command.Printf("... using " + count + " channels\n");
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
         Cmd.AddCommand("play", () -> Play());
         Cmd.AddCommand("stopsound", () -> StopAllSounds());
@@ -74,10 +74,10 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
         num_sfx = 0;
 
-        Com.Printf("sound sampling rate: 44100Hz\n");
+        Command.Printf("sound sampling rate: 44100Hz\n");
 
         StopAllSounds();
-        Com.Printf("------------------------------------\n");
+        Command.Printf("------------------------------------\n");
         return true;
     }
 
@@ -95,12 +95,12 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 //
 //		String defaultSpecifier = ALC10.alcGetString(device, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
 //
-//		Com.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
+//		Command.Printf(os + " using " + ((deviceName == null) ? defaultSpecifier : deviceName) + '\n');
 //
 //		// Check for an error.
 //		if (ALC10.alcGetError(device) != ALC10.ALC_NO_ERROR)
 //		{
-//		    Com.DPrintf("Error with SoundDevice");
+//		    Command.DPrintf("Error with SoundDevice");
 //		}
 
         device = alcOpenDevice((ByteBuffer) null);
@@ -163,7 +163,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     }
 
     private void checkError() {
-        Com.DPrintf("AL Error: " + alErrorString() + '\n');
+        Command.DPrintf("AL Error: " + alErrorString() + '\n');
     }
 
     private String alErrorString() {
@@ -222,7 +222,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
             return;
 
         if (sfx.getName().charAt(0) == '*')
-            sfx = RegisterSexedSound(Globals.cl_entities[entnum].current, sfx.getName());
+            sfx = RegisterSexedSound(Context.cl_entities[entnum].current, sfx.getName());
 
         if (LoadSound(sfx) == null)
             return; // can't load sound
@@ -330,12 +330,12 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
         // determine what model the client is using
         String model = null;
-        int n = Globals.CS_PLAYERSKINS + ent.number - 1;
-        if (Globals.cl.configstrings[n] != null) {
-            int p = Globals.cl.configstrings[n].indexOf('\\');
+        int n = CS_PLAYERSKINS + ent.number - 1;
+        if (Context.cl.configstrings[n] != null) {
+            int p = Context.cl.configstrings[n].indexOf('\\');
             if (p >= 0) {
                 p++;
-                model = Globals.cl.configstrings[n].substring(p);
+                model = Context.cl.configstrings[n].substring(p);
                 //strcpy(model, p);
                 p = model.indexOf('/');
                 if (p > 0)
@@ -387,12 +387,12 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
 
         if (name == null)
-            Com.Error(Defines.ERR_FATAL, "S_FindName: NULL\n");
+            Command.Error(Defines.ERR_FATAL, "S_FindName: NULL\n");
         if (name.length() == 0)
-            Com.Error(Defines.ERR_FATAL, "S_FindName: empty name\n");
+            Command.Error(Defines.ERR_FATAL, "S_FindName: empty name\n");
 
         if (name.length() >= Defines.MAX_QPATH)
-            Com.Error(Defines.ERR_FATAL, "SoundDriver name too long: " + name);
+            Command.Error(Defines.ERR_FATAL, "SoundDriver name too long: " + name);
 
         // see if already loaded
         for (i = 0; i < num_sfx; i++)
@@ -411,7 +411,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
         if (i == num_sfx) {
             if (num_sfx == MAX_SFX)
-                Com.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
+                Command.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
             num_sfx++;
         }
 
@@ -444,7 +444,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
         if (i == num_sfx) {
             if (num_sfx == MAX_SFX)
-                Com.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
+                Command.Error(Defines.ERR_FATAL, "S_FindName: out of TSound");
             num_sfx++;
         }
 
@@ -485,10 +485,10 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     public void StartLocalSound(String name) {
         TSound sound = RegisterSound(name);
         if (sound == null) {
-            Com.Printf("S_StartLocalSound: can't data " + name + "\n");
+            Command.Printf("S_StartLocalSound: can't data " + name + "\n");
             return;
         }
-        StartSound(null, Globals.cl.playernum + 1, 0, sound, 1, 1, 0);
+        StartSound(null, Context.cl.playernum + 1, 0, sound, 1, 1, 0);
     }
 
     private ShortBuffer streamBuffer = sfxDataBuffer.slice().order(ByteOrder.BIG_ENDIAN).asShortBuffer();
@@ -545,7 +545,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
                 name += ".wav";
 
             sfx = RegisterSound(name);
-            StartSound(null, Globals.cl.playernum + 1, 0, sfx, 1.0f, 1.0f, 0.0f);
+            StartSound(null, Context.cl.playernum + 1, 0, sfx, 1.0f, 1.0f, 0.0f);
             i++;
         }
     }
@@ -566,24 +566,24 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
                 size = sc.length * sc.width * (sc.stereo + 1);
                 total += size;
                 if (sc.loopstart >= 0)
-                    Com.Printf("L");
+                    Command.Printf("L");
                 else
-                    Com.Printf(" ");
-                Com.Printf("(%2db) %6i : %s\n", sc.width * 8, size, sfx.getName());
+                    Command.Printf(" ");
+                Command.Printf("(%2db) %6i : %s\n", sc.width * 8, size, sfx.getName());
             } else {
                 if (sfx.getName().charAt(0) == '*')
-                    Com.Printf("  placeholder : " + sfx.getName() + "\n");
+                    Command.Printf("  placeholder : " + sfx.getName() + "\n");
                 else
-                    Com.Printf("  not loaded  : " + sfx.getName() + "\n");
+                    Command.Printf("  not loaded  : " + sfx.getName() + "\n");
             }
         }
-        Com.Printf("Total resident: " + total + "\n");
+        Command.Printf("Total resident: " + total + "\n");
     }
 
     void SoundInfo_f() {
-        Com.Printf("%5d stereo\n", 1);
-        Com.Printf("%5d samples\n", 22050);
-        Com.Printf("%5d samplebits\n", 16);
-        Com.Printf("%5d speed\n", 44100);
+        Command.Printf("%5d stereo\n", 1);
+        Command.Printf("%5d samples\n", 22050);
+        Command.Printf("%5d samplebits\n", 16);
+        Command.Printf("%5d speed\n", 44100);
     }
 }

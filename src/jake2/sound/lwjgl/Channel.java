@@ -27,10 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sound.lwjgl;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.client.CL_ents;
+import jake2.client.Context;
 import jake2.game.entity_state_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.sound.*;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -41,6 +41,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.lwjgl.openal.AL10;
+
+import static jake2.Defines.ca_active;
 
 /**
  * Channel
@@ -163,7 +165,7 @@ public class Channel {
 	AL10.alSourcef(source, AL10.AL_GAIN, 1.0f);
 	channels[numChannels].volumeChanged = true;
 
-	Com.DPrintf("streaming enabled\n");
+	Command.DPrintf("streaming enabled\n");
     }
 
     static void disableStreaming() {
@@ -175,7 +177,7 @@ public class Channel {
 	// free the last source
 	numChannels++;
 	streamingEnabled = false;
-	Com.DPrintf("streaming disabled\n");
+	Command.DPrintf("streaming disabled\n");
     }
 
     static void unqueueStreams() {
@@ -185,7 +187,7 @@ public class Channel {
 	// stop streaming
 	AL10.alSourceStop(source);
 	int count = AL10.alGetSourcei(source, AL10.AL_BUFFERS_QUEUED);
-	Com.DPrintf("unqueue " + count + " buffers\n");
+	Command.DPrintf("unqueue " + count + " buffers\n");
 	while (count-- > 0) {
 	    AL10.alSourceUnqueueBuffers(source, tmp);
 	}
@@ -204,12 +206,12 @@ public class Channel {
 	if (interupted) {
 	    unqueueStreams();
 	    buffer.put(0, buffers.get(SoundDriver.MAX_SFX + streamQueue++));
-	    Com.DPrintf("queue " + (streamQueue - 1) + '\n');
+	    Command.DPrintf("queue " + (streamQueue - 1) + '\n');
 	} else if (processed < 2) {
 	    // check queue overrun
 	    if (streamQueue >= SoundDriver.STREAM_QUEUE) return;
 	    buffer.put(0, buffers.get(SoundDriver.MAX_SFX + streamQueue++));
-	    Com.DPrintf("queue " + (streamQueue - 1) + '\n');
+	    Command.DPrintf("queue " + (streamQueue - 1) + '\n');
 	} else {
 	    // reuse the buffer
 	    AL10.alSourceUnqueueBuffers(source, buffer);
@@ -221,7 +223,7 @@ public class Channel {
 	AL10.alSourceQueueBuffers(source, buffer);
 
 	if (streamQueue > 1 && !playing) {
-	    Com.DPrintf("start sound\n");
+	    Command.DPrintf("start sound\n");
 	    AL10.alSourcePlay(source);
 	}
     }
@@ -246,7 +248,7 @@ public class Channel {
 	    }
 
 	    // don't let monster sounds override player sounds
-	    if ((ch.entnum == Globals.cl.playernum+1) && (ps.entnum != Globals.cl.playernum+1) && ch.bufferId != -1)
+	    if ((ch.entnum == Context.cl.playernum+1) && (ps.entnum != Context.cl.playernum+1) && ch.bufferId != -1)
 		continue;
 
 	    // looking for a free AL source
@@ -362,7 +364,7 @@ public class Channel {
      */
     static void addLoopSounds() {
 
-	if ((Globals.cl_paused.value != 0.0f) || (Globals.cls.state != Globals.ca_active) || !Globals.cl.sound_prepped) {
+	if ((Context.cl_paused.value != 0.0f) || (Context.cls.state != ca_active) || !Context.cl.sound_prepped) {
 	    removeUnusedLoopSounds();
 	    return;
 	}
@@ -375,9 +377,9 @@ public class Channel {
 	Object key;
 	int sound = 0;
 
-	for (int i=0 ; i<Globals.cl.frame.num_entities ; i++) {
-	    num = (Globals.cl.frame.parse_entities + i)&(Defines.MAX_PARSE_ENTITIES-1);
-	    ent = Globals.cl_parse_entities[num];
+	for (int i = 0; i< Context.cl.frame.num_entities ; i++) {
+	    num = (Context.cl.frame.parse_entities + i)&(Defines.MAX_PARSE_ENTITIES-1);
+	    ent = Context.cl_parse_entities[num];
 	    sound = ent.sound;
 
 	    if (sound == 0) continue;
@@ -392,7 +394,7 @@ public class Channel {
 		continue;
 	    }
 
-	    sfx = Globals.cl.sound_precache[sound];
+	    sfx = Context.cl.sound_precache[sound];
 	    if (sfx == null)
 		continue;		// bad sound effect
 

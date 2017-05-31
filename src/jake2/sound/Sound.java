@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sound;
 
 import jake2.game.TVar;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 
 import java.nio.ByteBuffer;
@@ -54,7 +54,7 @@ public class Sound {
                 // this is  necessary for dedicated mode
                 useDriver("dummy");
             } catch (Throwable e) {
-                Com.DPrintf("could not init dummy sound driver class.");
+                Command.DPrintf("could not init dummy sound driver class.");
             }
 
             try {
@@ -62,7 +62,7 @@ public class Sound {
                 Class.forName("jake2.sound.lwjgl.LWJGLSoundDriverImpl");
             } catch (Throwable e) {
                 // ignore the lwjgl driver if runtime not in classpath
-                Com.DPrintf("could not init lwjgl sound driver class.");
+                Command.DPrintf("could not init lwjgl sound driver class.");
             }
     }
 
@@ -99,11 +99,11 @@ public class Sound {
      */
     public static void Init() {
 
-        Com.Printf("\n------- sound initialization -------\n");
+        Command.Printf("\n------- sound initialization -------\n");
 
         TVar cv = ConsoleVar.Get("s_initsound", "1", 0);
         if (cv.value == 0.0f) {
-            Com.Printf("not initializing.\n");
+            Command.Printf("not initializing.\n");
             useDriver("dummy");
             return;
         }
@@ -125,7 +125,7 @@ public class Sound {
             useDriver("dummy");
         }
 
-        Com.Printf("\n------- use sound driver \"" + impl.getName() + "\" -------\n");
+        Command.Printf("\n------- use sound driver \"" + impl.getName() + "\" -------\n");
         StopAllSounds();
     }
 

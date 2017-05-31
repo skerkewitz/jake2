@@ -23,7 +23,7 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.network.Netchan;
@@ -163,7 +163,7 @@ public class SV_MAIN {
      * Responds with all the info that qplug or qspy can see
      */
     public static void SVC_Status() {
-        Netchan.OutOfBandPrint(Defines.NS_SERVER, Globals.net_from, "print\n"
+        Netchan.OutOfBandPrint(Defines.NS_SERVER, Context.net_from, "print\n"
                 + SV_StatusString());
     }
 
@@ -171,7 +171,7 @@ public class SV_MAIN {
      *  SVC_Ack
      */
     public static void SVC_Ack() {
-        Com.Printf("Ping acknowledge from " + NET.AdrToString(Globals.net_from)
+        Command.Printf("Ping acknowledge from " + NET.AdrToString(Context.net_from)
                 + "\n");
     }
 
@@ -201,7 +201,7 @@ public class SV_MAIN {
                     + count + "/" + (int) SV_MAIN.maxclients.value + "\n";
         }
 
-        Netchan.OutOfBandPrint(Defines.NS_SERVER, Globals.net_from, "info\n"
+        Netchan.OutOfBandPrint(Defines.NS_SERVER, Context.net_from, "info\n"
                 + string);
     }
 
@@ -209,7 +209,7 @@ public class SV_MAIN {
      * SVC_Ping, Just responds with an acknowledgement.
      */
     public static void SVC_Ping() {
-        Netchan.OutOfBandPrint(Defines.NS_SERVER, Globals.net_from, "ack");
+        Netchan.OutOfBandPrint(Defines.NS_SERVER, Context.net_from, "ack");
     }
 
     /** 
@@ -228,7 +228,7 @@ public class SV_MAIN {
 
         // see if we already have a challenge for this ip
         for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-            if (NET.CompareBaseAdr(Globals.net_from,
+            if (NET.CompareBaseAdr(Context.net_from,
                     SV_INIT.svs.challenges[i].adr))
                 break;
             if (SV_INIT.svs.challenges[i].time < oldestTime) {
@@ -240,13 +240,13 @@ public class SV_MAIN {
         if (i == Defines.MAX_CHALLENGES) {
             // overwrite the oldest
             SV_INIT.svs.challenges[oldest].challenge = Lib.rand() & 0x7fff;
-            SV_INIT.svs.challenges[oldest].adr = Globals.net_from;
-            SV_INIT.svs.challenges[oldest].time = Globals.curtime;
+            SV_INIT.svs.challenges[oldest].adr = Context.net_from;
+            SV_INIT.svs.challenges[oldest].time = Context.curtime;
             i = oldest;
         }
 
         // send it back
-        Netchan.OutOfBandPrint(Defines.NS_SERVER, Globals.net_from,
+        Netchan.OutOfBandPrint(Defines.NS_SERVER, Context.net_from,
                 "challenge " + SV_INIT.svs.challenges[i].challenge);
     }
 
@@ -262,15 +262,15 @@ public class SV_MAIN {
         int version;
         int qport;
 
-        adr = Globals.net_from;
+        adr = Context.net_from;
 
-        Com.DPrintf("SVC_DirectConnect ()\n");
+        Command.DPrintf("SVC_DirectConnect ()\n");
 
         version = Lib.atoi(Cmd.Argv(1));
         if (version != Defines.PROTOCOL_VERSION) {
             Netchan.OutOfBandPrint(Defines.NS_SERVER, adr,
-                    "print\nServer is version " + Globals.VERSION + "\n");
-            Com.DPrintf("    rejected connect from version " + version + "\n");
+                    "print\nServer is version " + Context.VERSION + "\n");
+            Command.DPrintf("    rejected connect from version " + version + "\n");
             return;
         }
 
@@ -279,12 +279,12 @@ public class SV_MAIN {
         userinfo = Cmd.Argv(4);
 
         // force the IP key/value pair so the game can filter based on ip
-        userinfo = Info.Info_SetValueForKey(userinfo, "ip", NET.AdrToString(Globals.net_from));
+        userinfo = Info.Info_SetValueForKey(userinfo, "ip", NET.AdrToString(Context.net_from));
 
         // attractloop servers are ONLY for local clients
         if (SV_INIT.sv.attractloop) {
             if (!NET.IsLocalAddress(adr)) {
-                Com.Printf("Remote connect in attract loop.  Ignored.\n");
+                Command.Printf("Remote connect in attract loop.  Ignored.\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER, adr,
                         "print\nConnection refused.\n");
                 return;
@@ -294,7 +294,7 @@ public class SV_MAIN {
         // see if the challenge is valid
         if (!NET.IsLocalAddress(adr)) {
             for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-                if (NET.CompareBaseAdr(Globals.net_from,
+                if (NET.CompareBaseAdr(Context.net_from,
                         SV_INIT.svs.challenges[i].adr)) {
                     if (challenge == SV_INIT.svs.challenges[i].challenge)
                         break; // good
@@ -320,11 +320,11 @@ public class SV_MAIN {
                     && (cl.netchan.qport == qport || adr.port == cl.netchan.remote_address.port)) {
                 if (!NET.IsLocalAddress(adr)
                         && (SV_INIT.svs.realtime - cl.lastconnect) < ((int) SV_MAIN.sv_reconnect_limit.value * 1000)) {
-                    Com.DPrintf(NET.AdrToString(adr)
+                    Command.DPrintf(NET.AdrToString(adr)
                             + ":reconnect rejected : too soon\n");
                     return;
                 }
-                Com.Printf(NET.AdrToString(adr) + ":reconnect\n");
+                Command.Printf(NET.AdrToString(adr) + ":reconnect\n");
 
                 gotnewcl(i, challenge, userinfo, adr, qport);
                 return;
@@ -344,7 +344,7 @@ public class SV_MAIN {
         if (index == -1) {
             Netchan.OutOfBandPrint(Defines.NS_SERVER, adr,
                     "print\nServer is full.\n");
-            Com.DPrintf("Rejected a connection.\n");
+            Command.DPrintf("Rejected a connection.\n");
             return;
         }
         gotnewcl(index, challenge, userinfo, adr, qport);
@@ -381,7 +381,7 @@ public class SV_MAIN {
             else
                 Netchan.OutOfBandPrint(Defines.NS_SERVER, adr,
                         "print\nConnection refused.\n");
-            Com.DPrintf("Game rejected a connection.\n");
+            Command.DPrintf("Game rejected a connection.\n");
             return;
         }
 
@@ -401,7 +401,7 @@ public class SV_MAIN {
         SV_INIT.svs.clients[i].datagram.allowoverflow = true;
         SV_INIT.svs.clients[i].lastmessage = SV_INIT.svs.realtime; // don't timeout
         SV_INIT.svs.clients[i].lastconnect = SV_INIT.svs.realtime;
-        Com.DPrintf("new client added.\n");
+        Command.DPrintf("new client added.\n");
     }
 
     
@@ -428,24 +428,24 @@ public class SV_MAIN {
 
         i = Rcon_Validate();
 
-        String msg = Lib.CtoJava(Globals.net_message.data, 4, 1024);
+        String msg = Lib.CtoJava(Context.net_message.data, 4, 1024);
 
         if (i == 0)
-            Com.Printf("Bad rcon from " + NET.AdrToString(Globals.net_from)
+            Command.Printf("Bad rcon from " + NET.AdrToString(Context.net_from)
                     + ":\n" + msg + "\n");
         else
-            Com.Printf("Rcon from " + NET.AdrToString(Globals.net_from) + ":\n"
+            Command.Printf("Rcon from " + NET.AdrToString(Context.net_from) + ":\n"
                     + msg + "\n");
 
-        Com.BeginRedirect(Defines.RD_PACKET, SV_SEND.sv_outputbuf,
-                Defines.SV_OUTPUTBUF_LENGTH, new Com.RD_Flusher() {
+        Command.BeginRedirect(Defines.RD_PACKET, SV_SEND.sv_outputbuf,
+                Defines.SV_OUTPUTBUF_LENGTH, new Command.RD_Flusher() {
                     public void rd_flush(int target, StringBuffer buffer) {
                         SV_SEND.SV_FlushRedirect(target, Lib.stringToBytes(buffer.toString()));
                     }
                 });
 
         if (0 == Rcon_Validate()) {
-            Com.Printf("Bad rcon_password.\n");
+            Command.Printf("Bad rcon_password.\n");
         } else {
             remaining = "";
 
@@ -457,7 +457,7 @@ public class SV_MAIN {
             Cmd.ExecuteString(remaining);
         }
 
-        Com.EndRedirect();
+        Command.EndRedirect();
     }
 
     /**
@@ -469,18 +469,18 @@ public class SV_MAIN {
         String s;
         String c;
 
-        TSizeBuffer.BeginReading(Globals.net_message);
-        TSizeBuffer.ReadLong(Globals.net_message); // skip the -1 marker
+        TSizeBuffer.BeginReading(Context.net_message);
+        TSizeBuffer.ReadLong(Context.net_message); // skip the -1 marker
 
-        s = TSizeBuffer.ReadStringLine(Globals.net_message);
+        s = TSizeBuffer.ReadStringLine(Context.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
         c = Cmd.Argv(0);
         
         //for debugging purposes 
-        //Com.Printf("Packet " + NET.AdrToString(Netchan.net_from) + " : " + c + "\n");
-        //Com.Printf(Lib.hexDump(net_message.data, 64, false) + "\n");
+        //Command.Printf("Packet " + NET.AdrToString(Netchan.net_from) + " : " + c + "\n");
+        //Command.Printf(Lib.hexDump(net_message.data, 64, false) + "\n");
 
         if (0 == Lib.strcmp(c, "ping"))
             SVC_Ping();
@@ -497,10 +497,10 @@ public class SV_MAIN {
         else if (0 == Lib.strcmp(c, "rcon"))
             SVC_RemoteCommand();
         else {
-            Com.Printf("bad connectionless packet from "
-                    + NET.AdrToString(Globals.net_from) + "\n");
-            Com.Printf("[" + s + "]\n");
-            Com.Printf("" + Lib.hexDump(Globals.net_message.data, 128, false));
+            Command.Printf("bad connectionless packet from "
+                    + NET.AdrToString(Context.net_from) + "\n");
+            Command.Printf("[" + s + "]\n");
+            Command.Printf("" + Lib.hexDump(Context.net_message.data, 128, false));
         }
     }
 
@@ -563,41 +563,41 @@ public class SV_MAIN {
         client_t cl;
         int qport = 0;
 
-        while (NET.GetPacket(Defines.NS_SERVER, Globals.net_from,
-                Globals.net_message)) {
+        while (NET.GetPacket(Defines.NS_SERVER, Context.net_from,
+                Context.net_message)) {
 
             // check for connectionless packet (0xffffffff) first
-            if ((Globals.net_message.data[0] == -1)
-                    && (Globals.net_message.data[1] == -1)
-                    && (Globals.net_message.data[2] == -1)
-                    && (Globals.net_message.data[3] == -1)) {
+            if ((Context.net_message.data[0] == -1)
+                    && (Context.net_message.data[1] == -1)
+                    && (Context.net_message.data[2] == -1)
+                    && (Context.net_message.data[3] == -1)) {
                 SV_ConnectionlessPacket();
                 continue;
             }
 
             // read the qport out of the message so we can fix up
             // stupid address translating routers
-            TSizeBuffer.BeginReading(Globals.net_message);
-            TSizeBuffer.ReadLong(Globals.net_message); // sequence number
-            TSizeBuffer.ReadLong(Globals.net_message); // sequence number
-            qport = TSizeBuffer.ReadShort(Globals.net_message) & 0xffff;
+            TSizeBuffer.BeginReading(Context.net_message);
+            TSizeBuffer.ReadLong(Context.net_message); // sequence number
+            TSizeBuffer.ReadLong(Context.net_message); // sequence number
+            qport = TSizeBuffer.ReadShort(Context.net_message) & 0xffff;
 
             // check for packets from connected clients
             for (i = 0; i < SV_MAIN.maxclients.value; i++) {
                 cl = SV_INIT.svs.clients[i];
                 if (cl.state == Defines.cs_free)
                     continue;
-                if (!NET.CompareBaseAdr(Globals.net_from,
+                if (!NET.CompareBaseAdr(Context.net_from,
                         cl.netchan.remote_address))
                     continue;
                 if (cl.netchan.qport != qport)
                     continue;
-                if (cl.netchan.remote_address.port != Globals.net_from.port) {
-                    Com.Printf("SV_ReadPackets: fixing up a translated port\n");
-                    cl.netchan.remote_address.port = Globals.net_from.port;
+                if (cl.netchan.remote_address.port != Context.net_from.port) {
+                    Command.Printf("SV_ReadPackets: fixing up a translated port\n");
+                    cl.netchan.remote_address.port = Context.net_from.port;
                 }
 
-                if (Netchan.Process(cl.netchan, Globals.net_message)) {
+                if (Netchan.Process(cl.netchan, Context.net_message)) {
                     // this is a valid, sequenced packet, so process it
                     if (cl.state != Defines.cs_zombie) {
                         cl.lastmessage = SV_INIT.svs.realtime; // don't timeout
@@ -672,8 +672,8 @@ public class SV_MAIN {
      * SV_RunGameFrame.
      */
     public static void SV_RunGameFrame() {
-        if (Globals.host_speeds.value != 0)
-            Globals.time_before_game = Timer.Milliseconds();
+        if (Context.host_speeds.value != 0)
+            Context.time_before_game = Timer.Milliseconds();
 
         // we always need to bump framenum, even if we
         // don't run the world, otherwise the delta
@@ -689,13 +689,13 @@ public class SV_MAIN {
             // never get more than one tic behind
             if (SV_INIT.sv.time < SV_INIT.svs.realtime) {
                 if (SV_MAIN.sv_showclamp.value != 0)
-                    Com.Printf("sv highclamp\n");
+                    Command.Printf("sv highclamp\n");
                 SV_INIT.svs.realtime = SV_INIT.sv.time;
             }
         }
 
-        if (Globals.host_speeds.value != 0)
-            Globals.time_after_game = Timer.Milliseconds();
+        if (Context.host_speeds.value != 0)
+            Context.time_after_game = Timer.Milliseconds();
 
     }
 
@@ -703,7 +703,7 @@ public class SV_MAIN {
      * SV_Frame.
      */
     public static void SV_Frame(long msec) {
-        Globals.time_before_game = Globals.time_after_game = 0;
+        Context.time_before_game = Context.time_after_game = 0;
 
         // if server is not active, do nothing
         if (!SV_INIT.svs.initialized)
@@ -721,7 +721,7 @@ public class SV_MAIN {
         SV_ReadPackets();
 
         //if (Game.g_edicts[1] !=null)
-        //	Com.p("player at:" + Lib.vtofsbeaty(Game.g_edicts[1].s.origin ));
+        //	Command.p("player at:" + Lib.vtofsbeaty(Game.g_edicts[1].s.origin ));
 
         // move autonomous things around if enough time has passed
         if (0 == SV_MAIN.sv_timedemo.value
@@ -729,7 +729,7 @@ public class SV_MAIN {
             // never let the time get too far off
             if (SV_INIT.sv.time - SV_INIT.svs.realtime > 100) {
                 if (SV_MAIN.sv_showclamp.value != 0)
-                    Com.Printf("sv lowclamp\n");
+                    Command.Printf("sv lowclamp\n");
                 SV_INIT.svs.realtime = SV_INIT.sv.time - 100;
             }
             NET.Sleep(SV_INIT.sv.time - SV_INIT.svs.realtime);
@@ -764,7 +764,7 @@ public class SV_MAIN {
         int i;
 
         // pgm post3.19 change, cvar pointer not validated before dereferencing
-        if (Globals.dedicated == null || 0 == Globals.dedicated.value)
+        if (Context.dedicated == null || 0 == Context.dedicated.value)
             return; // only dedicated servers send heartbeats
 
         // pgm post3.19 change, cvar pointer not validated before dereferencing
@@ -786,7 +786,7 @@ public class SV_MAIN {
         // send to group master
         for (i = 0; i < Defines.MAX_MASTERS; i++)
             if (SV_MAIN.master_adr[i].port != 0) {
-                Com.Printf("Sending heartbeat to "
+                Command.Printf("Sending heartbeat to "
                         + NET.AdrToString(SV_MAIN.master_adr[i]) + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         SV_MAIN.master_adr[i], "heartbeat\n" + string);
@@ -801,7 +801,7 @@ public class SV_MAIN {
         int i;
 
         // pgm post3.19 change, cvar pointer not validated before dereferencing
-        if (null == Globals.dedicated || 0 == Globals.dedicated.value)
+        if (null == Context.dedicated || 0 == Context.dedicated.value)
             return; // only dedicated servers send heartbeats
 
         // pgm post3.19 change, cvar pointer not validated before dereferencing
@@ -812,7 +812,7 @@ public class SV_MAIN {
         for (i = 0; i < Defines.MAX_MASTERS; i++)
             if (SV_MAIN.master_adr[i].port != 0) {
                 if (i > 0)
-                    Com.Printf("Sending heartbeat to "
+                    Command.Printf("Sending heartbeat to "
                             + NET.AdrToString(SV_MAIN.master_adr[i]) + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         SV_MAIN.master_adr[i], "shutdown");
@@ -895,7 +895,7 @@ public class SV_MAIN {
         SV_MAIN.public_server = ConsoleVar.Get("public", "0", 0);
         SV_MAIN.sv_reconnect_limit = ConsoleVar.Get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Globals.net_message.init(Globals.net_message_buffer, Globals.net_message_buffer.length);
+        Context.net_message.init(Context.net_message_buffer, Context.net_message_buffer.length);
     }
 
     /**
@@ -908,12 +908,12 @@ public class SV_MAIN {
         int i;
         client_t cl;
 
-        Globals.net_message.clear();
-        Globals.net_message.writeByte(Defines.svc_print);
-        Globals.net_message.writeByte(Defines.PRINT_HIGH);
-        Globals.net_message.writeString(message);
+        Context.net_message.clear();
+        Context.net_message.writeByte(Defines.svc_print);
+        Context.net_message.writeByte(Defines.PRINT_HIGH);
+        Context.net_message.writeString(message);
 
-        Globals.net_message.writeByte(reconnect ? Defines.svc_reconnect : Defines.svc_disconnect);
+        Context.net_message.writeByte(reconnect ? Defines.svc_reconnect : Defines.svc_disconnect);
 
         // send it twice
         // stagger the packets to crutch operating system limited buffers
@@ -921,14 +921,14 @@ public class SV_MAIN {
         for (i = 0; i < SV_INIT.svs.clients.length; i++) {
             cl = SV_INIT.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Globals.net_message.cursize,
-                        Globals.net_message.data);
+                Netchan.Transmit(cl.netchan, Context.net_message.cursize,
+                        Context.net_message.data);
         }
         for (i = 0; i < SV_INIT.svs.clients.length; i++) {
             cl = SV_INIT.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Globals.net_message.cursize,
-                        Globals.net_message.data);
+                Netchan.Transmit(cl.netchan, Context.net_message.cursize,
+                        Context.net_message.data);
         }
     }
 
@@ -953,7 +953,7 @@ public class SV_MAIN {
 
         SV_INIT.sv = new server_t();
 
-        Globals.server_state = SV_INIT.sv.state;
+        Context.server_state = SV_INIT.sv.state;
 
         if (SV_INIT.svs.demofile != null)
             try {

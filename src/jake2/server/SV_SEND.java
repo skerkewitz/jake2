@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.EndianHandler;
 import jake2.game.edict_t;
 import jake2.network.Netchan;
@@ -47,7 +47,7 @@ public class SV_SEND {
 	public static void SV_FlushRedirect(int sv_redirected, byte outputbuf[]) {
 		if (sv_redirected == Defines.RD_PACKET) {
 			String s = ("print\n" + Lib.CtoJava(outputbuf));
-			Netchan.Netchan_OutOfBand(Defines.NS_SERVER, Globals.net_from, s.length(), Lib.stringToBytes(s));
+			Netchan.Netchan_OutOfBand(Defines.NS_SERVER, Context.net_from, s.length(), Lib.stringToBytes(s));
 		}
 		else if (sv_redirected == Defines.RD_CLIENT) {
 			SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_print);
@@ -91,9 +91,9 @@ public class SV_SEND {
 		client_t cl;
 
 		// echo to console
-		if (Globals.dedicated.value != 0) {
+		if (Context.dedicated.value != 0) {
 
-			Com.Printf(s);
+			Command.Printf(s);
 		}
 
 		for (int i = 0; i < SV_MAIN.maxclients.value; i++) {
@@ -184,7 +184,7 @@ public class SV_SEND {
 
 			default :
 				mask = null;
-				Com.Error(Defines.ERR_FATAL, "SV_Multicast: bad to:" + to + "\n");
+				Command.Error(Defines.ERR_FATAL, "SV_Multicast: bad to:" + to + "\n");
 		}
 
 		// send the data to all relevent clients
@@ -262,16 +262,16 @@ public class SV_SEND {
 		boolean use_phs;
 
 		if (volume < 0 || volume > 1.0)
-			Com.Error(Defines.ERR_FATAL, "SV_StartSound: volume = " + volume);
+			Command.Error(Defines.ERR_FATAL, "SV_StartSound: volume = " + volume);
 
 		if (attenuation < 0 || attenuation > 4)
-			Com.Error(Defines.ERR_FATAL, "SV_StartSound: attenuation = " + attenuation);
+			Command.Error(Defines.ERR_FATAL, "SV_StartSound: attenuation = " + attenuation);
 
 		//	if (channel < 0 || channel > 15)
 		//		Com_Error (ERR_FATAL, "SV_StartSound: channel = %i", channel);
 
 		if (timeofs < 0 || timeofs > 0.255)
-			Com.Error(Defines.ERR_FATAL, "SV_StartSound: timeofs = " + timeofs);
+			Command.Error(Defines.ERR_FATAL, "SV_StartSound: timeofs = " + timeofs);
 
 		ent = entity.index;
 
@@ -380,13 +380,13 @@ public class SV_SEND {
 		// it is necessary for this to be after the WriteEntities
 		// so that entity references will be current
 		if (client.datagram.overflowed)
-			Com.Printf("WARNING: datagram overflowed for " + client.name + "\n");
+			Command.Printf("WARNING: datagram overflowed for " + client.name + "\n");
 		else
 			msg.write(client.datagram.data, client.datagram.cursize);
 		client.datagram.clear();
 
 		if (msg.overflowed) { // must have room left for the packet header
-			Com.Printf("WARNING: msg overflowed for " + client.name + "\n");
+			Command.Printf("WARNING: msg overflowed for " + client.name + "\n");
 			msg.clear();
 		}
 
@@ -409,7 +409,7 @@ public class SV_SEND {
 				SV_INIT.sv.demofile.close();
 			}
 			catch (IOException e) {
-				Com.Printf("IOError closing d9emo fiele:" + e);
+				Command.Printf("IOError closing d9emo fiele:" + e);
 			}
 			SV_INIT.sv.demofile = null;
 		}
@@ -482,7 +482,7 @@ public class SV_SEND {
 					return;
 				}
 				if (msglen > Defines.MAX_MSGLEN)
-					Com.Error(Defines.ERR_DROP, "SV_SendClientMessages: msglen > MAX_MSGLEN");
+					Command.Error(Defines.ERR_DROP, "SV_SendClientMessages: msglen > MAX_MSGLEN");
 
 				//r = fread (msgbuf, msglen, 1, sv.demofile);
 				r = 0;
@@ -490,7 +490,7 @@ public class SV_SEND {
 					r = SV_INIT.sv.demofile.read(msgbuf, 0, msglen);
 				}
 				catch (IOException e1) {
-					Com.Printf("IOError: reading demo file, " + e1);
+					Command.Printf("IOError: reading demo file, " + e1);
 				}
 				if (r != msglen) {
 					SV_DemoCompleted();
@@ -527,7 +527,7 @@ public class SV_SEND {
 			}
 			else {
 				// just update reliable	if needed
-				if (c.netchan.message.cursize != 0 || Globals.curtime - c.netchan.last_sent > 1000)
+				if (c.netchan.message.cursize != 0 || Context.curtime - c.netchan.last_sent > 1000)
 					Netchan.Transmit(c.netchan, 0, NULLBYTE);
 			}
 		}

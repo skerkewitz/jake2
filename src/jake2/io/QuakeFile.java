@@ -25,7 +25,7 @@
 package jake2.io;
 
 import jake2.game.*;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 
 import java.io.*;
 
@@ -105,7 +105,7 @@ public class QuakeFile extends RandomAccessFile {
             return null;
 
         if (i > GameBase.g_edicts.length) {
-            Com.DPrintf("jake2: illegal edict num:" + i + "\n");
+            Command.DPrintf("jake2: illegal edict num:" + i + "\n");
             return null;
         }
 
@@ -121,7 +121,7 @@ public class QuakeFile extends RandomAccessFile {
         else {
             String str = a.getID();
             if (a == null) {
-                Com.DPrintf("writeAdapter: invalid Adapter id for " + a + "\n");
+                Command.DPrintf("writeAdapter: invalid Adapter id for " + a + "\n");
             }
             writeString(str);
         }
@@ -130,7 +130,7 @@ public class QuakeFile extends RandomAccessFile {
     /** Reads the adapter id and returns the adapter. */
     public SuperAdapter readAdapter() throws IOException {
         if (readInt() != 3988)
-            Com.DPrintf("wrong read position: readadapter 3988 \n");
+            Command.DPrintf("wrong read position: readadapter 3988 \n");
 
         String id = readString();
 

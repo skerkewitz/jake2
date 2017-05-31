@@ -24,7 +24,7 @@
 package jake2.network;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.server.SV_MAIN;
@@ -147,7 +147,7 @@ public final class Netchan extends SV_MAIN {
         chan.sock = sock;
         chan.remote_address.set(adr);
         chan.qport = qport;
-        chan.last_received = Globals.curtime;
+        chan.last_received = Context.curtime;
         chan.incoming_sequence = 0;
         chan.outgoing_sequence = 1;
 
@@ -194,7 +194,7 @@ public final class Netchan extends SV_MAIN {
         // check for message overflow
         if (chan.message.overflowed) {
             chan.fatal_error = true;
-            Com.Printf(NET.AdrToString(chan.remote_address)
+            Command.Printf(NET.AdrToString(chan.remote_address)
                     + ":Outgoing message overflow\n");
             return;
         }
@@ -217,7 +217,7 @@ public final class Netchan extends SV_MAIN {
                 | (chan.incoming_reliable_sequence << 31);
 
         chan.outgoing_sequence++;
-        chan.last_sent = Globals.curtime;
+        chan.last_sent = Context.curtime;
 
         send.writeInt(w1);
         send.writeInt(w2);
@@ -236,21 +236,21 @@ public final class Netchan extends SV_MAIN {
         if (send.maxsize - send.cursize >= length)
             send.write(data, length);
         else
-            Com.Printf("Netchan_Transmit: dumped unreliable\n");
+            Command.Printf("Netchan_Transmit: dumped unreliable\n");
 
         // send the datagram
         NET.SendPacket(chan.sock, send.cursize, send.data, chan.remote_address);
 
         if (showpackets.value != 0) {
             if (send_reliable != 0)
-                Com.Printf(
+                Command.Printf(
                         "send " + send.cursize + " : s="
                                 + (chan.outgoing_sequence - 1) + " reliable="
                                 + chan.reliable_sequence + " ack="
                                 + chan.incoming_sequence + " rack="
                                 + chan.incoming_reliable_sequence + "\n");
             else
-                Com.Printf(
+                Command.Printf(
                         "send " + send.cursize + " : s="
                                 + (chan.outgoing_sequence - 1) + " ack="
                                 + chan.incoming_sequence + " rack="
@@ -281,14 +281,14 @@ public final class Netchan extends SV_MAIN {
 
         if (showpackets.value != 0) {
             if (reliable_message != 0)
-                Com.Printf(
+                Command.Printf(
                         "recv " + msg.cursize + " : s=" + sequence
                                 + " reliable="
                                 + (chan.incoming_reliable_sequence ^ 1)
                                 + " ack=" + sequence_ack + " rack="
                                 + reliable_ack + "\n");
             else
-                Com.Printf(
+                Command.Printf(
                         "recv " + msg.cursize + " : s=" + sequence + " ack="
                                 + sequence_ack + " rack=" + reliable_ack + "\n");
         }
@@ -298,7 +298,7 @@ public final class Netchan extends SV_MAIN {
         //
         if (sequence <= chan.incoming_sequence) {
             if (showdrop.value != 0)
-                Com.Printf(NET.AdrToString(chan.remote_address)
+                Command.Printf(NET.AdrToString(chan.remote_address)
                         + ":Out of order packet " + sequence + " at "
                         + chan.incoming_sequence + "\n");
             return false;
@@ -310,7 +310,7 @@ public final class Netchan extends SV_MAIN {
         chan.dropped = sequence - (chan.incoming_sequence + 1);
         if (chan.dropped > 0) {
             if (showdrop.value != 0)
-                Com.Printf(NET.AdrToString(chan.remote_address) + ":Dropped "
+                Command.Printf(NET.AdrToString(chan.remote_address) + ":Dropped "
                         + chan.dropped + " packets at " + sequence + "\n");
         }
 
@@ -335,7 +335,7 @@ public final class Netchan extends SV_MAIN {
         //
         // the message can now be read from the current message pointer
         //
-        chan.last_received = Globals.curtime;
+        chan.last_received = Context.curtime;
 
         return true;
     }

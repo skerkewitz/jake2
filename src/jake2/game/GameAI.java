@@ -25,7 +25,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.client.M;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -461,9 +461,9 @@ public class GameAI {
                     && (GameBase.level.time > self.monsterinfo.idle_time)) {
                 if (self.monsterinfo.idle_time != 0) {
                     self.monsterinfo.search.think(self);
-                    self.monsterinfo.idle_time = GameBase.level.time + 15 + Globals.rnd.nextFloat() * 15;
+                    self.monsterinfo.idle_time = GameBase.level.time + 15 + Context.rnd.nextFloat() * 15;
                 } else {
-                    self.monsterinfo.idle_time = GameBase.level.time + Globals.rnd.nextFloat() * 15;
+                    self.monsterinfo.idle_time = GameBase.level.time + Context.rnd.nextFloat() * 15;
                 }
             }
         }
@@ -511,9 +511,9 @@ public class GameAI {
                     && (GameBase.level.time > self.monsterinfo.idle_time)) {
                 if (self.monsterinfo.idle_time != 0) {
                     self.monsterinfo.idle.think(self);
-                    self.monsterinfo.idle_time = GameBase.level.time + 15 + Globals.rnd.nextFloat() * 15;
+                    self.monsterinfo.idle_time = GameBase.level.time + 15 + Context.rnd.nextFloat() * 15;
                 } else {
-                    self.monsterinfo.idle_time = GameBase.level.time + Globals.rnd.nextFloat() * 15;
+                    self.monsterinfo.idle_time = GameBase.level.time + Context.rnd.nextFloat() * 15;
                 }
             }
         }

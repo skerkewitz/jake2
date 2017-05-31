@@ -36,7 +36,7 @@ import jake2.game.Monster;
 import jake2.game.edict_t;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -1499,7 +1499,7 @@ public class M_Soldier {
     public static EntThinkAdapter SP_monster_soldier = new EntThinkAdapter() {
     	public String getID(){ return "SP_monster_soldier"; }
         public boolean think(edict_t self) {
-            Com.DPrintf("Spawning a soldier at " + self.s.origin[0] + " " +
+            Command.DPrintf("Spawning a soldier at " + self.s.origin[0] + " " +
                     self.s.origin[1] + " " +
                     self.s.origin[2] + " " +
                     "\n");

@@ -23,9 +23,9 @@
 package jake2.sys;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.TVar;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.network.TNetAddr;
 import jake2.qcommon.TSizeBuffer;
@@ -140,7 +140,7 @@ public final class NET {
                 a.port = Lib.atoi(address[1]);
             return true;
         } catch (Exception e) {
-            Com.Println(e.getMessage());
+            Command.Println(e.getMessage());
             return false;
         }
     }
@@ -231,7 +231,7 @@ public final class NET {
             int packetLength = receiveBuffer.position();
 
             if (packetLength > net_message.maxsize) {
-                Com.Println("Oversize packet from " + AdrToString(net_from));
+                Command.Println("Oversize packet from " + AdrToString(net_from));
                 return false;
             }
 
@@ -242,7 +242,7 @@ public final class NET {
             return true;
 
         } catch (IOException e) {
-            Com.DPrintf("NET_GetPacket: " + e + " from "
+            Command.DPrintf("NET_GetPacket: " + e + " from "
                     + AdrToString(net_from) + "\n");
             return false;
         }
@@ -261,7 +261,7 @@ public final class NET {
             return;
 
         if (to.type != Defines.NA_BROADCAST && to.type != Defines.NA_IP) {
-            Com.Error(Defines.ERR_FATAL, "NET_SendPacket: bad address type");
+            Command.Error(Defines.ERR_FATAL, "NET_SendPacket: bad address type");
             return;
         }
 
@@ -269,7 +269,7 @@ public final class NET {
             SocketAddress dstSocket = new InetSocketAddress(to.getInetAddress(), to.port);
             ip_channels[sock].send(ByteBuffer.wrap(data, 0, length), dstSocket);
         } catch (Exception e) {
-            Com.Println("NET_SendPacket ERROR: " + e + " to " + AdrToString(to));
+            Command.Println("NET_SendPacket ERROR: " + e + " to " + AdrToString(to));
         }
     }
 
@@ -349,7 +349,7 @@ public final class NET {
             // the socket have to be broadcastable
             newsocket.setBroadcast(true);
         } catch (Exception e) {
-            Com.Println("Error: " + e.toString());
+            Command.Println("Error: " + e.toString());
             newsocket = null;
         }
         return newsocket;
@@ -366,7 +366,7 @@ public final class NET {
     /** Sleeps msec or until net socket is ready. */
     public static void Sleep(int msec) {
         if (ip_sockets[Defines.NS_SERVER] == null
-                || (Globals.dedicated != null && Globals.dedicated.value == 0))
+                || (Context.dedicated != null && Context.dedicated.value == 0))
             return; // we're not a server, just run full speed
 
         try {

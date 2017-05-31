@@ -25,7 +25,6 @@
  */
 package jake2.client;
 
-import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
@@ -41,6 +40,9 @@ import jake2.util.*;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Comparator;
+
+import static jake2.Defines.*;
+import static jake2.client.Context.*;
 
 /**
  * Menu
@@ -177,9 +179,9 @@ public final class Menu extends Key {
 
     static void Banner(String name) {
         Dimension dim = new Dimension();
-        Globals.re.DrawGetPicSize(dim, name);
+        re.DrawGetPicSize(dim, name);
 
-        Globals.re.DrawPic(viddef.getWidth() / 2 - dim.width / 2,
+        re.DrawPic(viddef.getWidth() / 2 - dim.width / 2,
                 viddef.getHeight() / 2 - 110, name);
     }
 
@@ -187,7 +189,7 @@ public final class Menu extends Key {
                                                            // (int k) ) {
         int i;
 
-        if (ConsoleVar.VariableValue("maxclients") == 1 && Globals.server_state != 0)
+        if (ConsoleVar.VariableValue("maxclients") == 1 && Context.server_state != 0)
             ConsoleVar.Set("paused", "1");
 
         // if this menu is already present, drop back to that level
@@ -199,7 +201,7 @@ public final class Menu extends Key {
 
         if (i == m_menudepth) {
             if (m_menudepth >= MAX_MENU_DEPTH)
-                Com.Error(ERR_FATAL, "PushMenu: MAX_MENU_DEPTH");
+                Command.Error(ERR_FATAL, "PushMenu: MAX_MENU_DEPTH");
 
             m_layers[m_menudepth].draw = draw;//m_drawfunc;
             m_layers[m_menudepth].key = key;//m_keyfunc;     
@@ -226,7 +228,7 @@ public final class Menu extends Key {
         Sound.StartLocalSound(menu_out_sound);
         m_menudepth--;
         if (m_menudepth < 0)
-            Com.Error(ERR_FATAL, "PopMenu: depth < 1");
+            Command.Error(ERR_FATAL, "PopMenu: depth < 1");
 
         if (0 < m_menudepth){
 	        m_drawfunc = m_layers[m_menudepth-1].draw;
@@ -445,7 +447,7 @@ public final class Menu extends Key {
         Dimension dim = new Dimension();
 
         for (i = 0; i < names.length; i++) {
-            Globals.re.DrawGetPicSize(dim, names[i]);
+            re.DrawGetPicSize(dim, names[i]);
             w = dim.width;
             h = dim.height;
 
@@ -454,27 +456,27 @@ public final class Menu extends Key {
             totalheight += (h + 12);
         }
 
-        ystart = (Globals.viddef.getHeight() / 2 - 110);
-        xoffset = (Globals.viddef.getWidth() - widest + 70) / 2;
+        ystart = (viddef.getHeight() / 2 - 110);
+        xoffset = (viddef.getWidth() - widest + 70) / 2;
 
         for (i = 0; i < names.length; i++) {
             if (i != m_main_cursor)
-                Globals.re.DrawPic(xoffset, ystart + i * 40 + 13, names[i]);
+                re.DrawPic(xoffset, ystart + i * 40 + 13, names[i]);
         }
 
         //strcat(litname, "_sel");
         litname = names[m_main_cursor] + "_sel";
-        Globals.re.DrawPic(xoffset, ystart + m_main_cursor * 40 + 13, litname);
+        re.DrawPic(xoffset, ystart + m_main_cursor * 40 + 13, litname);
 
         DrawCursor(xoffset - 25, ystart + m_main_cursor * 40 + 11,
-                (Globals.cls.realtime / 100) % NUM_CURSOR_FRAMES);
+                (cls.realtime / 100) % NUM_CURSOR_FRAMES);
 
-        Globals.re.DrawGetPicSize(dim, "m_main_plaque");
+        re.DrawGetPicSize(dim, "m_main_plaque");
         w = dim.width;
         h = dim.height;
-        Globals.re.DrawPic(xoffset - 30 - w, ystart, "m_main_plaque");
+        re.DrawPic(xoffset - 30 - w, ystart, "m_main_plaque");
 
-        Globals.re.DrawPic(xoffset - 30 - w, ystart + h + 5, "m_main_logo");
+        re.DrawPic(xoffset - 30 - w, ystart + h + 5, "m_main_logo");
     }
 
     static keyfunc_t Main_Key = new keyfunc_t() {
@@ -1300,8 +1302,8 @@ public final class Menu extends Key {
         ConsoleVar.SetValue("freelook", ClampCvar(0, 1, freelook.value));
         s_options_freelook_box.curvalue = (int) freelook.value;
 
-        ConsoleVar.SetValue("crosshair", ClampCvar(0, 3, Globals.crosshair.value));
-        s_options_crosshair_box.curvalue = (int) Globals.crosshair.value;
+        ConsoleVar.SetValue("crosshair", ClampCvar(0, 3, Context.crosshair.value));
+        s_options_crosshair_box.curvalue = (int) Context.crosshair.value;
 
         ConsoleVar.SetValue("in_joystick", ClampCvar(0, 1, in_joystick.value));
         s_options_joystick_box.curvalue = (int) in_joystick.value;
@@ -2256,7 +2258,7 @@ public final class Menu extends Key {
     static TXCommand Menu_SaveGame = () -> Menu_SaveGame_f();
 
     static void Menu_SaveGame_f() {
-        if (0 == Globals.server_state)
+        if (0 == Context.server_state)
             return; // not playing a game
 
         SaveGame_MenuInit();
@@ -2584,7 +2586,7 @@ public final class Menu extends Key {
         }
 
         if (spot != null) {
-            if (Globals.server_state != 0)
+            if (Context.server_state != 0)
                 Cbuf.AddText("disconnect\n");
             Cbuf.AddText("gamemap \"*" + startmap + "$" + spot + "\"\n");
         } else {
@@ -2620,14 +2622,14 @@ public final class Menu extends Key {
             if (buffer == null)
                 //if ((length = FS_LoadFile("maps.lst", (Object *) & buffer))
                 // == -1)
-                Com.Error(ERR_DROP, "couldn't find maps.lst\n");
+                Command.Error(ERR_DROP, "couldn't find maps.lst\n");
         } else {
             try {
                 int len = (int) fp.length();
                 buffer = new byte[len];
                 fp.readFully(buffer);
             } catch (Exception e) {
-                Com.Error(ERR_DROP, "couldn't load maps.lst\n");
+                Command.Error(ERR_DROP, "couldn't load maps.lst\n");
             }
         }
 
@@ -2637,17 +2639,17 @@ public final class Menu extends Key {
         nummaps = lines.length;
 
         if (nummaps == 0)
-            Com.Error(ERR_DROP, "no maps in maps.lst\n");
+            Command.Error(ERR_DROP, "no maps in maps.lst\n");
 
         mapnames = new String[nummaps];
 
         for (i = 0; i < nummaps; i++) {
             String shortname, longname, scratch;
 
-            Com.ParseHelp ph = new Com.ParseHelp(lines[i]);
+            Command.ParseHelp ph = new Command.ParseHelp(lines[i]);
 
-            shortname = Com.Parse(ph).toUpperCase();
-            longname = Com.Parse(ph);
+            shortname = Command.Parse(ph).toUpperCase();
+            longname = Command.Parse(ph);
             scratch = longname + "\n" + shortname;
             mapnames[i] = scratch;
         }

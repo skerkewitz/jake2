@@ -65,7 +65,6 @@ public interface Defines {
     int ROLL = 2; // fall over
 
     int MAX_STRING_CHARS = 1024; // max length of a string passed to Cmd_TokenizeString
-    int MAX_STRING_TOKENS = 80; // max tokens resulting from Cmd_TokenizeString
     int MAX_TOKEN_CHARS = 1024; // max length of an individual token
 
     int MAX_QPATH = 64; // max length of a quake game pathname
@@ -1150,7 +1149,6 @@ public interface Defines {
     int ca_connected = 3;
     int ca_active = 4;
     int MAX_ALIAS_NAME = 32;
-    int MAX_NUM_ARGVS = 50;
     int MAX_MSGLEN = 1400;
     // ---------
     // console.h

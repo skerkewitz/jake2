@@ -23,7 +23,7 @@
 package jake2.game.monsters;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.game.EntDieAdapter;
 import jake2.game.EntInteractAdapter;
@@ -875,7 +875,7 @@ public class M_Float {
             GameBase.gi.multicast(origin, Defines.MULTICAST_PVS);
 
             GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.s.origin,
-                    Globals.vec3_origin, 5 + Lib.rand() % 6, -10,
+                    Context.vec3_origin, 5 + Lib.rand() % 6, -10,
                     Defines.DAMAGE_ENERGY, Defines.MOD_UNKNOWN);
             return true;
         }

@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -427,8 +427,8 @@ public class GameTarget {
                     && 0 == ((int) GameBase.dmflags.value & Defines.DF_ALLOW_EXIT)
                     && other != GameBase.g_edicts[0] /* world */
             ) {
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin,
                         10 * other.max_health, 1000, 0, Defines.MOD_EXIT);
                 return;
             }
@@ -616,7 +616,7 @@ public class GameTarget {
                 if ((tr.ent.takedamage != 0)
                         && 0 == (tr.ent.flags & Defines.FL_IMMUNE_LASER))
                     GameCombat.T_Damage(tr.ent, self, self.activator,
-                            self.movedir, tr.endpos, Globals.vec3_origin,
+                            self.movedir, tr.endpos, Context.vec3_origin,
                             self.dmg, 1, Defines.DAMAGE_ENERGY,
                             Defines.MOD_TARGET_LASER);
 

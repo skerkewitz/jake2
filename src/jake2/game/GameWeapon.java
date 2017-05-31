@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -71,7 +71,7 @@ public class GameWeapon {
                 GameBase.gi.WriteByte(Defines.TE_BLASTER);
                 GameBase.gi.WritePosition(self.s.origin);
                 if (plane == null)
-                    GameBase.gi.WriteDir(Globals.vec3_origin);
+                    GameBase.gi.WriteDir(Context.vec3_origin);
                 else
                     GameBase.gi.WriteDir(plane.normal);
                 GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PVS);
@@ -108,7 +108,7 @@ public class GameWeapon {
                 else
                     mod = Defines.MOD_GRENADE;
                 GameCombat.T_Damage(ent.enemy, ent, ent.owner, dir, ent.s.origin,
-                        Globals.vec3_origin, (int) points, (int) points,
+                        Context.vec3_origin, (int) points, (int) points,
                         Defines.DAMAGE_RADIUS, mod);
             }
     
@@ -281,7 +281,7 @@ public class GameWeapon {
                     GameBase.gi.WritePosition(ent.s.origin);
                     GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PHS);
                     GameCombat.T_Damage(ent, self, self.owner, self.velocity,
-                            ent.s.origin, Globals.vec3_origin, (int) points, 0,
+                            ent.s.origin, Context.vec3_origin, (int) points, 0,
                             Defines.DAMAGE_ENERGY, Defines.MOD_BFG_EFFECT);
                 }
             }
@@ -398,7 +398,7 @@ public class GameWeapon {
                             && 0 == (tr.ent.flags & Defines.FL_IMMUNE_LASER)
                             && (tr.ent != self.owner))
                         GameCombat.T_Damage(tr.ent, self, self.owner, dir,
-                                tr.endpos, Globals.vec3_origin, dmg, 1,
+                                tr.endpos, Context.vec3_origin, dmg, 1,
                                 Defines.DAMAGE_ENERGY, Defines.MOD_BFG_LASER);
     
                     // if we hit something that's not a monster or player we're
@@ -518,7 +518,7 @@ public class GameWeapon {
         Math3D.VectorSubtract(point, self.enemy.s.origin, dir);
     
         // do the damage
-        GameCombat.T_Damage(tr.ent, self, self, dir, point, Globals.vec3_origin,
+        GameCombat.T_Damage(tr.ent, self, self, dir, point, Context.vec3_origin,
                 damage, kick / 2, Defines.DAMAGE_NO_KNOCKBACK, Defines.MOD_HIT);
     
         if (0 == (tr.ent.svflags & Defines.SVF_MONSTER)

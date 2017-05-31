@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 20.11.2003 by RST.
-// $Id: particle_t.java,v 1.3 2004-12-14 12:48:51 cawe Exp $
+// $Id: TParticle.java,v 1.3 2004-12-14 12:48:51 cawe Exp $
 
 package jake2.client;
 
@@ -28,7 +28,7 @@ import jake2.util.Lib;
 
 import java.nio.*;
 
-public class particle_t {
+public class TParticle {
 	
 	// lwjgl renderer needs a ByteBuffer
 	private static ByteBuffer colorByteArray = Lib.newByteBuffer(Defines.MAX_PARTICLES * Lib.SIZEOF_INT, ByteOrder.LITTLE_ENDIAN);

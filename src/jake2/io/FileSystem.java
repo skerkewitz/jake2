@@ -24,13 +24,12 @@
 package jake2.io;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.Cbuf;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.TXCommand;
 import jake2.sys.QSystem;
 
 import java.io.*;
@@ -132,7 +131,7 @@ public final class FileSystem {
         //
         // start up with baseq2 by default
         //
-        AddGameDirectory(fs_basedir.string + '/' + Globals.BASEDIRNAME);
+        AddGameDirectory(fs_basedir.string + '/' + Context.BASEDIRNAME);
 
         // any set gamedirs will be freed up to here
         markBaseSearchPaths();
@@ -156,7 +155,7 @@ public final class FileSystem {
         if (index > 0) {
             File f = new File(path.substring(0, index));
             if (!f.mkdirs() && !f.isDirectory()) {
-                Com.Printf("can't create path \"" + path + '"' + "\n");
+                Command.Printf("can't create path \"" + path + '"' + "\n");
             }
         }
     }
@@ -191,7 +190,7 @@ public final class FileSystem {
                 netpath = link.to + filename.substring(link.fromlength);
                 File file = new File(netpath);
                 if (file.canRead()) {
-                    Com.DPrintf("link file: " + netpath + '\n');
+                    Command.DPrintf("link file: " + netpath + '\n');
                     return (int) file.length();
                 }
                 return -1;
@@ -211,12 +210,12 @@ public final class FileSystem {
                 if (entry != null) {
                     // found it!
                     file_from_pak = 1;
-                    Com.DPrintf("PackFile: " + pak.filename + " : " + filename
+                    Command.DPrintf("PackFile: " + pak.filename + " : " + filename
                             + '\n');
                     // open a new file on the pakfile
                     File file = new File(pak.filename);
                     if (!file.canRead()) {
-                        Com.Error(Defines.ERR_FATAL, "Couldn't reopen "
+                        Command.Error(Defines.ERR_FATAL, "Couldn't reopen "
                                 + pak.filename);
                     }
                     return entry.filelen;
@@ -229,12 +228,12 @@ public final class FileSystem {
                 if (!file.canRead())
                     continue;
 
-                Com.DPrintf("FindFile: " + netpath + '\n');
+                Command.DPrintf("FindFile: " + netpath + '\n');
 
                 return (int) file.length();
             }
         }
-        Com.DPrintf("FindFile: can't find " + filename + '\n');
+        Command.DPrintf("FindFile: can't find " + filename + '\n');
         return -1;
     }
 
@@ -265,7 +264,7 @@ public final class FileSystem {
                 netpath = link.to + filename.substring(link.fromlength);
                 file = new File(netpath);
                 if (file.canRead()) {
-                    //Com.DPrintf ("link file: " + netpath +'\n');
+                    //Command.DPrintf ("link file: " + netpath +'\n');
                     return new RandomAccessFile(file, "r");
                 }
                 return null;
@@ -286,11 +285,11 @@ public final class FileSystem {
                 if (entry != null) {
                     // found it!
                     file_from_pak = 1;
-                    //Com.DPrintf ("PackFile: " + pak.filename + " : " +
+                    //Command.DPrintf ("PackFile: " + pak.filename + " : " +
                     // filename + '\n');
                     file = new File(pak.filename);
                     if (!file.canRead())
-                        Com.Error(Defines.ERR_FATAL, "Couldn't reopen "
+                        Command.Error(Defines.ERR_FATAL, "Couldn't reopen "
                                 + pak.filename);
                     if (pak.handle == null || !pak.handle.getFD().valid()) {
                         // hold the pakfile handle open
@@ -311,12 +310,12 @@ public final class FileSystem {
                 if (!file.canRead())
                     continue;
 
-                //Com.DPrintf("FindFile: " + netpath +'\n');
+                //Command.DPrintf("FindFile: " + netpath +'\n');
 
                 return new RandomAccessFile(file, "r");
             }
         }
-        //Com.DPrintf ("FindFile: can't find " + filename + '\n');
+        //Command.DPrintf ("FindFile: can't find " + filename + '\n');
         return null;
     }
 
@@ -341,13 +340,13 @@ public final class FileSystem {
             try {
                 read = f.read(buffer, offset, block);
             } catch (IOException e) {
-                Com.Error(Defines.ERR_FATAL, e.toString());
+                Command.Error(Defines.ERR_FATAL, e.toString());
             }
 
             if (read == 0) {
-                Com.Error(Defines.ERR_FATAL, "FS_Read: 0 bytes read");
+                Command.Error(Defines.ERR_FATAL, "FS_Read: 0 bytes read");
             } else if (read == -1) {
-                Com.Error(Defines.ERR_FATAL, "FS_Read: -1 bytes read");
+                Command.Error(Defines.ERR_FATAL, "FS_Read: -1 bytes read");
             }
             //
             // do some progress bar thing here...
@@ -387,7 +386,7 @@ public final class FileSystem {
             file.readFully(buf);
             file.close();
         } catch (IOException e) {
-            Com.Error(Defines.ERR_FATAL, e.toString());
+            Command.Error(Defines.ERR_FATAL, e.toString());
         }
         return buf;
     }
@@ -447,11 +446,11 @@ public final class FileSystem {
                     if (entry != null) {
                         // found it!
                         file_from_pak = 1;
-                        //Com.DPrintf ("PackFile: " + pak.filename + " : " +
+                        //Command.DPrintf ("PackFile: " + pak.filename + " : " +
                         // filename + '\n');
                         file = new File(pak.filename);
                         if (!file.canRead())
-                            Com.Error(Defines.ERR_FATAL, "Couldn't reopen "
+                            Command.Error(Defines.ERR_FATAL, "Couldn't reopen "
                                     + pak.filename);
                         if (pak.handle == null || !pak.handle.getFD().valid()) {
                             // hold the pakfile handle open
@@ -478,7 +477,7 @@ public final class FileSystem {
                     if (!file.canRead())
                         continue;
 
-                    //Com.DPrintf("FindFile: " + netpath +'\n');
+                    //Command.DPrintf("FindFile: " + netpath +'\n');
                     input = new FileInputStream(file);
                     channel = input.getChannel();
                     fileLength = (int) channel.size();
@@ -556,12 +555,12 @@ public final class FileSystem {
             header.dirlen = packhandle.getInt();
 
             if (header.ident != IDPAKHEADER)
-                Com.Error(Defines.ERR_FATAL, packfile + " is not a packfile");
+                Command.Error(Defines.ERR_FATAL, packfile + " is not a packfile");
 
             numpackfiles = header.dirlen / TPackfile.SIZE;
 
             if (numpackfiles > MAX_FILES_IN_PACK)
-                Com.Error(Defines.ERR_FATAL, packfile + " has " + numpackfiles
+                Command.Error(Defines.ERR_FATAL, packfile + " has " + numpackfiles
                         + " files");
 
             newfiles = new Hashtable(numpackfiles);
@@ -583,7 +582,7 @@ public final class FileSystem {
             }
 
         } catch (IOException e) {
-            Com.DPrintf(e.getMessage() + '\n');
+            Command.DPrintf(e.getMessage() + '\n');
             return null;
         }
 
@@ -593,7 +592,7 @@ public final class FileSystem {
         pack.numfiles = numpackfiles;
         pack.files = newfiles;
 
-        Com.Printf("Added packfile " + packfile + " (" + numpackfiles
+        Command.Printf("Added packfile " + packfile + " (" + numpackfiles
                 + " files)\n");
 
         return pack;
@@ -652,7 +651,7 @@ public final class FileSystem {
      * this is modified to <user.home>/.jake2 
      */
     public static String Gamedir() {
-        return (fs_userdir != null) ? fs_userdir : Globals.BASEDIRNAME;
+        return (fs_userdir != null) ? fs_userdir : Context.BASEDIRNAME;
     }
 
     /*
@@ -661,7 +660,7 @@ public final class FileSystem {
      * Called to find where to write a downloaded file
      */
     public static String BaseGamedir() {
-        return (fs_gamedir != null) ? fs_gamedir : Globals.BASEDIRNAME;
+        return (fs_gamedir != null) ? fs_gamedir : Context.BASEDIRNAME;
     }
 
     /*
@@ -674,7 +673,7 @@ public final class FileSystem {
         if (dir != null && dir.length() > 0) {
             name = dir + "/autoexec.cfg";
         } else {
-            name = fs_basedir.string + '/' + Globals.BASEDIRNAME
+            name = fs_basedir.string + '/' + Context.BASEDIRNAME
                     + "/autoexec.cfg";
         }
 
@@ -696,7 +695,7 @@ public final class FileSystem {
 
         if (dir.indexOf("..") != -1 || dir.indexOf("/") != -1
                 || dir.indexOf("\\") != -1 || dir.indexOf(":") != -1) {
-            Com.Printf("Gamedir should be a single filename, not a path\n");
+            Command.Printf("Gamedir should be a single filename, not a path\n");
             return;
         }
 
@@ -708,7 +707,7 @@ public final class FileSystem {
                 try {
                     fs_searchpaths.pack.handle.close();
                 } catch (IOException e) {
-                    Com.DPrintf(e.getMessage() + '\n');
+                    Command.DPrintf(e.getMessage() + '\n');
                 }
                 // clear the hashtable
                 fs_searchpaths.pack.files.clear();
@@ -723,12 +722,12 @@ public final class FileSystem {
         //
         // flush all data, so it will be forced to reload
         //
-        if ((Globals.dedicated != null) && (Globals.dedicated.value == 0.0f))
+        if ((Context.dedicated != null) && (Context.dedicated.value == 0.0f))
             Cbuf.AddText("vid_restart\nsnd_restart\n");
 
         fs_gamedir = fs_basedir.string + '/' + dir;
 
-        if (dir.equals(Globals.BASEDIRNAME) || (dir.length() == 0)) {
+        if (dir.equals(Context.BASEDIRNAME) || (dir.length() == 0)) {
             ConsoleVar.FullSet("gamedir", "", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
             ConsoleVar.FullSet("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
         } else {
@@ -749,7 +748,7 @@ public final class FileSystem {
         TFileLink entry = null;
 
         if (Cmd.Argc() != 3) {
-            Com.Printf("USAGE: link <from> <to>\n");
+            Command.Printf("USAGE: link <from> <to>\n");
             return;
         }
 
@@ -817,8 +816,8 @@ public final class FileSystem {
             if (tmp != null)
                 tmp.replaceAll("\\\\", "/");
 
-            Com.Printf("Directory of " + findname + '\n');
-            Com.Printf("----\n");
+            Command.Printf("Directory of " + findname + '\n');
+            Command.Printf("----\n");
 
             dirnames = ListFiles(findname, 0, 0);
 
@@ -826,15 +825,15 @@ public final class FileSystem {
                 int index = 0;
                 for (int i = 0; i < dirnames.length; i++) {
                     if ((index = dirnames[i].lastIndexOf('/')) > 0) {
-                        Com.Printf(dirnames[i].substring(index + 1, dirnames[i]
+                        Command.Printf(dirnames[i].substring(index + 1, dirnames[i]
                                 .length()) + '\n');
                     } else {
-                        Com.Printf(dirnames[i] + '\n');
+                        Command.Printf(dirnames[i] + '\n');
                     }
                 }
             }
 
-            Com.Printf("\n");
+            Command.Printf("\n");
         }
     }
 
@@ -846,21 +845,21 @@ public final class FileSystem {
         TSearchPath s;
         TFileLink link;
 
-        Com.Printf("Current search path:\n");
+        Command.Printf("Current search path:\n");
         for (s = fs_searchpaths; s != null; s = s.next) {
             if (s == fs_base_searchpaths)
-                Com.Printf("----------\n");
+                Command.Printf("----------\n");
             if (s.pack != null)
-                Com.Printf(s.pack.filename + " (" + s.pack.numfiles
+                Command.Printf(s.pack.filename + " (" + s.pack.numfiles
                         + " files)\n");
             else
-                Com.Printf(s.filename + '\n');
+                Command.Printf(s.filename + '\n');
         }
 
-        Com.Printf("\nLinks:\n");
+        Command.Printf("\nLinks:\n");
         for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
             link = (TFileLink) it.next();
-            Com.Printf(link.from + " : " + link.to + '\n');
+            Command.Printf(link.from + " : " + link.to + '\n');
         }
     }
 

@@ -74,7 +74,7 @@ public class Model {
 		cplane_t plane;
 	
 		if (model == null || model.nodes == null)
-			Com.Error (Defines.ERR_DROP, "Mod_PointInLeaf: bad model");
+			Command.Error (Defines.ERR_DROP, "Mod_PointInLeaf: bad model");
 
 		node = model.nodes[0]; // root node
 		while (true)
@@ -213,7 +213,7 @@ public class Model {
 		int		i;
 	
 		if (name == null || name.length() == 0)
-			Com.Error(Defines.ERR_DROP, "Mod_ForName: NULL name");
+			Command.Error(Defines.ERR_DROP, "Mod_ForName: NULL name");
 		
 		//
 		// inline models are grabbed only from worldmodel
@@ -222,7 +222,7 @@ public class Model {
 		{
 			i = Integer.parseInt(name.substring(1));
 			if (i < 1 || RenderAPIImpl.main.r_worldmodel == null || i >= RenderAPIImpl.main.r_worldmodel.numsubmodels)
-				Com.Error (Defines.ERR_DROP, "bad inline model number");
+				Command.Error (Defines.ERR_DROP, "bad inline model number");
 			return mod_inline[i];
 		}
 
@@ -252,7 +252,7 @@ public class Model {
 		if (i == mod_numknown)
 		{
 			if (mod_numknown == MAX_MOD_KNOWN)
-				Com.Error (Defines.ERR_DROP, "mod_numknown == MAX_MOD_KNOWN");
+				Command.Error (Defines.ERR_DROP, "mod_numknown == MAX_MOD_KNOWN");
 			mod_numknown++;
 			mod = mod_known[i];
 		}
@@ -267,7 +267,7 @@ public class Model {
 		if (fileBuffer == null)
 		{
 			if (crash)
-				Com.Error(Defines.ERR_DROP, "Mod_NumForName: " + mod.name + " not found");
+				Command.Error(Defines.ERR_DROP, "Mod_NumForName: " + mod.name + " not found");
 
 			mod.name = "";
 			return null;
@@ -302,7 +302,7 @@ public class Model {
 			Mod_LoadBrushModel(mod, bb);
 			break;
 		default:
-			Com.Error(Defines.ERR_DROP,"Mod_NumForName: unknown fileid for " + mod.name);
+			Command.Error(Defines.ERR_DROP,"Mod_NumForName: unknown fileid for " + mod.name);
 			break;
 		}
 
@@ -379,7 +379,7 @@ public class Model {
 	void Mod_LoadVertexes(TLump l) {
 
 		if ( (l.filelen % TVertex.DISK_SIZE) != 0)
-			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		final int count = l.filelen / TVertex.DISK_SIZE;
 
@@ -421,7 +421,7 @@ public class Model {
 	void Mod_LoadSubmodels(TLump l) {
 	    
 	    if ((l.filelen % qfiles.dmodel_t.SIZE) != 0)
-	        Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in "
+	        Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in "
 	                + loadmodel.name);
 	    
 	    int i, j;
@@ -469,7 +469,7 @@ public class Model {
 		int i, count;
 
 		if ( (l.filelen % TMEdge.DISK_SIZE) != 0)
-			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		count = l.filelen / TMEdge.DISK_SIZE;
 		// out = Hunk_Alloc ( (count + 1) * sizeof(*out));	
@@ -502,7 +502,7 @@ public class Model {
 		String name;
 
 		if ((l.filelen % TTexInfo.SIZE) != 0)
-			Com.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		count = l.filelen / TTexInfo.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));
@@ -612,7 +612,7 @@ public class Model {
 	    int ti;
 	    
 	    if ((l.filelen % qfiles.dface_t.SIZE) != 0)
-	        Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in "
+	        Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in "
 	                + loadmodel.name);
 	    
 	    int count = l.filelen / qfiles.dface_t.SIZE;
@@ -652,7 +652,7 @@ public class Model {
 	        
 	        ti = in.texinfo;
 	        if (ti < 0 || ti >= loadmodel.numtexinfo)
-	            Com.Error(Defines.ERR_DROP,
+	            Command.Error(Defines.ERR_DROP,
 	            "MOD_LoadBmodel: bad texinfo number");
 	        
 	        out.texinfo = loadmodel.texinfo[ti];
@@ -724,7 +724,7 @@ public class Model {
 		TMNode[] out;
 
 		if ((l.filelen % qfiles.dnode_t.SIZE) != 0)
-			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 		
 		count = l.filelen / qfiles.dnode_t.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));	
@@ -781,7 +781,7 @@ public class Model {
 		int i, j, count;
 
 		if ((l.filelen % qfiles.dleaf_t.SIZE) != 0)
-			Com.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		count = l.filelen / qfiles.dleaf_t.SIZE;
 		// out = Hunk_Alloc ( count*sizeof(*out));
@@ -826,7 +826,7 @@ public class Model {
 		TMapSurface[] out;
 
 		if ((l.filelen % Defines.SIZE_OF_SHORT) != 0)
-			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 		count = l.filelen / Defines.SIZE_OF_SHORT;
 		// out = Hunk_Alloc ( count*sizeof(*out));	
 		out = new TMapSurface[count];
@@ -841,7 +841,7 @@ public class Model {
 		{
 			j = bb.getShort();
 			if (j < 0 ||  j >= loadmodel.numsurfaces)
-				Com.Error(Defines.ERR_DROP, "Mod_ParseMarksurfaces: bad surface number");
+				Command.Error(Defines.ERR_DROP, "Mod_ParseMarksurfaces: bad surface number");
 
 			out[i] = loadmodel.surfaces[j];
 		}
@@ -859,11 +859,11 @@ public class Model {
 		int[] offsets;
 	
 		if ( (l.filelen % Defines.SIZE_OF_INT) != 0)
-			Com.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error (Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		count = l.filelen / Defines.SIZE_OF_INT;
 		if (count < 1 || count >= Defines.MAX_MAP_SURFEDGES)
-			Com.Error (Defines.ERR_DROP, "MOD_LoadBmodel: bad surfedges count in " + loadmodel.name + ": " + count);
+			Command.Error (Defines.ERR_DROP, "MOD_LoadBmodel: bad surfedges count in " + loadmodel.name + ": " + count);
 
 		offsets = new int[count];
 
@@ -891,7 +891,7 @@ public class Model {
 		int bits;
 
 		if ((l.filelen % qfiles.dplane_t.SIZE) != 0)
-			Com.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
+			Command.Error(Defines.ERR_DROP, "MOD_LoadBmodel: funny lump size in " + loadmodel.name);
 
 		count = l.filelen / qfiles.dplane_t.SIZE;
 		// out = Hunk_Alloc ( count*2*sizeof(*out));
@@ -936,13 +936,13 @@ public class Model {
 	
 		loadmodel.type = mod_brush;
 		if (loadmodel != mod_known[0])
-			Com.Error(Defines.ERR_DROP, "Loaded a brush model after the world");
+			Command.Error(Defines.ERR_DROP, "Loaded a brush model after the world");
 
 		header = new qfiles.dheader_t(buffer);
 
 		i = header.version;
 		if (i != Defines.BSPVERSION)
-			Com.Error (Defines.ERR_DROP, "Mod_LoadBrushModel: " + mod.name + " has wrong version number (" + i + " should be " + Defines.BSPVERSION + ")");
+			Command.Error (Defines.ERR_DROP, "Mod_LoadBrushModel: " + mod.name + " has wrong version number (" + i + " should be " + Defines.BSPVERSION + ")");
 
 		mod_base = fileBuffer; //(byte *)header;
 
@@ -976,7 +976,7 @@ public class Model {
 			starmod.nummodelsurfaces = bm.numfaces;
 			starmod.firstnode = bm.headnode;
 			if (starmod.firstnode >= loadmodel.numnodes)
-				Com.Error(Defines.ERR_DROP, "Inline model " + i + " has bad firstnode");
+				Command.Error(Defines.ERR_DROP, "Inline model " + i + " has bad firstnode");
 
 			Math3D.VectorCopy(bm.maxs, starmod.maxs);
 			Math3D.VectorCopy(bm.mins, starmod.mins);
@@ -1014,25 +1014,25 @@ public class Model {
 		pheader = new qfiles.dmdl_t(buffer);
 
 		if (pheader.version != qfiles.ALIAS_VERSION)
-			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, pheader.version, qfiles.ALIAS_VERSION);
+			Command.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, pheader.version, qfiles.ALIAS_VERSION);
 
 		if (pheader.skinheight > MAX_LBM_HEIGHT)
-			Com.Error(Defines.ERR_DROP, "model "+ mod.name +" has a skin taller than " + MAX_LBM_HEIGHT);
+			Command.Error(Defines.ERR_DROP, "model "+ mod.name +" has a skin taller than " + MAX_LBM_HEIGHT);
 
 		if (pheader.num_xyz <= 0)
-			Com.Error(Defines.ERR_DROP, "model " + mod.name + " has no vertices");
+			Command.Error(Defines.ERR_DROP, "model " + mod.name + " has no vertices");
 
 		if (pheader.num_xyz > qfiles.MAX_VERTS)
-			Com.Error(Defines.ERR_DROP, "model " + mod.name +" has too many vertices");
+			Command.Error(Defines.ERR_DROP, "model " + mod.name +" has too many vertices");
 
 		if (pheader.num_st <= 0)
-			Com.Error(Defines.ERR_DROP, "model " + mod.name + " has no st vertices");
+			Command.Error(Defines.ERR_DROP, "model " + mod.name + " has no st vertices");
 
 		if (pheader.num_tris <= 0)
-			Com.Error(Defines.ERR_DROP, "model " + mod.name + " has no triangles");
+			Command.Error(Defines.ERR_DROP, "model " + mod.name + " has no triangles");
 
 		if (pheader.num_frames <= 0)
-			Com.Error(Defines.ERR_DROP, "model " + mod.name + " has no frames");
+			Command.Error(Defines.ERR_DROP, "model " + mod.name + " has no frames");
 
 		//
 		// load base s and t vertices (not used in gl version)
@@ -1131,10 +1131,10 @@ public class Model {
 		qfiles.dsprite_t sprout = new qfiles.dsprite_t(buffer);
 		
 		if (sprout.version != qfiles.SPRITE_VERSION)
-			Com.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, sprout.version, qfiles.SPRITE_VERSION);
+			Command.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, sprout.version, qfiles.SPRITE_VERSION);
 
 		if (sprout.numframes > qfiles.MAX_MD2SKINS)
-			Com.Error(Defines.ERR_DROP, "%s has too many frames (%i > %i)", mod.name, sprout.numframes, qfiles.MAX_MD2SKINS);
+			Command.Error(Defines.ERR_DROP, "%s has too many frames (%i > %i)", mod.name, sprout.numframes, qfiles.MAX_MD2SKINS);
 
 		for (int i=0 ; i<sprout.numframes ; i++)
 		{

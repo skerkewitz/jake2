@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.io.QuakeFile;
 
@@ -349,7 +349,7 @@ public class edict_t {
 
         if (key.equals("team")) {
             team = GameSpawn.ED_NewString(value);
-            Com.dprintln("Monster Team:" + team);
+            Command.dprintln("Monster Team:" + team);
             return true;
         } // F_LSTRING),
 

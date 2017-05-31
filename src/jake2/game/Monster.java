@@ -24,7 +24,7 @@ package jake2.game;
 
 import jake2.Defines;
 import jake2.client.M;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -208,10 +208,10 @@ public class Monster {
             notcombat = false;
             fixup = false;
             /*
-             * if (true) { Com.Printf("all entities:\n");
+             * if (true) { Command.Printf("all entities:\n");
              * 
              * for (int n = 0; n < Game.globals.num_edicts; n++) { edict_t ent =
-             * GameBase.g_edicts[n]; Com.Printf( "|%4i | %25s
+             * GameBase.g_edicts[n]; Command.Printf( "|%4i | %25s
              * |%8.2f|%8.2f|%8.2f||%8.2f|%8.2f|%8.2f||%8.2f|%8.2f|%8.2f|\n", new
              * Vargs().add(n).add(ent.classname).
              * add(ent.s.origin[0]).add(ent.s.origin[1]).add(ent.s.origin[2])
@@ -349,7 +349,7 @@ public class Monster {
         public String getID() { return "monster_triggered_start";}
         public boolean think(edict_t self) {
             if (self.index == 312)
-                Com.Printf("monster_triggered_start\n");
+                Command.Printf("monster_triggered_start\n");
             self.solid = Defines.SOLID_NOT;
             self.movetype = Defines.MOVETYPE_NONE;
             self.svflags |= Defines.SVF_NOCLIENT;

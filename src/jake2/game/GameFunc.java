@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -666,7 +666,7 @@ public class GameFunc {
                 Math3D.VectorSubtract(ent.moveinfo.start_angles, ent.s.angles,
                         move);
 
-            if (Math3D.VectorEquals(move, Globals.vec3_origin)) {
+            if (Math3D.VectorEquals(move, Context.vec3_origin)) {
                 AngleMove_Done.think(ent);
                 return true;
             }
@@ -799,8 +799,8 @@ public class GameFunc {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
                 // give it a chance to go away on it's own terms (like gibs)
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin, 100000, 1, 0,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
                 // if it's still there, nuke it
                 if (other != null)
@@ -808,8 +808,8 @@ public class GameFunc {
                 return;
             }
 
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
 
             if (self.moveinfo.state == STATE_UP)
@@ -867,8 +867,8 @@ public class GameFunc {
     static EntBlockedAdapter rotating_blocked = new EntBlockedAdapter() {
         public String getID() { return "rotating_blocked";}
         public void blocked(edict_t self, edict_t other) {
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -879,8 +879,8 @@ public class GameFunc {
                 csurface_t surf) {
             if (self.avelocity[0] != 0 || self.avelocity[1] != 0
                     || self.avelocity[2] != 0)
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                         Defines.MOD_CRUSH);
         }
     };
@@ -888,7 +888,7 @@ public class GameFunc {
     static EntUseAdapter rotating_use = new EntUseAdapter() {
         public String getID() { return "rotating_use";}
         public void use(edict_t self, edict_t other, edict_t activator) {
-            if (!Math3D.VectorEquals(self.avelocity, Globals.vec3_origin)) {
+            if (!Math3D.VectorEquals(self.avelocity, Context.vec3_origin)) {
                 self.s.sound = 0;
                 Math3D.VectorClear(self.avelocity);
                 self.touch = null;
@@ -1334,8 +1334,8 @@ public class GameFunc {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
                 // give it a chance to go away on it's own terms (like gibs)
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin, 100000, 1, 0,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
                 // if it's still there, nuke it
                 if (other != null)
@@ -1343,8 +1343,8 @@ public class GameFunc {
                 return;
             }
 
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
 
             if ((self.spawnflags & DOOR_CRUSHER) != 0)
@@ -1652,8 +1652,8 @@ public class GameFunc {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
                 // give it a chance to go away on it's own terms (like gibs)
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin, 100000, 1, 0,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
                 // if it's still there, nuke it
                 if (other != null)
@@ -1667,8 +1667,8 @@ public class GameFunc {
             if (self.dmg == 0)
                 return;
             self.touch_debounce_time = GameBase.level.time + 0.5f;
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -2011,7 +2011,7 @@ public class GameFunc {
         public String getID() { return "door_secret_use";}
         public void use(edict_t self, edict_t other, edict_t activator) {
             // make sure we're not already moving
-            if (!Math3D.VectorEquals(self.s.origin, Globals.vec3_origin))
+            if (!Math3D.VectorEquals(self.s.origin, Context.vec3_origin))
                 return;
 
             Move_Calc(self, self.pos1, door_secret_move1);
@@ -2067,7 +2067,7 @@ public class GameFunc {
     static EntThinkAdapter door_secret_move6 = new EntThinkAdapter() {
         public String getID() { return "door_secret_move6";}
         public boolean think(edict_t self) {
-            Move_Calc(self, Globals.vec3_origin, door_secret_done);
+            Move_Calc(self, Context.vec3_origin, door_secret_done);
             return true;
         }
     };
@@ -2091,8 +2091,8 @@ public class GameFunc {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
                 // give it a chance to go away on it's own terms (like gibs)
-                GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                        other.s.origin, Globals.vec3_origin, 100000, 1, 0,
+                GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
                 // if it's still there, nuke it
                 if (other != null)
@@ -2104,8 +2104,8 @@ public class GameFunc {
                 return;
             self.touch_debounce_time = GameBase.level.time + 0.5f;
 
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, 1, 0,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };

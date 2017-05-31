@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.game;
 
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Math3D;
 
 import java.io.IOException;
@@ -132,22 +132,22 @@ public class pmove_state_t {
 	}
 
 	public void dump() {
-		Com.Println("pm_type: " + pm_type);
+		Command.Println("pm_type: " + pm_type);
 
-		Com.Println("origin[0]: " + origin[0]);
-		Com.Println("origin[1]: " + origin[0]);
-		Com.Println("origin[2]: " + origin[0]);
+		Command.Println("origin[0]: " + origin[0]);
+		Command.Println("origin[1]: " + origin[0]);
+		Command.Println("origin[2]: " + origin[0]);
 
-		Com.Println("velocity[0]: " + velocity[0]);
-		Com.Println("velocity[1]: " + velocity[1]);
-		Com.Println("velocity[2]: " + velocity[2]);
+		Command.Println("velocity[0]: " + velocity[0]);
+		Command.Println("velocity[1]: " + velocity[1]);
+		Command.Println("velocity[2]: " + velocity[2]);
 
-		Com.Println("pmflags: " + pm_flags);
-		Com.Println("pmtime: " + pm_time);
-		Com.Println("gravity: " + gravity);
+		Command.Println("pmflags: " + pm_flags);
+		Command.Println("pmtime: " + pm_time);
+		Command.Println("gravity: " + gravity);
 
-		Com.Println("delta-angle[0]: " + delta_angles[0]);
-		Com.Println("delta-angle[1]: " + delta_angles[0]);
-		Com.Println("delta-angle[2]: " + delta_angles[0]);
+		Command.Println("delta-angle[0]: " + delta_angles[0]);
+		Command.Println("delta-angle[1]: " + delta_angles[0]);
+		Command.Println("delta-angle[2]: " + delta_angles[0]);
 	}
 }

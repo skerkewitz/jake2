@@ -4,8 +4,8 @@
  */
 package jake2.sys;
 
-import jake2.Globals;
-import jake2.qcommon.Com;
+import jake2.client.Context;
+import jake2.qcommon.Command;
 
 
 public abstract class Timer {
@@ -23,10 +23,10 @@ public abstract class Timer {
 				t = new StandardTimer();
 			}
 		}
-		Com.Println("using " + t.getClass().getName());
+		Command.Println("using " + t.getClass().getName());
 	}
 	
 	public static int Milliseconds() {
-		return Globals.curtime = (int)(t.currentTimeMillis());
+		return Context.curtime = (int)(t.currentTimeMillis());
 	}
 }

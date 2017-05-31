@@ -23,8 +23,8 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
-import jake2.qcommon.Com;
+import jake2.client.Context;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.io.QuakeFile;
 
@@ -130,7 +130,7 @@ public class GameSave {
 			}
         	catch(Exception e)
 			{
-        		Com.DPrintf("error loading class: " + e.getMessage());
+        		Command.DPrintf("error loading class: " + e.getMessage());
 			}
         }
         
@@ -146,14 +146,14 @@ public class GameSave {
         GameBase.sv_gravity = GameBase.gi.cvar("sv_gravity", "800", 0);
 
         // noset vars
-        Globals.dedicated = GameBase.gi.cvar("dedicated", "0",
+        Context.dedicated = GameBase.gi.cvar("dedicated", "0",
                 TVar.CVAR_FLAG_NOSET);
 
         // latched vars
         GameBase.sv_cheats = GameBase.gi.cvar("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
         GameBase.gi.cvar("gamename", Defines.GAMEVERSION,
                 TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        GameBase.gi.cvar("gamedate", Globals.__DATE__, TVar.CVAR_FLAG_SERVERINFO
+        GameBase.gi.cvar("gamedate", Context.__DATE__, TVar.CVAR_FLAG_SERVERINFO
                 | TVar.CVAR_FLAG_LATCH);
 
         GameBase.maxclients = GameBase.gi.cvar("maxclients", "4",

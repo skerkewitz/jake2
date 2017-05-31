@@ -25,7 +25,6 @@
  */
 package jake2.client;
 
-import jake2.Globals;
 import jake2.common.TDynamicLight;
 import jake2.game.Cmd;
 import jake2.game.TVar;
@@ -36,10 +35,13 @@ import jake2.util.Math3D;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import static jake2.Defines.*;
+import static jake2.client.Context.*;
+
 /**
  * V
  */
-public final class V extends Globals {
+public final class V {
 
     static TVar cl_testblend;
 
@@ -61,7 +63,7 @@ public final class V extends Globals {
 
     static int r_numparticles;
 
-    //static particle_t[] r_particles = new particle_t[MAX_PARTICLES];
+    //static TParticle[] r_particles = new TParticle[MAX_PARTICLES];
 
     static TLightStyle[] r_lightstyles = new TLightStyle[MAX_LIGHTSTYLES];
     static {
@@ -106,12 +108,12 @@ public final class V extends Globals {
 
         int i = r_numparticles++;
 
-        int c = particle_t.colorTable[color];
+        int c = TParticle.colorTable[color];
         c |= (int) (alpha * 255) << 24;
-        particle_t.colorArray.put(i, c);
+        TParticle.colorArray.put(i, c);
 
         i *= 3;
-        FloatBuffer vertexBuf = particle_t.vertexArray;
+        FloatBuffer vertexBuf = TParticle.vertexArray;
         vertexBuf.put(i++, org[0]);
         vertexBuf.put(i++, org[1]);
         vertexBuf.put(i++, org[2]);
@@ -144,7 +146,7 @@ public final class V extends Globals {
         TLightStyle ls;
 
         if (style < 0 || style > MAX_LIGHTSTYLES)
-            Com.Error(ERR_DROP, "Bad light style " + style);
+            Command.Error(ERR_DROP, "Bad light style " + style);
         ls = r_lightstyles[style];
 
         ls.white = r + g + b;
@@ -243,7 +245,7 @@ public final class V extends Globals {
     static TXCommand Gun_Next_f = new TXCommand() {
         public void execute() {
             gun_frame++;
-            Com.Printf("frame " + gun_frame + "\n");
+            Command.Printf("frame " + gun_frame + "\n");
         }
     };
 
@@ -252,18 +254,18 @@ public final class V extends Globals {
             gun_frame--;
             if (gun_frame < 0)
                 gun_frame = 0;
-            Com.Printf("frame " + gun_frame + "\n");
+            Command.Printf("frame " + gun_frame + "\n");
         }
     };
 
     static TXCommand Gun_Model_f = new TXCommand() {
         public void execute() {
             if (Cmd.Argc() != 2) {
-                gun_model = null;
+                Context.gun_model = null;
                 return;
             }
             String name = "models/" + Cmd.Argv(1) + "/tris.md2";
-            gun_model = re.RegisterModel(name);
+            Context.gun_model = re.RegisterModel(name);
         }
     };
 
@@ -365,7 +367,7 @@ public final class V extends Globals {
 
         re.RenderFrame(cl.refdef);
         if (cl_stats.value != 0.0f)
-            Com.Printf("ent:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
+            Command.Printf("ent:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
         if (log_stats.value != 0.0f && (log_stats_file != null))
             try {
                 log_stats_file.write(r_numentities + "," + r_numdlights + ","
@@ -385,7 +387,7 @@ public final class V extends Globals {
      */
     static TXCommand Viewpos_f = new TXCommand() {
         public void execute() {
-            Com.Printf("(%i %i %i) : %i\n",
+            Command.Printf("(%i %i %i) : %i\n",
                     (int) cl.refdef.vieworg[0],
                     (int) cl.refdef.vieworg[1],
                     (int) cl.refdef.vieworg[2],

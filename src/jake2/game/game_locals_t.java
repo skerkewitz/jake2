@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.io.QuakeFile;
 
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class game_locals_t {
 
         // rst's checker :-)
         if (f.readInt() != 1928)
-            Com.DPrintf("error in loading game_locals, 1928\n");
+            Command.DPrintf("error in loading game_locals, 1928\n");
 
     }
 

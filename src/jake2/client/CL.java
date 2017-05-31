@@ -26,7 +26,6 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.network.Netchan;
@@ -99,18 +98,18 @@ public final class CL {
 
                 int len;
 
-                if (!Globals.cls.demorecording) {
-                    Com.Printf("Not recording a demo.\n");
+                if (!Context.cls.demorecording) {
+                    Command.Printf("Not recording a demo.\n");
                     return;
                 }
 
                 //	   finish up
                 len = -1;
-                Globals.cls.demofile.writeInt(EndianHandler.swapInt(len));
-                Globals.cls.demofile.close();
-                Globals.cls.demofile = null;
-                Globals.cls.demorecording = false;
-                Com.Printf("Stopped demo.\n");
+                Context.cls.demofile.writeInt(EndianHandler.swapInt(len));
+                Context.cls.demofile.close();
+                Context.cls.demofile = null;
+                Context.cls.demorecording = false;
+                Command.Printf("Stopped demo.\n");
             } catch (IOException e) {
             }
         }
@@ -134,17 +133,17 @@ public final class CL {
                 entity_state_t ent;
 
                 if (Cmd.Argc() != 2) {
-                    Com.Printf("record <demoname>\n");
+                    Command.Printf("record <demoname>\n");
                     return;
                 }
 
-                if (Globals.cls.demorecording) {
-                    Com.Printf("Already recording.\n");
+                if (Context.cls.demorecording) {
+                    Command.Printf("Already recording.\n");
                     return;
                 }
 
-                if (Globals.cls.state != Defines.ca_active) {
-                    Com.Printf("You must be in a level to record.\n");
+                if (Context.cls.state != Defines.ca_active) {
+                    Command.Printf("You must be in a level to record.\n");
                     return;
                 }
 
@@ -153,18 +152,18 @@ public final class CL {
                 //
                 name = FileSystem.Gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
 
-                Com.Printf("recording to " + name + ".\n");
+                Command.Printf("recording to " + name + ".\n");
                 FileSystem.CreatePath(name);
-                Globals.cls.demofile = new RandomAccessFile(name, "rw");
-                if (Globals.cls.demofile == null) {
-                    Com.Printf("ERROR: couldn't open.\n");
+                Context.cls.demofile = new RandomAccessFile(name, "rw");
+                if (Context.cls.demofile == null) {
+                    Command.Printf("ERROR: couldn't open.\n");
                     return;
                 }
-                Globals.cls.demorecording = true;
+                Context.cls.demorecording = true;
 
                 // don't start saving messages until a non-delta compressed
                 // message is received
-                Globals.cls.demowaiting = true;
+                Context.cls.demowaiting = true;
 
                 //
                 // write out messages to hold the startup information
@@ -174,28 +173,28 @@ public final class CL {
                 // send the serverdata
                 buf.writeByte(Defines.svc_serverdata);
                 buf.writeInt(Defines.PROTOCOL_VERSION);
-                buf.writeInt(0x10000 + Globals.cl.servercount);
+                buf.writeInt(0x10000 + Context.cl.servercount);
                 buf.writeByte(1); // demos are always attract loops
-                buf.writeString(Globals.cl.gamedir);
-                buf.writeShort(Globals.cl.playernum);
+                buf.writeString(Context.cl.gamedir);
+                buf.writeShort(Context.cl.playernum);
 
-                buf.writeString(Globals.cl.configstrings[Defines.CS_NAME]);
+                buf.writeString(Context.cl.configstrings[Defines.CS_NAME]);
 
                 // configstrings
                 for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++) {
-                    if (Globals.cl.configstrings[i].length() > 0) {
-                        if (buf.cursize + Globals.cl.configstrings[i].length()
+                    if (Context.cl.configstrings[i].length() > 0) {
+                        if (buf.cursize + Context.cl.configstrings[i].length()
                                 + 32 > buf.maxsize) { 
                             // write it out
-                            Globals.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                            Globals.cls.demofile
+                            Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
+                            Context.cls.demofile
                                     .write(buf.data, 0, buf.cursize);
                             buf.cursize = 0;
                         }
 
                         buf.writeByte(Defines.svc_configstring);
                         buf.writeShort(i);
-                        buf.writeString(Globals.cl.configstrings[i]);
+                        buf.writeString(Context.cl.configstrings[i]);
                     }
 
                 }
@@ -203,26 +202,26 @@ public final class CL {
                 // baselines
                 nullstate.clear();
                 for (i = 0; i < Defines.MAX_EDICTS; i++) {
-                    ent = Globals.cl_entities[i].baseline;
+                    ent = Context.cl_entities[i].baseline;
                     if (ent.modelindex == 0)
                         continue;
 
                     if (buf.cursize + 64 > buf.maxsize) { // write it out
-                        Globals.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                        Globals.cls.demofile.write(buf.data, 0, buf.cursize);
+                        Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
+                        Context.cls.demofile.write(buf.data, 0, buf.cursize);
                         buf.cursize = 0;
                     }
 
                     buf.writeByte(Defines.svc_spawnbaseline);
-                    buf.writeDeltaEntity(nullstate, Globals.cl_entities[i].baseline, true, true);
+                    buf.writeDeltaEntity(nullstate, Context.cl_entities[i].baseline, true, true);
                 }
 
                 buf.writeByte(Defines.svc_stufftext);
                 buf.writeString("precache\n");
 
                 // write it to the demo file
-                Globals.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                Globals.cls.demofile.write(buf.data, 0, buf.cursize);
+                Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
+                Context.cls.demofile.write(buf.data, 0, buf.cursize);
                 // the rest of the demo file will be individual frames
 
             } catch (IOException e) {
@@ -235,16 +234,16 @@ public final class CL {
      */
     static TXCommand ForwardToServer_f = new TXCommand() {
         public void execute() {
-            if (Globals.cls.state != Defines.ca_connected
-                    && Globals.cls.state != Defines.ca_active) {
-                Com.Printf("Can't \"" + Cmd.Argv(0) + "\", not connected\n");
+            if (Context.cls.state != Defines.ca_connected
+                    && Context.cls.state != Defines.ca_active) {
+                Command.Printf("Can't \"" + Cmd.Argv(0) + "\", not connected\n");
                 return;
             }
 
             // don't forward the first argument
             if (Cmd.Argc() > 1) {
-                Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-                Globals.cls.netchan.message.print(Cmd.Args());
+                Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+                Context.cls.netchan.message.print(Cmd.Args());
             }
         }
     };
@@ -257,12 +256,12 @@ public final class CL {
             // never pause in multiplayer
 
             if (ConsoleVar.VariableValue("maxclients") > 1
-                    || Globals.server_state == 0) {
+                    || Context.server_state == 0) {
                 ConsoleVar.SetValue("paused", 0);
                 return;
             }
 
-            ConsoleVar.SetValue("paused", Globals.cl_paused.value);
+            ConsoleVar.SetValue("paused", Context.cl_paused.value);
         }
     };
 
@@ -272,7 +271,7 @@ public final class CL {
     static TXCommand Quit_f = new TXCommand() {
         public void execute() {
             Disconnect();
-            Com.Quit();
+            Command.Quit();
         }
     };
 
@@ -284,11 +283,11 @@ public final class CL {
             String server;
 
             if (Cmd.Argc() != 2) {
-                Com.Printf("usage: connect <server>\n");
+                Command.Printf("usage: connect <server>\n");
                 return;
             }
 
-            if (Globals.server_state != 0) {
+            if (Context.server_state != 0) {
                 // if running a local server, kill it and reissue
                 SV_MAIN.SV_Shutdown("Server quit\n", false);
             } else {
@@ -301,10 +300,10 @@ public final class CL {
 
             Disconnect();
 
-            Globals.cls.state = Defines.ca_connecting;
+            Context.cls.state = Defines.ca_connecting;
             //strncpy (cls.servername, server, sizeof(cls.servername)-1);
-            Globals.cls.servername = server;
-            Globals.cls.connect_time = -99999;
+            Context.cls.servername = server;
+            Context.cls.connect_time = -99999;
             // CL_CheckForResend() will fire immediately
         }
     };
@@ -317,8 +316,8 @@ public final class CL {
     static TXCommand Rcon_f = new TXCommand() {
         public void execute() {
 
-            if (Globals.rcon_client_password.string.length() == 0) {
-                Com.Printf("You must set 'rcon_password' before\nissuing an rcon command.\n");
+            if (Context.rcon_client_password.string.length() == 0) {
+                Command.Printf("You must set 'rcon_password' before\nissuing an rcon command.\n");
                 return;
             }
 
@@ -334,7 +333,7 @@ public final class CL {
             NET.Config(true);
 
             message.append("rcon ");
-            message.append(Globals.rcon_client_password.string);
+            message.append(Context.rcon_client_password.string);
             message.append(" ");
 
             for (int i = 1; i < Cmd.Argc(); i++) {
@@ -344,14 +343,14 @@ public final class CL {
 
             TNetAddr to = new TNetAddr();
 
-            if (Globals.cls.state >= Defines.ca_connected)
-                to = Globals.cls.netchan.remote_address;
+            if (Context.cls.state >= Defines.ca_connected)
+                to = Context.cls.netchan.remote_address;
             else {
-                if (Globals.rcon_address.string.length() == 0) {
-                    Com.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
+                if (Context.rcon_address.string.length() == 0) {
+                    Command.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
                     return;
                 }
-                NET.StringToAdr(Globals.rcon_address.string, to);
+                NET.StringToAdr(Context.rcon_address.string, to);
                 if (to.port == 0) to.port = Defines.PORT_SERVER;
             }
             message.append('\0');
@@ -362,7 +361,7 @@ public final class CL {
 
     static TXCommand Disconnect_f = new TXCommand() {
         public void execute() {
-            Com.Error(Defines.ERR_DROP, "Disconnected from server");
+            Command.Error(Defines.ERR_DROP, "Disconnected from server");
         }
     };
 
@@ -377,13 +376,13 @@ public final class CL {
             //if we are downloading, we don't change!
             // This so we don't suddenly stop downloading a map
 
-            if (Globals.cls.download != null)
+            if (Context.cls.download != null)
                 return;
 
             SCR.BeginLoadingPlaque();
-            Globals.cls.state = Defines.ca_connected; // not active anymore, but
+            Context.cls.state = Defines.ca_connected; // not active anymore, but
                                                       // not disconnected
-            Com.Printf("\nChanging map...\n");
+            Command.Printf("\nChanging map...\n");
         }
     };
 
@@ -397,27 +396,27 @@ public final class CL {
             //ZOID
             //if we are downloading, we don't change! This so we don't suddenly
             // stop downloading a map
-            if (Globals.cls.download != null)
+            if (Context.cls.download != null)
                 return;
 
             Sound.StopAllSounds();
-            if (Globals.cls.state == Defines.ca_connected) {
-                Com.Printf("reconnecting...\n");
-                Globals.cls.state = Defines.ca_connected;
-                Globals.cls.netchan.message.writeChar(Defines.clc_stringcmd);
-                Globals.cls.netchan.message.writeString("new");
+            if (Context.cls.state == Defines.ca_connected) {
+                Command.Printf("reconnecting...\n");
+                Context.cls.state = Defines.ca_connected;
+                Context.cls.netchan.message.writeChar(Defines.clc_stringcmd);
+                Context.cls.netchan.message.writeString("new");
                 return;
             }
 
-            if (Globals.cls.servername != null) {
-                if (Globals.cls.state >= Defines.ca_connected) {
+            if (Context.cls.servername != null) {
+                if (Context.cls.state >= Defines.ca_connected) {
                     Disconnect();
-                    Globals.cls.connect_time = Globals.cls.realtime - 1500;
+                    Context.cls.connect_time = Context.cls.realtime - 1500;
                 } else
-                    Globals.cls.connect_time = -99999; // fire immediately
+                    Context.cls.connect_time = -99999; // fire immediately
 
-                Globals.cls.state = Defines.ca_connecting;
-                Com.Printf("reconnecting...\n");
+                Context.cls.state = Defines.ca_connecting;
+                Command.Printf("reconnecting...\n");
             }
         }
     };
@@ -438,7 +437,7 @@ public final class CL {
             NET.Config(true); // allow remote
 
             // send a broadcast packet
-            Com.Printf("pinging broadcast...\n");
+            Command.Printf("pinging broadcast...\n");
 
             noudp = ConsoleVar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
             if (noudp.value == 0.0f) {
@@ -467,9 +466,9 @@ public final class CL {
                 if (adrstring == null || adrstring.length() == 0)
                     continue;
 
-                Com.Printf("pinging " + adrstring + "...\n");
+                Command.Printf("pinging " + adrstring + "...\n");
                 if (!NET.StringToAdr(adrstring, adr)) {
-                    Com.Printf("Bad address: " + adrstring + "\n");
+                    Command.Printf("Bad address: " + adrstring + "\n");
                     continue;
                 }
                 if (adr.port == 0)
@@ -491,10 +490,10 @@ public final class CL {
             int i;
 
             for (i = 0; i < Defines.MAX_CLIENTS; i++) {
-                if (Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i] == null)
+                if (Context.cl.configstrings[Defines.CS_PLAYERSKINS + i] == null)
                     continue;
-                Com.Printf("client " + i + ": "
-                        + Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i]
+                Command.Printf("client " + i + ": "
+                        + Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                         + "\n");
                 SCR.UpdateScreen();
                 QSystem.SendKeyEvents(); // pump message loop
@@ -508,7 +507,7 @@ public final class CL {
      */
     static TXCommand Userinfo_f = new TXCommand() {
         public void execute() {
-            Com.Printf("User info settings:\n");
+            Command.Printf("User info settings:\n");
             Info.Print(ConsoleVar.Userinfo());
         }
     };
@@ -546,11 +545,11 @@ public final class CL {
 
                 int iw[] = { 0 }; // for detecting cheater maps
 
-                CM.CM_LoadMap(Globals.cl.configstrings[Defines.CS_MODELS + 1],
+                CM.CM_LoadMap(Context.cl.configstrings[Defines.CS_MODELS + 1],
                         true, iw);
 
                 CL_parse.RegisterSounds();
-                CL_view.PrepRefresh();
+                ClientView.PrepRefresh();
                 return;
             }
 
@@ -584,11 +583,11 @@ public final class CL {
         int swlen;
 
         // the first eight bytes are just packet sequencing stuff
-        swlen = Globals.net_message.cursize - 8;
+        swlen = Context.net_message.cursize - 8;
 
         try {
-            Globals.cls.demofile.writeInt(EndianHandler.swapInt(swlen));
-            Globals.cls.demofile.write(Globals.net_message.data, 8, swlen);
+            Context.cls.demofile.writeInt(EndianHandler.swapInt(swlen));
+            Context.cls.demofile.write(Context.net_message.data, 8, swlen);
         } catch (IOException e) {
         }
 
@@ -603,9 +602,9 @@ public final class CL {
         TNetAddr adr = new TNetAddr();
         int port;
 
-        if (!NET.StringToAdr(Globals.cls.servername, adr)) {
-            Com.Printf("Bad server address\n");
-            Globals.cls.connect_time = 0;
+        if (!NET.StringToAdr(Context.cls.servername, adr)) {
+            Command.Printf("Bad server address\n");
+            Context.cls.connect_time = 0;
             return;
         }
         if (adr.port == 0)
@@ -613,11 +612,11 @@ public final class CL {
         //			adr.port = BigShort(PORT_SERVER);
 
         port = (int) ConsoleVar.VariableValue("qport");
-        Globals.userinfo_modified = false;
+        Context.userinfo_modified = false;
 
         Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "connect "
                 + Defines.PROTOCOL_VERSION + " " + port + " "
-                + Globals.cls.challenge + " \"" + ConsoleVar.Userinfo() + "\"\n");
+                + Context.cls.challenge + " \"" + ConsoleVar.Userinfo() + "\"\n");
     }
 
     /**
@@ -628,35 +627,35 @@ public final class CL {
     static void CheckForResend() {
         // if the local server is running and we aren't
         // then connect
-        if (Globals.cls.state == Defines.ca_disconnected
-                && Globals.server_state != 0) {
-            Globals.cls.state = Defines.ca_connecting;
-            Globals.cls.servername = "localhost";
+        if (Context.cls.state == Defines.ca_disconnected
+                && Context.server_state != 0) {
+            Context.cls.state = Defines.ca_connecting;
+            Context.cls.servername = "localhost";
             // we don't need a challenge on the localhost
             SendConnectPacket();
             return;
         }
 
         // resend if we haven't gotten a reply yet
-        if (Globals.cls.state != Defines.ca_connecting)
+        if (Context.cls.state != Defines.ca_connecting)
             return;
 
-        if (Globals.cls.realtime - Globals.cls.connect_time < 3000)
+        if (Context.cls.realtime - Context.cls.connect_time < 3000)
             return;
 
         TNetAddr adr = new TNetAddr();
-        if (!NET.StringToAdr(Globals.cls.servername, adr)) {
-            Com.Printf("Bad server address\n");
-            Globals.cls.state = Defines.ca_disconnected;
+        if (!NET.StringToAdr(Context.cls.servername, adr)) {
+            Command.Printf("Bad server address\n");
+            Context.cls.state = Defines.ca_disconnected;
             return;
         }
         if (adr.port == 0)
             adr.port = Defines.PORT_SERVER;
 
         // for retransmit requests
-        Globals.cls.connect_time = Globals.cls.realtime;
+        Context.cls.connect_time = Context.cls.realtime;
 
-        Com.Printf("Connecting to " + Globals.cls.servername + "...\n");
+        Command.Printf("Connecting to " + Context.cls.servername + "...\n");
 
         Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "getchallenge\n");
     }
@@ -672,12 +671,12 @@ public final class CL {
 
         // wipe the entire cl structure
 
-        Globals.cl = new client_state_t();
-        for (int i = 0; i < Globals.cl_entities.length; i++) {
-            Globals.cl_entities[i] = new centity_t();
+        Context.cl = new client_state_t();
+        for (int i = 0; i < Context.cl_entities.length; i++) {
+            Context.cl_entities[i] = new centity_t();
         }
 
-        Globals.cls.netchan.message.clear();
+        Context.cls.netchan.message.clear();
     }
 
     /**
@@ -691,46 +690,46 @@ public final class CL {
 
         String fin;
 
-        if (Globals.cls.state == Defines.ca_disconnected)
+        if (Context.cls.state == Defines.ca_disconnected)
             return;
 
-        if (Globals.cl_timedemo != null && Globals.cl_timedemo.value != 0.0f) {
+        if (Context.cl_timedemo != null && Context.cl_timedemo.value != 0.0f) {
             int time;
 
-            time = Timer.Milliseconds() - Globals.cl.timedemo_start;
+            time = Timer.Milliseconds() - Context.cl.timedemo_start;
             if (time > 0)
-                Com.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
-                        Globals.cl.timedemo_frames, time / 1000.0,  Globals.cl.timedemo_frames * 1000.0 / time);
+                Command.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
+                        Context.cl.timedemo_frames, time / 1000.0,  Context.cl.timedemo_frames * 1000.0 / time);
         }
 
-        Math3D.VectorClear(Globals.cl.refdef.blend);
+        Math3D.VectorClear(Context.cl.refdef.blend);
         
-        Globals.re.CinematicSetPalette(null);
+        Context.re.CinematicSetPalette(null);
 
         Menu.ForceMenuOff();
 
-        Globals.cls.connect_time = 0;
+        Context.cls.connect_time = 0;
 
         SCR.StopCinematic();
 
-        if (Globals.cls.demorecording)
+        if (Context.cls.demorecording)
             Stop_f.execute();
 
         // send a disconnect message to the server
         fin = (char) Defines.clc_stringcmd + "disconnect";
-        Netchan.Transmit(Globals.cls.netchan, fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Globals.cls.netchan, fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Globals.cls.netchan, fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
 
         ClearState();
 
         // stop download
-        if (Globals.cls.download != null) {
-            Lib.fclose(Globals.cls.download);
-            Globals.cls.download = null;
+        if (Context.cls.download != null) {
+            Lib.fclose(Context.cls.download);
+            Context.cls.download = null;
         }
 
-        Globals.cls.state = Defines.ca_disconnected;
+        Context.cls.state = Defines.ca_disconnected;
     }
 
     /**
@@ -741,10 +740,10 @@ public final class CL {
     static void ParseStatusMessage() {
         String s;
 
-        s = TSizeBuffer.ReadString(Globals.net_message);
+        s = TSizeBuffer.ReadString(Context.net_message);
 
-        Com.Printf(s + "\n");
-        Menu.AddToServerList(Globals.net_from, s);
+        Command.Printf(s + "\n");
+        Menu.AddToServerList(Context.net_from, s);
     }
 
     /**
@@ -756,28 +755,28 @@ public final class CL {
         String s;
         String c;
 
-        TSizeBuffer.BeginReading(Globals.net_message);
-        TSizeBuffer.ReadLong(Globals.net_message); // skip the -1
+        TSizeBuffer.BeginReading(Context.net_message);
+        TSizeBuffer.ReadLong(Context.net_message); // skip the -1
 
-        s = TSizeBuffer.ReadStringLine(Globals.net_message);
+        s = TSizeBuffer.ReadStringLine(Context.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
         c = Cmd.Argv(0);
         
-        Com.Println(Globals.net_from.toString() + ": " + c);
+        Command.Println(Context.net_from.toString() + ": " + c);
 
         // server connection
         if (c.equals("client_connect")) {
-            if (Globals.cls.state == Defines.ca_connected) {
-                Com.Printf("Dup connect received.  Ignored.\n");
+            if (Context.cls.state == Defines.ca_connected) {
+                Command.Printf("Dup connect received.  Ignored.\n");
                 return;
             }
-            Netchan.Setup(Defines.NS_CLIENT, Globals.cls.netchan,
-                    Globals.net_from, Globals.cls.quakePort);
-            Globals.cls.netchan.message.writeChar(Defines.clc_stringcmd);
-            Globals.cls.netchan.message.writeString("new");
-            Globals.cls.state = Defines.ca_connected;
+            Netchan.Setup(Defines.NS_CLIENT, Context.cls.netchan,
+                    Context.net_from, Context.cls.quakePort);
+            Context.cls.netchan.message.writeChar(Defines.clc_stringcmd);
+            Context.cls.netchan.message.writeString("new");
+            Context.cls.state = Defines.ca_connected;
             return;
         }
 
@@ -789,44 +788,44 @@ public final class CL {
 
         // remote command from gui front end
         if (c.equals("cmd")) {
-            if (!NET.IsLocalAddress(Globals.net_from)) {
-                Com.Printf("Command packet from remote host.  Ignored.\n");
+            if (!NET.IsLocalAddress(Context.net_from)) {
+                Command.Printf("Command packet from remote host.  Ignored.\n");
                 return;
             }
-            s = TSizeBuffer.ReadString(Globals.net_message);
+            s = TSizeBuffer.ReadString(Context.net_message);
             Cbuf.AddText(s);
             Cbuf.AddText("\n");
             return;
         }
         // print command from somewhere
         if (c.equals("print")) {
-            s = TSizeBuffer.ReadString(Globals.net_message);
+            s = TSizeBuffer.ReadString(Context.net_message);
             if (s.length() > 0)
-            	Com.Printf(s);
+            	Command.Printf(s);
             return;
         }
 
         // ping from somewhere
         if (c.equals("ping")) {
-            Netchan.OutOfBandPrint(Defines.NS_CLIENT, Globals.net_from, "ack");
+            Netchan.OutOfBandPrint(Defines.NS_CLIENT, Context.net_from, "ack");
             return;
         }
 
         // challenge from the server we are connecting to
         if (c.equals("challenge")) {
-            Globals.cls.challenge = Lib.atoi(Cmd.Argv(1));
+            Context.cls.challenge = Lib.atoi(Cmd.Argv(1));
             SendConnectPacket();
             return;
         }
 
         // echo request from server
         if (c.equals("echo")) {
-            Netchan.OutOfBandPrint(Defines.NS_CLIENT, Globals.net_from, Cmd
+            Netchan.OutOfBandPrint(Defines.NS_CLIENT, Context.net_from, Cmd
                     .Argv(1));
             return;
         }
 
-        Com.Printf("Unknown command.\n");
+        Command.Printf("Unknown command.\n");
     }
 
 
@@ -834,27 +833,27 @@ public final class CL {
      * ReadPackets
      */
     static void ReadPackets() {
-        while (NET.GetPacket(Defines.NS_CLIENT, Globals.net_from,
-                Globals.net_message)) {
+        while (NET.GetPacket(Defines.NS_CLIENT, Context.net_from,
+                Context.net_message)) {
 
             //
             // remote command packet
             //		
-            if (Globals.net_message.data[0] == -1
-                    && Globals.net_message.data[1] == -1
-                    && Globals.net_message.data[2] == -1
-                    && Globals.net_message.data[3] == -1) {
+            if (Context.net_message.data[0] == -1
+                    && Context.net_message.data[1] == -1
+                    && Context.net_message.data[2] == -1
+                    && Context.net_message.data[3] == -1) {
                 //			if (*(int *)net_message.data == -1)
                 ConnectionlessPacket();
                 continue;
             }
 
-            if (Globals.cls.state == Defines.ca_disconnected
-                    || Globals.cls.state == Defines.ca_connecting)
+            if (Context.cls.state == Defines.ca_disconnected
+                    || Context.cls.state == Defines.ca_connecting)
                 continue; // dump it if not connected
 
-            if (Globals.net_message.cursize < 8) {
-                Com.Printf(NET.AdrToString(Globals.net_from)
+            if (Context.net_message.cursize < 8) {
+                Command.Printf(NET.AdrToString(Context.net_from)
                         + ": Runt packet\n");
                 continue;
             }
@@ -862,13 +861,13 @@ public final class CL {
             //
             // packet from server
             //
-            if (!NET.CompareAdr(Globals.net_from,
-                    Globals.cls.netchan.remote_address)) {
-                Com.DPrintf(NET.AdrToString(Globals.net_from)
+            if (!NET.CompareAdr(Context.net_from,
+                    Context.cls.netchan.remote_address)) {
+                Command.DPrintf(NET.AdrToString(Context.net_from)
                         + ":sequenced packet without connection\n");
                 continue;
             }
-            if (!Netchan.Process(Globals.cls.netchan, Globals.net_message))
+            if (!Netchan.Process(Context.cls.netchan, Context.net_message))
                 continue; // wasn't accepted for some reason
             CL_parse.ParseServerMessage();
         }
@@ -876,16 +875,16 @@ public final class CL {
         //
         // check timeout
         //
-        if (Globals.cls.state >= Defines.ca_connected
-                && Globals.cls.realtime - Globals.cls.netchan.last_received > Globals.cl_timeout.value * 1000) {
-            if (++Globals.cl.timeoutcount > 5) // timeoutcount saves debugger
+        if (Context.cls.state >= Defines.ca_connected
+                && Context.cls.realtime - Context.cls.netchan.last_received > Context.cl_timeout.value * 1000) {
+            if (++Context.cl.timeoutcount > 5) // timeoutcount saves debugger
             {
-                Com.Printf("\nServer connection timed out.\n");
+                Command.Printf("\nServer connection timed out.\n");
                 Disconnect();
                 return;
             }
         } else
-            Globals.cl.timeoutcount = 0;
+            Context.cl.timeoutcount = 0;
     }
 
     //	  =============================================================================
@@ -897,22 +896,22 @@ public final class CL {
 
         String sk;
 
-        if (Globals.gender_auto.value != 0.0f) {
+        if (Context.gender_auto.value != 0.0f) {
 
-            if (Globals.gender.modified) {
+            if (Context.gender.modified) {
                 // was set directly, don't override the user
-                Globals.gender.modified = false;
+                Context.gender.modified = false;
                 return;
             }
 
-            sk = Globals.skin.string;
+            sk = Context.skin.string;
             if (sk.startsWith("male") || sk.startsWith("cyborg"))
                 ConsoleVar.Set("gender", "male");
             else if (sk.startsWith("female") || sk.startsWith("crackhor"))
                 ConsoleVar.Set("gender", "female");
             else
                 ConsoleVar.Set("gender", "none");
-            Globals.gender.modified = false;
+            Context.gender.modified = false;
         }
     }
 
@@ -923,7 +922,7 @@ public final class CL {
 
         qfiles.dmdl_t pheader;
 
-        if (Globals.cls.state != Defines.ca_connected)
+        if (Context.cls.state != Defines.ca_connected)
             return;
 
         if (SV_MAIN.allow_download.value == 0 && CL.precache_check < ENV_CNT)
@@ -934,7 +933,7 @@ public final class CL {
             CL.precache_check = Defines.CS_MODELS + 2; // 0 isn't used
             if (SV_MAIN.allow_download_maps.value != 0)
                 if (!CL_parse
-                        .CheckOrDownloadFile(Globals.cl.configstrings[Defines.CS_MODELS + 1]))
+                        .CheckOrDownloadFile(Context.cl.configstrings[Defines.CS_MODELS + 1]))
                     return; // started a download
         }
         if (CL.precache_check >= Defines.CS_MODELS
@@ -942,16 +941,16 @@ public final class CL {
             if (SV_MAIN.allow_download_models.value != 0) {
                 while (CL.precache_check < Defines.CS_MODELS
                         + Defines.MAX_MODELS
-                        && Globals.cl.configstrings[CL.precache_check].length() > 0) {
-                    if (Globals.cl.configstrings[CL.precache_check].charAt(0) == '*'
-                            || Globals.cl.configstrings[CL.precache_check]
+                        && Context.cl.configstrings[CL.precache_check].length() > 0) {
+                    if (Context.cl.configstrings[CL.precache_check].charAt(0) == '*'
+                            || Context.cl.configstrings[CL.precache_check]
                                     .charAt(0) == '#') {
                         CL.precache_check++;
                         continue;
                     }
                     if (CL.precache_model_skin == 0) {
                         if (!CL_parse
-                                .CheckOrDownloadFile(Globals.cl.configstrings[CL.precache_check])) {
+                                .CheckOrDownloadFile(Context.cl.configstrings[CL.precache_check])) {
                             CL.precache_model_skin = 1;
                             return; // started a download
                         }
@@ -962,7 +961,7 @@ public final class CL {
                     if (CL.precache_model == null) {
 
                         CL.precache_model = FileSystem
-                                .LoadFile(Globals.cl.configstrings[CL.precache_check]);
+                                .LoadFile(Context.cl.configstrings[CL.precache_check]);
                         if (CL.precache_model == null) {
                             CL.precache_model_skin = 0;
                             CL.precache_check++;
@@ -997,7 +996,7 @@ public final class CL {
                     int num_skins = pheader.num_skins;
 
                     while (CL.precache_model_skin - 1 < num_skins) {
-                        //Com.Printf("critical code section because of endian
+                        //Command.Printf("critical code section because of endian
                         // mess!\n");
 
                         String name = Lib.CtoJava(CL.precache_model,
@@ -1029,13 +1028,13 @@ public final class CL {
                     CL.precache_check++; // zero is blank
                 while (CL.precache_check < Defines.CS_SOUNDS
                         + Defines.MAX_SOUNDS
-                        && Globals.cl.configstrings[CL.precache_check].length() > 0) {
-                    if (Globals.cl.configstrings[CL.precache_check].charAt(0) == '*') {
+                        && Context.cl.configstrings[CL.precache_check].length() > 0) {
+                    if (Context.cl.configstrings[CL.precache_check].charAt(0) == '*') {
                         CL.precache_check++;
                         continue;
                     }
                     fn = "sound/"
-                            + Globals.cl.configstrings[CL.precache_check++];
+                            + Context.cl.configstrings[CL.precache_check++];
                     if (!CL_parse.CheckOrDownloadFile(fn))
                         return; // started a download
                 }
@@ -1048,8 +1047,8 @@ public final class CL {
                 CL.precache_check++; // zero is blank
 
             while (CL.precache_check < Defines.CS_IMAGES + Defines.MAX_IMAGES
-                    && Globals.cl.configstrings[CL.precache_check].length() > 0) {
-                fn = "pics/" + Globals.cl.configstrings[CL.precache_check++]
+                    && Context.cl.configstrings[CL.precache_check].length() > 0) {
+                fn = "pics/" + Context.cl.configstrings[CL.precache_check++]
                         + ".pcx";
                 if (!CL_parse.CheckOrDownloadFile(fn))
                     return; // started a download
@@ -1075,30 +1074,30 @@ public final class CL {
                     n = (CL.precache_check - Defines.CS_PLAYERSKINS)
                             % CL.PLAYER_MULT;
 
-                    if (Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i]
+                    if (Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                             .length() == 0) {
                         CL.precache_check = Defines.CS_PLAYERSKINS + (i + 1)
                                 * CL.PLAYER_MULT;
                         continue;
                     }
 
-                    int pos = Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('\\');
+                    int pos = Context.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('\\');
                     
                     if (pos != -1)
                         pos++;
                     else
                         pos = 0;
 
-                    int pos2 = Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('\\', pos);
+                    int pos2 = Context.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('\\', pos);
                     
                     if (pos2 == -1)
-                        pos2 = Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('/', pos);
+                        pos2 = Context.cl.configstrings[Defines.CS_PLAYERSKINS + i].indexOf('/', pos);
                     
                     
-                    model = Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i]
+                    model = Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                             .substring(pos, pos2);
                                         
-                    skin = Globals.cl.configstrings[Defines.CS_PLAYERSKINS + i].substring(pos2 + 1);
+                    skin = Context.cl.configstrings[Defines.CS_PLAYERSKINS + i].substring(pos2 + 1);
                     
                     switch (n) {
                     case 0: // model
@@ -1163,19 +1162,19 @@ public final class CL {
 
             int iw[] = { map_checksum };
 
-            CM.CM_LoadMap(Globals.cl.configstrings[Defines.CS_MODELS + 1],
+            CM.CM_LoadMap(Context.cl.configstrings[Defines.CS_MODELS + 1],
                     true, iw);
             map_checksum = iw[0];
 
             if ((map_checksum ^ Lib
-                    .atoi(Globals.cl.configstrings[Defines.CS_MAPCHECKSUM])) != 0) {
-                Com
+                    .atoi(Context.cl.configstrings[Defines.CS_MAPCHECKSUM])) != 0) {
+                Command
                         .Error(
                                 Defines.ERR_DROP,
                                 "Local map version differs from server: "
                                         + map_checksum
                                         + " != '"
-                                        + Globals.cl.configstrings[Defines.CS_MAPCHECKSUM]
+                                        + Context.cl.configstrings[Defines.CS_MAPCHECKSUM]
                                         + "'\n");
                 return;
             }
@@ -1188,10 +1187,10 @@ public final class CL {
                     int n = CL.precache_check++ - ENV_CNT - 1;
 
                     if ((n & 1) != 0)
-                        fn = "env/" + Globals.cl.configstrings[Defines.CS_SKY]
+                        fn = "env/" + Context.cl.configstrings[Defines.CS_SKY]
                                 + env_suf[n / 2] + ".pcx";
                     else
-                        fn = "env/" + Globals.cl.configstrings[Defines.CS_SKY]
+                        fn = "env/" + Context.cl.configstrings[Defines.CS_SKY]
                                 + env_suf[n / 2] + ".tga";
                     if (!CL_parse.CheckOrDownloadFile(fn))
                         return; // started a download
@@ -1227,10 +1226,10 @@ public final class CL {
 
         //	  ZOID
         CL_parse.RegisterSounds();
-        CL_view.PrepRefresh();
+        ClientView.PrepRefresh();
 
-        Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-        Globals.cls.netchan.message.writeString("begin "
+        Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+        Context.cls.netchan.message.writeString("begin "
                 + CL.precache_spawncount + "\n");
     }
 
@@ -1238,8 +1237,8 @@ public final class CL {
      * InitLocal
      */
     public static void InitLocal() {
-        Globals.cls.state = Defines.ca_disconnected;
-        Globals.cls.realtime = Timer.Milliseconds();
+        Context.cls.state = Defines.ca_disconnected;
+        Context.cls.realtime = Timer.Milliseconds();
 
         CL_input.InitInput();
 
@@ -1256,78 +1255,78 @@ public final class CL {
         //
         // register our variables
         //
-        Globals.cl_stereo_separation = ConsoleVar.Get("cl_stereo_separation", "0.4",
+        Context.cl_stereo_separation = ConsoleVar.Get("cl_stereo_separation", "0.4",
                 TVar.CVAR_FLAG_ARCHIVE);
-        Globals.cl_stereo = ConsoleVar.Get("cl_stereo", "0", 0);
+        Context.cl_stereo = ConsoleVar.Get("cl_stereo", "0", 0);
 
-        Globals.cl_add_blend = ConsoleVar.Get("cl_blend", "1", 0);
-        Globals.cl_add_lights = ConsoleVar.Get("cl_lights", "1", 0);
-        Globals.cl_add_particles = ConsoleVar.Get("cl_particles", "1", 0);
-        Globals.cl_add_entities = ConsoleVar.Get("cl_entities", "1", 0);
-        Globals.cl_gun = ConsoleVar.Get("cl_gun", "1", 0);
-        Globals.cl_footsteps = ConsoleVar.Get("cl_footsteps", "1", 0);
-        Globals.cl_noskins = ConsoleVar.Get("cl_noskins", "0", 0);
-        Globals.cl_autoskins = ConsoleVar.Get("cl_autoskins", "0", 0);
-        Globals.cl_predict = ConsoleVar.Get("cl_predict", "1", 0);
+        Context.cl_add_blend = ConsoleVar.Get("cl_blend", "1", 0);
+        Context.cl_add_lights = ConsoleVar.Get("cl_lights", "1", 0);
+        Context.cl_add_particles = ConsoleVar.Get("cl_particles", "1", 0);
+        Context.cl_add_entities = ConsoleVar.Get("cl_entities", "1", 0);
+        Context.cl_gun = ConsoleVar.Get("cl_gun", "1", 0);
+        Context.cl_footsteps = ConsoleVar.Get("cl_footsteps", "1", 0);
+        Context.cl_noskins = ConsoleVar.Get("cl_noskins", "0", 0);
+        Context.cl_autoskins = ConsoleVar.Get("cl_autoskins", "0", 0);
+        Context.cl_predict = ConsoleVar.Get("cl_predict", "1", 0);
 
-        Globals.cl_maxfps = ConsoleVar.Get("cl_maxfps", "90", 0);
+        Context.cl_maxfps = ConsoleVar.Get("cl_maxfps", "90", 0);
 
-        Globals.cl_upspeed = ConsoleVar.Get("cl_upspeed", "200", 0);
-        Globals.cl_forwardspeed = ConsoleVar.Get("cl_forwardspeed", "200", 0);
-        Globals.cl_sidespeed = ConsoleVar.Get("cl_sidespeed", "200", 0);
-        Globals.cl_yawspeed = ConsoleVar.Get("cl_yawspeed", "140", 0);
-        Globals.cl_pitchspeed = ConsoleVar.Get("cl_pitchspeed", "150", 0);
-        Globals.cl_anglespeedkey = ConsoleVar.Get("cl_anglespeedkey", "1.5", 0);
+        Context.cl_upspeed = ConsoleVar.Get("cl_upspeed", "200", 0);
+        Context.cl_forwardspeed = ConsoleVar.Get("cl_forwardspeed", "200", 0);
+        Context.cl_sidespeed = ConsoleVar.Get("cl_sidespeed", "200", 0);
+        Context.cl_yawspeed = ConsoleVar.Get("cl_yawspeed", "140", 0);
+        Context.cl_pitchspeed = ConsoleVar.Get("cl_pitchspeed", "150", 0);
+        Context.cl_anglespeedkey = ConsoleVar.Get("cl_anglespeedkey", "1.5", 0);
 
-        Globals.cl_run = ConsoleVar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.lookspring = ConsoleVar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.lookstrafe = ConsoleVar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.sensitivity = ConsoleVar
+        Context.cl_run = ConsoleVar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.lookspring = ConsoleVar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.lookstrafe = ConsoleVar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.sensitivity = ConsoleVar
                 .Get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Globals.m_pitch = ConsoleVar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
-        Globals.m_forward = ConsoleVar.Get("m_forward", "1", 0);
-        Globals.m_side = ConsoleVar.Get("m_side", "1", 0);
+        Context.m_pitch = ConsoleVar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
+        Context.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
+        Context.m_forward = ConsoleVar.Get("m_forward", "1", 0);
+        Context.m_side = ConsoleVar.Get("m_side", "1", 0);
 
-        Globals.cl_shownet = ConsoleVar.Get("cl_shownet", "0", 0);
-        Globals.cl_showmiss = ConsoleVar.Get("cl_showmiss", "0", 0);
-        Globals.cl_showclamp = ConsoleVar.Get("showclamp", "0", 0);
-        Globals.cl_timeout = ConsoleVar.Get("cl_timeout", "120", 0);
-        Globals.cl_paused = ConsoleVar.Get("paused", "0", 0);
-        Globals.cl_timedemo = ConsoleVar.Get("timedemo", "0", 0);
+        Context.cl_shownet = ConsoleVar.Get("cl_shownet", "0", 0);
+        Context.cl_showmiss = ConsoleVar.Get("cl_showmiss", "0", 0);
+        Context.cl_showclamp = ConsoleVar.Get("showclamp", "0", 0);
+        Context.cl_timeout = ConsoleVar.Get("cl_timeout", "120", 0);
+        Context.cl_paused = ConsoleVar.Get("paused", "0", 0);
+        Context.cl_timedemo = ConsoleVar.Get("timedemo", "0", 0);
 
-        Globals.rcon_client_password = ConsoleVar.Get("rcon_password", "", 0);
-        Globals.rcon_address = ConsoleVar.Get("rcon_address", "", 0);
+        Context.rcon_client_password = ConsoleVar.Get("rcon_password", "", 0);
+        Context.rcon_address = ConsoleVar.Get("rcon_address", "", 0);
 
-        Globals.cl_lightlevel = ConsoleVar.Get("r_lightlevel", "0", 0);
+        Context.cl_lightlevel = ConsoleVar.Get("r_lightlevel", "0", 0);
 
         //
         // userinfo
         //
-        Globals.info_password = ConsoleVar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
-        Globals.info_spectator = ConsoleVar.Get("spectator", "0",
+        Context.info_password = ConsoleVar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
+        Context.info_spectator = ConsoleVar.Get("spectator", "0",
                 TVar.CVAR_FLAG_USERINFO);
-        Globals.name = ConsoleVar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
+        Context.name = ConsoleVar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.skin = ConsoleVar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
+        Context.skin = ConsoleVar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.rate = ConsoleVar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
+        Context.rate = ConsoleVar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE); // FIXME
-        Globals.msg = ConsoleVar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
+        Context.msg = ConsoleVar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.hand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
+        Context.hand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.fov = ConsoleVar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
+        Context.fov = ConsoleVar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.gender = ConsoleVar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
+        Context.gender = ConsoleVar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Globals.gender_auto = ConsoleVar
+        Context.gender_auto = ConsoleVar
                 .Get("gender_auto", "1", TVar.CVAR_FLAG_ARCHIVE);
-        Globals.gender.modified = false; // clear this so we know when user sets
+        Context.gender.modified = false; // clear this so we know when user sets
                                          // it manually
 
-        Globals.cl_vwep = ConsoleVar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.cl_vwep = ConsoleVar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our commands
@@ -1393,13 +1392,13 @@ public final class CL {
         RandomAccessFile f;
         String path;
 
-//        if (Globals.cls.state == Defines.ca_uninitialized)
+//        if (Context.cls.state == Defines.ca_uninitialized)
 //            return;
 
         path = FileSystem.Gamedir() + "/config.cfg";
         f = Lib.fopen(path, "rw");
         if (f == null) {
-            Com.Printf("Couldn't write config.cfg.\n");
+            Command.Printf("Couldn't write config.cfg.\n");
             return;
         }
         try {
@@ -1424,8 +1423,8 @@ public final class CL {
         int i;
         CL.cheatvar_t var;
 
-        if ("1".equals(Globals.cl.configstrings[Defines.CS_MAXCLIENTS])
-                || 0 == Globals.cl.configstrings[Defines.CS_MAXCLIENTS]
+        if ("1".equals(Context.cl.configstrings[Defines.CS_MAXCLIENTS])
+                || 0 == Context.cl.configstrings[Defines.CS_MAXCLIENTS]
                         .length())
             return; // single player can cheat
 
@@ -1480,16 +1479,16 @@ public final class CL {
      */
     public static void Frame(int msec) {
         
-        if (Globals.dedicated.value != 0)
+        if (Context.dedicated.value != 0)
             return;
 
         extratime += msec;
 
-        if (Globals.cl_timedemo.value == 0.0f) {
-            if (Globals.cls.state == Defines.ca_connected && extratime < 100) {
+        if (Context.cl_timedemo.value == 0.0f) {
+            if (Context.cls.state == Defines.ca_connected && extratime < 100) {
                 return; // don't flood packets out while connecting
             }
-            if (extratime < 1000 / Globals.cl_maxfps.value) {
+            if (extratime < 1000 / Context.cl_maxfps.value) {
                 return; // framerate is too high
             }
         }
@@ -1498,18 +1497,18 @@ public final class CL {
         IN.Frame();
 
         // decide the simulation time
-        Globals.cls.frametime = extratime / 1000.0f;
-        Globals.cl.time += extratime;
-        Globals.cls.realtime = Globals.curtime;
+        Context.cls.frametime = extratime / 1000.0f;
+        Context.cl.time += extratime;
+        Context.cls.realtime = Context.curtime;
 
         extratime = 0;
 
-        if (Globals.cls.frametime > (1.0f / 5))
-            Globals.cls.frametime = (1.0f / 5);
+        if (Context.cls.frametime > (1.0f / 5))
+            Context.cls.frametime = (1.0f / 5);
 
         // if in the debugger last frame, don't timeout
         if (msec > 5000)
-            Globals.cls.netchan.last_received = Timer.Milliseconds();
+            Context.cls.netchan.last_received = Timer.Milliseconds();
 
         // fetch results from server
         ReadPackets();
@@ -1522,19 +1521,19 @@ public final class CL {
 
         // allow rendering DLL change
         VID.CheckChanges();
-        if (!Globals.cl.refresh_prepped
-                && Globals.cls.state == Defines.ca_active) {
-            CL_view.PrepRefresh();
+        if (!Context.cl.refresh_prepped
+                && Context.cls.state == Defines.ca_active) {
+            ClientView.PrepRefresh();
             // force GC after level loading
             // but not on playing a cinematic
-            if (Globals.cl.cinematictime == 0) java.lang.System.gc();
+            if (Context.cl.cinematictime == 0) java.lang.System.gc();
         }
 
         SCR.UpdateScreen();
 
         // update audio
-        Sound.Update(Globals.cl.refdef.vieworg, Globals.cl.v_forward,
-                Globals.cl.v_right, Globals.cl.v_up);
+        Sound.Update(Context.cl.refdef.vieworg, Context.cl.v_forward,
+                Context.cl.v_right, Context.cl.v_up);
 
         // advance local effects for next frame
         CL_fx.RunDLights();
@@ -1542,9 +1541,9 @@ public final class CL {
         SCR.RunCinematic();
         SCR.RunConsole();
 
-        Globals.cls.framecount++;
-        if (Globals.cls.state != Defines.ca_active
-                || Globals.cls.key_dest != Defines.key_game) {
+        Context.cls.framecount++;
+        if (Context.cls.state != Defines.ca_active
+                || Context.cls.key_dest != Defines.key_game) {
             try {
                 Thread.sleep(20);
             } catch (InterruptedException e) {
@@ -1574,7 +1573,7 @@ public final class CL {
      * Initialize client subsystem.
      */
     public static void Init() {
-        if (Globals.dedicated.value != 0.0f)
+        if (Context.dedicated.value != 0.0f)
             return; // nothing running on the client
 
         // all archived variables will now be loaded
@@ -1586,13 +1585,13 @@ public final class CL {
 
         V.Init();
 
-        Globals.net_message.data = Globals.net_message_buffer;
-        Globals.net_message.maxsize = Globals.net_message_buffer.length;
+        Context.net_message.data = Context.net_message_buffer;
+        Context.net_message.maxsize = Context.net_message_buffer.length;
 
         Menu.Init();
 
         SCR.Init();
-        //Globals.cls.disable_screen = 1.0f; // don't draw yet
+        //Context.cls.disable_screen = 1.0f; // don't draw yet
 
         InitLocal();
         IN.Init();
@@ -1605,15 +1604,15 @@ public final class CL {
      * Called after an ERR_DROP was thrown.
      */
     public static void Drop() {
-        if (Globals.cls.state == Defines.ca_uninitialized)
+        if (Context.cls.state == Defines.ca_uninitialized)
             return;
-        if (Globals.cls.state == Defines.ca_disconnected)
+        if (Context.cls.state == Defines.ca_disconnected)
             return;
 
         Disconnect();
 
         // drop loading plaque unless this is the initial game start
-        if (Globals.cls.disable_servercount != -1)
+        if (Context.cls.disable_servercount != -1)
             SCR.EndLoadingPlaque(); // get rid of loading plaque
     }
 }

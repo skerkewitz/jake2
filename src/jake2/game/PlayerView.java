@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.monsters.M_Player;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -529,7 +529,7 @@ public class PlayerView {
                     || 0 == ((int) GameBase.dmflags.value & Defines.DF_NO_FALLING))
                 GameCombat.T_Damage(ent, GameBase.g_edicts[0],
                         GameBase.g_edicts[0], dir, ent.s.origin,
-                        Globals.vec3_origin, damage, 0, 0, Defines.MOD_FALLING);
+                        Context.vec3_origin, damage, 0, 0, Defines.MOD_FALLING);
         } else {
             ent.s.event = Defines.EV_FALLSHORT;
             return;
@@ -674,8 +674,8 @@ public class PlayerView {
                     current_player.pain_debounce_time = GameBase.level.time;
 
                     GameCombat.T_Damage(current_player, GameBase.g_edicts[0],
-                            GameBase.g_edicts[0], Globals.vec3_origin,
-                            current_player.s.origin, Globals.vec3_origin,
+                            GameBase.g_edicts[0], Context.vec3_origin,
+                            current_player.s.origin, Context.vec3_origin,
                             current_player.dmg, 0, Defines.DAMAGE_NO_ARMOR,
                             Defines.MOD_WATER);
                 }
@@ -707,21 +707,21 @@ public class PlayerView {
 
                 if (envirosuit) // take 1/3 damage with envirosuit
                     GameCombat.T_Damage(current_player, GameBase.g_edicts[0],
-                            GameBase.g_edicts[0], Globals.vec3_origin,
-                            current_player.s.origin, Globals.vec3_origin,
+                            GameBase.g_edicts[0], Context.vec3_origin,
+                            current_player.s.origin, Context.vec3_origin,
                             1 * waterlevel, 0, 0, Defines.MOD_LAVA);
                 else
                     GameCombat.T_Damage(current_player, GameBase.g_edicts[0],
-                            GameBase.g_edicts[0], Globals.vec3_origin,
-                            current_player.s.origin, Globals.vec3_origin,
+                            GameBase.g_edicts[0], Context.vec3_origin,
+                            current_player.s.origin, Context.vec3_origin,
                             3 * waterlevel, 0, 0, Defines.MOD_LAVA);
             }
 
             if ((current_player.watertype & Defines.CONTENTS_SLIME) != 0) {
                 if (!envirosuit) { // no damage from slime with envirosuit
                     GameCombat.T_Damage(current_player, GameBase.g_edicts[0],
-                            GameBase.g_edicts[0], Globals.vec3_origin,
-                            current_player.s.origin, Globals.vec3_origin,
+                            GameBase.g_edicts[0], Context.vec3_origin,
+                            current_player.s.origin, Context.vec3_origin,
                             1 * waterlevel, 0, 0, Defines.MOD_SLIME);
                 }
             }

@@ -891,14 +891,14 @@ import jake2.util.Lib;
 //     filename - digests file
 //     (none)   - digests standard input
 // */
-//int main (argc, argv)
-//int argc;
+//int main (count, argv)
+//int count;
 //char *argv[];
 //{
 //  int i;
 //
-//  if (argc > 1)
-//    for (i = 1; i < argc; i++)
+//  if (count > 1)
+//    for (i = 1; i < count; i++)
 //      if (argv[i][0] == '-' && argv[i][1] == 's')
 //        MDString (argv[i] + 2);
 //      else if (strcmp (argv[i], "-t") == 0)

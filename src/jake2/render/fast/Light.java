@@ -26,10 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render.fast;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.common.TDynamicLight;
 import jake2.game.cplane_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.render.RenderAPIImpl;
 import jake2.render.TMNode;
 import jake2.render.TMapSurface;
@@ -269,7 +269,7 @@ public final class Light {
             lightmap = surf.samples;
             int lightmapIndex = 0;
 
-            Math3D.VectorCopy(Globals.vec3_origin, pointcolor);
+            Math3D.VectorCopy(Context.vec3_origin, pointcolor);
             if (lightmap != null) {
                 float[] rgb;
                 lightmapIndex += 3 * (dt * ((surf.extents[0] >> 4) + 1) + ds);
@@ -319,7 +319,7 @@ public final class Light {
         float r = RecursiveLightPoint(RenderAPIImpl.main.r_worldmodel.nodes[0], p, end);
 
         if (r == -1) {
-            Math3D.VectorCopy(Globals.vec3_origin, color);
+            Math3D.VectorCopy(Context.vec3_origin, color);
         } else {
             Math3D.VectorCopy(pointcolor, color);
         }
@@ -440,14 +440,14 @@ public final class Light {
 
         if ((surf.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33
                 | Defines.SURF_TRANS66 | Defines.SURF_WARP)) != 0)
-            Com.Error(Defines.ERR_DROP,
+            Command.Error(Defines.ERR_DROP,
                     "R_BuildLightMap called for non-lit surface");
 
         int smax = (surf.extents[0] >> 4) + 1;
         int tmax = (surf.extents[1] >> 4) + 1;
         int size = smax * tmax;
         if (size > ((s_blocklights.length * Defines.SIZE_OF_FLOAT) >> 4))
-            Com.Error(Defines.ERR_DROP, "Bad s_blocklights size");
+            Command.Error(Defines.ERR_DROP, "Bad s_blocklights size");
 
         try {
             // set to full bright if no light data

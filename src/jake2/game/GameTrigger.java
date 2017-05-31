@@ -23,14 +23,14 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
 public class GameTrigger {
 
     public static void InitTrigger(edict_t self) {
-        if (!Math3D.VectorEquals(self.s.angles, Globals.vec3_origin))
+        if (!Math3D.VectorEquals(self.s.angles, Context.vec3_origin))
             GameBase.G_SetMovedir(self.s.angles, self.movedir);
 
         self.solid = Defines.SOLID_TRIGGER;
@@ -83,7 +83,7 @@ public class GameTrigger {
             ent.use = Use_Multi;
         }
 
-        if (!Math3D.VectorEquals(ent.s.angles, Globals.vec3_origin))
+        if (!Math3D.VectorEquals(ent.s.angles, Context.vec3_origin))
             GameBase.G_SetMovedir(ent.s.angles, ent.movedir);
 
         GameBase.gi.setmodel(ent, ent.model);
@@ -266,7 +266,7 @@ public class GameTrigger {
             } else
                 return;
 
-            if (!Math3D.VectorEquals(self.movedir, Globals.vec3_origin)) {
+            if (!Math3D.VectorEquals(self.movedir, Context.vec3_origin)) {
                 float[] forward = { 0, 0, 0 };
 
                 Math3D.AngleVectors(other.s.angles, forward, null, null);
@@ -519,8 +519,8 @@ public class GameTrigger {
                 dflags = Defines.DAMAGE_NO_PROTECTION;
             else
                 dflags = 0;
-            GameCombat.T_Damage(other, self, self, Globals.vec3_origin,
-                    other.s.origin, Globals.vec3_origin, self.dmg, self.dmg,
+            GameCombat.T_Damage(other, self, self, Context.vec3_origin,
+                    other.s.origin, Context.vec3_origin, self.dmg, self.dmg,
                     dflags, Defines.MOD_TRIGGER_HURT);
         }
     };

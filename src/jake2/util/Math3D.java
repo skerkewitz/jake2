@@ -25,7 +25,7 @@ package jake2.util;
 
 import jake2.Defines;
 import jake2.game.cplane_t;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 
 public class Math3D {
 
@@ -480,7 +480,7 @@ public class Math3D {
 		double x;
 
 		if (fov_x < 1.0f || fov_x > 179.0f)
-			Com.Error(Defines.ERR_DROP, "Bad fov: " + fov_x);
+			Command.Error(Defines.ERR_DROP, "Bad fov: " + fov_x);
 
 		x = width / Math.tan(fov_x * piratio);
 

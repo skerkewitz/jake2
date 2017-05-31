@@ -25,7 +25,7 @@ package jake2.game;
 
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -249,7 +249,7 @@ public class GameItems {
             if (!taken)
                 return;
             
-            Com.dprintln("Picked up:" + ent.classname);
+            Command.dprintln("Picked up:" + ent.classname);
     
             if (!((GameBase.coop.value != 0) && (ent.item.flags & Defines.IT_STAY_COOP) != 0)
                     || 0 != (ent.spawnflags & (Defines.DROPPED_ITEM | Defines.DROPPED_PLAYER_ITEM))) {
@@ -820,7 +820,7 @@ public class GameItems {
             if (it.pickup_name.equalsIgnoreCase(pickup_name))
                 return it;
         }
-        Com.Println("Item not found:" + pickup_name);
+        Command.Println("Item not found:" + pickup_name);
         return null;
     }
 

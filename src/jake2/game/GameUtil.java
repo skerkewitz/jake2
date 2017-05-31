@@ -25,9 +25,9 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.client.M;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -36,7 +36,7 @@ public class GameUtil {
     public static void checkClassname(edict_t ent) {
 
         if (ent.classname == null) {
-            Com.Printf("edict with classname = null: " + ent.index);
+            Command.Printf("edict with classname = null: " + ent.index);
         }
     }
 
@@ -217,8 +217,8 @@ public class GameUtil {
                 break;
 
             // nail it
-            GameCombat.T_Damage(tr.ent, ent, ent, Globals.vec3_origin, ent.s.origin,
-                    Globals.vec3_origin, 100000, 0,
+            GameCombat.T_Damage(tr.ent, ent, ent, Context.vec3_origin, ent.s.origin,
+                    Context.vec3_origin, 100000, 0,
                     Defines.DAMAGE_NO_PROTECTION, Defines.MOD_TELEFRAG);
 
             // if we didn't kill it, fail
@@ -327,8 +327,8 @@ public class GameUtil {
         spot1[2] += self.viewheight;
         Math3D.VectorCopy(other.s.origin, spot2);
         spot2[2] += other.viewheight;
-        trace = GameBase.gi.trace(spot1, Globals.vec3_origin,
-                Globals.vec3_origin, spot2, self, Defines.MASK_OPAQUE);
+        trace = GameBase.gi.trace(spot1, Context.vec3_origin,
+                Context.vec3_origin, spot2, self, Defines.MASK_OPAQUE);
 
         return trace.fraction == 1.0;
     }

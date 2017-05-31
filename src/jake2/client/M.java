@@ -26,7 +26,6 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.*;
 import jake2.server.SV;
 import jake2.util.Lib;
@@ -113,8 +112,8 @@ public final class M {
                     start[0] = stop[0] = (mins[0] + maxs[0]) * 0.5f;
                     start[1] = stop[1] = (mins[1] + maxs[1]) * 0.5f;
                     stop[2] = start[2] - 2 * GameBase.STEPSIZE;
-                    trace = GameBase.gi.trace(start, Globals.vec3_origin,
-                            Globals.vec3_origin, stop, ent,
+                    trace = GameBase.gi.trace(start, Context.vec3_origin,
+                            Context.vec3_origin, stop, ent,
                             Defines.MASK_MONSTERSOLID);
 
                     if (trace.fraction == 1.0)
@@ -128,7 +127,7 @@ public final class M {
                             start[1] = stop[1] = y != 0 ? maxs[1] : mins[1];
 
                             trace = GameBase.gi.trace(start,
-                                    Globals.vec3_origin, Globals.vec3_origin,
+                                    Context.vec3_origin, Context.vec3_origin,
                                     stop, ent, Defines.MASK_MONSTERSOLID);
 
                             if (trace.fraction != 1.0
@@ -271,8 +270,8 @@ public final class M {
                         if (dmg > 15)
                             dmg = 15;
                         GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                                GameBase.g_edicts[0], Globals.vec3_origin,
-                                ent.s.origin, Globals.vec3_origin, dmg, 0,
+                                GameBase.g_edicts[0], Context.vec3_origin,
+                                ent.s.origin, Context.vec3_origin, dmg, 0,
                                 Defines.DAMAGE_NO_ARMOR, Defines.MOD_WATER);
                         ent.pain_debounce_time = GameBase.level.time + 1;
                     }
@@ -288,8 +287,8 @@ public final class M {
                         if (dmg > 15)
                             dmg = 15;
                         GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                                GameBase.g_edicts[0], Globals.vec3_origin,
-                                ent.s.origin, Globals.vec3_origin, dmg, 0,
+                                GameBase.g_edicts[0], Context.vec3_origin,
+                                ent.s.origin, Context.vec3_origin, dmg, 0,
                                 Defines.DAMAGE_NO_ARMOR, Defines.MOD_WATER);
                         ent.pain_debounce_time = GameBase.level.time + 1;
                     }
@@ -312,8 +311,8 @@ public final class M {
             if (ent.damage_debounce_time < GameBase.level.time) {
                 ent.damage_debounce_time = GameBase.level.time + 0.2f;
                 GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                        GameBase.g_edicts[0], Globals.vec3_origin,
-                        ent.s.origin, Globals.vec3_origin, 10 * ent.waterlevel,
+                        GameBase.g_edicts[0], Context.vec3_origin,
+                        ent.s.origin, Context.vec3_origin, 10 * ent.waterlevel,
                         0, 0, Defines.MOD_LAVA);
             }
         }
@@ -322,8 +321,8 @@ public final class M {
             if (ent.damage_debounce_time < GameBase.level.time) {
                 ent.damage_debounce_time = GameBase.level.time + 1;
                 GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                        GameBase.g_edicts[0], Globals.vec3_origin,
-                        ent.s.origin, Globals.vec3_origin, 4 * ent.waterlevel,
+                        GameBase.g_edicts[0], Context.vec3_origin,
+                        ent.s.origin, Context.vec3_origin, 4 * ent.waterlevel,
                         0, 0, Defines.MOD_SLIME);
             }
         }
@@ -331,7 +330,7 @@ public final class M {
         if (0 == (ent.flags & Defines.FL_INWATER)) {
             if (0 == (ent.svflags & Defines.SVF_DEADMONSTER)) {
                 if ((ent.watertype & Defines.CONTENTS_LAVA) != 0)
-                    if (Globals.rnd.nextFloat() <= 0.5)
+                    if (Context.rnd.nextFloat() <= 0.5)
                         GameBase.gi.sound(ent, Defines.CHAN_BODY, GameBase.gi
                                 .soundindex("player/lava1.wav"), 1,
                                 Defines.ATTN_NORM, 0);
@@ -485,12 +484,12 @@ public final class M {
             if (self.waterlevel != 0)
                 return true;
 
-            if (Globals.rnd.nextFloat() > 0.5)
+            if (Context.rnd.nextFloat() > 0.5)
                 return true;
 
             self.think = M_FliesOn;
             self.nextthink = GameBase.level.time + 5 + 10
-                    * Globals.rnd.nextFloat();
+                    * Context.rnd.nextFloat();
             return true;
         }
     };

@@ -23,8 +23,8 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.client.CL;
+import jake2.client.Context;
 import jake2.client.SCR;
 import jake2.game.*;
 import jake2.io.FileSystem;
@@ -56,7 +56,7 @@ public class SV_INIT {
             return 0;
 
         if (i == max)
-            Com.Error(Defines.ERR_DROP, "*Index: overflow");
+            Command.Error(Defines.ERR_DROP, "*Index: overflow");
 
         sv.configstrings[start + i] = name;
 
@@ -66,7 +66,7 @@ public class SV_INIT {
             sv.multicast.writeChar(Defines.svc_configstring);
             sv.multicast.writeShort(start + i);
             sv.multicast.writeString(name);
-            SV_SEND.SV_Multicast(Globals.vec3_origin, Defines.MULTICAST_ALL_R);
+            SV_SEND.SV_Multicast(Context.vec3_origin, Defines.MULTICAST_ALL_R);
         }
 
         return i;
@@ -179,9 +179,9 @@ public class SV_INIT {
         if (attractloop)
             ConsoleVar.Set("paused", "0");
 
-        Com.Printf("------- Server Initialization -------\n");
+        Command.Printf("------- Server Initialization -------\n");
 
-        Com.DPrintf("SpawnServer: " + server + "\n");
+        Command.DPrintf("SpawnServer: " + server + "\n");
         if (sv.demofile != null)
             try {
                 sv.demofile.close();
@@ -194,7 +194,7 @@ public class SV_INIT {
 
         sv.state = Defines.ss_dead;
 
-        Globals.server_state = sv.state;
+        Context.server_state = sv.state;
 
         // wipe the entire per-level structure
         sv = new server_t();
@@ -263,7 +263,7 @@ public class SV_INIT {
         // map initialization
 
         sv.state = Defines.ss_loading;
-        Globals.server_state = sv.state;
+        Context.server_state = sv.state;
 
         // load and spawn all other entities
         GameSpawn.SpawnEntities(sv.name, CM.CM_EntityString(), spawnpoint);
@@ -274,7 +274,7 @@ public class SV_INIT {
 
         // all precaches are complete
         sv.state = serverstate;
-        Globals.server_state = sv.state;
+        Context.server_state = sv.state;
 
         // create a baseline for more efficient communications
         SV_CreateBaseline();
@@ -313,14 +313,14 @@ public class SV_INIT {
 
         if (ConsoleVar.VariableValue("coop") != 0
                 && ConsoleVar.VariableValue("deathmatch") != 0) {
-            Com.Printf("Deathmatch and Coop both set, disabling Coop\n");
+            Command.Printf("Deathmatch and Coop both set, disabling Coop\n");
             ConsoleVar.FullSet("coop", "0", TVar.CVAR_FLAG_SERVERINFO
                     | TVar.CVAR_FLAG_LATCH);
         }
 
         // dedicated servers are can't be single player and are usually DM
         // so unless they explicity set coop, force it to deathmatch
-        if (Globals.dedicated.value != 0) {
+        if (Context.dedicated.value != 0) {
             if (0 == ConsoleVar.VariableValue("coop"))
                 ConsoleVar.FullSet("deathmatch", "1", TVar.CVAR_FLAG_SERVERINFO
                         | TVar.CVAR_FLAG_LATCH);

@@ -26,7 +26,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.monsters.M_Player;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
@@ -34,69 +34,85 @@ import jake2.server.SV_GAME;
 import jake2.util.Lib;
 
 import java.util.*;
-import java.util.Arrays;
-import java.util.Vector;
 
 /**
  * Cmd
  */
 public final class Cmd {
-    static TXCommand List_f = () -> {
-        cmd_function_t cmd = Cmd.cmd_functions;
-        int i = 0;
+    private static final int MAX_STRING_TOKENS = 80; // max tokens resulting from Cmd_TokenizeString
+    private static final int ALIAS_LOOP_COUNT = 16;
 
-        while (cmd != null) {
-            Com.Printf(cmd.name + '\n');
-            i++;
-            cmd = cmd.next;
-        }
-        Com.Printf(i + " commands\n");
+    public static TXCommand Wait_f = () -> Context.cmd_wait = true;
+
+    public static Comparator PlayerSort = (o1, o2) -> {
+        int anum = ((Integer) o1).intValue();
+        int bnum = ((Integer) o2).intValue();
+
+        int anum1 = GameBase.game.clients[anum].ps.stats[Defines.STAT_FRAGS];
+        int bnum1 = GameBase.game.clients[bnum].ps.stats[Defines.STAT_FRAGS];
+
+        if (anum1 < bnum1)
+            return -1;
+        if (anum1 > bnum1)
+            return 1;
+        return 0;
     };
 
+    private static Map<String, TCmdFunction> cmd_functions = new HashMap<>();
+
+
+    static TXCommand List_f = () -> {
+        int i = 0;
+        for (TCmdFunction cmd : cmd_functions.values()) {
+            Command.Printf(cmd.name + '\n');
+            i++;
+        }
+        Command.Printf(i + " commands\n");
+    };
+    private static int cmd_argc;
+    private static String[] cmd_argv = new String[MAX_STRING_TOKENS];
     static TXCommand Exec_f = () -> {
         if (Cmd.Argc() != 2) {
-            Com.Printf("exec <filename> : execute a script file\n");
+            Command.Printf("exec <filename> : execute a script file\n");
             return;
         }
 
         byte[] f = null;
         f = FileSystem.LoadFile(Cmd.Argv(1));
         if (f == null) {
-            Com.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
+            Command.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
             return;
         }
-        Com.Printf("execing " + Cmd.Argv(1) + "\n");
+        Command.Printf("execing " + Cmd.Argv(1) + "\n");
 
         Cbuf.InsertText(new String(f));
 
         FileSystem.FreeFile(f);
     };
-
     static TXCommand Echo_f = () -> {
         for (int i = 1; i < Cmd.Argc(); i++) {
-            Com.Printf(Cmd.Argv(i) + " ");
+            Command.Printf(Cmd.Argv(i) + " ");
         }
-        Com.Printf("'\n");
+        Command.Printf("'\n");
     };
-
     static TXCommand Alias_f = () -> {
         cmdalias_t a = null;
         if (Cmd.Argc() == 1) {
-            Com.Printf("Current alias commands:\n");
-            for (a = Globals.cmd_alias; a != null; a = a.next) {
-                Com.Printf(a.name + " : " + a.value);
+            Command.Printf("Current alias commands:\n");
+            for (a = Context.cmd_alias; a != null; a = a.next) {
+                Command.Printf(a.name + " : " + a.value);
             }
             return;
         }
 
         String s = Cmd.Argv(1);
         if (s.length() > Defines.MAX_ALIAS_NAME) {
-            Com.Printf("Alias name is too long\n");
+            Command.Printf("Alias name is too long\n");
             return;
         }
 
         // if the alias already exists, reuse it
-        for (a = Globals.cmd_alias; a != null; a = a.next) {
+        for (a = Context.cmd_alias; a != null; a = a.next) {
             if (s.equalsIgnoreCase(a.name)) {
                 a.value = null;
                 break;
@@ -105,8 +121,8 @@ public final class Cmd {
 
         if (a == null) {
             a = new cmdalias_t();
-            a.next = Globals.cmd_alias;
-            Globals.cmd_alias = a;
+            a.next = Context.cmd_alias;
+            Context.cmd_alias = a;
         }
         a.name = s;
 
@@ -122,18 +138,10 @@ public final class Cmd {
 
         a.value = cmd;
     };
+    private static String cmd_args;
+    private static char expanded[] = new char[Defines.MAX_STRING_CHARS];
 
-    public static TXCommand Wait_f = () -> Globals.cmd_wait = true;
-
-    public static cmd_function_t cmd_functions = null;
-
-    public static int cmd_argc;
-
-    public static String[] cmd_argv = new String[Defines.MAX_STRING_TOKENS];
-
-    public static String cmd_args;
-
-    public static final int ALIAS_LOOP_COUNT = 16;
+    private static char temporary[] = new char[Defines.MAX_STRING_CHARS];
 
     /**
      * Register our commands.
@@ -147,27 +155,7 @@ public final class Cmd {
         Cmd.AddCommand("wait", Wait_f);
     }
 
-    private static char expanded[] = new char[Defines.MAX_STRING_CHARS];
-
-    private static char temporary[] = new char[Defines.MAX_STRING_CHARS];
-
-    public static Comparator PlayerSort = new Comparator() {
-        public int compare(Object o1, Object o2) {
-            int anum = ((Integer) o1).intValue();
-            int bnum = ((Integer) o2).intValue();
-    
-            int anum1 = GameBase.game.clients[anum].ps.stats[Defines.STAT_FRAGS];
-            int bnum1 = GameBase.game.clients[bnum].ps.stats[Defines.STAT_FRAGS];
-    
-            if (anum1 < bnum1)
-                return -1;
-            if (anum1 > bnum1)
-                return 1;
-            return 0;
-        }
-    };
-
-    /** 
+    /**
      * Cmd_MacroExpandString.
      */
     public static char[] MacroExpandString(char text[], int len) {
@@ -182,7 +170,7 @@ public final class Cmd {
         scan = text;
 
         if (len >= Defines.MAX_STRING_CHARS) {
-            Com.Printf("Line exceeded " + Defines.MAX_STRING_CHARS
+            Command.Printf("Line exceeded " + Defines.MAX_STRING_CHARS
                     + " chars, discarded.\n");
             return null;
         }
@@ -200,8 +188,8 @@ public final class Cmd {
                 continue;
 
             // scan out the complete macro, without $
-            Com.ParseHelp ph = new Com.ParseHelp(text, i + 1);
-            token = Com.Parse(ph);
+            Command.ParseHelp ph = new Command.ParseHelp(text, i + 1);
+            token = Command.Parse(ph);
 
             if (ph.data == null)
                 continue;
@@ -213,7 +201,7 @@ public final class Cmd {
             len += j;
 
             if (len >= Defines.MAX_STRING_CHARS) {
-                Com.Printf("Expanded line exceeded " + Defines.MAX_STRING_CHARS
+                Command.Printf("Expanded line exceeded " + Defines.MAX_STRING_CHARS
                         + " chars, discarded.\n");
                 return null;
             }
@@ -226,13 +214,13 @@ public final class Cmd {
             scan = expanded;
             i--;
             if (++count == 100) {
-                Com.Printf("Macro expansion loop, discarded.\n");
+                Command.Printf("Macro expansion loop, discarded.\n");
                 return null;
             }
         }
 
         if (inquote) {
-            Com.Printf("Line has unmatched quote, discarded.\n");
+            Command.Printf("Line has unmatched quote, discarded.\n");
             return null;
         }
 
@@ -241,7 +229,7 @@ public final class Cmd {
 
     /**
      * Cmd_TokenizeString
-     * 
+     * <p>
      * Parses the given string into command line tokens. $Cvars will be expanded
      * unless they are in a quoted token.
      */
@@ -262,7 +250,7 @@ public final class Cmd {
 
         len = Lib.strlen(text);
 
-        Com.ParseHelp ph = new Com.ParseHelp(text);
+        Command.ParseHelp ph = new Command.ParseHelp(text);
 
         while (true) {
 
@@ -283,12 +271,12 @@ public final class Cmd {
                 cmd_args.trim();
             }
 
-            com_token = Com.Parse(ph);
+            com_token = Command.Parse(ph);
 
             if (ph.data == null)
                 return;
 
-            if (cmd_argc < Defines.MAX_STRING_TOKENS) {
+            if (cmd_argc < MAX_STRING_TOKENS) {
                 cmd_argv[cmd_argc] = com_token;
                 cmd_argc++;
             }
@@ -296,71 +284,38 @@ public final class Cmd {
     }
 
     public static void AddCommand(String cmd_name, TXCommand function) {
-        cmd_function_t cmd;
-        //Com.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
+
+        //Command.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
         // fail if the command is a variable name
         if ((ConsoleVar.VariableString(cmd_name)).length() > 0) {
-            Com.Printf("Cmd_AddCommand: " + cmd_name
-                    + " already defined as a var\n");
+            Command.Printf("Cmd_AddCommand: " + cmd_name + " already defined as a var\n");
             return;
         }
 
         // fail if the command already exists
-        for (cmd = cmd_functions; cmd != null; cmd = cmd.next) {
-            if (cmd_name.equals(cmd.name)) {
-                Com
-                        .Printf("Cmd_AddCommand: " + cmd_name
-                                + " already defined\n");
-                return;
-            }
+        if (cmd_functions.containsKey(cmd_name)) {
+            Command.Printf("Cmd_AddCommand: " + cmd_name + " already defined\n");
+            return;
         }
 
-        cmd = new cmd_function_t();
-        cmd.name = cmd_name;
-
-        cmd.function = function;
-        cmd.next = cmd_functions;
-        cmd_functions = cmd;
+        cmd_functions.put(cmd_name, new TCmdFunction(cmd_name, function));
     }
 
     /**
-     * Cmd_RemoveCommand 
+     * Cmd_RemoveCommand
      */
     public static void RemoveCommand(String cmd_name) {
-        cmd_function_t cmd, back = null;
 
-        back = cmd = cmd_functions;
-
-        while (true) {
-
-            if (cmd == null) {
-                Com.Printf("Cmd_RemoveCommand: " + cmd_name + " not added\n");
-                return;
-            }
-            if (0 == Lib.strcmp(cmd_name, cmd.name)) {
-                if (cmd == cmd_functions)
-                    cmd_functions = cmd.next;
-                else
-                    back.next = cmd.next;
-                return;
-            }
-            back = cmd;
-            cmd = cmd.next;
+        if (cmd_functions.remove(cmd_name) == null) {
+            Command.Printf("Cmd_RemoveCommand: " + cmd_name + " not added\n");
         }
     }
 
-    /** 
-     * Cmd_Exists 
+    /**
+     * Cmd_Exists
      */
     public static boolean Exists(String cmd_name) {
-        cmd_function_t cmd;
-
-        for (cmd = cmd_functions; cmd != null; cmd = cmd.next) {
-            if (cmd.name.equals(cmd_name))
-                return true;
-        }
-
-        return false;
+        return cmd_functions.containsKey(cmd_name);
     }
 
     public static int Argc() {
@@ -379,14 +334,11 @@ public final class Cmd {
 
     /**
      * Cmd_ExecuteString
-     * 
-     * A complete command line has been parsed, so try to execute it 
-     * FIXME: lookupnoadd the token to speed search? 
+     * <p>
+     * A complete command line has been parsed, so try to execute it
+     * FIXME: lookupnoadd the token to speed search?
      */
     public static void ExecuteString(String text) {
-
-        cmd_function_t cmd;
-        cmdalias_t a;
 
         TokenizeString(text.toCharArray(), true);
 
@@ -395,24 +347,23 @@ public final class Cmd {
             return; // no tokens
 
         // check functions
-        for (cmd = cmd_functions; cmd != null; cmd = cmd.next) {
-            if (cmd_argv[0].equalsIgnoreCase(cmd.name)) {
-                if (null == cmd.function) { // forward to server command
-                    Cmd.ExecuteString("cmd " + text);
-                } else {
-                    cmd.function.execute();
-                }
-                return;
+        TCmdFunction cmd = cmd_functions.get(cmd_argv[0]);
+        if (cmd != null) {
+            if (null == cmd.function) { // forward to server command
+                Cmd.ExecuteString("cmd " + text);
+            } else {
+                cmd.function.execute();
             }
+            return;
         }
 
         // check alias
-        for (a = Globals.cmd_alias; a != null; a = a.next) {
+        for (cmdalias_t a = Context.cmd_alias; a != null; a = a.next) {
 
             if (cmd_argv[0].equalsIgnoreCase(a.name)) {
 
-                if (++Globals.alias_count == ALIAS_LOOP_COUNT) {
-                    Com.Printf("ALIAS_LOOP_COUNT\n");
+                if (++Context.alias_count == ALIAS_LOOP_COUNT) {
+                    Command.Printf("ALIAS_LOOP_COUNT\n");
                     return;
                 }
                 Cbuf.InsertText(a.value);
@@ -430,7 +381,7 @@ public final class Cmd {
 
     /**
      * Cmd_Give_f
-     * 
+     * <p>
      * Give items to a client.
      */
     public static void Give_f(edict_t ent) {
@@ -443,7 +394,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             SV_GAME.PF_cprintfhigh(ent,
-            	"You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+set cheats 1' to enable this command.\n");
             return;
         }
 
@@ -560,11 +511,11 @@ public final class Cmd {
         }
     }
 
-    /** 
+    /**
      * Cmd_God_f
-     * 
+     * <p>
      * Sets client to godmode
-     * 
+     * <p>
      * argv(0) god
      */
     public static void God_f(edict_t ent) {
@@ -572,7 +523,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             SV_GAME.PF_cprintfhigh(ent,
-            		"You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+set cheats 1' to enable this command.\n");
             return;
         }
 
@@ -585,19 +536,19 @@ public final class Cmd {
         SV_GAME.PF_cprintf(ent, Defines.PRINT_HIGH, msg);
     }
 
-    /** 
+    /**
      * Cmd_Notarget_f
-     * 
+     * <p>
      * Sets client to notarget
-     * 
+     * <p>
      * argv(0) notarget.
      */
     public static void Notarget_f(edict_t ent) {
         String msg;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
-            SV_GAME.PF_cprintfhigh(ent, 
-            	"You must run the server with '+set cheats 1' to enable this command.\n");
+            SV_GAME.PF_cprintfhigh(ent,
+                    "You must run the server with '+set cheats 1' to enable this command.\n");
             return;
         }
 
@@ -612,15 +563,15 @@ public final class Cmd {
 
     /**
      * Cmd_Noclip_f
-     * 
+     * <p>
      * argv(0) noclip.
      */
     public static void Noclip_f(edict_t ent) {
         String msg;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
-            SV_GAME.PF_cprintfhigh(ent, 
-            	"You must run the server with '+set cheats 1' to enable this command.\n");
+            SV_GAME.PF_cprintfhigh(ent,
+                    "You must run the server with '+set cheats 1' to enable this command.\n");
             return;
         }
 
@@ -637,7 +588,7 @@ public final class Cmd {
 
     /**
      * Cmd_Use_f
-     * 
+     * <p>
      * Use an inventory item.
      */
     public static void Use_f(edict_t ent) {
@@ -648,7 +599,7 @@ public final class Cmd {
         s = Cmd.Args();
 
         it = GameItems.FindItem(s);
-        Com.dprintln("using:" + s);
+        Command.dprintln("using:" + s);
         if (it == null) {
             SV_GAME.PF_cprintfhigh(ent, "unknown item: " + s + "\n");
             return;
@@ -668,7 +619,7 @@ public final class Cmd {
 
     /**
      * Cmd_Drop_f
-     * 
+     * <p>
      * Drop an inventory item.
      */
     public static void Drop_f(edict_t ent) {
@@ -813,7 +764,7 @@ public final class Cmd {
         }
     }
 
-    /** 
+    /**
      * Cmd_WeapLast_f.
      */
     public static void WeapLast_f(edict_t ent) {
@@ -838,7 +789,7 @@ public final class Cmd {
     }
 
     /**
-     * Cmd_InvDrop_f 
+     * Cmd_InvDrop_f
      */
     public static void InvDrop_f(edict_t ent) {
         gitem_t it;
@@ -858,11 +809,10 @@ public final class Cmd {
         it.drop.drop(ent, it);
     }
 
-    /** 
+    /**
      * Cmd_Score_f
-     * 
+     * <p>
      * Display the scoreboard.
-     * 
      */
     public static void Score_f(edict_t ent) {
         ent.client.showinventory = false;
@@ -882,9 +832,8 @@ public final class Cmd {
 
     /**
      * Cmd_Help_f
-     * 
-     * Display the current help message. 
-     *
+     * <p>
+     * Display the current help message.
      */
     public static void Help_f(edict_t ent) {
         // this is for backwards compatability
@@ -916,7 +865,7 @@ public final class Cmd {
         ent.flags &= ~Defines.FL_GODMODE;
         ent.health = 0;
         GameBase.meansOfDeath = Defines.MOD_SUICIDE;
-        PlayerClient.player_die.die(ent, ent, ent, 100000, Globals.vec3_origin);
+        PlayerClient.player_die.die(ent, ent, ent, 100000, Context.vec3_origin);
     }
 
     /**
@@ -988,32 +937,32 @@ public final class Cmd {
         ent.client.anim_priority = Defines.ANIM_WAVE;
 
         switch (i) {
-        case 0:
-            SV_GAME.PF_cprintfhigh(ent, "flipoff\n");
-            ent.s.frame = M_Player.FRAME_flip01 - 1;
-            ent.client.anim_end = M_Player.FRAME_flip12;
-            break;
-        case 1:
-            SV_GAME.PF_cprintfhigh(ent, "salute\n");
-            ent.s.frame = M_Player.FRAME_salute01 - 1;
-            ent.client.anim_end = M_Player.FRAME_salute11;
-            break;
-        case 2:
-            SV_GAME.PF_cprintfhigh(ent, "taunt\n");
-            ent.s.frame = M_Player.FRAME_taunt01 - 1;
-            ent.client.anim_end = M_Player.FRAME_taunt17;
-            break;
-        case 3:
-            SV_GAME.PF_cprintfhigh(ent, "wave\n");
-            ent.s.frame = M_Player.FRAME_wave01 - 1;
-            ent.client.anim_end = M_Player.FRAME_wave11;
-            break;
-        case 4:
-        default:
-            SV_GAME.PF_cprintfhigh(ent, "point\n");
-            ent.s.frame = M_Player.FRAME_point01 - 1;
-            ent.client.anim_end = M_Player.FRAME_point12;
-            break;
+            case 0:
+                SV_GAME.PF_cprintfhigh(ent, "flipoff\n");
+                ent.s.frame = M_Player.FRAME_flip01 - 1;
+                ent.client.anim_end = M_Player.FRAME_flip12;
+                break;
+            case 1:
+                SV_GAME.PF_cprintfhigh(ent, "salute\n");
+                ent.s.frame = M_Player.FRAME_salute01 - 1;
+                ent.client.anim_end = M_Player.FRAME_salute11;
+                break;
+            case 2:
+                SV_GAME.PF_cprintfhigh(ent, "taunt\n");
+                ent.s.frame = M_Player.FRAME_taunt01 - 1;
+                ent.client.anim_end = M_Player.FRAME_taunt17;
+                break;
+            case 3:
+                SV_GAME.PF_cprintfhigh(ent, "wave\n");
+                ent.s.frame = M_Player.FRAME_wave01 - 1;
+                ent.client.anim_end = M_Player.FRAME_wave11;
+                break;
+            case 4:
+            default:
+                SV_GAME.PF_cprintfhigh(ent, "point\n");
+                ent.s.frame = M_Player.FRAME_point01 - 1;
+                ent.client.anim_end = M_Player.FRAME_point12;
+                break;
         }
     }
 
@@ -1068,8 +1017,8 @@ public final class Cmd {
 
             if (GameBase.level.time < cl.flood_locktill) {
                 SV_GAME.PF_cprintfhigh(ent, "You can't talk for "
-                                        + (int) (cl.flood_locktill - GameBase.level.time)
-                                        + " more seconds\n");
+                        + (int) (cl.flood_locktill - GameBase.level.time)
+                        + " more seconds\n");
                 return;
             }
             i = (int) (cl.flood_whenhead - GameBase.flood_msgs.value + 1);
@@ -1089,7 +1038,7 @@ public final class Cmd {
             cl.flood_when[cl.flood_whenhead] = GameBase.level.time;
         }
 
-        if (Globals.dedicated.value != 0)
+        if (Context.dedicated.value != 0)
             SV_GAME.PF_cprintf(null, Defines.PRINT_CHAT, "" + text + "");
 
         for (j = 1; j <= GameBase.game.maxclients; j++) {
@@ -1152,31 +1101,34 @@ public final class Cmd {
         String cmd;
 
         cmd = Cmd.Argv(0);
-        if (Globals.cls.state <= Defines.ca_connected || cmd.charAt(0) == '-'
+        if (Context.cls.state <= Defines.ca_connected || cmd.charAt(0) == '-'
                 || cmd.charAt(0) == '+') {
-            Com.Printf("Unknown command \"" + cmd + "\"\n");
+            Command.Printf("Unknown command \"" + cmd + "\"\n");
             return;
         }
 
-        Globals.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-        Globals.cls.netchan.message.print(cmd);
+        Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
+        Context.cls.netchan.message.print(cmd);
         if (Cmd.Argc() > 1) {
-            Globals.cls.netchan.message.print(" ");
-            Globals.cls.netchan.message.print(Cmd.Args());
+            Context.cls.netchan.message.print(" ");
+            Context.cls.netchan.message.print(Cmd.Args());
         }
     }
 
     /**
      * Cmd_CompleteCommand.
      */
-    public static Vector CompleteCommand(String partial) {
-        Vector cmds = new Vector();
+    public static List<String> CompleteCommand(String partial) {
+        List<String> cmds = new ArrayList<>();
 
         // check for match
-        for (cmd_function_t cmd = cmd_functions; cmd != null; cmd = cmd.next)
-            if (cmd.name.startsWith(partial))
-                cmds.add(cmd.name);
-        for (cmdalias_t a = Globals.cmd_alias; a != null; a = a.next)
+        for (String cmd : cmd_functions.keySet()) {
+            if (cmd.startsWith(partial)) {
+                cmds.add(cmd);
+            }
+        }
+
+        for (cmdalias_t a = Context.cmd_alias; a != null; a = a.next)
             if (a.name.startsWith(partial))
                 cmds.add(a.name);
 
@@ -1187,13 +1139,13 @@ public final class Cmd {
      * Processes the commands the player enters in the quake console.
      */
     public static void ClientCommand(edict_t ent) {
-        String cmd;
-    
-        if (ent.client == null)
+
+        if (ent.client == null) {
             return; // not fully in game yet
-    
-        cmd = GameBase.gi.argv(0).toLowerCase();
-    
+        }
+
+        final String cmd = GameBase.gi.argv(0).toLowerCase();
+
         if (cmd.equals("players")) {
             Players_f(ent);
             return;
@@ -1214,10 +1166,10 @@ public final class Cmd {
             Help_f(ent);
             return;
         }
-    
+
         if (GameBase.level.intermissiontime != 0)
             return;
-    
+
         if (cmd.equals("use"))
             Use_f(ent);
         else if (cmd.equals("drop"))
@@ -1269,12 +1221,12 @@ public final class Cmd {
             Say_f(ent, false, true);
     }
 
-    public static void ValidateSelectedItem(edict_t ent) {    	
+    public static void ValidateSelectedItem(edict_t ent) {
         gclient_t cl = ent.client;
-    
+
         if (cl.pers.inventory[cl.pers.selected_item] != 0)
             return; // valid
-    
+
         GameItems.SelectNextItem(ent, -1);
     }
 }

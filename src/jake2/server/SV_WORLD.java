@@ -22,10 +22,10 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.qcommon.CM;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Math3D;
 
 public class SV_WORLD {
@@ -138,8 +138,8 @@ public class SV_WORLD {
         SV_CreateAreaNode(0, SV_INIT.sv.models[1].mins,
                 SV_INIT.sv.models[1].maxs);
         /*
-         * Com.p("areanodes:" + sv_numareanodes + " (sollten 32 sein)."); for
-         * (int n = 0; n < sv_numareanodes; n++) { Com.Printf( "|%3i|%2i|%8.2f
+         * Command.p("areanodes:" + sv_numareanodes + " (sollten 32 sein)."); for
+         * (int n = 0; n < sv_numareanodes; n++) { Command.Printf( "|%3i|%2i|%8.2f
          * |%8.2f|%8.2f|%8.2f| %8.2f|%8.2f|%8.2f|\n", new Vargs() .add(n)
          * .add(sv_areanodes[n].axis) .add(sv_areanodes[n].dist)
          * .add(sv_areanodes[n].mins_rst[0]) .add(sv_areanodes[n].mins_rst[1])
@@ -248,7 +248,7 @@ public class SV_WORLD {
                 if (ent.areanum != 0 && ent.areanum != area) {
                     if (ent.areanum2 != 0 && ent.areanum2 != area
                             && SV_INIT.sv.state == Defines.ss_loading)
-                        Com.DPrintf("Object touching 3 areas at "
+                        Command.DPrintf("Object touching 3 areas at "
                                 + ent.absmin[0] + " " + ent.absmin[1] + " "
                                 + ent.absmin[2] + "\n");
                     ent.areanum2 = area;
@@ -331,7 +331,7 @@ public class SV_WORLD {
                     || check.absmax[2] < SV_WORLD.area_mins[2])
                 continue; // not touching
             if (SV_WORLD.area_count == SV_WORLD.area_maxcount) {
-                Com.Printf("SV_AreaEdicts: MAXCOUNT\n");
+                Command.Printf("SV_AreaEdicts: MAXCOUNT\n");
                 return;
             }
             SV_WORLD.area_list[SV_WORLD.area_count] = check;
@@ -402,7 +402,7 @@ public class SV_WORLD {
             // explicit hulls in the BSP model
             model = SV_INIT.sv.models[ent.s.modelindex];
             if (null == model)
-                Com.Error(Defines.ERR_FATAL,
+                Command.Error(Defines.ERR_FATAL,
                         "MOVETYPE_PUSH with a non bsp model");
             return model.headnode;
         }
@@ -441,7 +441,7 @@ public class SV_WORLD {
             headnode = SV_HullForEntity(touch);
             angles = touch.s.angles;
             if (touch.solid != Defines.SOLID_BSP)
-                angles = Globals.vec3_origin; // boxes don't rotate
+                angles = Context.vec3_origin; // boxes don't rotate
             if ((touch.svflags & Defines.SVF_MONSTER) != 0)
                 trace = CM.TransformedBoxTrace(clip.start, clip.end,
                         clip.mins2, clip.maxs2, headnode, clip.contentmask,
@@ -493,9 +493,9 @@ public class SV_WORLD {
             float[] end, edict_t passedict, int contentmask) {
         moveclip_t clip = new moveclip_t();
         if (mins == null)
-            mins = Globals.vec3_origin;
+            mins = Context.vec3_origin;
         if (maxs == null)
-            maxs = Globals.vec3_origin;
+            maxs = Context.vec3_origin;
 
         // clip to world
         clip.trace = CM.BoxTrace(start, end, mins, maxs, 0, contentmask);

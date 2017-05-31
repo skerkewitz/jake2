@@ -26,8 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render.fast;
 
 import jake2.Defines;
-import jake2.Globals;
-import jake2.qcommon.Com;
+import jake2.client.Context;
+import jake2.qcommon.Command;
 import jake2.render.*;
 import jake2.util.Math3D;
 import jake2.util.Vec3Cache;
@@ -128,7 +128,7 @@ public class Warp {
 		float	frac;
 
 		if (numverts > 60)
-			Com.Error(Defines.ERR_DROP, "numverts = " + numverts);
+			Command.Error(Defines.ERR_DROP, "numverts = " + numverts);
 
 		float[] mins = Vec3Cache.get();
 		float[] maxs = Vec3Cache.get();
@@ -369,7 +369,7 @@ public class Warp {
 	{
 		c_sky++;
 		// decide which face it maps to
-		Math3D.VectorCopy(Globals.vec3_origin, v);
+		Math3D.VectorCopy(Context.vec3_origin, v);
 		int i, axis;
 		for (i=0; i<nump ; i++)
 		{
@@ -454,7 +454,7 @@ public class Warp {
 	void ClipSkyPolygon(int nump, float[][] vecs, int stage)
 	{
 		if (nump > MAX_CLIP_VERTS-2)
-			Com.Error(Defines.ERR_DROP, "ClipSkyPolygon: MAX_CLIP_VERTS");
+			Command.Error(Defines.ERR_DROP, "ClipSkyPolygon: MAX_CLIP_VERTS");
 		if (stage == 6)
 		{	// fully clipped, so draw it
 			DrawSkyPolygon(nump, vecs);

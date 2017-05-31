@@ -25,7 +25,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 
 import java.util.StringTokenizer;
 
@@ -42,7 +42,7 @@ public class Info {
             String key1 = tk.nextToken();
 
             if (!tk.hasMoreTokens()) {
-                Com.Printf("MISSING VALUE\n");
+                Command.Printf("MISSING VALUE\n");
                 return s;
             }
             String value1 = tk.nextToken();
@@ -63,23 +63,23 @@ public class Info {
             return s;
 
         if (key.indexOf('\\') != -1 || value.indexOf('\\') != -1) {
-            Com.Printf("Can't use keys or values with a \\\n");
+            Command.Printf("Can't use keys or values with a \\\n");
             return s;
         }
 
         if (key.indexOf(';') != -1) {
-            Com.Printf("Can't use keys or values with a semicolon\n");
+            Command.Printf("Can't use keys or values with a semicolon\n");
             return s;
         }
 
         if (key.indexOf('"') != -1 || value.indexOf('"') != -1) {
-            Com.Printf("Can't use keys or values with a \"\n");
+            Command.Printf("Can't use keys or values with a \"\n");
             return s;
         }
 
         if (key.length() > Defines.MAX_INFO_KEY - 1
                 || value.length() > Defines.MAX_INFO_KEY - 1) {
-            Com.Printf("Keys and values must be < 64 characters.\n");
+            Command.Printf("Keys and values must be < 64 characters.\n");
             return s;
         }
 
@@ -87,7 +87,7 @@ public class Info {
 
         if (sb.length() + 2 + key.length() + value.length() > Defines.MAX_INFO_STRING) {
 
-            Com.Printf("Info string length exceeded\n");
+            Command.Printf("Info string length exceeded\n");
             return s;
         }
 
@@ -104,7 +104,7 @@ public class Info {
         StringBuffer sb = new StringBuffer(512);
 
         if (key.indexOf('\\') != -1) {
-            Com.Printf("Can't use a key with a \\\n");
+            Command.Printf("Can't use a key with a \\\n");
             return s;
         }
 
@@ -114,7 +114,7 @@ public class Info {
             String key1 = tk.nextToken();
 
             if (!tk.hasMoreTokens()) {
-                Com.Printf("MISSING VALUE\n");
+                Command.Printf("MISSING VALUE\n");
                 return s;
             }
             String value1 = tk.nextToken();
@@ -147,7 +147,7 @@ public class Info {
             String key1 = tk.nextToken();
 
             if (!tk.hasMoreTokens()) {
-                Com.Printf("MISSING VALUE\n");
+                Command.Printf("MISSING VALUE\n");
                 return;
             }
 
@@ -162,6 +162,6 @@ public class Info {
             }
             sb.append('=').append(value1).append('\n');
         }
-        Com.Printf(sb.toString());
+        Command.Printf(sb.toString());
     }
 }

@@ -23,7 +23,7 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
@@ -116,10 +116,10 @@ public class SV_USER {
         try {
             SV_INIT.sv.demofile = FileSystem.FOpenFile(name);
         } catch (IOException e) {
-            Com.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
+            Command.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
         }
         if (SV_INIT.sv.demofile == null)
-            Com.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
+            Command.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
     }
 
     /*
@@ -134,10 +134,10 @@ public class SV_USER {
         int playernum;
         edict_t ent;
 
-        Com.DPrintf("New() from " + SV_MAIN.sv_client.name + "\n");
+        Command.DPrintf("New() from " + SV_MAIN.sv_client.name + "\n");
 
         if (SV_MAIN.sv_client.state != Defines.cs_connected) {
-            Com.Printf("New not valid -- already spawned\n");
+            Command.Printf("New not valid -- already spawned\n");
             return;
         }
 
@@ -196,16 +196,16 @@ public class SV_USER {
     public static void SV_Configstrings_f() {
         int start;
 
-        Com.DPrintf("Configstrings() from " + SV_MAIN.sv_client.name + "\n");
+        Command.DPrintf("Configstrings() from " + SV_MAIN.sv_client.name + "\n");
 
         if (SV_MAIN.sv_client.state != Defines.cs_connected) {
-            Com.Printf("configstrings not valid -- already spawned\n");
+            Command.Printf("configstrings not valid -- already spawned\n");
             return;
         }
 
         // handle the case of a level changing while a client was connecting
         if (Lib.atoi(Cmd.Argv(1)) != SV_INIT.svs.spawncount) {
-            Com.Printf("SV_Configstrings_f from different level\n");
+            Command.Printf("SV_Configstrings_f from different level\n");
             SV_New_f();
             return;
         }
@@ -246,16 +246,16 @@ public class SV_USER {
         entity_state_t nullstate;
         entity_state_t base;
 
-        Com.DPrintf("Baselines() from " + SV_MAIN.sv_client.name + "\n");
+        Command.DPrintf("Baselines() from " + SV_MAIN.sv_client.name + "\n");
 
         if (SV_MAIN.sv_client.state != Defines.cs_connected) {
-            Com.Printf("baselines not valid -- already spawned\n");
+            Command.Printf("baselines not valid -- already spawned\n");
             return;
         }
 
         // handle the case of a level changing while a client was connecting
         if (Lib.atoi(Cmd.Argv(1)) != SV_INIT.svs.spawncount) {
-            Com.Printf("SV_Baselines_f from different level\n");
+            Command.Printf("SV_Baselines_f from different level\n");
             SV_New_f();
             return;
         }
@@ -294,11 +294,11 @@ public class SV_USER {
      * ================== SV_Begin_f ==================
      */
     public static void SV_Begin_f() {
-        Com.DPrintf("Begin() from " + SV_MAIN.sv_client.name + "\n");
+        Command.DPrintf("Begin() from " + SV_MAIN.sv_client.name + "\n");
 
         // handle the case of a level changing while a client was connecting
         if (Lib.atoi(Cmd.Argv(1)) != SV_INIT.svs.spawncount) {
-            Com.Printf("SV_Begin_f from different level\n");
+            Command.Printf("SV_Begin_f from different level\n");
             SV_New_f();
             return;
         }
@@ -407,7 +407,7 @@ public class SV_USER {
                                                // allow
                 							   // download ZOID
                 || (name.startsWith("maps/") && FileSystem.file_from_pak != 0)) {
-            Com.DPrintf("Couldn't download " + name + " to "
+            Command.DPrintf("Couldn't download " + name + " to "
                     + SV_MAIN.sv_client.name + "\n");
             if (SV_MAIN.sv_client.download != null) {
                 FileSystem.FreeFile(SV_MAIN.sv_client.download);
@@ -421,7 +421,7 @@ public class SV_USER {
         }
 
         SV_NextDownload_f();
-        Com.DPrintf("Downloading " + name + " to " + SV_MAIN.sv_client.name
+        Command.DPrintf("Downloading " + name + " to " + SV_MAIN.sv_client.name
                 + "\n");
     }
 
@@ -476,12 +476,12 @@ public class SV_USER {
      */
     public static void SV_Nextserver_f() {
         if (Lib.atoi(Cmd.Argv(1)) != SV_INIT.svs.spawncount) {
-            Com.DPrintf("Nextserver() from wrong level, from "
+            Command.DPrintf("Nextserver() from wrong level, from "
                     + SV_MAIN.sv_client.name + "\n");
             return; // leftover from last server
         }
 
-        Com.DPrintf("Nextserver() from " + SV_MAIN.sv_client.name + "\n");
+        Command.DPrintf("Nextserver() from " + SV_MAIN.sv_client.name + "\n");
 
         SV_Nextserver();
     }
@@ -491,7 +491,7 @@ public class SV_USER {
      */
     public static void SV_ExecuteUserCommand(String s) {
         
-        Com.dprintln("SV_ExecuteUserCommand:" + s );
+        Command.dprintln("SV_ExecuteUserCommand:" + s );
         SV_USER.ucmd_t u = null;
 
         Cmd.TokenizeString(s.toCharArray(), true);
@@ -526,7 +526,7 @@ public class SV_USER {
         cl.commandMsec -= cmd.msec & 0xFF;
 
         if (cl.commandMsec < 0 && SV_MAIN.sv_enforcetime.value != 0) {
-            Com.DPrintf("commandMsec underflow from " + cl.name + "\n");
+            Command.DPrintf("commandMsec underflow from " + cl.name + "\n");
             return;
         }
 
@@ -560,20 +560,20 @@ public class SV_USER {
         stringCmdCount = 0;
 
         while (true) {
-            if (Globals.net_message.readcount > Globals.net_message.cursize) {
-                Com.Printf("SV_ReadClientMessage: bad read:\n");
-                Com.Printf(Lib.hexDump(Globals.net_message.data, 32, false));
+            if (Context.net_message.readcount > Context.net_message.cursize) {
+                Command.Printf("SV_ReadClientMessage: bad read:\n");
+                Command.Printf(Lib.hexDump(Context.net_message.data, 32, false));
                 SV_MAIN.SV_DropClient(cl);
                 return;
             }
 
-            c = TSizeBuffer.ReadByte(Globals.net_message);
+            c = TSizeBuffer.ReadByte(Context.net_message);
             if (c == -1)
                 break;
 
             switch (c) {
             default:
-                Com.Printf("SV_ReadClientMessage: unknown command char\n");
+                Command.Printf("SV_ReadClientMessage: unknown command char\n");
                 SV_MAIN.SV_DropClient(cl);
                 return;
 
@@ -581,7 +581,7 @@ public class SV_USER {
                 break;
 
             case Defines.clc_userinfo:
-                cl.userinfo = TSizeBuffer.ReadString(Globals.net_message);
+                cl.userinfo = TSizeBuffer.ReadString(Context.net_message);
                 SV_MAIN.SV_UserinfoChanged(cl);
                 break;
 
@@ -590,9 +590,9 @@ public class SV_USER {
                     return; // someone is trying to cheat...
 
                 move_issued = true;
-                checksumIndex = Globals.net_message.readcount;
-                checksum = TSizeBuffer.ReadByte(Globals.net_message);
-                lastframe = TSizeBuffer.ReadLong(Globals.net_message);
+                checksumIndex = Context.net_message.readcount;
+                checksum = TSizeBuffer.ReadByte(Context.net_message);
+                lastframe = TSizeBuffer.ReadLong(Context.net_message);
 
                 if (lastframe != cl.lastframe) {
                     cl.lastframe = lastframe;
@@ -605,9 +605,9 @@ public class SV_USER {
 
                 //memset (nullcmd, 0, sizeof(nullcmd));
                 nullcmd = new usercmd_t();
-                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, nullcmd, oldest);
-                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, oldest, oldcmd);
-                TSizeBuffer.ReadDeltaUsercmd(Globals.net_message, oldcmd, newcmd);
+                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, nullcmd, oldest);
+                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, oldest, oldcmd);
+                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, oldcmd, newcmd);
 
                 if (cl.state != Defines.cs_spawned) {
                     cl.lastframe = -1;
@@ -616,13 +616,13 @@ public class SV_USER {
 
                 // if the checksum fails, ignore the rest of the packet
 
-                calculatedChecksum = Com.BlockSequenceCRCByte(
-                        Globals.net_message.data, checksumIndex + 1,
-                        Globals.net_message.readcount - checksumIndex - 1,
+                calculatedChecksum = Command.BlockSequenceCRCByte(
+                        Context.net_message.data, checksumIndex + 1,
+                        Context.net_message.readcount - checksumIndex - 1,
                         cl.netchan.incoming_sequence);
 
                 if ((calculatedChecksum & 0xff) != checksum) {
-                    Com.DPrintf("Failed command checksum for " + cl.name + " ("
+                    Command.DPrintf("Failed command checksum for " + cl.name + " ("
                             + calculatedChecksum + " != " + checksum + ")/"
                             + cl.netchan.incoming_sequence + "\n");
                     return;
@@ -634,7 +634,7 @@ public class SV_USER {
 
                         //if (net_drop > 2)
 
-                        //	Com.Printf ("drop %i\n", net_drop);
+                        //	Command.Printf ("drop %i\n", net_drop);
                         while (net_drop > 2) {
                             SV_ClientThink(cl, cl.lastcmd);
 
@@ -655,7 +655,7 @@ public class SV_USER {
                 break;
 
             case Defines.clc_stringcmd:
-                s = TSizeBuffer.ReadString(Globals.net_message);
+                s = TSizeBuffer.ReadString(Context.net_message);
 
                 // malicious users may try using too many string commands
                 if (++stringCmdCount < SV_USER.MAX_STRINGCMDS)

@@ -26,7 +26,6 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.usercmd_t;
@@ -123,7 +122,7 @@ public class CL_input {
 		else if (b.down[1] == 0)
 			b.down[1] = k;
 		else {
-			Com.Printf("Three keys down for a button!\n");
+			Command.Printf("Three keys down for a button!\n");
 			return;
 		}
 
@@ -134,7 +133,7 @@ public class CL_input {
 		c = Cmd.Argv(2);
 		b.downtime = Lib.atoi(c);
 		if (b.downtime == 0)
-			b.downtime = Globals.sys_frame_time - 100;
+			b.downtime = Context.sys_frame_time - 100;
 
 		b.state |= 3; // down + impulse down
 	}
@@ -319,8 +318,8 @@ public class CL_input {
 
 		if (key.state != 0) {
 			// still down
-			msec += Globals.sys_frame_time - key.downtime;
-			key.downtime = Globals.sys_frame_time;
+			msec += Context.sys_frame_time - key.downtime;
+			key.downtime = Context.sys_frame_time;
 		}
 
 		val = (float) msec / frame_msec;
@@ -344,24 +343,24 @@ public class CL_input {
 		float up, down;
 
 		if ((in_speed.state & 1) != 0)
-			speed = Globals.cls.frametime * Globals.cl_anglespeedkey.value;
+			speed = Context.cls.frametime * Context.cl_anglespeedkey.value;
 		else
-			speed = Globals.cls.frametime;
+			speed = Context.cls.frametime;
 
 		if ((in_strafe.state & 1) == 0) {
-			Globals.cl.viewangles[Defines.YAW] -= speed * Globals.cl_yawspeed.value * KeyState(in_right);
-			Globals.cl.viewangles[Defines.YAW] += speed * Globals.cl_yawspeed.value * KeyState(in_left);
+			Context.cl.viewangles[Defines.YAW] -= speed * Context.cl_yawspeed.value * KeyState(in_right);
+			Context.cl.viewangles[Defines.YAW] += speed * Context.cl_yawspeed.value * KeyState(in_left);
 		}
 		if ((in_klook.state & 1) != 0) {
-			Globals.cl.viewangles[Defines.PITCH] -= speed * Globals.cl_pitchspeed.value * KeyState(in_forward);
-			Globals.cl.viewangles[Defines.PITCH] += speed * Globals.cl_pitchspeed.value * KeyState(in_back);
+			Context.cl.viewangles[Defines.PITCH] -= speed * Context.cl_pitchspeed.value * KeyState(in_forward);
+			Context.cl.viewangles[Defines.PITCH] += speed * Context.cl_pitchspeed.value * KeyState(in_back);
 		}
 
 		up = KeyState(in_lookup);
 		down = KeyState(in_lookdown);
 
-		Globals.cl.viewangles[Defines.PITCH] -= speed * Globals.cl_pitchspeed.value * up;
-		Globals.cl.viewangles[Defines.PITCH] += speed * Globals.cl_pitchspeed.value * down;
+		Context.cl.viewangles[Defines.PITCH] -= speed * Context.cl_pitchspeed.value * up;
+		Context.cl.viewangles[Defines.PITCH] += speed * Context.cl_pitchspeed.value * down;
 	}
 
 	/*
@@ -375,27 +374,27 @@ public class CL_input {
 		//memset (cmd, 0, sizeof(*cmd));
 		cmd.clear();
 
-		Math3D.VectorCopy(Globals.cl.viewangles, cmd.angles);
+		Math3D.VectorCopy(Context.cl.viewangles, cmd.angles);
 		if ((in_strafe.state & 1) != 0) {
-			cmd.sidemove += Globals.cl_sidespeed.value * KeyState(in_right);
-			cmd.sidemove -= Globals.cl_sidespeed.value * KeyState(in_left);
+			cmd.sidemove += Context.cl_sidespeed.value * KeyState(in_right);
+			cmd.sidemove -= Context.cl_sidespeed.value * KeyState(in_left);
 		}
 
-		cmd.sidemove += Globals.cl_sidespeed.value * KeyState(in_moveright);
-		cmd.sidemove -= Globals.cl_sidespeed.value * KeyState(in_moveleft);
+		cmd.sidemove += Context.cl_sidespeed.value * KeyState(in_moveright);
+		cmd.sidemove -= Context.cl_sidespeed.value * KeyState(in_moveleft);
 
-		cmd.upmove += Globals.cl_upspeed.value * KeyState(in_up);
-		cmd.upmove -= Globals.cl_upspeed.value * KeyState(in_down);
+		cmd.upmove += Context.cl_upspeed.value * KeyState(in_up);
+		cmd.upmove -= Context.cl_upspeed.value * KeyState(in_down);
 
 		if ((in_klook.state & 1) == 0) {
-			cmd.forwardmove += Globals.cl_forwardspeed.value * KeyState(in_forward);
-			cmd.forwardmove -= Globals.cl_forwardspeed.value * KeyState(in_back);
+			cmd.forwardmove += Context.cl_forwardspeed.value * KeyState(in_forward);
+			cmd.forwardmove -= Context.cl_forwardspeed.value * KeyState(in_back);
 		}
 
 		//
 		//	   adjust for speed key / running
 		//
-		if (((in_speed.state & 1) ^ (int) (Globals.cl_run.value)) != 0) {
+		if (((in_speed.state & 1) ^ (int) (Context.cl_run.value)) != 0) {
 			cmd.forwardmove *= 2;
 			cmd.sidemove *= 2;
 			cmd.upmove *= 2;
@@ -407,19 +406,19 @@ public class CL_input {
 
 		float pitch;
 
-		pitch = Math3D.SHORT2ANGLE(Globals.cl.frame.playerstate.pmove.delta_angles[Defines.PITCH]);
+		pitch = Math3D.SHORT2ANGLE(Context.cl.frame.playerstate.pmove.delta_angles[Defines.PITCH]);
 		if (pitch > 180)
 			pitch -= 360;
 
-		if (Globals.cl.viewangles[Defines.PITCH] + pitch < -360)
-			Globals.cl.viewangles[Defines.PITCH] += 360; // wrapped
-		if (Globals.cl.viewangles[Defines.PITCH] + pitch > 360)
-			Globals.cl.viewangles[Defines.PITCH] -= 360; // wrapped
+		if (Context.cl.viewangles[Defines.PITCH] + pitch < -360)
+			Context.cl.viewangles[Defines.PITCH] += 360; // wrapped
+		if (Context.cl.viewangles[Defines.PITCH] + pitch > 360)
+			Context.cl.viewangles[Defines.PITCH] -= 360; // wrapped
 
-		if (Globals.cl.viewangles[Defines.PITCH] + pitch > 89)
-			Globals.cl.viewangles[Defines.PITCH] = 89 - pitch;
-		if (Globals.cl.viewangles[Defines.PITCH] + pitch < -89)
-			Globals.cl.viewangles[Defines.PITCH] = -89 - pitch;
+		if (Context.cl.viewangles[Defines.PITCH] + pitch > 89)
+			Context.cl.viewangles[Defines.PITCH] = 89 - pitch;
+		if (Context.cl.viewangles[Defines.PITCH] + pitch < -89)
+			Context.cl.viewangles[Defines.PITCH] = -89 - pitch;
 	}
 
 	/*
@@ -440,24 +439,24 @@ public class CL_input {
 			cmd.buttons |= Defines.BUTTON_USE;
 		in_use.state &= ~2;
 
-		if (Key.anykeydown != 0 && Globals.cls.key_dest == Defines.key_game)
+		if (Key.anykeydown != 0 && Context.cls.key_dest == Defines.key_game)
 			cmd.buttons |= Defines.BUTTON_ANY;
 
 		// send milliseconds of time to apply the move
-		ms = (int) (Globals.cls.frametime * 1000);
+		ms = (int) (Context.cls.frametime * 1000);
 		if (ms > 250)
 			ms = 100; // time was unreasonable
 		cmd.msec = (byte) ms;
 
 		ClampPitch();
 		for (i = 0; i < 3; i++)
-			cmd.angles[i] = (short) Math3D.ANGLE2SHORT(Globals.cl.viewangles[i]);
+			cmd.angles[i] = (short) Math3D.ANGLE2SHORT(Context.cl.viewangles[i]);
 
 		cmd.impulse = (byte) in_impulse;
 		in_impulse = 0;
 
 		// send the ambient light level at the player's current position
-		cmd.lightlevel = (byte) Globals.cl_lightlevel.value;
+		cmd.lightlevel = (byte) Context.cl_lightlevel.value;
 	}
 
 	/*
@@ -466,7 +465,7 @@ public class CL_input {
 	static void CreateCmd(usercmd_t cmd) {
 		//usercmd_t cmd = new usercmd_t();
 
-		frame_msec = Globals.sys_frame_time - old_sys_frame_time;
+		frame_msec = Context.sys_frame_time - old_sys_frame_time;
 		if (frame_msec < 1)
 			frame_msec = 1;
 		if (frame_msec > 200)
@@ -480,7 +479,7 @@ public class CL_input {
 
 		FinishMove(cmd);
 
-		old_sys_frame_time = Globals.sys_frame_time;
+		old_sys_frame_time = Context.sys_frame_time;
 
 		//return cmd;
 	}
@@ -540,37 +539,37 @@ public class CL_input {
 		// build a command even if not connected
 
 		// save this command off for prediction
-		i = Globals.cls.netchan.outgoing_sequence & (Defines.CMD_BACKUP - 1);
-		cmd = Globals.cl.cmds[i];
-		Globals.cl.cmd_time[i] = Globals.cls.realtime; // for netgraph
+		i = Context.cls.netchan.outgoing_sequence & (Defines.CMD_BACKUP - 1);
+		cmd = Context.cl.cmds[i];
+		Context.cl.cmd_time[i] = Context.cls.realtime; // for netgraph
 															 // ping calculation
 
 		// fill the cmd
 		CreateCmd(cmd);
 
-		Globals.cl.cmd.set(cmd);
+		Context.cl.cmd.set(cmd);
 
-		if (Globals.cls.state == Defines.ca_disconnected || Globals.cls.state == Defines.ca_connecting)
+		if (Context.cls.state == Defines.ca_disconnected || Context.cls.state == Defines.ca_connecting)
 			return;
 
-		if (Globals.cls.state == Defines.ca_connected) {
-			if (Globals.cls.netchan.message.cursize != 0 || Globals.curtime - Globals.cls.netchan.last_sent > 1000)
-				Netchan.Transmit(Globals.cls.netchan, 0, new byte[0]);
+		if (Context.cls.state == Defines.ca_connected) {
+			if (Context.cls.netchan.message.cursize != 0 || Context.curtime - Context.cls.netchan.last_sent > 1000)
+				Netchan.Transmit(Context.cls.netchan, 0, new byte[0]);
 			return;
 		}
 
 		// send a userinfo update if needed
-		if (Globals.userinfo_modified) {
+		if (Context.userinfo_modified) {
 			CL.FixUpGender();
-			Globals.userinfo_modified = false;
-			Globals.cls.netchan.message.writeByte(Defines.clc_userinfo);
-			Globals.cls.netchan.message.writeString(ConsoleVar.Userinfo());
+			Context.userinfo_modified = false;
+			Context.cls.netchan.message.writeByte(Defines.clc_userinfo);
+			Context.cls.netchan.message.writeString(ConsoleVar.Userinfo());
 		}
 
 		buf.init(data, data.length);
 
-		if (cmd.buttons != 0 && Globals.cl.cinematictime > 0 && !Globals.cl.attractloop
-				&& Globals.cls.realtime - Globals.cl.cinematictime > 1000) { // skip
+		if (cmd.buttons != 0 && Context.cl.cinematictime > 0 && !Context.cl.attractloop
+				&& Context.cls.realtime - Context.cl.cinematictime > 1000) { // skip
 																			 // the
 																			 // rest
 																			 // of
@@ -588,39 +587,39 @@ public class CL_input {
 
 		// let the server know what the last frame we
 		// got was, so the next message can be delta compressed
-		if (cl_nodelta.value != 0.0f || !Globals.cl.frame.valid || Globals.cls.demowaiting)
+		if (cl_nodelta.value != 0.0f || !Context.cl.frame.valid || Context.cls.demowaiting)
 			buf.writeLong(-1);
 		else
-			buf.writeLong(Globals.cl.frame.serverframe);
+			buf.writeLong(Context.cl.frame.serverframe);
 
 		// send this and the previous cmds in the message, so
 		// if the last packet was dropped, it can be recovered
-		i = (Globals.cls.netchan.outgoing_sequence - 2) & (Defines.CMD_BACKUP - 1);
-		cmd = Globals.cl.cmds[i];
+		i = (Context.cls.netchan.outgoing_sequence - 2) & (Defines.CMD_BACKUP - 1);
+		cmd = Context.cl.cmds[i];
 		//memset (nullcmd, 0, sizeof(nullcmd));
 		nullcmd.clear();
 
 		buf.writeDeltaUsercmd(nullcmd, cmd);
 		oldcmd = cmd;
 
-		i = (Globals.cls.netchan.outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
-		cmd = Globals.cl.cmds[i];
+		i = (Context.cls.netchan.outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
+		cmd = Context.cl.cmds[i];
 
 		buf.writeDeltaUsercmd(oldcmd, cmd);
 		oldcmd = cmd;
 
-		i = (Globals.cls.netchan.outgoing_sequence) & (Defines.CMD_BACKUP - 1);
-		cmd = Globals.cl.cmds[i];
+		i = (Context.cls.netchan.outgoing_sequence) & (Defines.CMD_BACKUP - 1);
+		cmd = Context.cl.cmds[i];
 
 		buf.writeDeltaUsercmd(oldcmd, cmd);
 
 		// calculate a checksum over the move commands
-		buf.data[checksumIndex] = Com.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,
-				Globals.cls.netchan.outgoing_sequence);
+		buf.data[checksumIndex] = Command.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,
+				Context.cls.netchan.outgoing_sequence);
 
 		//
 		// deliver the message
 		//
-		Netchan.Transmit(Globals.cls.netchan, buf.cursize, buf.data);
+		Netchan.Transmit(Context.cls.netchan, buf.cursize, buf.data);
 	}
 }

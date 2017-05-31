@@ -26,10 +26,9 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.entity_state_t;
 import jake2.game.monsters.M_Flash;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.qcommon.TSizeBuffer;
 import jake2.sound.Sound;
 import jake2.util.Lib;
@@ -58,10 +57,10 @@ public class CL_fx {
 		}
 	}
 
-	static cparticle_t[] particles = new cparticle_t[Defines.MAX_PARTICLES];
+	static TCParticle[] particles = new TCParticle[Defines.MAX_PARTICLES];
 	static {
 		for (int i = 0; i < particles.length; i++)
-			particles[i] = new cparticle_t();
+			particles[i] = new TCParticle();
 	}
 
 	static int cl_numparticles = Defines.MAX_PARTICLES;
@@ -142,7 +141,7 @@ public class CL_fx {
 	static void RunLightStyles() {
 		clightstyle_t ls;
 
-		int ofs = Globals.cl.time / 100;
+		int ofs = Context.cl.time / 100;
 		if (ofs == lastofs)
 			return;
 		lastofs = ofs;
@@ -164,11 +163,11 @@ public class CL_fx {
 		String s;
 		int j, k;
 
-		s = Globals.cl.configstrings[i + Defines.CS_LIGHTS];
+		s = Context.cl.configstrings[i + Defines.CS_LIGHTS];
 
 		j = s.length();
 		if (j >= Defines.MAX_QPATH)
-			Com.Error(Defines.ERR_DROP, "svc_lightstyle length=" + j);
+			Command.Error(Defines.ERR_DROP, "svc_lightstyle length=" + j);
 
 		cl_lightstyle[i].length = j;
 
@@ -213,7 +212,7 @@ public class CL_fx {
 		//	   then look for anything else
 		for (i = 0; i < Defines.MAX_DLIGHTS; i++) {
 			dl = cl_dlights[i];
-			if (dl.die < Globals.cl.time) {
+			if (dl.die < Context.cl.time) {
 				//memset (dl, 0, sizeof(*dl));
 				dl.clear();
 				dl.key = key;
@@ -243,7 +242,7 @@ public class CL_fx {
 			if (dl.radius == 0.0f)
 				continue;
 
-			if (dl.die < Globals.cl.time) {
+			if (dl.die < Context.cl.time) {
 				dl.radius = 0.0f;
 				return;
 			}
@@ -262,15 +261,15 @@ public class CL_fx {
 		float volume;
 		String soundname;
 
-		int i = TSizeBuffer.ReadShort(Globals.net_message);
+		int i = TSizeBuffer.ReadShort(Context.net_message);
 		if (i < 1 || i >= Defines.MAX_EDICTS)
-			Com.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash: bad entity");
+			Command.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash: bad entity");
 
-		int weapon = TSizeBuffer.ReadByte(Globals.net_message);
+		int weapon = TSizeBuffer.ReadByte(Context.net_message);
 		int silenced = weapon & Defines.MZ_SILENCED;
 		weapon &= ~Defines.MZ_SILENCED;
 
-		centity_t pl = Globals.cl_entities[i];
+		centity_t pl = Context.cl_entities[i];
 
 		cdlight_t dl = AllocDlight(i);
 		Math3D.VectorCopy(pl.current.origin, dl.origin);
@@ -278,11 +277,11 @@ public class CL_fx {
 		Math3D.VectorMA(dl.origin, 18, fv, dl.origin);
 		Math3D.VectorMA(dl.origin, 16, rv, dl.origin);
 		if (silenced != 0)
-			dl.radius = 100 + (Globals.rnd.nextInt() & 31);
+			dl.radius = 100 + (Context.rnd.nextInt() & 31);
 		else
-			dl.radius = 200 + (Globals.rnd.nextInt() & 31);
+			dl.radius = 200 + (Context.rnd.nextInt() & 31);
 		dl.minlight = 32;
-		dl.die = Globals.cl.time; // + 0.1;
+		dl.die = Context.cl.time; // + 0.1;
 
 		if (silenced != 0)
 			volume = 0.2f;
@@ -314,7 +313,7 @@ public class CL_fx {
 			dl.color[2] = 0;
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0);
 			break;
 		case Defines.MZ_SHOTGUN:
@@ -331,47 +330,47 @@ public class CL_fx {
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound("weapons/sshotf1b.wav"), volume, Defines.ATTN_NORM, 0);
 			break;
 		case Defines.MZ_CHAINGUN1:
-			dl.radius = 200 + (Globals.rnd.nextInt() & 31);
+			dl.radius = 200 + (Context.rnd.nextInt() & 31);
 			dl.color[0] = 1;
 			dl.color[1] = 0.25f;
 			dl.color[2] = 0;
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0);
 			break;
 		case Defines.MZ_CHAINGUN2:
-			dl.radius = 225 + (Globals.rnd.nextInt() & 31);
+			dl.radius = 225 + (Context.rnd.nextInt() & 31);
 			dl.color[0] = 1;
 			dl.color[1] = 0.5f;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 0.1f; // long delay
+			dl.die = Context.cl.time + 0.1f; // long delay
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0);
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0.05f);
 			break;
 		case Defines.MZ_CHAINGUN3:
-			dl.radius = 250 + (Globals.rnd.nextInt() & 31);
+			dl.radius = 250 + (Context.rnd.nextInt() & 31);
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 0.1f; // long delay
+			dl.die = Context.cl.time + 0.1f; // long delay
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0);
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0.033f);
 			//Com_sprintf(soundname, sizeof(soundname),
 			// "weapons/machgf%ib.wav", (rand() % 5) + 1);
-			soundname = "weapons/machgf" + ((Globals.rnd.nextInt(5)) + 1) + "b.wav";
+			soundname = "weapons/machgf" + ((Context.rnd.nextInt(5)) + 1) + "b.wav";
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), volume, Defines.ATTN_NORM, 0.066f);
 			break;
 		case Defines.MZ_RAILGUN:
@@ -405,7 +404,7 @@ public class CL_fx {
 			dl.color[0] = 0;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 1.0f;
+			dl.die = Context.cl.time + 1.0f;
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound("weapons/grenlf1a.wav"), 1, Defines.ATTN_NORM, 0);
 			LogoutEffect(pl.current.origin, weapon);
 			break;
@@ -413,7 +412,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 0;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 1.0f;
+			dl.die = Context.cl.time + 1.0f;
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound("weapons/grenlf1a.wav"), 1, Defines.ATTN_NORM, 0);
 			LogoutEffect(pl.current.origin, weapon);
 			break;
@@ -421,7 +420,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 1.0f;
+			dl.die = Context.cl.time + 1.0f;
 			Sound.StartSound(null, i, Defines.CHAN_WEAPON, Sound.RegisterSound("weapons/grenlf1a.wav"), 1, Defines.ATTN_NORM, 0);
 			LogoutEffect(pl.current.origin, weapon);
 			break;
@@ -458,7 +457,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 100;
+			dl.die = Context.cl.time + 100;
 			//			Sound.StartSound (null, i, CHAN_WEAPON,
 			// Sound.RegisterSound("weapons/bfg__l1a.wav"), volume, ATTN_NORM, 0);
 			break;
@@ -480,25 +479,25 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 0;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 100;
+			dl.die = Context.cl.time + 100;
 			break;
 		case Defines.MZ_NUKE2:
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 100;
+			dl.die = Context.cl.time + 100;
 			break;
 		case Defines.MZ_NUKE4:
 			dl.color[0] = 0;
 			dl.color[1] = 0;
 			dl.color[2] = 1;
-			dl.die = Globals.cl.time + 100;
+			dl.die = Context.cl.time + 100;
 			break;
 		case Defines.MZ_NUKE8:
 			dl.color[0] = 0;
 			dl.color[1] = 1;
 			dl.color[2] = 1;
-			dl.die = Globals.cl.time + 100;
+			dl.die = Context.cl.time + 100;
 			break;
 		//	   PGM
 		//	   ======================
@@ -515,26 +514,26 @@ public class CL_fx {
 	static void ParseMuzzleFlash2() {
 		String soundname;
 
-		int ent = TSizeBuffer.ReadShort(Globals.net_message);
+		int ent = TSizeBuffer.ReadShort(Context.net_message);
 		if (ent < 1 || ent >= Defines.MAX_EDICTS)
-			Com.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash2: bad entity");
+			Command.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash2: bad entity");
 
-		int flash_number = TSizeBuffer.ReadByte(Globals.net_message);
+		int flash_number = TSizeBuffer.ReadByte(Context.net_message);
 
 		// locate the origin
-		Math3D.AngleVectors(Globals.cl_entities[ent].current.angles, forward, right, null);
-		origin[0] = Globals.cl_entities[ent].current.origin[0] + forward[0] * M_Flash.monster_flash_offset[flash_number][0] + right[0]
+		Math3D.AngleVectors(Context.cl_entities[ent].current.angles, forward, right, null);
+		origin[0] = Context.cl_entities[ent].current.origin[0] + forward[0] * M_Flash.monster_flash_offset[flash_number][0] + right[0]
 				* M_Flash.monster_flash_offset[flash_number][1];
-		origin[1] = Globals.cl_entities[ent].current.origin[1] + forward[1] * M_Flash.monster_flash_offset[flash_number][0] + right[1]
+		origin[1] = Context.cl_entities[ent].current.origin[1] + forward[1] * M_Flash.monster_flash_offset[flash_number][0] + right[1]
 				* M_Flash.monster_flash_offset[flash_number][1];
-		origin[2] = Globals.cl_entities[ent].current.origin[2] + forward[2] * M_Flash.monster_flash_offset[flash_number][0] + right[2]
+		origin[2] = Context.cl_entities[ent].current.origin[2] + forward[2] * M_Flash.monster_flash_offset[flash_number][0] + right[2]
 				* M_Flash.monster_flash_offset[flash_number][1] + M_Flash.monster_flash_offset[flash_number][2];
 
 		cdlight_t dl = AllocDlight(ent);
 		Math3D.VectorCopy(origin, dl.origin);
-		dl.radius = 200 + (Globals.rnd.nextInt() & 31);
+		dl.radius = 200 + (Context.rnd.nextInt() & 31);
 		dl.minlight = 32;
-		dl.die = Globals.cl.time; // + 0.1;
+		dl.die = Context.cl.time; // + 0.1;
 
 		switch (flash_number) {
 		case Defines.MZ2_INFANTRY_MACHINEGUN_1:
@@ -553,7 +552,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("infantry/infatck1.wav"), 1, Defines.ATTN_NORM, 0);
 			break;
@@ -569,7 +568,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("soldier/solatck3.wav"), 1, Defines.ATTN_NORM, 0);
 			break;
@@ -585,7 +584,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("gunner/gunatck2.wav"), 1, Defines.ATTN_NORM, 0);
 			break;
@@ -602,7 +601,7 @@ public class CL_fx {
 			dl.color[1] = 1;
 			dl.color[2] = 0;
 
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("infantry/infatck1.wav"), 1, Defines.ATTN_NORM, 0);
 			break;
@@ -618,7 +617,7 @@ public class CL_fx {
 			dl.color[1] = 1;
 			dl.color[2] = 0;
 
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("infantry/infatck1.wav"), 1, Defines.ATTN_NONE, 0);
 			break;
@@ -713,11 +712,11 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			//Com_sprintf(soundname, sizeof(soundname), "tank/tnkatk2%c.wav",
 			// 'a' + rand() % 5);
-			soundname = "tank/tnkatk2" + (char) ('a' + Globals.rnd.nextInt(5)) + ".wav";
+			soundname = "tank/tnkatk2" + (char) ('a' + Context.rnd.nextInt(5)) + ".wav";
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound(soundname), 1, Defines.ATTN_NORM, 0);
 			break;
 
@@ -816,7 +815,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			Sound.StartSound(null, ent, Defines.CHAN_WEAPON, Sound.RegisterSound("boss3/xfire.wav"), 1, Defines.ATTN_NORM, 0);
 			break;
@@ -830,7 +829,7 @@ public class CL_fx {
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			break;
 
@@ -852,7 +851,7 @@ public class CL_fx {
 			dl.color[1] = 1;
 			dl.color[2] = 0;
 
-			ParticleEffect(origin, Globals.vec3_origin, 0, 40);
+			ParticleEffect(origin, Context.vec3_origin, 0, 40);
 			CL_tent.SmokeAndFlash(origin);
 			break;
 
@@ -927,11 +926,11 @@ public class CL_fx {
 		case Defines.MZ2_WIDOW2_BEAM_SWEEP_9:
 		case Defines.MZ2_WIDOW2_BEAM_SWEEP_10:
 		case Defines.MZ2_WIDOW2_BEAM_SWEEP_11:
-			dl.radius = 300 + (Globals.rnd.nextInt() & 100);
+			dl.radius = 300 + (Context.rnd.nextInt() & 100);
 			dl.color[0] = 1;
 			dl.color[1] = 1;
 			dl.color[2] = 0;
-			dl.die = Globals.cl.time + 200;
+			dl.die = Context.cl.time + 200;
 			break;
 		//	   ROGUE
 		//	   ======
@@ -951,7 +950,7 @@ public class CL_fx {
 
 		//	  =====
 		//	  PGM
-		if (Globals.vidref_val == Defines.VIDREF_GL) {
+		if (Context.vidref_val == Defines.VIDREF_GL) {
 			for (int i = 0; i < Defines.MAX_DLIGHTS; i++) {
 				dl = cl_dlights[i];
 				if (dl.radius == 0.0f)
@@ -997,7 +996,7 @@ public class CL_fx {
 	 */
 	static void ParticleEffect(float[] org, float[] dir, int color, int count) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float d;
 		
 		for (int i = 0; i < count; i++) {
@@ -1008,7 +1007,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = color + (Lib.rand() & 7);
 
 			d = Lib.rand() & 31;
@@ -1021,7 +1020,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1030,7 +1029,7 @@ public class CL_fx {
 	 */
 	static void ParticleEffect2(float[] org, float[] dir, int color, int count) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float d;
 
 		for (int i = 0; i < count; i++) {
@@ -1041,7 +1040,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = color;
 
 			d = Lib.rand() & 7;
@@ -1054,7 +1053,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1064,7 +1063,7 @@ public class CL_fx {
 	 */
 	static void ParticleEffect3(float[] org, float[] dir, int color, int count) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float d;
 
 		for (int i = 0; i < count; i++) {
@@ -1075,7 +1074,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = color;
 
 			d = Lib.rand() & 7;
@@ -1088,7 +1087,7 @@ public class CL_fx {
 			p.accel[2] = PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1097,7 +1096,7 @@ public class CL_fx {
 	 */
 	static void TeleporterParticles(entity_state_t ent) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 
 		for (int i = 0; i < 8; i++) {
 			if (free_particles == null)
@@ -1107,7 +1106,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = 0xdb;
 
 			for (j = 0; j < 2; j++) {
@@ -1133,7 +1132,7 @@ public class CL_fx {
 	 */
 	static void LogoutEffect(float[] org, int type) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 
 		for (int i = 0; i < 500; i++) {
 			if (free_particles == null)
@@ -1143,7 +1142,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			if (type == Defines.MZ_LOGIN)
 				p.color = 0xd0 + (Lib.rand() & 7); // green
@@ -1152,9 +1151,9 @@ public class CL_fx {
 			else
 				p.color = 0xe0 + (Lib.rand() & 7); // yellow
 
-			p.org[0] = org[0] - 16 + Globals.rnd.nextFloat() * 32;
-			p.org[1] = org[1] - 16 + Globals.rnd.nextFloat() * 32;
-			p.org[2] = org[2] - 24 + Globals.rnd.nextFloat() * 56;
+			p.org[0] = org[0] - 16 + Context.rnd.nextFloat() * 32;
+			p.org[1] = org[1] - 16 + Context.rnd.nextFloat() * 32;
+			p.org[2] = org[2] - 24 + Context.rnd.nextFloat() * 56;
 
 			for (j = 0; j < 3; j++)
 				p.vel[j] = Lib.crand() * 20;
@@ -1163,7 +1162,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1174,7 +1173,7 @@ public class CL_fx {
 	 */
 	static void ItemRespawnParticles(float[] org) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 
 		for (int i = 0; i < 64; i++) {
 			if (free_particles == null)
@@ -1184,7 +1183,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.color = 0xd4 + (Lib.rand() & 3); // green
 
@@ -1199,7 +1198,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY * 0.2f;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1208,7 +1207,7 @@ public class CL_fx {
 	 */
 	static void ExplosionParticles(float[] org) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 
 		for (int i = 0; i < 256; i++) {
 			if (free_particles == null)
@@ -1218,7 +1217,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = 0xe0 + (Lib.rand() & 7);
 
 			for (j = 0; j < 3; j++) {
@@ -1230,12 +1229,12 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -0.8f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -0.8f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
 	static void BigTeleportParticles(float[] org) {
-		cparticle_t p;
+		TCParticle p;
 		float angle, dist;
 
 		for (int i = 0; i < 4096; i++) {
@@ -1246,7 +1245,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.color = colortable[Lib.rand() & 3];
 
@@ -1265,7 +1264,7 @@ public class CL_fx {
 			p.accel[2] = PARTICLE_GRAVITY * 4;
 			p.alpha = 1.0f;
 
-			p.alphavel = -0.3f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -0.3f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1276,7 +1275,7 @@ public class CL_fx {
 	 */
 	static void BlasterParticles(float[] org, float[] dir) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float d;
 
 		int count = 40;
@@ -1288,7 +1287,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = 0xe0 + (Lib.rand() & 7);
 
 			d = Lib.rand() & 15;
@@ -1301,7 +1300,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -1316,7 +1315,7 @@ public class CL_fx {
 	static void BlasterTrail(float[] start, float[] end) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		int dec;
 
 		Math3D.VectorCopy(start, move);
@@ -1338,10 +1337,10 @@ public class CL_fx {
 			active_particles = p;
 			Math3D.VectorClear(p.accel);
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (0.3f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (0.3f + Context.rnd.nextFloat() * 0.2f);
 			p.color = 0xe0;
 			for (j = 0; j < 3; j++) {
 				p.org[j] = move[j] + Lib.crand();
@@ -1363,7 +1362,7 @@ public class CL_fx {
 	static void FlagTrail(float[] start, float[] end, float color) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		int dec;
 
 		Math3D.VectorCopy(start, move);
@@ -1384,10 +1383,10 @@ public class CL_fx {
 			active_particles = p;
 			Math3D.VectorClear(p.accel);
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (0.8f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (0.8f + Context.rnd.nextFloat() * 0.2f);
 			p.color = color;
 			for (j = 0; j < 3; j++) {
 				p.org[j] = move[j] + Lib.crand() * 16;
@@ -1407,7 +1406,7 @@ public class CL_fx {
 	 * ===============
 	 */
 	static void DiminishingTrail(float[] start, float[] end, centity_t old, int flags) {
-		cparticle_t p;
+		TCParticle p;
 		float orgscale;
 		float velscale;
 
@@ -1443,11 +1442,11 @@ public class CL_fx {
 				active_particles = p;
 				Math3D.VectorClear(p.accel);
 
-				p.time = Globals.cl.time;
+				p.time = Context.cl.time;
 
 				if ((flags & Defines.EF_GIB) != 0) {
 					p.alpha = 1.0f;
-					p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.4f);
+					p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.4f);
 					p.color = 0xe8 + (Lib.rand() & 7);
 					for (int j = 0; j < 3; j++) {
 						p.org[j] = move[j] + Lib.crand() * orgscale;
@@ -1457,7 +1456,7 @@ public class CL_fx {
 					p.vel[2] -= PARTICLE_GRAVITY;
 				} else if ((flags & Defines.EF_GREENGIB) != 0) {
 					p.alpha = 1.0f;
-					p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.4f);
+					p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.4f);
 					p.color = 0xdb + (Lib.rand() & 7);
 					for (int j = 0; j < 3; j++) {
 						p.org[j] = move[j] + Lib.crand() * orgscale;
@@ -1467,7 +1466,7 @@ public class CL_fx {
 					p.vel[2] -= PARTICLE_GRAVITY;
 				} else {
 					p.alpha = 1.0f;
-					p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.2f);
+					p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.2f);
 					p.color = 4 + (Lib.rand() & 7);
 					for (int j = 0; j < 3; j++) {
 						p.org[j] = move[j] + Lib.crand() * orgscale;
@@ -1494,7 +1493,7 @@ public class CL_fx {
 	static void RocketTrail(float[] start, float[] end, centity_t old) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float dec;
 
 		// smoke
@@ -1521,10 +1520,10 @@ public class CL_fx {
 				active_particles = p;
 
 				Math3D.VectorClear(p.accel);
-				p.time = Globals.cl.time;
+				p.time = Context.cl.time;
 
 				p.alpha = 1.0f;
-				p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.2f);
+				p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.2f);
 				p.color = 0xdc + (Lib.rand() & 3);
 				for (j = 0; j < 3; j++) {
 					p.org[j] = move[j] + Lib.crand() * 5;
@@ -1546,7 +1545,7 @@ public class CL_fx {
 	static void RailTrail(float[] start, float[] end) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		float dec;
 		float[] right = new float[3];
 		float[] up = new float[3];
@@ -1570,7 +1569,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			Math3D.VectorClear(p.accel);
 
 			d = i * 0.1f;
@@ -1581,7 +1580,7 @@ public class CL_fx {
 			Math3D.VectorMA(dir, s, up, dir);
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.2f);
 			p.color = clr + (Lib.rand() & 7);
 			for (j = 0; j < 3; j++) {
 				p.org[j] = move[j] + dir[j] * 3;
@@ -1605,11 +1604,11 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			Math3D.VectorClear(p.accel);
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (0.6f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (0.6f + Context.rnd.nextFloat() * 0.2f);
 			p.color = 0x0 + Lib.rand() & 15;
 
 			for (j = 0; j < 3; j++) {
@@ -1630,7 +1629,7 @@ public class CL_fx {
 	static void IonripperTrail(float[] start, float[] ent) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		int dec;
 		int left = 0;
 
@@ -1652,9 +1651,9 @@ public class CL_fx {
 			active_particles = p;
 			Math3D.VectorClear(p.accel);
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.alpha = 0.5f;
-			p.alphavel = -1.0f / (0.3f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (0.3f + Context.rnd.nextFloat() * 0.2f);
 			p.color = 0xe4 + (Lib.rand() & 3);
 
 			for (j = 0; j < 3; j++) {
@@ -1686,7 +1685,7 @@ public class CL_fx {
 	static void BubbleTrail(float[] start, float[] end) {
 		float len;
 		int i, j;
-		cparticle_t p;
+		TCParticle p;
 		float dec;
 
 		Math3D.VectorCopy(start, move);
@@ -1706,10 +1705,10 @@ public class CL_fx {
 			active_particles = p;
 
 			Math3D.VectorClear(p.accel);
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (1.0f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (1.0f + Context.rnd.nextFloat() * 0.2f);
 			p.color = 4 + (Lib.rand() & 7);
 			for (j = 0; j < 3; j++) {
 				p.org[j] = move[j] + Lib.crand() * 2;
@@ -1728,7 +1727,7 @@ public class CL_fx {
 	 */
 	static void FlyParticles(float[] origin, int count) {
 		int i;
-		cparticle_t p;
+		TCParticle p;
 		float angle;
 		float sp, sy, cp, cy;
 		float dist = 64;
@@ -1745,7 +1744,7 @@ public class CL_fx {
 			}
 		}
 
-		ltime = Globals.cl.time / 1000.0f;
+		ltime = Context.cl.time / 1000.0f;
 		for (i = 0; i < count; i += 2) {
 			angle = ltime * avelocities[i][0];
 			sy = (float) Math.sin(angle);
@@ -1766,12 +1765,12 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			dist = (float) Math.sin(ltime + i) * 64;
-			p.org[0] = origin[0] + Globals.bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
-			p.org[1] = origin[1] + Globals.bytedirs[i][1] * dist + forward[1] * BEAMLENGTH;
-			p.org[2] = origin[2] + Globals.bytedirs[i][2] * dist + forward[2] * BEAMLENGTH;
+			p.org[0] = origin[0] + Context.bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
+			p.org[1] = origin[1] + Context.bytedirs[i][1] * dist + forward[1] * BEAMLENGTH;
+			p.org[2] = origin[2] + Context.bytedirs[i][2] * dist + forward[2] * BEAMLENGTH;
 
 			Math3D.VectorClear(p.vel);
 			Math3D.VectorClear(p.accel);
@@ -1789,18 +1788,18 @@ public class CL_fx {
 		int count;
 		int starttime;
 
-		if (ent.fly_stoptime < Globals.cl.time) {
-			starttime = Globals.cl.time;
-			ent.fly_stoptime = Globals.cl.time + 60000;
+		if (ent.fly_stoptime < Context.cl.time) {
+			starttime = Context.cl.time;
+			ent.fly_stoptime = Context.cl.time + 60000;
 		} else {
 			starttime = ent.fly_stoptime - 60000;
 		}
 
-		n = Globals.cl.time - starttime;
+		n = Context.cl.time - starttime;
 		if (n < 20000)
 			count = (int) ((n * 162) / 20000.0);
 		else {
-			n = ent.fly_stoptime - Globals.cl.time;
+			n = ent.fly_stoptime - Context.cl.time;
 			if (n < 20000)
 				count = (int) ((n * 162) / 20000.0);
 			else
@@ -1819,7 +1818,7 @@ public class CL_fx {
 	//#define BEAMLENGTH 16
 	static void BfgParticles(TEntity ent) {
 		int i;
-		cparticle_t p;
+		TCParticle p;
 		float angle;
 		float sp, sy, cp, cy;
 		float dist = 64;
@@ -1833,7 +1832,7 @@ public class CL_fx {
 			}
 		}
 
-		ltime = Globals.cl.time / 1000.0f;
+		ltime = Context.cl.time / 1000.0f;
 		for (i = 0; i < Defines.NUMVERTEXNORMALS; i++) {
 			angle = ltime * avelocities[i][0];
 			sy = (float) Math.sin(angle);
@@ -1854,12 +1853,12 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			dist = (float) (Math.sin(ltime + i) * 64);
-			p.org[0] = ent.origin[0] + Globals.bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
-			p.org[1] = ent.origin[1] + Globals.bytedirs[i][1] * dist + forward[1] * BEAMLENGTH;
-			p.org[2] = ent.origin[2] + Globals.bytedirs[i][2] * dist + forward[2] * BEAMLENGTH;
+			p.org[0] = ent.origin[0] + Context.bytedirs[i][0] * dist + forward[0] * BEAMLENGTH;
+			p.org[1] = ent.origin[1] + Context.bytedirs[i][1] * dist + forward[1] * BEAMLENGTH;
+			p.org[2] = ent.origin[2] + Context.bytedirs[i][2] * dist + forward[2] * BEAMLENGTH;
 
 			Math3D.VectorClear(p.vel);
 			Math3D.VectorClear(p.accel);
@@ -1885,7 +1884,7 @@ public class CL_fx {
 	static void TrapParticles(TEntity ent) {
 		float len;
 		int j;
-		cparticle_t p;
+		TCParticle p;
 		int dec;
 
 		ent.origin[2] -= 14;
@@ -1912,10 +1911,10 @@ public class CL_fx {
 			active_particles = p;
 			Math3D.VectorClear(p.accel);
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 
 			p.alpha = 1.0f;
-			p.alphavel = -1.0f / (0.3f + Globals.rnd.nextFloat() * 0.2f);
+			p.alphavel = -1.0f / (0.3f + Context.rnd.nextFloat() * 0.2f);
 			p.color = 0xe0;
 			for (j = 0; j < 3; j++) {
 				p.org[j] = move[j] + Lib.crand();
@@ -1928,7 +1927,7 @@ public class CL_fx {
 		}
 
 		int i, k;
-		//cparticle_t p;
+		//TCParticle p;
 		float vel;
 		float[] dir = new float[3];
 		float[] org = new float[3];
@@ -1946,7 +1945,7 @@ public class CL_fx {
 					p.next = active_particles;
 					active_particles = p;
 
-					p.time = Globals.cl.time;
+					p.time = Context.cl.time;
 					p.color = 0xe0 + (Lib.rand() & 3);
 
 					p.alpha = 1.0f;
@@ -1976,7 +1975,7 @@ public class CL_fx {
 	//	  FIXME combined with CL_ExplosionParticles
 	static void BFGExplosionParticles(float[] org) {
 		int j;
-		cparticle_t p;
+		TCParticle p;
 
 		for (int i = 0; i < 256; i++) {
 			if (free_particles == null)
@@ -1986,7 +1985,7 @@ public class CL_fx {
 			p.next = active_particles;
 			active_particles = p;
 
-			p.time = Globals.cl.time;
+			p.time = Context.cl.time;
 			p.color = 0xd0 + (Lib.rand() & 7);
 
 			for (j = 0; j < 3; j++) {
@@ -1998,7 +1997,7 @@ public class CL_fx {
 			p.accel[2] = -PARTICLE_GRAVITY;
 			p.alpha = 1.0f;
 
-			p.alphavel = -0.8f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+			p.alphavel = -0.8f / (0.5f + Context.rnd.nextFloat() * 0.3f);
 		}
 	}
 
@@ -2010,7 +2009,7 @@ public class CL_fx {
 	 * ===============
 	 */
 	static void TeleportParticles(float[] org) {
-		cparticle_t p;
+		TCParticle p;
 		float vel;
 
 		for (int i = -16; i <= 16; i += 4)
@@ -2023,7 +2022,7 @@ public class CL_fx {
 					p.next = active_particles;
 					active_particles = p;
 
-					p.time = Globals.cl.time;
+					p.time = Context.cl.time;
 					p.color = 7 + (Lib.rand() & 7);
 
 					p.alpha = 1.0f;
@@ -2052,12 +2051,12 @@ public class CL_fx {
 	 * =============== CL_AddParticles ===============
 	 */
 	static void AddParticles() {
-		cparticle_t p, next;
+		TCParticle p, next;
 		float alpha;
 		float time = 0.0f;
 		float time2;
 		int color;
-		cparticle_t active, tail;
+		TCParticle active, tail;
 
 		active = null;
 		tail = null;
@@ -2067,7 +2066,7 @@ public class CL_fx {
 
 			// PMM - added INSTANT_PARTICLE handling for heat beam
 			if (p.alphavel != INSTANT_PARTICLE) {
-				time = (Globals.cl.time - p.time) * 0.001f;
+				time = (Context.cl.time - p.time) * 0.001f;
 				alpha = p.alpha + time * p.alphavel;
 				if (alpha <= 0) { // faded out
 					p.next = free_particles;
@@ -2125,7 +2124,7 @@ public class CL_fx {
 			TeleportParticles(ent.origin);
 			break;
 		case Defines.EV_FOOTSTEP:
-			if (Globals.cl_footsteps.value != 0.0f)
+			if (Context.cl_footsteps.value != 0.0f)
 				Sound.StartSound(null, ent.number, Defines.CHAN_BODY, CL_tent.cl_sfx_footsteps[Lib.rand() & 3], 1, Defines.ATTN_NORM, 0);
 			break;
 		case Defines.EV_FALLSHORT:
@@ -2161,7 +2160,7 @@ public class CL_fx {
 
 	static final int PARTICLE_GRAVITY = 40;
 
-	static cparticle_t active_particles, free_particles;
+	static TCParticle active_particles, free_particles;
 
 	/*
 	 * =============== CL_BigTeleportParticles ===============

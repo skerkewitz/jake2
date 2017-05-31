@@ -24,7 +24,7 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 
 final class LayoutParser {
     int tokenPos;
@@ -111,7 +111,7 @@ final class LayoutParser {
 	} while (c > 32);
 
 	if (len == Defines.MAX_TOKEN_CHARS) {
-	    Com.Printf("Token exceeded " + Defines.MAX_TOKEN_CHARS
+	    Command.Printf("Token exceeded " + Defines.MAX_TOKEN_CHARS
 		    + " chars, discarded.\n");
 	    len = 0;
 	}

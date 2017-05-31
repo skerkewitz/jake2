@@ -26,7 +26,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.*;
@@ -34,6 +33,13 @@ import jake2.render.Renderer;
 import jake2.sound.Sound;
 import jake2.sys.IN;
 import jake2.sys.Keyboard;
+
+import static jake2.Defines.MTYPE_ACTION;
+import static jake2.Defines.MTYPE_SLIDER;
+import static jake2.Defines.MTYPE_SPINCONTROL;
+import static jake2.client.Context.re;
+import static jake2.client.Context.viddef;
+import static jake2.client.Key.*;
 
 
 /**
@@ -43,7 +49,7 @@ import jake2.sys.Keyboard;
  * 
  * @author cwei
  */
-public class VID extends Globals {
+public class VID {
 
 	public static final int PRINT_ALL = 0;
 	public static final int PRINT_DEVELOPER = 1; // only print when "developer 1"
@@ -54,11 +60,11 @@ public class VID extends Globals {
 	//	   Quake refresh engine.
 
 	// Global variables used internally by this module
-	// Globals.viddef
+	// Context.viddef
 	// global video state; used by other modules
 
 	// Structure containing functions exported from refresh DLL
-	// Globals.re;
+	// Context.re;
 
 	// Console variables that we need to access from this module
 	public static TVar vid_gamma;
@@ -85,9 +91,9 @@ public class VID extends Globals {
 
 	public static void Printf(int print_level, String fmt, Object ... vargs) {
 		if (print_level == PRINT_ALL)
-			Com.Printf(fmt, vargs);
+			Command.Printf(fmt, vargs);
 		else
-			Com.DPrintf(fmt, vargs);
+			Command.DPrintf(fmt, vargs);
 	}
 
 	// ==========================================================================
@@ -130,20 +136,20 @@ public class VID extends Globals {
 	** VID_NewWindow
 	*/
 	public static void NewWindow(int width, int height) {
-		Globals.viddef.setSize(width, height);
+		viddef.setSize(width, height);
 	}
 
 	static void FreeReflib()
 	{
-		if (Globals.re != null) {
-			Keyboard keyboardHandler = Globals.re.getKeyboardHandler();
+		if (re != null) {
+			Keyboard keyboardHandler = re.getKeyboardHandler();
 			if (keyboardHandler != null) {
 				keyboardHandler.Close();
 			}
 			IN.Shutdown();
 		}
 
-		Globals.re = null;
+		re = null;
 		reflib_active = false;
 	}
 
@@ -157,14 +163,14 @@ public class VID extends Globals {
 
 		if ( reflib_active )
 		{
-			Globals.re.getKeyboardHandler().Close();
+			re.getKeyboardHandler().Close();
 			IN.Shutdown();
 
-			Globals.re.Shutdown();
+			re.Shutdown();
 			FreeReflib();
 		}
 
-		Com.Printf( "------- Loading " + name + " -------\n");
+		Command.Printf( "------- Loading " + name + " -------\n");
 		
 		boolean found = false;
 		
@@ -177,37 +183,37 @@ public class VID extends Globals {
 		}
 
 		if (!found) {
-			Com.Printf( "LoadLibrary(\"" + name +"\") failed\n");
+			Command.Printf( "LoadLibrary(\"" + name +"\") failed\n");
 			return false;
 		}
 
-		Com.Printf( "LoadLibrary(\"" + name +"\")\n" );
-		Globals.re = Renderer.getDriver(name, fast);
+		Command.Printf( "LoadLibrary(\"" + name +"\")\n" );
+		re = Renderer.getDriver(name, fast);
 		
-		if (Globals.re == null)
+		if (re == null)
 		{
-			Com.Error(Defines.ERR_FATAL, name + " can't load but registered");
+			Command.Error(Defines.ERR_FATAL, name + " can't load but registered");
 		}
 
-		if (Globals.re.apiVersion() != Defines.API_VERSION)
+		if (re.apiVersion() != Defines.API_VERSION)
 		{
 			FreeReflib();
-			Com.Error(Defines.ERR_FATAL, name + " has incompatible api_version");
+			Command.Error(Defines.ERR_FATAL, name + " has incompatible api_version");
 		}
 
 		IN.Real_IN_Init();
 
-		if ( !Globals.re.Init((int)vid_xpos.value, (int)vid_ypos.value) )
+		if ( !re.Init((int)vid_xpos.value, (int)vid_ypos.value) )
 		{
-			Globals.re.Shutdown();
+			re.Shutdown();
 			FreeReflib();
 			return false;
 		}
 
 		/* init Keyboard */
-		Globals.re.getKeyboardHandler().Init();
+		re.getKeyboardHandler().Init();
 
-		Com.Printf( "------------------------------------\n");
+		Command.Printf( "------------------------------------\n");
 		reflib_active = true;
 		return true;
 	}
@@ -223,7 +229,7 @@ public class VID extends Globals {
 	*/
 	public static void CheckChanges()
 	{
-	    Globals.viddef.update();
+	    viddef.update();
 	    
 		if ( vid_ref.modified )
 		{
@@ -237,8 +243,8 @@ public class VID extends Globals {
 			*/
 			vid_ref.modified = false;
 			vid_fullscreen.modified = true;
-			Globals.cl.refresh_prepped = false;
-			Globals.cls.disable_screen = 1.0f; // true;
+			Context.cl.refresh_prepped = false;
+			Context.cls.disable_screen = 1.0f; // true;
 
 			
 			if ( !LoadRefresh( vid_ref.string, true ) )
@@ -253,15 +259,15 @@ public class VID extends Globals {
 				}
 				if ( vid_ref.string.equals(Renderer.getDefaultName())) {
 				    renderer = vid_ref.string;
-					Com.Printf("Refresh failed\n");
+					Command.Printf("Refresh failed\n");
 					gl_mode = ConsoleVar.Get( "gl_mode", "0", 0 );
 					if (gl_mode.value != 0.0f) {
-						Com.Printf("Trying mode 0\n");
+						Command.Printf("Trying mode 0\n");
 						ConsoleVar.SetValue("gl_mode", 0);
 						if ( !LoadRefresh( vid_ref.string, false ) )
-							Com.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
+							Command.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
 					} else
-						Com.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
+						Command.Error(Defines.ERR_FATAL, "Couldn't fall back to " + renderer +" refresh!");
 				}
 
 				ConsoleVar.Set("vid_ref", renderer);
@@ -269,7 +275,7 @@ public class VID extends Globals {
 				/*
 				 * drop the console if we fail to load a refresh
 				 */
-				if ( Globals.cls.key_dest != Defines.key_console )
+				if ( Context.cls.key_dest != Defines.key_console )
 				{
 					try {
 						Console.ToggleConsole_f.execute();
@@ -277,7 +283,7 @@ public class VID extends Globals {
 					}
 				}
 			}
-			Globals.cls.disable_screen = 0.0f; //false;
+			Context.cls.disable_screen = 0.0f; //false;
 		}
 	}
 
@@ -323,10 +329,10 @@ public class VID extends Globals {
 	{
 		if ( reflib_active )
 		{
-			Globals.re.getKeyboardHandler().Close();
+			re.getKeyboardHandler().Close();
 			IN.Shutdown();
 
-			Globals.re.Shutdown();
+			re.Shutdown();
 			FreeReflib();
 		}
 	}

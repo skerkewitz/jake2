@@ -45,5 +45,5 @@ public class TRefDef {
     public TDynamicLight dlights[];
 
     public int num_particles;
-    //public particle_t	particles[];
+    //public TParticle	particles[];
 }

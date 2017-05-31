@@ -28,7 +28,6 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -44,7 +43,7 @@ public class CL_newfx {
         Math3D.VectorCopy(pos, dl.origin);
         dl.radius = 400;
         dl.minlight = 250;
-        dl.die = Globals.cl.time + 100;
+        dl.die = Context.cl.time + 100;
         dl.color[0] = 1;
         dl.color[1] = 1;
         dl.color[2] = 1;
@@ -57,7 +56,7 @@ public class CL_newfx {
             float g, float b) {
         CL_fx.cdlight_t dl;
 
-        if ((Globals.vidref_val == Defines.VIDREF_SOFT)
+        if ((Context.vidref_val == Defines.VIDREF_SOFT)
                 && ((r < 0) || (g < 0) || (b < 0))) {
             intensity = -intensity;
             r = -r;
@@ -69,7 +68,7 @@ public class CL_newfx {
         Math3D.VectorCopy(pos, dl.origin);
         dl.radius = intensity;
         dl.minlight = 250;
-        dl.die = Globals.cl.time + 100;
+        dl.die = Context.cl.time + 100;
         dl.color[0] = r;
         dl.color[1] = g;
         dl.color[2] = b;
@@ -86,7 +85,7 @@ public class CL_newfx {
     static void DebugTrail(float[] start, float[] end) {
         float len;
         //		int j;
-        cparticle_t p;
+        TCParticle p;
         float dec;
         //		int i;
         //		float d, c, s;
@@ -116,7 +115,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             Math3D.VectorClear(p.accel);
             Math3D.VectorClear(p.vel);
             p.alpha = 1.0f;
@@ -138,7 +137,7 @@ public class CL_newfx {
     static void ForceWall(float[] start, float[] end, int color) {
         float len;
         int j;
-        cparticle_t p;
+        TCParticle p;
 
         Math3D.VectorCopy(start, move);
         Math3D.VectorSubtract(end, start, vec);
@@ -153,17 +152,17 @@ public class CL_newfx {
             if (CL_fx.free_particles == null)
                 return;
 
-            if (Globals.rnd.nextFloat() > 0.3) {
+            if (Context.rnd.nextFloat() > 0.3) {
                 p = CL_fx.free_particles;
                 CL_fx.free_particles = p.next;
                 p.next = CL_fx.active_particles;
                 CL_fx.active_particles = p;
                 Math3D.VectorClear(p.accel);
 
-                p.time = Globals.cl.time;
+                p.time = Context.cl.time;
 
                 p.alpha = 1.0f;
-                p.alphavel = -1.0f / (3.0f + Globals.rnd.nextFloat() * 0.5f);
+                p.alphavel = -1.0f / (3.0f + Context.rnd.nextFloat() * 0.5f);
                 p.color = color;
                 for (j = 0; j < 3; j++) {
                     p.org[j] = move[j] + Lib.crand() * 3;
@@ -189,7 +188,7 @@ public class CL_newfx {
     static void BubbleTrail2(float[] start, float[] end, int dist) {
         float len;
         int i, j;
-        cparticle_t p;
+        TCParticle p;
         float dec;
 
         Math3D.VectorCopy(start, move);
@@ -209,10 +208,10 @@ public class CL_newfx {
             CL_fx.active_particles = p;
 
             Math3D.VectorClear(p.accel);
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
-            p.alphavel = -1.0f / (1 + Globals.rnd.nextFloat() * 0.1f);
+            p.alphavel = -1.0f / (1 + Context.rnd.nextFloat() * 0.1f);
             p.color = 4 + (Lib.rand() & 7);
             for (j = 0; j < 3; j++) {
                 p.org[j] = move[j] + Lib.crand() * 2;
@@ -234,7 +233,7 @@ public class CL_newfx {
     static void Heatbeam(float[] start, float[] forward) {
         float len;
         int j;
-        cparticle_t p;
+        TCParticle p;
         int i;
         float c, s;
         float ltime;
@@ -251,15 +250,15 @@ public class CL_newfx {
 
         // FIXME - pmm - these might end up using old values?
         //		MakeNormalVectors (vec, right, up);
-        Math3D.VectorCopy(Globals.cl.v_right, right);
-        Math3D.VectorCopy(Globals.cl.v_up, up);
-        if (Globals.vidref_val == Defines.VIDREF_GL) { // GL mode
+        Math3D.VectorCopy(Context.cl.v_right, right);
+        Math3D.VectorCopy(Context.cl.v_up, up);
+        if (Context.vidref_val == Defines.VIDREF_GL) { // GL mode
             Math3D.VectorMA(move, -0.5f, right, move);
             Math3D.VectorMA(move, -0.5f, up, move);
         }
         // otherwise assume SOFT
 
-        ltime = (float) Globals.cl.time / 1000.0f;
+        ltime = (float) Context.cl.time / 1000.0f;
         start_pt = ltime * 96.0f % step;
         Math3D.VectorMA(move, start_pt, vec, move);
 
@@ -282,7 +281,7 @@ public class CL_newfx {
                 p.next = CL_fx.active_particles;
                 CL_fx.active_particles = p;
 
-                p.time = Globals.cl.time;
+                p.time = Context.cl.time;
                 Math3D.VectorClear(p.accel);
                 //				rot+= fmod(ltime, 12.0)*M_PI;
                 //				c = cos(rot)/2.0;
@@ -328,7 +327,7 @@ public class CL_newfx {
     static void ParticleSteamEffect(float[] org, float[] dir, int color,
             int count, int magnitude) {
         int i, j;
-        cparticle_t p;
+        TCParticle p;
         float d;
 
         //		vectoangles2 (dir, angle_dir);
@@ -344,7 +343,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = color + (Lib.rand() & 7);
 
             for (j = 0; j < 3; j++) {
@@ -361,7 +360,7 @@ public class CL_newfx {
             p.accel[2] = -CL_fx.PARTICLE_GRAVITY / 2;
             p.alpha = 1.0f;
 
-            p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+            p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
         }
     }
 
@@ -371,7 +370,7 @@ public class CL_newfx {
     //	  float[] org, float[] dir, int color, int count, int magnitude)
     {
         int i, j;
-        cparticle_t p;
+        TCParticle p;
         float d;
 
         //		vectoangles2 (dir, angle_dir);
@@ -388,7 +387,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = self.color + (Lib.rand() & 7);
 
             for (j = 0; j < 3; j++) {
@@ -405,7 +404,7 @@ public class CL_newfx {
             p.accel[2] = -CL_fx.PARTICLE_GRAVITY / 2;
             p.alpha = 1.0f;
 
-            p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+            p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
         }
         self.nextthink += self.thinkinterval;
     }
@@ -419,7 +418,7 @@ public class CL_newfx {
      */
     static void TrackerTrail(float[] start, float[] end, int particleColor) {
         float len;
-        cparticle_t p;
+        TCParticle p;
         int dec;
         float dist;
 
@@ -446,7 +445,7 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
             p.alphavel = -2.0f;
@@ -466,7 +465,7 @@ public class CL_newfx {
     // stack variable
     // dir
     static void Tracker_Shell(float[] origin) {
-        cparticle_t p;
+        TCParticle p;
 
         for (int i = 0; i < 300; i++) {
             if (CL_fx.free_particles == null)
@@ -477,7 +476,7 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
             p.alphavel = CL_fx.INSTANT_PARTICLE;
@@ -495,7 +494,7 @@ public class CL_newfx {
     // stack variable
     // dir
     static void MonsterPlasma_Shell(float[] origin) {
-        cparticle_t p;
+        TCParticle p;
 
         for (int i = 0; i < 40; i++) {
             if (CL_fx.free_particles == null)
@@ -506,7 +505,7 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
             p.alphavel = CL_fx.INSTANT_PARTICLE;
@@ -529,11 +528,11 @@ public class CL_newfx {
     // dir
     static void Widowbeamout(cl_sustain_t self) {
         int i;
-        cparticle_t p;
+        TCParticle p;
 
         float ratio;
 
-        ratio = 1.0f - (((float) self.endtime - (float) Globals.cl.time) / 2100.0f);
+        ratio = 1.0f - (((float) self.endtime - (float) Context.cl.time) / 2100.0f);
 
         for (i = 0; i < 300; i++) {
             if (CL_fx.free_particles == null)
@@ -544,7 +543,7 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
             p.alphavel = CL_fx.INSTANT_PARTICLE;
@@ -567,11 +566,11 @@ public class CL_newfx {
     // dir
     static void Nukeblast(cl_sustain_t self) {
         int i;
-        cparticle_t p;
+        TCParticle p;
 
         float ratio;
 
-        ratio = 1.0f - (((float) self.endtime - (float) Globals.cl.time) / 1000.0f);
+        ratio = 1.0f - (((float) self.endtime - (float) Context.cl.time) / 1000.0f);
 
         for (i = 0; i < 700; i++) {
             if (CL_fx.free_particles == null)
@@ -582,7 +581,7 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
             p.alphavel = CL_fx.INSTANT_PARTICLE;
@@ -605,7 +604,7 @@ public class CL_newfx {
     // dir
     static void WidowSplash(float[] org) {
         int i;
-        cparticle_t p;
+        TCParticle p;
 
         for (i = 0; i < 256; i++) {
             if (CL_fx.free_particles == null)
@@ -615,7 +614,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = ws_colortable[Lib.rand() & 3];
 
             dir[0] = Lib.crand();
@@ -623,12 +622,12 @@ public class CL_newfx {
             dir[2] = Lib.crand();
             Math3D.VectorNormalize(dir);
             Math3D.VectorMA(org, 45.0f, dir, p.org);
-            Math3D.VectorMA(Globals.vec3_origin, 40.0f, dir, p.vel);
+            Math3D.VectorMA(Context.vec3_origin, 40.0f, dir, p.vel);
 
             p.accel[0] = p.accel[1] = 0;
             p.alpha = 1.0f;
 
-            p.alphavel = -0.8f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+            p.alphavel = -0.8f / (0.5f + Context.rnd.nextFloat() * 0.3f);
         }
 
     }
@@ -643,7 +642,7 @@ public class CL_newfx {
     static void TagTrail(float[] start, float[] end, float color) {
         float len;
         int j;
-        cparticle_t p;
+        TCParticle p;
         int dec;
 
         Math3D.VectorCopy(start, move);
@@ -664,10 +663,10 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
-            p.alphavel = -1.0f / (0.8f + Globals.rnd.nextFloat() * 0.2f);
+            p.alphavel = -1.0f / (0.8f + Context.rnd.nextFloat() * 0.2f);
             p.color = color;
             for (j = 0; j < 3; j++) {
                 p.org[j] = move[j] + Lib.crand() * 16;
@@ -684,7 +683,7 @@ public class CL_newfx {
      */
     static void ColorExplosionParticles(float[] org, int color, int run) {
         int i, j;
-        cparticle_t p;
+        TCParticle p;
 
         for (i = 0; i < 128; i++) {
             if (CL_fx.free_particles == null)
@@ -694,7 +693,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = color + (Lib.rand() % run);
 
             for (j = 0; j < 3; j++) {
@@ -706,7 +705,7 @@ public class CL_newfx {
             p.accel[2] = -CL_fx.PARTICLE_GRAVITY;
             p.alpha = 1.0f;
 
-            p.alphavel = -0.4f / (0.6f + Globals.rnd.nextFloat() * 0.2f);
+            p.alphavel = -0.4f / (0.6f + Context.rnd.nextFloat() * 0.2f);
         }
     }
 
@@ -719,7 +718,7 @@ public class CL_newfx {
     static void ParticleSmokeEffect(float[] org, float[] dir, int color,
             int count, int magnitude) {
         int i, j;
-        cparticle_t p;
+        TCParticle p;
         float d;
 
         Math3D.MakeNormalVectors(dir, r, u);
@@ -732,7 +731,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = color + (Lib.rand() & 7);
 
             for (j = 0; j < 3; j++) {
@@ -748,7 +747,7 @@ public class CL_newfx {
             p.accel[0] = p.accel[1] = p.accel[2] = 0;
             p.alpha = 1.0f;
 
-            p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+            p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
         }
     }
 
@@ -759,7 +758,7 @@ public class CL_newfx {
      */
     static void BlasterParticles2(float[] org, float[] dir, long color) {
         int i, j;
-        cparticle_t p;
+        TCParticle p;
         float d;
         int count;
 
@@ -772,7 +771,7 @@ public class CL_newfx {
             p.next = CL_fx.active_particles;
             CL_fx.active_particles = p;
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
             p.color = color + (Lib.rand() & 7);
 
             d = Lib.rand() & 15;
@@ -785,7 +784,7 @@ public class CL_newfx {
             p.accel[2] = -CL_fx.PARTICLE_GRAVITY;
             p.alpha = 1.0f;
 
-            p.alphavel = -1.0f / (0.5f + Globals.rnd.nextFloat() * 0.3f);
+            p.alphavel = -1.0f / (0.5f + Context.rnd.nextFloat() * 0.3f);
         }
     }
 
@@ -799,7 +798,7 @@ public class CL_newfx {
     static void BlasterTrail2(float[] start, float[] end) {
         float len;
         int j;
-        cparticle_t p;
+        TCParticle p;
         int dec;
 
         Math3D.VectorCopy(start, move);
@@ -821,10 +820,10 @@ public class CL_newfx {
             CL_fx.active_particles = p;
             Math3D.VectorClear(p.accel);
 
-            p.time = Globals.cl.time;
+            p.time = Context.cl.time;
 
             p.alpha = 1.0f;
-            p.alphavel = -1.0f / (0.3f + Globals.rnd.nextFloat() * 0.2f);
+            p.alphavel = -1.0f / (0.3f + Context.rnd.nextFloat() * 0.2f);
             p.color = 0xd0;
             for (j = 0; j < 3; j++) {
                 p.org[j] = move[j] + Lib.crand();

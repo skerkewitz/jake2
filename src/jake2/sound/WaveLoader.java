@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sound;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.io.FileSystem;
 
 /**
@@ -73,7 +73,7 @@ public class WaveLoader {
 		byte[] data = FileSystem.LoadFile(namebuffer);
 
 		if (data == null) {
-			Com.DPrintf("Couldn't load " + namebuffer + "\n");
+			Command.DPrintf("Couldn't load " + namebuffer + "\n");
 			return null;
 		}
 		
@@ -83,7 +83,7 @@ public class WaveLoader {
 
 		if (info.channels != 1)
 		{
-			Com.Printf(s.getName() + " is a stereo sample - ignoring\n");
+			Command.Printf(s.getName() + " is a stereo sample - ignoring\n");
 			return null;
 		}
 
@@ -99,7 +99,7 @@ public class WaveLoader {
 		// TODO: handle max sample bytes with a cvar
 		if (len >= maxsamplebytes)
 		{
-			Com.Printf(s.getName() + " is too long: " + len + " bytes?! ignoring.\n");
+			Command.Printf(s.getName() + " is too long: " + len + " bytes?! ignoring.\n");
 			return null;
 		}
 
@@ -232,7 +232,7 @@ public class WaveLoader {
 				return;
 			}
 			if (iff_chunk_len > 1024*1024) {
-				Com.Println(" Warning: FindNextChunk: length is past the 1 meg sanity limit");
+				Command.Println(" Warning: FindNextChunk: length is past the 1 meg sanity limit");
 			}
 			data_p -= 8;
 			last_chunk = data_p + 8 + ((iff_chunk_len + 1) & ~1);
@@ -271,7 +271,7 @@ public class WaveLoader {
 		FindChunk("RIFF");
 		String s = new String(data_b, data_p + 8, 4);
 		if (!s.equals("WAVE")) {
-			Com.Printf("Missing RIFF/WAVE chunks\n");
+			Command.Printf("Missing RIFF/WAVE chunks\n");
 			return info;
 		}
 
@@ -281,13 +281,13 @@ public class WaveLoader {
 
 		FindChunk("fmt ");
 		if (data_p == 0) {
-			Com.Printf("Missing fmt chunk\n");
+			Command.Printf("Missing fmt chunk\n");
 			return info;
 		}
 		data_p += 8;
 		format = GetLittleShort();
 		if (format != 1) {
-			Com.Printf("Microsoft PCM format only\n");
+			Command.Printf("Microsoft PCM format only\n");
 			return info;
 		}
 
@@ -323,7 +323,7 @@ public class WaveLoader {
 		//	   find data chunk
 		FindChunk("data");
 		if (data_p == 0) {
-			Com.Printf("Missing data chunk\n");
+			Command.Printf("Missing data chunk\n");
 			return info;
 		}
 
@@ -332,7 +332,7 @@ public class WaveLoader {
 
 		if (info.samples != 0) {
 			if (samples < info.samples)
-				Com.Error(Defines.ERR_DROP, "SoundDriver " + name + " has a bad loop length");
+				Command.Error(Defines.ERR_DROP, "SoundDriver " + name + " has a bad loop length");
 		} else {
 			info.samples = samples;
 			if (info.loopstart > 0) info.samples -= info.loopstart;

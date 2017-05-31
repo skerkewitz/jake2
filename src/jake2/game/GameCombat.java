@@ -24,8 +24,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
-import jake2.qcommon.Com;
+import jake2.client.Context;
+import jake2.qcommon.Command;
 import jake2.util.Math3D;
 
 public class GameCombat {
@@ -44,15 +44,15 @@ public class GameCombat {
         if (targ.movetype == Defines.MOVETYPE_PUSH) {
             Math3D.VectorAdd(targ.absmin, targ.absmax, dest);
             Math3D.VectorScale(dest, 0.5f, dest);
-            trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                    Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
+            trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                    Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
             if (trace.fraction == 1.0f)
                 return true;
             return trace.ent == targ;
         }
     
-        trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                Globals.vec3_origin, targ.s.origin, inflictor,
+        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                Context.vec3_origin, targ.s.origin, inflictor,
                 Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
@@ -60,32 +60,32 @@ public class GameCombat {
         Math3D.VectorCopy(targ.s.origin, dest);
         dest[0] += 15.0;
         dest[1] += 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
         Math3D.VectorCopy(targ.s.origin, dest);
         dest[0] += 15.0;
         dest[1] -= 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
         Math3D.VectorCopy(targ.s.origin, dest);
         dest[0] -= 15.0;
         dest[1] += 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
         Math3D.VectorCopy(targ.s.origin, dest);
         dest[0] -= 15.0;
         dest[1] -= 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Globals.vec3_origin,
-                Globals.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
+        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+                Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         return trace.fraction == 1.0;
 
     }
@@ -95,7 +95,7 @@ public class GameCombat {
      */
     public static void Killed(edict_t targ, edict_t inflictor,
             edict_t attacker, int damage, float[] point) {
-        Com.DPrintf("Killing a " + targ.classname + "\n");
+        Command.DPrintf("Killing a " + targ.classname + "\n");
         if (targ.health < -999)
             targ.health = -999;
     
@@ -375,7 +375,7 @@ public class GameCombat {
                 if (CanDamage(ent, inflictor)) {
                     Math3D.VectorSubtract(ent.s.origin, inflictor.s.origin, dir);
                     T_Damage(ent, inflictor, attacker, dir, inflictor.s.origin,
-                            Globals.vec3_origin, (int) points, (int) points,
+                            Context.vec3_origin, (int) points, (int) points,
                             Defines.DAMAGE_RADIUS, mod);
                 }
             }

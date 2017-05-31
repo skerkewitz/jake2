@@ -26,9 +26,9 @@
 package jake2.sys;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.client.CL;
-import jake2.qcommon.Com;
+import jake2.client.Context;
+import jake2.qcommon.Command;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -158,12 +158,12 @@ public final class QSystem implements Defines {
             // the converted pattern
             String regexpr = sb.toString();
 
-            //Com.DPrintf("pattern: " + pattern + " regexpr: " + regexpr +
+            //Command.DPrintf("pattern: " + pattern + " regexpr: " + regexpr +
             // '\n');
             try {
                 Pattern.compile(regexpr);
             } catch (PatternSyntaxException e) {
-                Com.Printf("invalid file pattern ( *.* is used instead )\n");
+                Command.Printf("invalid file pattern ( *.* is used instead )\n");
                 return ".*"; // the default
             }
             return regexpr;
@@ -219,10 +219,10 @@ public final class QSystem implements Defines {
     }
 
     public static void SendKeyEvents() {
-		Globals.re.getKeyboardHandler().Update();
+		Context.re.getKeyboardHandler().Update();
 
         // grab frame time
-        Globals.sys_frame_time = Timer.Milliseconds();
+        Context.sys_frame_time = Timer.Milliseconds();
     }
 
     public static String GetClipboardData() {
@@ -231,7 +231,7 @@ public final class QSystem implements Defines {
     }
 
     public static void ConsoleOutput(String msg) {
-        if (Globals.nostdout != null && Globals.nostdout.value != 0)
+        if (Context.nostdout != null && Context.nostdout.value != 0)
             return;
 
         java.lang.System.out.print(msg);

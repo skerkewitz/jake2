@@ -26,7 +26,6 @@
 package jake2.render;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.Jake2;
 import jake2.client.*;
 import jake2.game.Cmd;

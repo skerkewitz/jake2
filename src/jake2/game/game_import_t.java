@@ -69,7 +69,7 @@ public class game_import_t {
     }
 
     public void error(String err) {
-        Com.Error(Defines.ERR_FATAL, err);
+        Command.Error(Defines.ERR_FATAL, err);
     }
 
     public void error(int level, String err) {

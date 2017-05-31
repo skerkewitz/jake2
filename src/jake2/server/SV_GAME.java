@@ -23,7 +23,7 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.qcommon.*;
 import jake2.util.Math3D;
@@ -63,7 +63,7 @@ public class SV_GAME {
      * Debug print to server console.
      */
     public static void PF_dprintf(String fmt) {
-        Com.Printf(fmt);
+        Command.Printf(fmt);
     }
 
 
@@ -86,13 +86,13 @@ public class SV_GAME {
         if (ent != null) {
             n = ent.index;
             if (n < 1 || n > SV_MAIN.maxclients.value)
-                Com.Error(Defines.ERR_DROP, "cprintf to a non-client");
+                Command.Error(Defines.ERR_DROP, "cprintf to a non-client");
         }
 
         if (ent != null)
             SV_SEND.SV_ClientPrintf(SV_INIT.svs.clients[n - 1], level, fmt);
         else
-            Com.Printf(fmt);
+            Command.Printf(fmt);
     }
 
     /**
@@ -118,11 +118,11 @@ public class SV_GAME {
      * Abort the server with a game error.
      */
     public static void PF_error(String fmt) {
-        Com.Error(Defines.ERR_DROP, "Game Error: " + fmt);
+        Command.Error(Defines.ERR_DROP, "Game Error: " + fmt);
     }
 
     public static void PF_error(int level, String fmt) {
-        Com.Error(level, fmt);
+        Command.Error(level, fmt);
     }
 
     /**
@@ -135,7 +135,7 @@ public class SV_GAME {
         cmodel_t mod;
 
         if (name == null)
-            Com.Error(Defines.ERR_DROP, "PF_setmodel: NULL");
+            Command.Error(Defines.ERR_DROP, "PF_setmodel: NULL");
 
         i = SV_INIT.SV_ModelIndex(name);
 
@@ -155,7 +155,7 @@ public class SV_GAME {
      */
     public static void PF_Configstring(int index, String val) {
         if (index < 0 || index >= Defines.MAX_CONFIGSTRINGS)
-            Com.Error(Defines.ERR_DROP, "configstring: bad index " + index
+            Command.Error(Defines.ERR_DROP, "configstring: bad index " + index
                     + "\n");
 
         if (val == null)
@@ -171,7 +171,7 @@ public class SV_GAME {
             SV_INIT.sv.multicast.writeShort(index);
             SV_INIT.sv.multicast.writeString(val);
 
-            SV_SEND.SV_Multicast(Globals.vec3_origin, Defines.MULTICAST_ALL_R);
+            SV_SEND.SV_Multicast(Context.vec3_origin, Defines.MULTICAST_ALL_R);
         }
     }
 

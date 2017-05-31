@@ -24,7 +24,6 @@
 
 package jake2.client;
 
-import jake2.Globals;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
@@ -36,10 +35,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import static jake2.Defines.*;
+import static jake2.client.Context.*;
+
 /**
  * SCR
  */
-public final class SCR extends Globals {
+public final class SCR {
 
     //	cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
@@ -65,7 +67,7 @@ public final class SCR extends Globals {
 
     static int scr_draw_loading;
 
-    // scr_vrect ist in Globals definiert
+    // scr_vrect ist in Context definiert
     // position of render window on screen
 
     static TVar scr_viewsize;
@@ -239,7 +241,7 @@ public final class SCR extends Globals {
         }
 
         // echo it to the console
-        Com
+        Command
                 .Printf("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
 
         s = 0;
@@ -260,7 +262,7 @@ public final class SCR extends Globals {
 
                 line.append('\n');
 
-                Com.Printf(line.toString());
+                Command.Printf(line.toString());
 
                 while (s < str.length() && str.charAt(s) != '\n')
                     s++;
@@ -270,7 +272,7 @@ public final class SCR extends Globals {
                 s++; // skip the \n
             } while (true);
         }
-        Com
+        Command
                 .Printf("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
         Console.ClearNotify();
     }
@@ -391,7 +393,7 @@ public final class SCR extends Globals {
         float[] axis = { 0, 0, 0 };
 
         if (Cmd.Argc() < 2) {
-            Com.Printf("Usage: sky <basename> <rotate> <axis x y z>\n");
+            Command.Printf("Usage: sky <basename> <rotate> <axis x y z>\n");
             return;
         }
         if (Cmd.Argc() > 2)
@@ -636,7 +638,7 @@ public final class SCR extends Globals {
 
         stop = Timer.Milliseconds();
         time = (stop - start) / 1000.0f;
-        Com.Printf("%f seconds (%f fps)\n", time, 128.0f / time);
+        Command.Printf("%f seconds (%f fps)\n", time, 128.0f / time);
     }
 
     static void DirtyScreen() {
@@ -928,7 +930,7 @@ public final class SCR extends Globals {
                 parser.next();
                 value = cl.frame.playerstate.stats[parser.tokenAsInt()];
                 if (value >= MAX_IMAGES)
-                    Com.Error(ERR_DROP, "Pic >= MAX_IMAGES");
+                    Command.Error(ERR_DROP, "Pic >= MAX_IMAGES");
                 if (cl.configstrings[CS_IMAGES + value] != null) {
                     AddDirtyPoint(x, y);
                     AddDirtyPoint(x + 23, y + 23);
@@ -950,7 +952,7 @@ public final class SCR extends Globals {
                 parser.next();
                 value = parser.tokenAsInt();
                 if (value >= MAX_CLIENTS || value < 0)
-                    Com.Error(ERR_DROP, "client >= MAX_CLIENTS");
+                    Command.Error(ERR_DROP, "client >= MAX_CLIENTS");
                 clientinfo_t ci = cl.clientinfo[value];
 
                 parser.next();
@@ -987,7 +989,7 @@ public final class SCR extends Globals {
                 parser.next();
                 value = parser.tokenAsInt();
                 if (value >= MAX_CLIENTS || value < 0)
-                    Com.Error(ERR_DROP, "client >= MAX_CLIENTS");
+                    Command.Error(ERR_DROP, "client >= MAX_CLIENTS");
                 clientinfo_t ci = cl.clientinfo[value];
 
                 parser.next();
@@ -999,7 +1001,7 @@ public final class SCR extends Globals {
                     ping = 999;
 
                 // sprintf(block, "%3d %3d %-12.12s", score, ping, ci->name);
-                String block = Com.sprintf("%3d %3d %-12.12s", score, ping, ci.name);
+                String block = Command.sprintf("%3d %3d %-12.12s", score, ping, ci.name);
 
                 if (value == cl.playernum)
                     Console.DrawAltString(x, y, block);
@@ -1084,10 +1086,10 @@ public final class SCR extends Globals {
                 parser.next();
                 int index = parser.tokenAsInt();
                 if (index < 0 || index >= MAX_CONFIGSTRINGS)
-                    Com.Error(ERR_DROP, "Bad stat_string index");
+                    Command.Error(ERR_DROP, "Bad stat_string index");
                 index = cl.frame.playerstate.stats[index];
                 if (index < 0 || index >= MAX_CONFIGSTRINGS)
-                    Com.Error(ERR_DROP, "Bad stat_string index");
+                    Command.Error(ERR_DROP, "Bad stat_string index");
                 Console.DrawString(x, y, cl.configstrings[index]);
                 continue;
             }
@@ -1174,12 +1176,12 @@ public final class SCR extends Globals {
         if (cls.disable_screen != 0) {
             if (Timer.Milliseconds() - cls.disable_screen > 120000) {
                 cls.disable_screen = 0;
-                Com.Printf("Loading plaque timed out.\n");
+                Command.Printf("Loading plaque timed out.\n");
             }
             return;
         }
 
-        if (!scr_initialized || !con.initialized)
+        if (!scr_initialized || !console.initialized)
             return; // not initialized yet
 
         /*
@@ -1273,7 +1275,7 @@ public final class SCR extends Globals {
             }
         }
 
-        Globals.re.EndFrame();
+        re.EndFrame();
     }
 
     /*
@@ -1304,7 +1306,7 @@ public final class SCR extends Globals {
 
     // wird anstelle von der richtigen UpdateScreen benoetigt
     public static void UpdateScreen() {
-        Globals.re.updateScreen(updateScreenCallback);
+        re.updateScreen(updateScreenCallback);
     }
 
     /*
@@ -1677,7 +1679,7 @@ public final class SCR extends Globals {
         }
 
         if (input != size && input != size + 1) {
-            Com.Printf("Decompression overread by " + (input - size));
+            Command.Printf("Decompression overread by " + (input - size));
         }
 
         return out;
@@ -1709,7 +1711,7 @@ public final class SCR extends Globals {
         // decompress the next frame
         int size = file.getInt();
         if (size > compressed.length || size < 1)
-            Com.Error(ERR_DROP, "Bad compressed frame size:" + size);
+            Command.Error(ERR_DROP, "Bad compressed frame size:" + size);
 
         file.get(compressed, 0, size);
 
@@ -1754,7 +1756,7 @@ public final class SCR extends Globals {
             return;
 
         if (frame > cl.cinematicframe + 1) {
-            Com.Println("Dropped frame: " + frame + " > "
+            Command.Println("Dropped frame: " + frame + " > "
                     + (cl.cinematicframe + 1));
             cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
         }
@@ -1786,7 +1788,7 @@ public final class SCR extends Globals {
         
         if (cls.key_dest == key_menu) {
             // blank screen and pause if menu is up
-            Globals.re.CinematicSetPalette(null);
+            re.CinematicSetPalette(null);
             cl.cinematicpalette_active = false;
             return true;
         }
@@ -1799,7 +1801,7 @@ public final class SCR extends Globals {
         if (cin.pic == null)
             return true;
         
-        Globals.re.DrawStretchRaw(0, 0, viddef.getWidth(), viddef.getHeight(), cin.width, cin.height, cin.pic);
+        re.DrawStretchRaw(0, 0, viddef.getWidth(), viddef.getHeight(), cin.width, cin.height, cin.pic);
         
         return true;
     }
@@ -1822,7 +1824,7 @@ public final class SCR extends Globals {
             EndLoadingPlaque();
             cls.state = ca_active;
             if (size == 0 || cin.pic == null) {
-                Com.Println(name + " not found.");
+                Command.Println(name + " not found.");
                 cl.cinematictime = 0;
             }
             return;
@@ -1831,7 +1833,7 @@ public final class SCR extends Globals {
         String name = "video/" + arg;
         cl.cinematic_file = FileSystem.LoadMappedFile(name);
         if (cl.cinematic_file == null) {
-            //Com.Error(ERR_DROP, "Cinematic " + name + " not found.\n");
+            //Command.Error(ERR_DROP, "Cinematic " + name + " not found.\n");
             FinishCinematic();
             // done
             cl.cinematictime = 0;

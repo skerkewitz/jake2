@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.monsters.M_Player;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -277,7 +277,7 @@ public class PlayerWeapon {
                 damage = 15;
             else
                 damage = 10;
-            Blaster_Fire(ent, Globals.vec3_origin, damage, false,
+            Blaster_Fire(ent, Context.vec3_origin, damage, false,
                     Defines.EF_BLASTER);
             ent.client.ps.gunframe++;
             return true;

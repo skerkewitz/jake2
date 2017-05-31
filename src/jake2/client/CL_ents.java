@@ -26,7 +26,6 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.Globals;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
@@ -59,20 +58,20 @@ public class CL_ents {
 		int i;
 		int number;
 
-		total = TSizeBuffer.ReadByte(Globals.net_message);
+		total = TSizeBuffer.ReadByte(Context.net_message);
 		if ((total & Defines.U_MOREBITS1) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Context.net_message);
 			total |= b << 8;
 		}
 		if ((total & Defines.U_MOREBITS2) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Context.net_message);
 			total |= b << 16;
 		}
 		if ((total & Defines.U_MOREBITS3) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Globals.net_message);
+			b = TSizeBuffer.ReadByte(Context.net_message);
 			total |= b << 24;
 		}
 
@@ -82,9 +81,9 @@ public class CL_ents {
 				bitcounts[i]++;
 
 		if ((total & Defines.U_NUMBER16) != 0)
-			number = TSizeBuffer.ReadShort(Globals.net_message);
+			number = TSizeBuffer.ReadShort(Context.net_message);
 		else
-			number = TSizeBuffer.ReadByte(Globals.net_message);
+			number = TSizeBuffer.ReadByte(Context.net_message);
 
 		bits[0] = total;
 
@@ -105,70 +104,70 @@ public class CL_ents {
 		to.number = number;
 
 		if ((bits & Defines.U_MODEL) != 0)
-			to.modelindex = TSizeBuffer.ReadByte(Globals.net_message);
+			to.modelindex = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL2) != 0)
-			to.modelindex2 = TSizeBuffer.ReadByte(Globals.net_message);
+			to.modelindex2 = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL3) != 0)
-			to.modelindex3 = TSizeBuffer.ReadByte(Globals.net_message);
+			to.modelindex3 = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL4) != 0)
-			to.modelindex4 = TSizeBuffer.ReadByte(Globals.net_message);
+			to.modelindex4 = TSizeBuffer.ReadByte(Context.net_message);
 
 		if ((bits & Defines.U_FRAME8) != 0)
-			to.frame = TSizeBuffer.ReadByte(Globals.net_message);
+			to.frame = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_FRAME16) != 0)
-			to.frame = TSizeBuffer.ReadShort(Globals.net_message);
+			to.frame = TSizeBuffer.ReadShort(Context.net_message);
 
 		if ((bits & Defines.U_SKIN8) != 0 && (bits & Defines.U_SKIN16) != 0) //used
 																			 // for
 																			 // laser
 																			 // colors
-			to.skinnum = TSizeBuffer.ReadLong(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_SKIN8) != 0)
-			to.skinnum = TSizeBuffer.ReadByte(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_SKIN16) != 0)
-			to.skinnum = TSizeBuffer.ReadShort(Globals.net_message);
+			to.skinnum = TSizeBuffer.ReadShort(Context.net_message);
 
 		if ((bits & (Defines.U_EFFECTS8 | Defines.U_EFFECTS16)) == (Defines.U_EFFECTS8 | Defines.U_EFFECTS16))
-			to.effects = TSizeBuffer.ReadLong(Globals.net_message);
+			to.effects = TSizeBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_EFFECTS8) != 0)
-			to.effects = TSizeBuffer.ReadByte(Globals.net_message);
+			to.effects = TSizeBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_EFFECTS16) != 0)
-			to.effects = TSizeBuffer.ReadShort(Globals.net_message);
+			to.effects = TSizeBuffer.ReadShort(Context.net_message);
 
 		if ((bits & (Defines.U_RENDERFX8 | Defines.U_RENDERFX16)) == (Defines.U_RENDERFX8 | Defines.U_RENDERFX16))
-			to.renderfx = TSizeBuffer.ReadLong(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_RENDERFX8) != 0)
-			to.renderfx = TSizeBuffer.ReadByte(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_RENDERFX16) != 0)
-			to.renderfx = TSizeBuffer.ReadShort(Globals.net_message);
+			to.renderfx = TSizeBuffer.ReadShort(Context.net_message);
 
 		if ((bits & Defines.U_ORIGIN1) != 0)
-			to.origin[0] = TSizeBuffer.ReadCoord(Globals.net_message);
+			to.origin[0] = TSizeBuffer.ReadCoord(Context.net_message);
 		if ((bits & Defines.U_ORIGIN2) != 0)
-			to.origin[1] = TSizeBuffer.ReadCoord(Globals.net_message);
+			to.origin[1] = TSizeBuffer.ReadCoord(Context.net_message);
 		if ((bits & Defines.U_ORIGIN3) != 0)
-			to.origin[2] = TSizeBuffer.ReadCoord(Globals.net_message);
+			to.origin[2] = TSizeBuffer.ReadCoord(Context.net_message);
 
 		if ((bits & Defines.U_ANGLE1) != 0)
-			to.angles[0] = TSizeBuffer.ReadAngle(Globals.net_message);
+			to.angles[0] = TSizeBuffer.ReadAngle(Context.net_message);
 		if ((bits & Defines.U_ANGLE2) != 0)
-			to.angles[1] = TSizeBuffer.ReadAngle(Globals.net_message);
+			to.angles[1] = TSizeBuffer.ReadAngle(Context.net_message);
 		if ((bits & Defines.U_ANGLE3) != 0)
-			to.angles[2] = TSizeBuffer.ReadAngle(Globals.net_message);
+			to.angles[2] = TSizeBuffer.ReadAngle(Context.net_message);
 
 		if ((bits & Defines.U_OLDORIGIN) != 0)
-			TSizeBuffer.ReadPos(Globals.net_message, to.old_origin);
+			TSizeBuffer.ReadPos(Context.net_message, to.old_origin);
 
 		if ((bits & Defines.U_SOUND) != 0)
-			to.sound = TSizeBuffer.ReadByte(Globals.net_message);
+			to.sound = TSizeBuffer.ReadByte(Context.net_message);
 
 		if ((bits & Defines.U_EVENT) != 0)
-			to.event = TSizeBuffer.ReadByte(Globals.net_message);
+			to.event = TSizeBuffer.ReadByte(Context.net_message);
 		else
 			to.event = 0;
 
 		if ((bits & Defines.U_SOLID) != 0)
-			to.solid = TSizeBuffer.ReadShort(Globals.net_message);
+			to.solid = TSizeBuffer.ReadShort(Context.net_message);
 	}
 
 	/*
@@ -181,10 +180,10 @@ public class CL_ents {
 		centity_t ent;
 		entity_state_t state;
 
-		ent = Globals.cl_entities[newnum];
+		ent = Context.cl_entities[newnum];
 
-		state = Globals.cl_parse_entities[Globals.cl.parse_entities & (Defines.MAX_PARSE_ENTITIES - 1)];
-		Globals.cl.parse_entities++;
+		state = Context.cl_parse_entities[Context.cl.parse_entities & (Defines.MAX_PARSE_ENTITIES - 1)];
+		Context.cl.parse_entities++;
 		frame.num_entities++;
 
 		ParseDelta(old, state, newnum, bits);
@@ -198,7 +197,7 @@ public class CL_ents {
 			ent.serverframe = -99;
 		}
 
-		if (ent.serverframe != Globals.cl.frame.serverframe - 1) { // wasn't in
+		if (ent.serverframe != Context.cl.frame.serverframe - 1) { // wasn't in
 																   // last
 																   // update, so
 																   // initialize
@@ -219,7 +218,7 @@ public class CL_ents {
 			ent.prev.set(ent.current);
 		}
 
-		ent.serverframe = Globals.cl.frame.serverframe;
+		ent.serverframe = Context.cl.frame.serverframe;
 		// Copy !
 		ent.current.set(state);
 	}
@@ -239,7 +238,7 @@ public class CL_ents {
 		entity_state_t oldstate = null;
 		int oldnum;
 
-		newframe.parse_entities = Globals.cl.parse_entities;
+		newframe.parse_entities = Context.cl.parse_entities;
 		newframe.num_entities = 0;
 
 		// delta from the entities present in oldframe
@@ -251,7 +250,7 @@ public class CL_ents {
 			//			if (oldindex >= oldframe.num_entities)
 			//				oldnum = 99999;
 			//			else {
-			oldstate = Globals.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
+			oldstate = Context.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
 			oldnum = oldstate.number;
 			//			}
 		}
@@ -263,18 +262,18 @@ public class CL_ents {
 			bits = iw[0];
 
 			if (newnum >= Defines.MAX_EDICTS)
-				Com.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: bad number:" + newnum);
+				Command.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: bad number:" + newnum);
 
-			if (Globals.net_message.readcount > Globals.net_message.cursize)
-				Com.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: end of message");
+			if (Context.net_message.readcount > Context.net_message.cursize)
+				Command.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: end of message");
 
 			if (0 == newnum)
 				break;
 
 			while (oldnum < newnum) { // one or more entities from the old
 									  // packet are unchanged
-				if (Globals.cl_shownet.value == 3)
-					Com.Printf("   unchanged: " + oldnum + "\n");
+				if (Context.cl_shownet.value == 3)
+					Command.Printf("   unchanged: " + oldnum + "\n");
 				DeltaEntity(newframe, oldnum, oldstate, 0);
 
 				oldindex++;
@@ -282,7 +281,7 @@ public class CL_ents {
 				if (oldindex >= oldframe.num_entities)
 					oldnum = 99999;
 				else {
-					oldstate = Globals.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
+					oldstate = Context.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
 					oldnum = oldstate.number;
 				}
 			}
@@ -290,25 +289,25 @@ public class CL_ents {
 			if ((bits & Defines.U_REMOVE) != 0) { // the entity present in
 												  // oldframe is not in the
 												  // current frame
-				if (Globals.cl_shownet.value == 3)
-					Com.Printf("   remove: " + newnum + "\n");
+				if (Context.cl_shownet.value == 3)
+					Command.Printf("   remove: " + newnum + "\n");
 				if (oldnum != newnum)
-					Com.Printf("U_REMOVE: oldnum != newnum\n");
+					Command.Printf("U_REMOVE: oldnum != newnum\n");
 
 				oldindex++;
 
 				if (oldindex >= oldframe.num_entities)
 					oldnum = 99999;
 				else {
-					oldstate = Globals.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
+					oldstate = Context.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
 					oldnum = oldstate.number;
 				}
 				continue;
 			}
 
 			if (oldnum == newnum) { // delta from previous state
-				if (Globals.cl_shownet.value == 3)
-					Com.Printf("   delta: " + newnum + "\n");
+				if (Context.cl_shownet.value == 3)
+					Command.Printf("   delta: " + newnum + "\n");
 				DeltaEntity(newframe, newnum, oldstate, bits);
 
 				oldindex++;
@@ -316,16 +315,16 @@ public class CL_ents {
 				if (oldindex >= oldframe.num_entities)
 					oldnum = 99999;
 				else {
-					oldstate = Globals.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
+					oldstate = Context.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
 					oldnum = oldstate.number;
 				}
 				continue;
 			}
 
 			if (oldnum > newnum) { // delta from baseline
-				if (Globals.cl_shownet.value == 3)
-					Com.Printf("   baseline: " + newnum + "\n");
-				DeltaEntity(newframe, newnum, Globals.cl_entities[newnum].baseline, bits);
+				if (Context.cl_shownet.value == 3)
+					Command.Printf("   baseline: " + newnum + "\n");
+				DeltaEntity(newframe, newnum, Context.cl_entities[newnum].baseline, bits);
 				continue;
 			}
 
@@ -334,8 +333,8 @@ public class CL_ents {
 		// any remaining entities in the old frame are copied over
 		while (oldnum != 99999) { // one or more entities from the old packet
 								  // are unchanged
-			if (Globals.cl_shownet.value == 3)
-				Com.Printf("   unchanged: " + oldnum + "\n");
+			if (Context.cl_shownet.value == 3)
+				Command.Printf("   unchanged: " + oldnum + "\n");
 			DeltaEntity(newframe, oldnum, oldstate, 0);
 
 			oldindex++;
@@ -343,7 +342,7 @@ public class CL_ents {
 			if (oldindex >= oldframe.num_entities)
 				oldnum = 99999;
 			else {
-				oldstate = Globals.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
+				oldstate = Context.cl_parse_entities[(oldframe.parse_entities + oldindex) & (Defines.MAX_PARSE_ENTITIES - 1)];
 				oldnum = oldstate.number;
 			}
 		}
@@ -367,100 +366,100 @@ public class CL_ents {
 			//memset (state, 0, sizeof(*state));
 			state.clear();
 
-		flags = TSizeBuffer.ReadShort(Globals.net_message);
+		flags = TSizeBuffer.ReadShort(Context.net_message);
 
 		//
 		// parse the pmove_state_t
 		//
 		if ((flags & Defines.PS_M_TYPE) != 0)
-			state.pmove.pm_type = TSizeBuffer.ReadByte(Globals.net_message);
+			state.pmove.pm_type = TSizeBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_M_ORIGIN) != 0) {
-			state.pmove.origin[0] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.origin[1] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.origin[2] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.origin[0] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.origin[1] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.origin[2] = TSizeBuffer.ReadShort(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_VELOCITY) != 0) {
-			state.pmove.velocity[0] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.velocity[1] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.velocity[2] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.velocity[0] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.velocity[1] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.velocity[2] = TSizeBuffer.ReadShort(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_TIME) != 0) {
-			state.pmove.pm_time = (byte) TSizeBuffer.ReadByte(Globals.net_message);
+			state.pmove.pm_time = (byte) TSizeBuffer.ReadByte(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_FLAGS) != 0)
-			state.pmove.pm_flags = (byte) TSizeBuffer.ReadByte(Globals.net_message);
+			state.pmove.pm_flags = (byte) TSizeBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_M_GRAVITY) != 0)
-			state.pmove.gravity = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.gravity = TSizeBuffer.ReadShort(Context.net_message);
 
 		if ((flags & Defines.PS_M_DELTA_ANGLES) != 0) {
-			state.pmove.delta_angles[0] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.delta_angles[1] = TSizeBuffer.ReadShort(Globals.net_message);
-			state.pmove.delta_angles[2] = TSizeBuffer.ReadShort(Globals.net_message);
+			state.pmove.delta_angles[0] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.delta_angles[1] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.delta_angles[2] = TSizeBuffer.ReadShort(Context.net_message);
 		}
 
-		if (Globals.cl.attractloop)
+		if (Context.cl.attractloop)
 			state.pmove.pm_type = Defines.PM_FREEZE; // demo playback
 
 		//
 		// parse the rest of the player_state_t
 		//
 		if ((flags & Defines.PS_VIEWOFFSET) != 0) {
-			state.viewoffset[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.viewoffset[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.viewoffset[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.viewoffset[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.viewoffset[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.viewoffset[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_VIEWANGLES) != 0) {
-			state.viewangles[0] = TSizeBuffer.ReadAngle16(Globals.net_message);
-			state.viewangles[1] = TSizeBuffer.ReadAngle16(Globals.net_message);
-			state.viewangles[2] = TSizeBuffer.ReadAngle16(Globals.net_message);
+			state.viewangles[0] = TSizeBuffer.ReadAngle16(Context.net_message);
+			state.viewangles[1] = TSizeBuffer.ReadAngle16(Context.net_message);
+			state.viewangles[2] = TSizeBuffer.ReadAngle16(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_KICKANGLES) != 0) {
 
-			state.kick_angles[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.kick_angles[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.kick_angles[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.kick_angles[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.kick_angles[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.kick_angles[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
 
 		}
 
 		if ((flags & Defines.PS_WEAPONINDEX) != 0) {
-			state.gunindex = TSizeBuffer.ReadByte(Globals.net_message);
+			state.gunindex = TSizeBuffer.ReadByte(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_WEAPONFRAME) != 0) {
-			state.gunframe = TSizeBuffer.ReadByte(Globals.net_message);
-			state.gunoffset[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.gunoffset[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.gunoffset[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[0] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[1] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
-			state.gunangles[2] = TSizeBuffer.ReadChar(Globals.net_message) * 0.25f;
+			state.gunframe = TSizeBuffer.ReadByte(Context.net_message);
+			state.gunoffset[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunoffset[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunoffset[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_BLEND) != 0) {
-			state.blend[0] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[1] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[2] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
-			state.blend[3] = TSizeBuffer.ReadByte(Globals.net_message) / 255.0f;
+			state.blend[0] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[1] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[2] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[3] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
 		}
 
 		if ((flags & Defines.PS_FOV) != 0)
-			state.fov = TSizeBuffer.ReadByte(Globals.net_message);
+			state.fov = TSizeBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_RDFLAGS) != 0)
-			state.rdflags = TSizeBuffer.ReadByte(Globals.net_message);
+			state.rdflags = TSizeBuffer.ReadByte(Context.net_message);
 
 		// parse stats
-		statbits = TSizeBuffer.ReadLong(Globals.net_message);
+		statbits = TSizeBuffer.ReadLong(Context.net_message);
 		for (i = 0; i < Defines.MAX_STATS; i++)
 			if ((statbits & (1 << i)) != 0)
-				state.stats[i] = TSizeBuffer.ReadShort(Globals.net_message);
+				state.stats[i] = TSizeBuffer.ReadShort(Context.net_message);
 	}
 
 	/*
@@ -474,7 +473,7 @@ public class CL_ents {
 
 		for (pnum = 0; pnum < frame.num_entities; pnum++) {
 			num = (frame.parse_entities + pnum) & (Defines.MAX_PARSE_ENTITIES - 1);
-			s1 = Globals.cl_parse_entities[num];
+			s1 = Context.cl_parse_entities[num];
 			if (s1.event != 0)
 				CL_fx.EntityEvent(s1);
 
@@ -493,91 +492,91 @@ public class CL_ents {
 		TFrame old;
 
 		//memset( cl.frame, 0, sizeof(cl.frame));
-		Globals.cl.frame.reset();
+		Context.cl.frame.reset();
 
-		Globals.cl.frame.serverframe = TSizeBuffer.ReadLong(Globals.net_message);
-		Globals.cl.frame.deltaframe = TSizeBuffer.ReadLong(Globals.net_message);
-		Globals.cl.frame.servertime = Globals.cl.frame.serverframe * 100;
+		Context.cl.frame.serverframe = TSizeBuffer.ReadLong(Context.net_message);
+		Context.cl.frame.deltaframe = TSizeBuffer.ReadLong(Context.net_message);
+		Context.cl.frame.servertime = Context.cl.frame.serverframe * 100;
 
 		// BIG HACK to let old demos continue to work
-		if (Globals.cls.serverProtocol != 26)
-			Globals.cl.surpressCount = TSizeBuffer.ReadByte(Globals.net_message);
+		if (Context.cls.serverProtocol != 26)
+			Context.cl.surpressCount = TSizeBuffer.ReadByte(Context.net_message);
 
-		if (Globals.cl_shownet.value == 3)
-			Com.Printf("   frame:" + Globals.cl.frame.serverframe + "  delta:" + Globals.cl.frame.deltaframe + "\n");
+		if (Context.cl_shownet.value == 3)
+			Command.Printf("   frame:" + Context.cl.frame.serverframe + "  delta:" + Context.cl.frame.deltaframe + "\n");
 
 		// If the frame is delta compressed from data that we
 		// no longer have available, we must suck up the rest of
 		// the frame, but not use it, then ask for a non-compressed
 		// message
-		if (Globals.cl.frame.deltaframe <= 0) {
-			Globals.cl.frame.valid = true; // uncompressed frame
+		if (Context.cl.frame.deltaframe <= 0) {
+			Context.cl.frame.valid = true; // uncompressed frame
 			old = null;
-			Globals.cls.demowaiting = false; // we can start recording now
+			Context.cls.demowaiting = false; // we can start recording now
 		} else {
-			old = Globals.cl.frames[Globals.cl.frame.deltaframe & Defines.UPDATE_MASK];
+			old = Context.cl.frames[Context.cl.frame.deltaframe & Defines.UPDATE_MASK];
 			if (!old.valid) { // should never happen
-				Com.Printf("Delta from invalid frame (not supposed to happen!).\n");
+				Command.Printf("Delta from invalid frame (not supposed to happen!).\n");
 			}
-			if (old.serverframe != Globals.cl.frame.deltaframe) { // The frame
+			if (old.serverframe != Context.cl.frame.deltaframe) { // The frame
 																  // that the
 																  // server did
 																  // the delta
 																  // from
 				// is too old, so we can't reconstruct it properly.
-				Com.Printf("Delta frame too old.\n");
-			} else if (Globals.cl.parse_entities - old.parse_entities > Defines.MAX_PARSE_ENTITIES - 128) {
-				Com.Printf("Delta parse_entities too old.\n");
+				Command.Printf("Delta frame too old.\n");
+			} else if (Context.cl.parse_entities - old.parse_entities > Defines.MAX_PARSE_ENTITIES - 128) {
+				Command.Printf("Delta parse_entities too old.\n");
 			} else
-				Globals.cl.frame.valid = true; // valid delta parse
+				Context.cl.frame.valid = true; // valid delta parse
 		}
 
 		// clamp time
-		if (Globals.cl.time > Globals.cl.frame.servertime)
-			Globals.cl.time = Globals.cl.frame.servertime;
-		else if (Globals.cl.time < Globals.cl.frame.servertime - 100)
-			Globals.cl.time = Globals.cl.frame.servertime - 100;
+		if (Context.cl.time > Context.cl.frame.servertime)
+			Context.cl.time = Context.cl.frame.servertime;
+		else if (Context.cl.time < Context.cl.frame.servertime - 100)
+			Context.cl.time = Context.cl.frame.servertime - 100;
 
 		// read areabits
-		len = TSizeBuffer.ReadByte(Globals.net_message);
-		TSizeBuffer.ReadData(Globals.net_message, Globals.cl.frame.areabits, len);
+		len = TSizeBuffer.ReadByte(Context.net_message);
+		TSizeBuffer.ReadData(Context.net_message, Context.cl.frame.areabits, len);
 
 		// read playerinfo
-		cmd = TSizeBuffer.ReadByte(Globals.net_message);
+		cmd = TSizeBuffer.ReadByte(Context.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_playerinfo)
-			Com.Error(Defines.ERR_DROP, "CL_ParseFrame: not playerinfo");
-		ParsePlayerstate(old, Globals.cl.frame);
+			Command.Error(Defines.ERR_DROP, "CL_ParseFrame: not playerinfo");
+		ParsePlayerstate(old, Context.cl.frame);
 
 		// read packet entities
-		cmd = TSizeBuffer.ReadByte(Globals.net_message);
+		cmd = TSizeBuffer.ReadByte(Context.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_packetentities)
-			Com.Error(Defines.ERR_DROP, "CL_ParseFrame: not packetentities");
+			Command.Error(Defines.ERR_DROP, "CL_ParseFrame: not packetentities");
 
-		ParsePacketEntities(old, Globals.cl.frame);
+		ParsePacketEntities(old, Context.cl.frame);
 
 		// save the frame off in the backup array for later delta comparisons
-		Globals.cl.frames[Globals.cl.frame.serverframe & Defines.UPDATE_MASK].set(Globals.cl.frame);
+		Context.cl.frames[Context.cl.frame.serverframe & Defines.UPDATE_MASK].set(Context.cl.frame);
 
-		if (Globals.cl.frame.valid) {
+		if (Context.cl.frame.valid) {
 			// getting a valid frame message ends the connection process
-			if (Globals.cls.state != Defines.ca_active) {
-				Globals.cls.state = Defines.ca_active;
-				Globals.cl.force_refdef = true;
+			if (Context.cls.state != Defines.ca_active) {
+				Context.cls.state = Defines.ca_active;
+				Context.cl.force_refdef = true;
 
-				Globals.cl.predicted_origin[0] = Globals.cl.frame.playerstate.pmove.origin[0] * 0.125f;
-				Globals.cl.predicted_origin[1] = Globals.cl.frame.playerstate.pmove.origin[1] * 0.125f;
-				Globals.cl.predicted_origin[2] = Globals.cl.frame.playerstate.pmove.origin[2] * 0.125f;
+				Context.cl.predicted_origin[0] = Context.cl.frame.playerstate.pmove.origin[0] * 0.125f;
+				Context.cl.predicted_origin[1] = Context.cl.frame.playerstate.pmove.origin[1] * 0.125f;
+				Context.cl.predicted_origin[2] = Context.cl.frame.playerstate.pmove.origin[2] * 0.125f;
 
-				Math3D.VectorCopy(Globals.cl.frame.playerstate.viewangles, Globals.cl.predicted_angles);
-				if (Globals.cls.disable_servercount != Globals.cl.servercount && Globals.cl.refresh_prepped)
+				Math3D.VectorCopy(Context.cl.frame.playerstate.viewangles, Context.cl.predicted_angles);
+				if (Context.cls.disable_servercount != Context.cl.servercount && Context.cl.refresh_prepped)
 					SCR.EndLoadingPlaque(); // get rid of loading plaque
 			}
-			Globals.cl.sound_prepped = true; // can start mixing ambient sounds
+			Context.cl.sound_prepped = true; // can start mixing ambient sounds
 
 			// fire entity events
-			FireEntityEvents(Globals.cl.frame);
+			FireEntityEvents(Context.cl.frame);
 			CL_pred.CheckPredictionError();
 		}
 	}
@@ -608,18 +607,18 @@ public class CL_ents {
 		int effects, renderfx;
 
 		// bonus items rotate at a fixed rate
-		autorotate = Math3D.anglemod(Globals.cl.time / 10);
+		autorotate = Math3D.anglemod(Context.cl.time / 10);
 
 		// brush models can auto animate their frames
-		autoanim = 2 * Globals.cl.time / 1000;
+		autoanim = 2 * Context.cl.time / 1000;
 
 		//memset( ent, 0, sizeof(ent));
 		ent.clear();
 
 		for (pnum = 0; pnum < frame.num_entities; pnum++) {
-			s1 = Globals.cl_parse_entities[(frame.parse_entities + pnum) & (Defines.MAX_PARSE_ENTITIES - 1)];
+			s1 = Context.cl_parse_entities[(frame.parse_entities + pnum) & (Defines.MAX_PARSE_ENTITIES - 1)];
 
-			cent = Globals.cl_entities[s1.number];
+			cent = Context.cl_entities[s1.number];
 
 			effects = s1.effects;
 			renderfx = s1.renderfx;
@@ -632,7 +631,7 @@ public class CL_ents {
 			else if ((effects & Defines.EF_ANIM_ALL) != 0)
 				ent.frame = autoanim;
 			else if ((effects & Defines.EF_ANIM_ALLFAST) != 0)
-				ent.frame = Globals.cl.time / 100;
+				ent.frame = Context.cl.time / 100;
 			else
 				ent.frame = s1.frame;
 
@@ -664,7 +663,7 @@ public class CL_ents {
 			//	   pmm
 			//	  ======
 			ent.oldframe = cent.prev.frame;
-			ent.backlerp = 1.0f - Globals.cl.lerpfrac;
+			ent.backlerp = 1.0f - Context.cl.lerpfrac;
 
 			if ((renderfx & (Defines.RF_FRAMELERP | Defines.RF_BEAM)) != 0) {
 				// step origin discretely, because the frames
@@ -673,7 +672,7 @@ public class CL_ents {
 				Math3D.VectorCopy(cent.current.old_origin, ent.oldorigin);
 			} else { // interpolate origin
 				for (i = 0; i < 3; i++) {
-					ent.origin[i] = ent.oldorigin[i] = cent.prev.origin[i] + Globals.cl.lerpfrac
+					ent.origin[i] = ent.oldorigin[i] = cent.prev.origin[i] + Context.cl.lerpfrac
 							* (cent.current.origin[i] - cent.prev.origin[i]);
 				}
 			}
@@ -685,33 +684,33 @@ public class CL_ents {
 													 // encoded in 32 bits of
 													 // skinnum (hack)
 				ent.alpha = 0.30f;
-				ent.skinnum = (s1.skinnum >> ((Globals.rnd.nextInt(4)) * 8)) & 0xff;
+				ent.skinnum = (s1.skinnum >> ((Context.rnd.nextInt(4)) * 8)) & 0xff;
 				Math.random();
 				ent.model = null;
 			} else {
 				// set skin
 				if (s1.modelindex == 255) { // use custom player skin
 					ent.skinnum = 0;
-					ci = Globals.cl.clientinfo[s1.skinnum & 0xff];
+					ci = Context.cl.clientinfo[s1.skinnum & 0xff];
 					ent.skin = ci.skin;
 					ent.model = ci.model;
 					if (null == ent.skin || null == ent.model) {
-						ent.skin = Globals.cl.baseclientinfo.skin;
-						ent.model = Globals.cl.baseclientinfo.model;
+						ent.skin = Context.cl.baseclientinfo.skin;
+						ent.model = Context.cl.baseclientinfo.model;
 					}
 
 					//	  ============
 					//	  PGM
 					if ((renderfx & Defines.RF_USE_DISGUISE) != 0) {
 						if (ent.skin.name.startsWith("players/male")) {
-							ent.skin = Globals.re.RegisterSkin("players/male/disguise.pcx");
-							ent.model = Globals.re.RegisterModel("players/male/tris.md2");
+							ent.skin = Context.re.RegisterSkin("players/male/disguise.pcx");
+							ent.model = Context.re.RegisterModel("players/male/tris.md2");
 						} else if (ent.skin.name.startsWith("players/female")) {
-							ent.skin = Globals.re.RegisterSkin("players/female/disguise.pcx");
-							ent.model = Globals.re.RegisterModel("players/female/tris.md2");
+							ent.skin = Context.re.RegisterSkin("players/female/disguise.pcx");
+							ent.model = Context.re.RegisterModel("players/female/tris.md2");
 						} else if (ent.skin.name.startsWith("players/cyborg")) {
-							ent.skin = Globals.re.RegisterSkin("players/cyborg/disguise.pcx");
-							ent.model = Globals.re.RegisterModel("players/cyborg/tris.md2");
+							ent.skin = Context.re.RegisterSkin("players/cyborg/disguise.pcx");
+							ent.model = Context.re.RegisterModel("players/cyborg/tris.md2");
 						}
 					}
 					//	  PGM
@@ -719,7 +718,7 @@ public class CL_ents {
 				} else {
 					ent.skinnum = s1.skinnum;
 					ent.skin = null;
-					ent.model = Globals.cl.model_draw[s1.modelindex];
+					ent.model = Context.cl.model_draw[s1.modelindex];
 				}
 			}
 
@@ -743,7 +742,7 @@ public class CL_ents {
 			// RAFAEL
 			else if ((effects & Defines.EF_SPINNINGLIGHTS) != 0) {
 				ent.angles[0] = 0;
-				ent.angles[1] = Math3D.anglemod(Globals.cl.time / 2) + s1.angles[1];
+				ent.angles[1] = Math3D.anglemod(Context.cl.time / 2) + s1.angles[1];
 				ent.angles[2] = 180;
 				{
 					float[] forward = { 0, 0, 0 };
@@ -759,11 +758,11 @@ public class CL_ents {
 				for (i = 0; i < 3; i++) {
 					a1 = cent.current.angles[i];
 					a2 = cent.prev.angles[i];
-					ent.angles[i] = Math3D.LerpAngle(a2, a1, Globals.cl.lerpfrac);
+					ent.angles[i] = Math3D.LerpAngle(a2, a1, Context.cl.lerpfrac);
 				}
 			}
 
-			if (s1.number == Globals.cl.playernum + 1) {
+			if (s1.number == Context.cl.playernum + 1) {
 				ent.flags |= Defines.RF_VIEWERMODEL; // only draw from mirrors
 				// FIXME: still pass to refresh
 
@@ -863,25 +862,25 @@ public class CL_ents {
 			// duplicate for linked models
 			if (s1.modelindex2 != 0) {
 				if (s1.modelindex2 == 255) { // custom weapon
-					ci = Globals.cl.clientinfo[s1.skinnum & 0xff];
+					ci = Context.cl.clientinfo[s1.skinnum & 0xff];
 					i = (s1.skinnum >> 8); // 0 is default weapon model
-					if (0 == Globals.cl_vwep.value || i > Defines.MAX_CLIENTWEAPONMODELS - 1)
+					if (0 == Context.cl_vwep.value || i > Defines.MAX_CLIENTWEAPONMODELS - 1)
 						i = 0;
 					ent.model = ci.weaponmodel[i];
 					if (null == ent.model) {
 						if (i != 0)
 							ent.model = ci.weaponmodel[0];
 						if (null == ent.model)
-							ent.model = Globals.cl.baseclientinfo.weaponmodel[0];
+							ent.model = Context.cl.baseclientinfo.weaponmodel[0];
 					}
 				} else
-					ent.model = Globals.cl.model_draw[s1.modelindex2];
+					ent.model = Context.cl.model_draw[s1.modelindex2];
 
 				// PMM - check for the defender sphere shell .. make it
 				// translucent
 				// replaces the previous version which used the high bit on
 				// modelindex2 to determine transparency
-				if (Globals.cl.configstrings[Defines.CS_MODELS + (s1.modelindex2)].equalsIgnoreCase("models/items/shell/tris.md2")) {
+				if (Context.cl.configstrings[Defines.CS_MODELS + (s1.modelindex2)].equalsIgnoreCase("models/items/shell/tris.md2")) {
 					ent.alpha = 0.32f;
 					ent.flags = Defines.RF_TRANSLUCENT;
 				}
@@ -895,11 +894,11 @@ public class CL_ents {
 				//PGM
 			}
 			if (s1.modelindex3 != 0) {
-				ent.model = Globals.cl.model_draw[s1.modelindex3];
+				ent.model = Context.cl.model_draw[s1.modelindex3];
 				V.AddEntity(ent);
 			}
 			if (s1.modelindex4 != 0) {
-				ent.model = Globals.cl.model_draw[s1.modelindex4];
+				ent.model = Context.cl.model_draw[s1.modelindex4];
 				V.AddEntity(ent);
 			}
 
@@ -961,7 +960,7 @@ public class CL_ents {
 				else if ((effects & Defines.EF_TRAP) != 0) {
 					ent.origin[2] += 32;
 					CL_fx.TrapParticles(ent);
-					i = (Globals.rnd.nextInt(100)) + 100;
+					i = (Context.rnd.nextInt(100)) + 100;
 					V.AddLight(ent.origin, i, 1, 0.8f, 0.1f);
 				} else if ((effects & Defines.EF_FLAG1) != 0) {
 					CL_fx.FlagTrail(cent.lerp_origin, ent.origin, 242);
@@ -979,9 +978,9 @@ public class CL_ents {
 					if ((effects & Defines.EF_TRACKER) != 0) {
 						float intensity;
 
-						intensity = (float) (50 + (500 * (Math.sin(Globals.cl.time / 500.0) + 1.0)));
+						intensity = (float) (50 + (500 * (Math.sin(Context.cl.time / 500.0) + 1.0)));
 						// FIXME - check out this effect in rendition
-						if (Globals.vidref_val == Defines.VIDREF_GL)
+						if (Context.vidref_val == Defines.VIDREF_GL)
 							V.AddLight(ent.origin, intensity, -1.0f, -1.0f, -1.0f);
 						else
 							V.AddLight(ent.origin, -1.0f * intensity, 1.0f, 1.0f, 1.0f);
@@ -992,7 +991,7 @@ public class CL_ents {
 				} else if ((effects & Defines.EF_TRACKER) != 0) {
 					CL_newfx.TrackerTrail(cent.lerp_origin, ent.origin, 0);
 					// FIXME - check out this effect in rendition
-					if (Globals.vidref_val == Defines.VIDREF_GL)
+					if (Context.vidref_val == Defines.VIDREF_GL)
 						V.AddLight(ent.origin, 200, -1, -1, -1);
 					else
 						V.AddLight(ent.origin, -200, 1, 1, 1);
@@ -1034,7 +1033,7 @@ public class CL_ents {
 		int i;
 
 		// allow the gun to be completely removed
-		if (0 == Globals.cl_gun.value)
+		if (0 == Context.cl_gun.value)
 			return;
 
 		// don't draw gun if in wide angle view
@@ -1044,24 +1043,24 @@ public class CL_ents {
 		//memset( gun, 0, sizeof(gun));
 		gun.clear();
 
-		if (Globals.gun_model != null)
-			gun.model = Globals.gun_model; // development tool
+		if (Context.gun_model != null)
+			gun.model = Context.gun_model; // development tool
 		else
-			gun.model = Globals.cl.model_draw[ps.gunindex];
+			gun.model = Context.cl.model_draw[ps.gunindex];
 
 		if (gun.model == null)
 			return;
 
 		// set up gun position
 		for (i = 0; i < 3; i++) {
-			gun.origin[i] = Globals.cl.refdef.vieworg[i] + ops.gunoffset[i] + Globals.cl.lerpfrac
+			gun.origin[i] = Context.cl.refdef.vieworg[i] + ops.gunoffset[i] + Context.cl.lerpfrac
 					* (ps.gunoffset[i] - ops.gunoffset[i]);
-			gun.angles[i] = Globals.cl.refdef.viewangles[i] + Math3D.LerpAngle(ops.gunangles[i], ps.gunangles[i], Globals.cl.lerpfrac);
+			gun.angles[i] = Context.cl.refdef.viewangles[i] + Math3D.LerpAngle(ops.gunangles[i], ps.gunangles[i], Context.cl.lerpfrac);
 		}
 
-		if (Globals.gun_frame != 0) {
-			gun.frame = Globals.gun_frame; // development tool
-			gun.oldframe = Globals.gun_frame; // development tool
+		if (Context.gun_frame != 0) {
+			gun.frame = Context.gun_frame; // development tool
+			gun.oldframe = Context.gun_frame; // development tool
 		} else {
 			gun.frame = ps.gunframe;
 			if (gun.frame == 0)
@@ -1071,7 +1070,7 @@ public class CL_ents {
 		}
 
 		gun.flags = Defines.RF_MINLIGHT | Defines.RF_DEPTHHACK | Defines.RF_WEAPONMODEL;
-		gun.backlerp = 1.0f - Globals.cl.lerpfrac;
+		gun.backlerp = 1.0f - Context.cl.lerpfrac;
 		Math3D.VectorCopy(gun.origin, gun.oldorigin); // don't lerp at all
 		V.AddEntity(gun);
 	}
@@ -1088,13 +1087,13 @@ public class CL_ents {
 		player_state_t ps, ops;
 
 		// find the previous frame to interpolate from
-		ps = Globals.cl.frame.playerstate;
+		ps = Context.cl.frame.playerstate;
 
-		i = (Globals.cl.frame.serverframe - 1) & Defines.UPDATE_MASK;
-		oldframe = Globals.cl.frames[i];
+		i = (Context.cl.frame.serverframe - 1) & Defines.UPDATE_MASK;
+		oldframe = Context.cl.frames[i];
 
-		if (oldframe.serverframe != Globals.cl.frame.serverframe - 1 || !oldframe.valid)
-			oldframe = Globals.cl.frame; // previous frame was dropped or
+		if (oldframe.serverframe != Context.cl.frame.serverframe - 1 || !oldframe.valid)
+			oldframe = Context.cl.frame; // previous frame was dropped or
 										 // involid
 		ops = oldframe.playerstate;
 
@@ -1104,53 +1103,53 @@ public class CL_ents {
 				|| Math.abs(ops.pmove.origin[2] - ps.pmove.origin[2]) > 256 * 8)
 			ops = ps; // don't interpolate
 
-		lerp = Globals.cl.lerpfrac;
+		lerp = Context.cl.lerpfrac;
 
 		// calculate the origin
-		if ((Globals.cl_predict.value != 0) && 0 == (Globals.cl.frame.playerstate.pmove.pm_flags & pmove_t.PMF_NO_PREDICTION)) { // use
+		if ((Context.cl_predict.value != 0) && 0 == (Context.cl.frame.playerstate.pmove.pm_flags & pmove_t.PMF_NO_PREDICTION)) { // use
 																																 // predicted
 																																 // values
 			int delta;
 
 			backlerp = 1.0f - lerp;
 			for (i = 0; i < 3; i++) {
-				Globals.cl.refdef.vieworg[i] = Globals.cl.predicted_origin[i] + ops.viewoffset[i] + Globals.cl.lerpfrac
-						* (ps.viewoffset[i] - ops.viewoffset[i]) - backlerp * Globals.cl.prediction_error[i];
+				Context.cl.refdef.vieworg[i] = Context.cl.predicted_origin[i] + ops.viewoffset[i] + Context.cl.lerpfrac
+						* (ps.viewoffset[i] - ops.viewoffset[i]) - backlerp * Context.cl.prediction_error[i];
 			}
 
 			// smooth out stair climbing
-			delta = Globals.cls.realtime - Globals.cl.predicted_step_time;
+			delta = Context.cls.realtime - Context.cl.predicted_step_time;
 			if (delta < 100)
-				Globals.cl.refdef.vieworg[2] -= Globals.cl.predicted_step * (100 - delta) * 0.01;
+				Context.cl.refdef.vieworg[2] -= Context.cl.predicted_step * (100 - delta) * 0.01;
 		} else { // just use interpolated values
 			for (i = 0; i < 3; i++)
-				Globals.cl.refdef.vieworg[i] = ops.pmove.origin[i] * 0.125f + ops.viewoffset[i] + lerp
+				Context.cl.refdef.vieworg[i] = ops.pmove.origin[i] * 0.125f + ops.viewoffset[i] + lerp
 						* (ps.pmove.origin[i] * 0.125f + ps.viewoffset[i] - (ops.pmove.origin[i] * 0.125f + ops.viewoffset[i]));
 		}
 
 		// if not running a demo or on a locked frame, add the local angle
 		// movement
-		if (Globals.cl.frame.playerstate.pmove.pm_type < Defines.PM_DEAD) { // use
+		if (Context.cl.frame.playerstate.pmove.pm_type < Defines.PM_DEAD) { // use
 																			// predicted
 																			// values
 			for (i = 0; i < 3; i++)
-				Globals.cl.refdef.viewangles[i] = Globals.cl.predicted_angles[i];
+				Context.cl.refdef.viewangles[i] = Context.cl.predicted_angles[i];
 		} else { // just use interpolated values
 			for (i = 0; i < 3; i++)
-				Globals.cl.refdef.viewangles[i] = Math3D.LerpAngle(ops.viewangles[i], ps.viewangles[i], lerp);
+				Context.cl.refdef.viewangles[i] = Math3D.LerpAngle(ops.viewangles[i], ps.viewangles[i], lerp);
 		}
 
 		for (i = 0; i < 3; i++)
-			Globals.cl.refdef.viewangles[i] += Math3D.LerpAngle(ops.kick_angles[i], ps.kick_angles[i], lerp);
+			Context.cl.refdef.viewangles[i] += Math3D.LerpAngle(ops.kick_angles[i], ps.kick_angles[i], lerp);
 
-		Math3D.AngleVectors(Globals.cl.refdef.viewangles, Globals.cl.v_forward, Globals.cl.v_right, Globals.cl.v_up);
+		Math3D.AngleVectors(Context.cl.refdef.viewangles, Context.cl.v_forward, Context.cl.v_right, Context.cl.v_up);
 
 		// interpolate field of view
-		Globals.cl.refdef.fov_x = ops.fov + lerp * (ps.fov - ops.fov);
+		Context.cl.refdef.fov_x = ops.fov + lerp * (ps.fov - ops.fov);
 
 		// don't interpolate blend color
 		for (i = 0; i < 4; i++)
-			Globals.cl.refdef.blend[i] = ps.blend[i];
+			Context.cl.refdef.blend[i] = ps.blend[i];
 
 		// add the weapon
 		AddViewWeapon(ps, ops);
@@ -1162,24 +1161,24 @@ public class CL_ents {
 	 * Emits all entities, particles, and lights to the refresh ===============
 	 */
 	static void AddEntities() {
-		if (Globals.cls.state != Defines.ca_active)
+		if (Context.cls.state != Defines.ca_active)
 			return;
 
-		if (Globals.cl.time > Globals.cl.frame.servertime) {
-			if (Globals.cl_showclamp.value != 0)
-				Com.Printf("high clamp " + (Globals.cl.time - Globals.cl.frame.servertime) + "\n");
-			Globals.cl.time = Globals.cl.frame.servertime;
-			Globals.cl.lerpfrac = 1.0f;
-		} else if (Globals.cl.time < Globals.cl.frame.servertime - 100) {
-			if (Globals.cl_showclamp.value != 0)
-				Com.Printf("low clamp " + (Globals.cl.frame.servertime - 100 - Globals.cl.time) + "\n");
-			Globals.cl.time = Globals.cl.frame.servertime - 100;
-			Globals.cl.lerpfrac = 0;
+		if (Context.cl.time > Context.cl.frame.servertime) {
+			if (Context.cl_showclamp.value != 0)
+				Command.Printf("high clamp " + (Context.cl.time - Context.cl.frame.servertime) + "\n");
+			Context.cl.time = Context.cl.frame.servertime;
+			Context.cl.lerpfrac = 1.0f;
+		} else if (Context.cl.time < Context.cl.frame.servertime - 100) {
+			if (Context.cl_showclamp.value != 0)
+				Command.Printf("low clamp " + (Context.cl.frame.servertime - 100 - Context.cl.time) + "\n");
+			Context.cl.time = Context.cl.frame.servertime - 100;
+			Context.cl.lerpfrac = 0;
 		} else
-			Globals.cl.lerpfrac = 1.0f - (Globals.cl.frame.servertime - Globals.cl.time) * 0.01f;
+			Context.cl.lerpfrac = 1.0f - (Context.cl.frame.servertime - Context.cl.time) * 0.01f;
 
-		if (Globals.cl_timedemo.value != 0)
-			Globals.cl.lerpfrac = 1.0f;
+		if (Context.cl_timedemo.value != 0)
+			Context.cl.lerpfrac = 1.0f;
 
 		/*
 		 * is ok.. CL_AddPacketEntities (cl.frame); CL_AddTEnts ();
@@ -1189,7 +1188,7 @@ public class CL_ents {
 		CalcViewValues();
 		// PMM - moved this here so the heat beam has the right values for the
 		// vieworg, and can lock the beam to the gun
-		AddPacketEntities(Globals.cl.frame);
+		AddPacketEntities(Context.cl.frame);
 
 		CL_tent.AddTEnts();
 		CL_fx.AddParticles();
@@ -1206,8 +1205,8 @@ public class CL_ents {
 		centity_t old;
 
 		if (ent < 0 || ent >= Defines.MAX_EDICTS)
-			Com.Error(Defines.ERR_DROP, "CL_GetEntitySoundOrigin: bad ent");
-		old = Globals.cl_entities[ent];
+			Command.Error(Defines.ERR_DROP, "CL_GetEntitySoundOrigin: bad ent");
+		old = Context.cl_entities[ent];
 		Math3D.VectorCopy(old.lerp_origin, org);
 
 		// FIXME: bmodel issues...

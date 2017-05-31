@@ -23,7 +23,7 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.qcommon.Com;
+import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -520,7 +520,7 @@ public class PlayerHud {
                 .append("\" "); // help 2
         sb.append("xv 50 yv 164 string2 \" kills     goals    secrets\" ");
         sb.append("xv 50 yv 172 string2 \"");
-        sb.append(Com.sprintf("%3i/%3i     %i/%i       %i/%i\" ",
+        sb.append(Command.sprintf("%3i/%3i     %i/%i       %i/%i\" ",
                 GameBase.level.killed_monsters,
                 GameBase.level.total_monsters,
                 GameBase.level.found_goals,

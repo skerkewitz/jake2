@@ -26,13 +26,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 /**
- * cparticle_t
+ * TCParticle
  *  
  * @author cwei
  */
-public class cparticle_t {
+public class TCParticle {
 
-	public cparticle_t next;
+	public TCParticle next;
 	public float time;
 
 	public float[] org = {0, 0, 0}; // vec3_t

@@ -23,7 +23,7 @@
 package jake2.game.monsters;
 
 import jake2.Defines;
-import jake2.Globals;
+import jake2.client.Context;
 import jake2.game.*;
 import jake2.game.EntDieAdapter;
 import jake2.game.EntInteractAdapter;
@@ -644,7 +644,7 @@ public class M_Parasite {
 
             Math3D.VectorSubtract(start, end, dir);
             GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.s.origin,
-                    Globals.vec3_origin, damage, 0,
+                    Context.vec3_origin, damage, 0,
                     Defines.DAMAGE_NO_KNOCKBACK, Defines.MOD_UNKNOWN);
             return true;
         }
