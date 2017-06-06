@@ -115,7 +115,7 @@ public final class CL {
         }
     };
 
-    static entity_state_t nullstate = new entity_state_t(null);
+    static TEntityState nullstate = new TEntityState(null);
 
     /**
      * Record_f
@@ -130,7 +130,7 @@ public final class CL {
                 byte buf_data[] = new byte[Defines.MAX_MSGLEN];
                 TSizeBuffer buf = new TSizeBuffer();
                 int i;
-                entity_state_t ent;
+                TEntityState ent;
 
                 if (Cmd.Argc() != 2) {
                     Command.Printf("record <demoname>\n");
@@ -666,14 +666,14 @@ public final class CL {
      */
     static void ClearState() {
         Sound.StopAllSounds();
-        CL_fx.ClearEffects();
+        CLEffects.ClearEffects();
         CL_tent.ClearTEnts();
 
         // wipe the entire cl structure
 
         Context.cl = new client_state_t();
         for (int i = 0; i < Context.cl_entities.length; i++) {
-            Context.cl_entities[i] = new centity_t();
+            Context.cl_entities[i] = new TClEentity();
         }
 
         Context.cls.netchan.message.clear();
@@ -1536,8 +1536,8 @@ public final class CL {
                 Context.cl.v_right, Context.cl.v_up);
 
         // advance local effects for next frame
-        CL_fx.RunDLights();
-        CL_fx.RunLightStyles();
+        CLEffects.RunDLights();
+        CLEffects.RunLightStyles();
         SCR.RunCinematic();
         SCR.RunConsole();
 

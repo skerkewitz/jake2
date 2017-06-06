@@ -33,8 +33,8 @@ public class GameWeapon {
     static EntTouchAdapter blaster_touch = new EntTouchAdapter() {
     	public String getID() { return "blaster_touch"; }
     
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             int mod;
     
             if (other == self.owner)
@@ -83,7 +83,7 @@ public class GameWeapon {
     
     static EntThinkAdapter Grenade_Explode = new EntThinkAdapter() {
     	public String getID() { return "Grenade_Explode"; }
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             float[] origin = { 0, 0, 0 };
             int mod;
     
@@ -143,8 +143,8 @@ public class GameWeapon {
     };
     static EntTouchAdapter Grenade_Touch = new EntTouchAdapter() {
     	public String getID() { return "Grenade_Touch"; }
-        public void touch(edict_t ent, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict ent, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             if (other == ent.owner)
                 return;
     
@@ -183,8 +183,8 @@ public class GameWeapon {
      */
     static EntTouchAdapter rocket_touch = new EntTouchAdapter() {
     	public String  getID() { return "rocket_touch"; }
-        public void touch(edict_t ent, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict ent, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             float[] origin = { 0, 0, 0 };
             int n;
     
@@ -244,8 +244,8 @@ public class GameWeapon {
      */
     static EntThinkAdapter bfg_explode = new EntThinkAdapter() {
     	public String getID() { return "bfg_explode"; }
-        public boolean think(edict_t self) {
-            edict_t ent;
+        public boolean think(TEntityDict self) {
+            TEntityDict ent;
             float points;
             float[] v = { 0, 0, 0 };
             float dist;
@@ -297,8 +297,8 @@ public class GameWeapon {
     
     static EntTouchAdapter bfg_touch = new EntTouchAdapter() {
     	public String getID() { return "bfg_touch"; }
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             if (other == self.owner)
                 return;
     
@@ -344,9 +344,9 @@ public class GameWeapon {
     
     static EntThinkAdapter bfg_think = new EntThinkAdapter() {
     	public String getID() { return "bfg_think"; }
-        public boolean think(edict_t self) {
-            edict_t ent;
-            edict_t ignore;
+        public boolean think(TEntityDict self) {
+            TEntityDict ent;
+            TEntityDict ignore;
             float[] point = { 0, 0, 0 };
             float[] dir = { 0, 0, 0 };
             float[] start = { 0, 0, 0 };
@@ -440,7 +440,7 @@ public class GameWeapon {
      * called. 
      * =================
      */
-    static void check_dodge(edict_t self, float[] start, float[] dir, int speed) {
+    static void check_dodge(TEntityDict self, float[] start, float[] dir, int speed) {
         float[] end = { 0, 0, 0 };
         float[] v = { 0, 0, 0 };
         trace_t tr;
@@ -469,8 +469,8 @@ public class GameWeapon {
      * Used for all impact (hit/punch/slash) attacks 
      * =================
      */
-    public static boolean fire_hit(edict_t self, float[] aim, int damage,
-            int kick) {
+    public static boolean fire_hit(TEntityDict self, float[] aim, int damage,
+                                   int kick) {
         trace_t tr;
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 }, up = { 0, 0, 0 };
         float[] v = { 0, 0, 0 };
@@ -542,9 +542,9 @@ public class GameWeapon {
      * This is an internal support routine used for bullet/pellet based weapons.
      * =================
      */
-    public static void fire_lead(edict_t self, float[] start, float[] aimdir,
-            int damage, int kick, int te_impact, int hspread, int vspread,
-            int mod) {
+    public static void fire_lead(TEntityDict self, float[] start, float[] aimdir,
+                                 int damage, int kick, int te_impact, int hspread, int vspread,
+                                 int mod) {
         trace_t tr;
         float[] dir = { 0, 0, 0 };
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 }, up = { 0, 0, 0 };
@@ -676,8 +676,8 @@ public class GameWeapon {
      * Fires a single round. Used for machinegun and chaingun. Would be fine for
      * pistols, rifles, etc.... =================
      */
-    public static void fire_bullet(edict_t self, float[] start, float[] aimdir,
-            int damage, int kick, int hspread, int vspread, int mod) {
+    public static void fire_bullet(TEntityDict self, float[] start, float[] aimdir,
+                                   int damage, int kick, int hspread, int vspread, int mod) {
         fire_lead(self, start, aimdir, damage, kick, Defines.TE_GUNSHOT,
                 hspread, vspread, mod);
     }
@@ -689,9 +689,9 @@ public class GameWeapon {
      * Shoots shotgun pellets. Used by shotgun and super shotgun.
      * =================
      */
-    public static void fire_shotgun(edict_t self, float[] start,
-            float[] aimdir, int damage, int kick, int hspread, int vspread,
-            int count, int mod) {
+    public static void fire_shotgun(TEntityDict self, float[] start,
+                                    float[] aimdir, int damage, int kick, int hspread, int vspread,
+                                    int count, int mod) {
         int i;
     
         for (i = 0; i < count; i++)
@@ -707,9 +707,9 @@ public class GameWeapon {
      * =================
      */
 
-    public static void fire_blaster(edict_t self, float[] start, float[] dir,
-            int damage, int speed, int effect, boolean hyper) {
-        edict_t bolt;
+    public static void fire_blaster(TEntityDict self, float[] start, float[] dir,
+                                    int damage, int speed, int effect, boolean hyper) {
+        TEntityDict bolt;
         trace_t tr;
     
         Math3D.VectorNormalize(dir);
@@ -756,10 +756,10 @@ public class GameWeapon {
         }
     }
 
-    public static void fire_grenade(edict_t self, float[] start,
-            float[] aimdir, int damage, int speed, float timer,
-            float damage_radius) {
-        edict_t grenade;
+    public static void fire_grenade(TEntityDict self, float[] start,
+                                    float[] aimdir, int damage, int speed, float timer,
+                                    float damage_radius) {
+        TEntityDict grenade;
         float[] dir = { 0, 0, 0 };
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 }, up = { 0, 0, 0 };
     
@@ -793,10 +793,10 @@ public class GameWeapon {
         GameBase.gi.linkentity(grenade);
     }
 
-    public static void fire_grenade2(edict_t self, float[] start,
-            float[] aimdir, int damage, int speed, float timer,
-            float damage_radius, boolean held) {
-        edict_t grenade;
+    public static void fire_grenade2(TEntityDict self, float[] start,
+                                     float[] aimdir, int damage, int speed, float timer,
+                                     float damage_radius, boolean held) {
+        TEntityDict grenade;
         float[] dir = { 0, 0, 0 };
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 }, up = { 0, 0, 0 };
     
@@ -842,9 +842,9 @@ public class GameWeapon {
         }
     }
 
-    public static void fire_rocket(edict_t self, float[] start, float[] dir,
-            int damage, int speed, float damage_radius, int radius_damage) {
-        edict_t rocket;
+    public static void fire_rocket(TEntityDict self, float[] start, float[] dir,
+                                   int damage, int speed, float damage_radius, int radius_damage) {
+        TEntityDict rocket;
     
         rocket = GameUtil.G_Spawn();
         Math3D.VectorCopy(start, rocket.s.origin);
@@ -880,12 +880,12 @@ public class GameWeapon {
      * fire_rail 
      * =================
      */
-    public static void fire_rail(edict_t self, float[] start, float[] aimdir,
-            int damage, int kick) {
+    public static void fire_rail(TEntityDict self, float[] start, float[] aimdir,
+                                 int damage, int kick) {
         float[] from = { 0, 0, 0 };
         float[] end = { 0, 0, 0 };
         trace_t tr = null;
-        edict_t ignore;
+        TEntityDict ignore;
         int mask;
         boolean water;
     
@@ -939,9 +939,9 @@ public class GameWeapon {
             PlayerWeapon.PlayerNoise(self, tr.endpos, Defines.PNOISE_IMPACT);
     }
 
-    public static void fire_bfg(edict_t self, float[] start, float[] dir,
-            int damage, int speed, float damage_radius) {
-        edict_t bfg;
+    public static void fire_bfg(TEntityDict self, float[] start, float[] dir,
+                                int damage, int speed, float damage_radius) {
+        TEntityDict bfg;
     
         bfg = GameUtil.G_Spawn();
         Math3D.VectorCopy(start, bfg.s.origin);

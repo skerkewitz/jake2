@@ -31,9 +31,9 @@ import jake2.util.Math3D;
 
 public class GameChase {
 
-    public static void UpdateChaseCam(edict_t ent) {
+    public static void UpdateChaseCam(TEntityDict ent) {
         float[] o = { 0, 0, 0 }, ownerv = { 0, 0, 0 }, goal = { 0, 0, 0 };
-        edict_t targ;
+        TEntityDict targ;
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
         trace_t trace;
         int i;
@@ -43,7 +43,7 @@ public class GameChase {
         // is our chase target gone?
         if (!ent.client.chase_target.inuse
                 || ent.client.chase_target.client.resp.spectator) {
-            edict_t old = ent.client.chase_target;
+            TEntityDict old = ent.client.chase_target;
             ChaseNext(ent);
             if (ent.client.chase_target == old) {
                 ent.client.chase_target = null;
@@ -124,9 +124,9 @@ public class GameChase {
         SV_WORLD.SV_LinkEdict(ent);
     }
 
-    public static void ChaseNext(edict_t ent) {
+    public static void ChaseNext(TEntityDict ent) {
         int i;
-        edict_t e;
+        TEntityDict e;
     
         if (null == ent.client.chase_target)
             return;
@@ -148,9 +148,9 @@ public class GameChase {
         ent.client.update_chase = true;
     }
 
-    public static void ChasePrev(edict_t ent) {
+    public static void ChasePrev(TEntityDict ent) {
         int i;
-        edict_t e;
+        TEntityDict e;
     
         if (ent.client.chase_target == null)
             return;
@@ -171,9 +171,9 @@ public class GameChase {
         ent.client.update_chase = true;
     }
 
-    public static void GetChaseTarget(edict_t ent) {
+    public static void GetChaseTarget(TEntityDict ent) {
         int i;
-        edict_t other;
+        TEntityDict other;
     
         for (i = 1; i <= GameBase.maxclients.value; i++) {
             other = GameBase.g_edicts[i];

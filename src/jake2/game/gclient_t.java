@@ -58,7 +58,7 @@ public class gclient_t
 
 	public boolean weapon_thunk;
 
-	public gitem_t newweapon;
+	public TGItem newweapon;
 
 	// sum up damage over an entire frame, so
 	// shotgun blasts give a single big kick
@@ -114,7 +114,7 @@ public class gclient_t
 
 	public float respawn_time; // can respawn when time > this
 
-	public edict_t chase_target; // player we are chasing
+	public TEntityDict chase_target; // player we are chasing
 	public boolean update_chase; // need to update chase info?
 
 	public int index;

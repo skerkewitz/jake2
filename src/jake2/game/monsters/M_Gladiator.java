@@ -32,7 +32,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -246,7 +246,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_idle = new EntThinkAdapter() {
     	public String getID() { return "gladiator_idle"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_idle, 1,
                     Defines.ATTN_IDLE, 0);
@@ -256,7 +256,7 @@ public class M_Gladiator {
 
     static EntInteractAdapter gladiator_sight = new EntInteractAdapter() {
     	public String getID() { return "gladiator_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
 
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
@@ -266,7 +266,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_search = new EntThinkAdapter() {
     	public String getID() { return "gladiator_search"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_search, 1,
                     Defines.ATTN_NORM, 0);
@@ -276,7 +276,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_cleaver_swing = new EntThinkAdapter() {
     	public String getID() { return "gladiator_cleaver_swing"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_cleaver_swing,
                     1, Defines.ATTN_NORM, 0);
@@ -298,7 +298,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_stand = new EntThinkAdapter() {
     	public String getID() { return "gladiator_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             self.monsterinfo.currentmove = gladiator_move_stand;
             return true;
@@ -328,7 +328,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_walk = new EntThinkAdapter() {
     	public String getID() { return "gladiator_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             self.monsterinfo.currentmove = gladiator_move_walk;
 
@@ -349,7 +349,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_run = new EntThinkAdapter() {
     	public String getID() { return "gladiator_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = gladiator_move_stand;
@@ -362,7 +362,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter GaldiatorMelee = new EntThinkAdapter() {
     	public String getID() { return "GaldiatorMelee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] aim = { 0, 0, 0 };
 
@@ -401,7 +401,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_melee = new EntThinkAdapter() {
     	public String getID() { return "gladiator_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             self.monsterinfo.currentmove = gladiator_move_attack_melee;
             return true;
@@ -410,7 +410,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter GladiatorGun = new EntThinkAdapter() {
     	public String getID() { return "GladiatorGun"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] start = { 0, 0, 0 };
 
@@ -451,7 +451,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_attack = new EntThinkAdapter() {
     	public String getID() { return "gladiator_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float range;
             float[] v = { 0, 0, 0 };
@@ -498,7 +498,7 @@ public class M_Gladiator {
 
     static EntPainAdapter gladiator_pain = new EntPainAdapter() {
     	public String getID() { return "gladiator_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
 
             if (self.health < (self.max_health / 2))
                 self.s.skinnum = 1;
@@ -532,7 +532,7 @@ public class M_Gladiator {
 
     static EntThinkAdapter gladiator_dead = new EntThinkAdapter() {
     	public String getID() { return "gladiator_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
@@ -573,8 +573,8 @@ public class M_Gladiator {
 
     static EntDieAdapter gladiator_die = new EntDieAdapter() {
     	public String getID() { return "gladiator_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             //	check for gib
@@ -614,7 +614,7 @@ public class M_Gladiator {
      * QUAKED monster_gladiator (1 .5 0) (-32 -32 -24) (32 32 64) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_gladiator(edict_t self) {
+    public static void SP_monster_gladiator(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

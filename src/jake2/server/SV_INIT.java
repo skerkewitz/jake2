@@ -91,7 +91,7 @@ public class SV_INIT {
      * only the fields that differ from the baseline will be transmitted.
      */
     public static void SV_CreateBaseline() {
-        edict_t svent;
+        TEntityDict svent;
         int entnum;
 
         for (entnum = 1; entnum < GameBase.num_edicts; entnum++) {
@@ -293,7 +293,7 @@ public class SV_INIT {
      */
     public static void SV_InitGame() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
         //char idmaster[32];
         String idmaster;
 
@@ -354,9 +354,9 @@ public class SV_INIT {
         svs.num_client_entities = ((int) SV_MAIN.maxclients.value)
                 * Defines.UPDATE_BACKUP * 64; //ok.
 
-        svs.client_entities = new entity_state_t[svs.num_client_entities];
+        svs.client_entities = new TEntityState[svs.num_client_entities];
         for (int n = 0; n < svs.client_entities.length; n++)
-            svs.client_entities[n] = new entity_state_t(null);
+            svs.client_entities[n] = new TEntityState(null);
 
         // init network stuff
         NET.Config((SV_MAIN.maxclients.value > 1));

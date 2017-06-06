@@ -31,7 +31,7 @@ import jake2.game.EntThinkAdapter;
 import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -387,7 +387,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_stand = new EntThinkAdapter() {
     	public String getID() { return "flipper_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_stand;
             return true;
         }
@@ -431,7 +431,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_run_loop = new EntThinkAdapter() {
     	public String getID() { return "flipper_run_loop"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_run_loop;
             return true;
         }
@@ -450,7 +450,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_run = new EntThinkAdapter() {
     	public String getID() { return "flipper_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_run_start;
             return true;
         }
@@ -488,7 +488,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_walk = new EntThinkAdapter() {
     	public String getID() { return "flipper_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_walk;
             return true;
         }
@@ -506,7 +506,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_start_run = new EntThinkAdapter() {
     	public String getID() { return "flipper_start_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_start_run;
             return true;
         }
@@ -534,7 +534,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_bite = new EntThinkAdapter() {
     	public String getID() { return "flipper_bite"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, 0, 0);
@@ -546,7 +546,7 @@ public class M_Flipper {
     static EntThinkAdapter flipper_preattack = new EntThinkAdapter() {
     	public String getID() { return "flipper_preattack"; }
 
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_chomp, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -580,7 +580,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_melee = new EntThinkAdapter() {
     	public String getID() { return "flipper_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flipper_move_attack;
             return true;
         }
@@ -588,7 +588,7 @@ public class M_Flipper {
 
     static EntPainAdapter flipper_pain = new EntPainAdapter() {
     	public String getID() { return "flipper_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             int n;
 
             if (self.health < (self.max_health / 2))
@@ -618,7 +618,7 @@ public class M_Flipper {
 
     static EntThinkAdapter flipper_dead = new EntThinkAdapter() {
     	public String getID() { return "flipper_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -692,7 +692,7 @@ public class M_Flipper {
 
     static EntInteractAdapter flipper_sight = new EntInteractAdapter() {
     	public String getID() { return "flipper_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -702,8 +702,8 @@ public class M_Flipper {
     static EntDieAdapter flipper_die = new EntDieAdapter() {
     	public String getID() { return "flipper_die"; }
 
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             //	check for gib
@@ -741,7 +741,7 @@ public class M_Flipper {
      * QUAKED monster_flipper (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_flipper(edict_t self) {
+    public static void SP_monster_flipper(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

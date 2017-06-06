@@ -79,9 +79,9 @@ public class client_persistant_t {
 	public int max_cells;
 	public int max_slugs;
 	//pointer
-	gitem_t weapon;
+	TGItem weapon;
 	//pointer
-	gitem_t lastweapon;
+	TGItem lastweapon;
 	int power_cubes; // used for tracking the cubes in coop games
 	int score; // for calculating total unit score in coop games
 	int game_helpchanged;

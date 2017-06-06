@@ -53,10 +53,10 @@ public class GameBase {
 
     public static int num_edicts;
 
-    public static edict_t g_edicts[] = new edict_t[Defines.MAX_EDICTS];
+    public static TEntityDict g_edicts[] = new TEntityDict[Defines.MAX_EDICTS];
     static {
         for (int n = 0; n < Defines.MAX_EDICTS; n++)
-            g_edicts[n] = new edict_t(n);
+            g_edicts[n] = new TEntityDict(n);
     }
 
     public static TVar deathmatch = new TVar();
@@ -186,8 +186,8 @@ public class GameBase {
     }
 
     // comfort version (rst)
-    public static edict_t G_FindEdict(EdictIterator from, EdictFindFilter eff,
-            String s) {
+    public static TEntityDict G_FindEdict(EdictIterator from, EdictFindFilter eff,
+                                          String s) {
         EdictIterator ei = G_Find(from, eff, s);
         if (ei == null)
             return null;
@@ -238,9 +238,9 @@ public class GameBase {
 
     public static int MAXCHOICES = 8;
 
-    public static edict_t G_PickTarget(String targetname) {
+    public static TEntityDict G_PickTarget(String targetname) {
         int num_choices = 0;
-        edict_t choice[] = new edict_t[MAXCHOICES];
+        TEntityDict choice[] = new TEntityDict[MAXCHOICES];
 
         if (targetname == null) {
             gi.dprintf("G_PickTarget called with null targetname\n");
@@ -291,11 +291,11 @@ public class GameBase {
      * G_TouchTriggers
      */
 
-    static edict_t touch[] = new edict_t[Defines.MAX_EDICTS];
+    static TEntityDict touch[] = new TEntityDict[Defines.MAX_EDICTS];
 
-    public static void G_TouchTriggers(edict_t ent) {
+    public static void G_TouchTriggers(TEntityDict ent) {
         int i, num;
-        edict_t hit;
+        TEntityDict hit;
 
         // dead things don't activate triggers!
         if ((ent.client != null || (ent.svflags & Defines.SVF_MONSTER) != 0)
@@ -328,7 +328,7 @@ public class GameBase {
 
     public static int pushed_p;
 
-    public static edict_t obstacle;
+    public static TEntityDict obstacle;
 
     public static int c_yes, c_no;
 
@@ -337,7 +337,7 @@ public class GameBase {
     /**
      * G_RunEntity
      */
-    public static void G_RunEntity(edict_t ent) {
+    public static void G_RunEntity(TEntityDict ent) {
 
         if (ent.prethink != null)
             ent.prethink.think(ent);
@@ -386,7 +386,7 @@ public class GameBase {
     }
 
     public static EdictFindFilter findByTarget = new EdictFindFilter() {
-        public boolean matches(edict_t e, String s) {
+        public boolean matches(TEntityDict e, String s) {
             if (e.targetname == null)
                 return false;
             return e.targetname.equalsIgnoreCase(s);
@@ -394,7 +394,7 @@ public class GameBase {
     };
 
     public static EdictFindFilter findByClass = new EdictFindFilter() {
-        public boolean matches(edict_t e, String s) {
+        public boolean matches(TEntityDict e, String s) {
             return e.classname.equalsIgnoreCase(s);
         }
     };
@@ -408,7 +408,7 @@ public class GameBase {
      */
     public static void ClientEndServerFrames() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
 
         // calc the player views now that all pushing
         // and damage has been added
@@ -424,8 +424,8 @@ public class GameBase {
     /**
      * Returns the created target changelevel.
      */
-    public static edict_t CreateTargetChangeLevel(String map) {
-        edict_t ent;
+    public static TEntityDict CreateTargetChangeLevel(String map) {
+        TEntityDict ent;
 
         ent = GameUtil.G_Spawn();
         ent.classname = "target_changelevel";
@@ -438,7 +438,7 @@ public class GameBase {
      * The timelimit or fraglimit has been exceeded.
      */
     public static void EndDMLevel() {
-        edict_t ent;
+        TEntityDict ent;
         //char * s, * t, * f;
         //static const char * seps = " ,\n\r";
         String s, t, f;
@@ -560,7 +560,7 @@ public class GameBase {
      */
     public static void ExitLevel() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
 
         String command = "gamemap \"" + level.changemap + "\"\n";
         gi.AddCommandString(command);
@@ -586,7 +586,7 @@ public class GameBase {
      */
     public static void G_RunFrame() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
 
         level.framenum++;
         level.time = level.framenum * Defines.FRAMETIME;

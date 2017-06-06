@@ -36,8 +36,8 @@ public class PlayerClient {
      */
     static EntDieAdapter player_die = new EntDieAdapter() {
     	public String getID() { return "player_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
     
             Math3D.VectorClear(self.avelocity);
@@ -134,9 +134,9 @@ public class PlayerClient {
     };
     static EntThinkAdapter SP_FixCoopSpots = new EntThinkAdapter() {
     	public String getID() { return "SP_FixCoopSpots"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
     
-            edict_t spot;
+            TEntityDict spot;
             float[] d = { 0, 0, 0 };
     
             spot = null;
@@ -170,9 +170,9 @@ public class PlayerClient {
     };
     static EntThinkAdapter SP_CreateCoopSpots = new EntThinkAdapter() {
     	public String getID() { return "SP_CreateCoopSpots"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
     
-            edict_t spot;
+            TEntityDict spot;
     
             if (Lib.Q_stricmp(GameBase.level.mapname, "security") == 0) {
                 spot = GameUtil.G_Spawn();
@@ -205,13 +205,13 @@ public class PlayerClient {
     // player pain is handled at the end of the frame in P_DamageFeedback
     static EntPainAdapter player_pain = new EntPainAdapter() {
     	public String getID() { return "player_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
         }
     };
     static EntDieAdapter body_die = new EntDieAdapter() {
     	public String getID() { return "body_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
     
             int n;
     
@@ -227,7 +227,7 @@ public class PlayerClient {
             }
         }
     };
-    static edict_t pm_passent;
+    static TEntityDict pm_passent;
     // pmove doesn't need to know about passent and contentmask
     public static pmove_t.TraceAdapter PM_trace = new pmove_t.TraceAdapter() {
     
@@ -247,7 +247,7 @@ public class PlayerClient {
      * QUAKED info_player_start (1 0 0) (-16 -16 -24) (16 16 32) The normal
      * starting point for a level.
      */
-    public static void SP_info_player_start(edict_t self) {
+    public static void SP_info_player_start(TEntityDict self) {
         if (GameBase.coop.value == 0)
             return;
         if (Lib.Q_stricmp(GameBase.level.mapname, "security") == 0) {
@@ -261,7 +261,7 @@ public class PlayerClient {
      * QUAKED info_player_deathmatch (1 0 1) (-16 -16 -24) (16 16 32) potential
      * spawning position for deathmatch games.
      */
-    public static void SP_info_player_deathmatch(edict_t self) {
+    public static void SP_info_player_deathmatch(TEntityDict self) {
         if (0 == GameBase.deathmatch.value) {
             GameUtil.G_FreeEdict(self);
             return;
@@ -274,7 +274,7 @@ public class PlayerClient {
      * spawning position for coop games.
      */
 
-    public static void SP_info_player_coop(edict_t self) {
+    public static void SP_info_player_coop(TEntityDict self) {
         if (0 == GameBase.coop.value) {
             GameUtil.G_FreeEdict(self);
             return;
@@ -309,8 +309,8 @@ public class PlayerClient {
     public static void SP_info_player_intermission() {
     }
 
-    public static void ClientObituary(edict_t self, edict_t inflictor,
-            edict_t attacker) {
+    public static void ClientObituary(TEntityDict self, TEntityDict inflictor,
+                                      TEntityDict attacker) {
         int mod;
         String message;
         String message2;
@@ -506,7 +506,7 @@ public class PlayerClient {
      * is called after each death and level change in deathmatch. 
      */
     public static void InitClientPersistant(gclient_t client) {
-        gitem_t item;
+        TGItem item;
 
         client.pers = new client_persistant_t();
 
@@ -549,7 +549,7 @@ public class PlayerClient {
      */
     public static void SaveClientData() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
 
         for (i = 0; i < GameBase.game.maxclients; i++) {
             ent = GameBase.g_edicts[1 + i];
@@ -566,7 +566,7 @@ public class PlayerClient {
         }
     }
 
-    public static void FetchClientEntData(edict_t ent) {
+    public static void FetchClientEntData(TEntityDict ent) {
         ent.health = ent.client.pers.health;
         ent.max_health = ent.client.pers.max_health;
         ent.flags |= ent.client.pers.savedFlags;
@@ -577,8 +577,8 @@ public class PlayerClient {
     /**
      * Returns the distance to the nearest player from the given spot.
      */
-    static float PlayersRangeFromSpot(edict_t spot) {
-        edict_t player;
+    static float PlayersRangeFromSpot(TEntityDict spot) {
+        TEntityDict player;
         float bestplayerdistance;
         float[] v = { 0, 0, 0 };
         int n;
@@ -608,8 +608,8 @@ public class PlayerClient {
     /**
      * Go to a random point, but NOT the two points closest to other players.
      */
-    public static edict_t SelectRandomDeathmatchSpawnPoint() {
-        edict_t spot, spot1, spot2;
+    public static TEntityDict SelectRandomDeathmatchSpawnPoint() {
+        TEntityDict spot, spot1, spot2;
         int count = 0;
         int selection;
         float range, range1, range2;
@@ -664,10 +664,10 @@ public class PlayerClient {
     /** 
 	 * If turned on in the dmflags, select a spawn point far away from other players.
      */
-    static edict_t SelectFarthestDeathmatchSpawnPoint() {
-        edict_t bestspot;
+    static TEntityDict SelectFarthestDeathmatchSpawnPoint() {
+        TEntityDict bestspot;
         float bestdistance, bestplayerdistance;
-        edict_t spot;
+        TEntityDict spot;
 
         spot = null;
         bestspot = null;
@@ -700,16 +700,16 @@ public class PlayerClient {
     }
 
     
-    public static edict_t SelectDeathmatchSpawnPoint() {
+    public static TEntityDict SelectDeathmatchSpawnPoint() {
         if (0 != ((int) (GameBase.dmflags.value) & Defines.DF_SPAWN_FARTHEST))
             return SelectFarthestDeathmatchSpawnPoint();
         else
             return SelectRandomDeathmatchSpawnPoint();
     }
 
-    public static edict_t SelectCoopSpawnPoint(edict_t ent) {
+    public static TEntityDict SelectCoopSpawnPoint(TEntityDict ent) {
         int index;
-        edict_t spot = null;
+        TEntityDict spot = null;
         String target;
 
         //index = ent.client - game.clients;
@@ -752,9 +752,9 @@ public class PlayerClient {
     /**
      * Chooses a player start, deathmatch start, coop start, etc.
      */
-    public static void SelectSpawnPoint(edict_t ent, float[] origin,
-            float[] angles) {
-        edict_t spot = null;
+    public static void SelectSpawnPoint(TEntityDict ent, float[] origin,
+                                        float[] angles) {
+        TEntityDict spot = null;
 
         if (GameBase.deathmatch.value != 0)
             spot = SelectDeathmatchSpawnPoint();
@@ -807,7 +807,7 @@ public class PlayerClient {
 
     public static void InitBodyQue() {
         int i;
-        edict_t ent;
+        TEntityDict ent;
 
         GameBase.level.body_que = 0;
         for (i = 0; i < Defines.BODY_QUEUE_SIZE; i++) {
@@ -816,8 +816,8 @@ public class PlayerClient {
         }
     }
 
-    public static void CopyToBodyQue(edict_t ent) {
-        edict_t body;
+    public static void CopyToBodyQue(TEntityDict ent) {
+        TEntityDict body;
 
         // grab a body que and cycle to the next one
         int i = (int) GameBase.maxclients.value + GameBase.level.body_que + 1;
@@ -851,7 +851,7 @@ public class PlayerClient {
         GameBase.gi.linkentity(body);
     }
 
-    public static void respawn(edict_t self) {
+    public static void respawn(TEntityDict self) {
         if (GameBase.deathmatch.value != 0 || GameBase.coop.value != 0) {
             // spectator's don't leave bodies
             if (self.movetype != Defines.MOVETYPE_NOCLIP)
@@ -883,7 +883,7 @@ public class PlayerClient {
      * Only called when pers.spectator changes note that resp.spectator should
      * be the opposite of pers.spectator here
      */
-    public static void spectator_respawn(edict_t ent) {
+    public static void spectator_respawn(TEntityDict ent) {
         int i, numspec;
 
         // if the user wants to become a spectator, make sure he doesn't
@@ -969,7 +969,7 @@ public class PlayerClient {
     /**
      * Called when a player connects to a server or respawns in a deathmatch.
      */
-    public static void PutClientInServer(edict_t ent) {
+    public static void PutClientInServer(TEntityDict ent) {
         float[] mins = { -16, -16, -24 };
         float[] maxs = { 16, 16, 32 };
         int index;
@@ -1125,7 +1125,7 @@ public class PlayerClient {
      * A client has just connected to the server in deathmatch mode, so clear
      * everything out before starting them. 
      */
-    public static void ClientBeginDeathmatch(edict_t ent) {
+    public static void ClientBeginDeathmatch(TEntityDict ent) {
         GameUtil.G_InitEdict(ent, ent.index);
 
         InitClientResp(ent.client);
@@ -1155,7 +1155,7 @@ public class PlayerClient {
      * Called when a client has finished connecting, and is ready to be placed
      * into the game. This will happen every level load. 
      */
-    public static void ClientBegin(edict_t ent) {
+    public static void ClientBegin(TEntityDict ent) {
         int i;
 
         //ent.client = game.clients + (ent - g_edicts - 1);
@@ -1212,7 +1212,7 @@ public class PlayerClient {
      * names, etc) before copying it off. 
      *
      */
-    public static String ClientUserinfoChanged(edict_t ent, String userinfo) {
+    public static String ClientUserinfoChanged(TEntityDict ent, String userinfo) {
         String s;
         int playernum;
 
@@ -1272,7 +1272,7 @@ public class PlayerClient {
      * Changing levels will NOT cause this to be called again, but loadgames
      * will. 
      */
-    public static boolean ClientConnect(edict_t ent, String userinfo) {
+    public static boolean ClientConnect(TEntityDict ent, String userinfo) {
         String value;
 
         // check to see if they are on the banned IP list
@@ -1340,7 +1340,7 @@ public class PlayerClient {
     /**
      * Called when a player drops from the server. Will not be called between levels. 
      */
-    public static void ClientDisconnect(edict_t ent) {
+    public static void ClientDisconnect(TEntityDict ent) {
         int playernum;
 
         if (ent.client == null)
@@ -1390,9 +1390,9 @@ public class PlayerClient {
      * This will be called once for each client frame, which will usually be a
      * couple times for each server frame.
      */
-    public static void ClientThink(edict_t ent, usercmd_t ucmd) {
+    public static void ClientThink(TEntityDict ent, usercmd_t ucmd) {
         gclient_t client;
-        edict_t other;
+        TEntityDict other;
         int i, j;
         pmove_t pm = null;
 
@@ -1562,7 +1562,7 @@ public class PlayerClient {
      * This will be called once for each server frame, before running any other
      * entities in the world. 
      */
-    public static void ClientBeginServerFrame(edict_t ent) {
+    public static void ClientBeginServerFrame(TEntityDict ent) {
         gclient_t client;
         int buttonMask;
 
@@ -1613,7 +1613,7 @@ public class PlayerClient {
     /** 
      * Returns true, if the players gender flag was set to female. 
      */
-    public static boolean IsFemale(edict_t ent) {
+    public static boolean IsFemale(TEntityDict ent) {
         char info;
     
         if (null == ent.client)
@@ -1628,7 +1628,7 @@ public class PlayerClient {
      * Returns true, if the players gender flag was neither set to female nor to
      * male.
      */
-    public static boolean IsNeutral(edict_t ent) {
+    public static boolean IsNeutral(TEntityDict ent) {
         char info;
     
         if (ent.client == null)
@@ -1643,11 +1643,11 @@ public class PlayerClient {
     /**
      * Changes the camera view to look at the killer.
      */
-    public static void LookAtKiller(edict_t self, edict_t inflictor,
-            edict_t attacker) {
+    public static void LookAtKiller(TEntityDict self, TEntityDict inflictor,
+                                    TEntityDict attacker) {
         float dir[] = { 0, 0, 0 };
     
-        edict_t world = GameBase.g_edicts[0];
+        TEntityDict world = GameBase.g_edicts[0];
     
         if (attacker != null && attacker != world && attacker != self) {
             Math3D.VectorSubtract(attacker.s.origin, self.s.origin, dir);
@@ -1677,9 +1677,9 @@ public class PlayerClient {
     /** 
      * Drop items and weapons in deathmatch games. 
      */ 
-    public static void TossClientWeapon(edict_t self) {
-        gitem_t item;
-        edict_t drop;
+    public static void TossClientWeapon(TEntityDict self) {
+        TGItem item;
+        TEntityDict drop;
         boolean quad;
         float spread;
     

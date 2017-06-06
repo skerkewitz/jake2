@@ -23,8 +23,8 @@
 package jake2.server;
 
 import jake2.Defines;
+import jake2.game.TEntityState;
 import jake2.game.cmodel_t;
-import jake2.game.entity_state_t;
 import jake2.qcommon.TSizeBuffer;
 
 import java.io.RandomAccessFile;
@@ -37,7 +37,7 @@ public class server_t {
             models[n] = new cmodel_t();
 
         for (int n = 0; n < Defines.MAX_EDICTS; n++)
-            baselines[n] = new entity_state_t(null);
+            baselines[n] = new TEntityState(null);
     }
 
     int state; // precache commands are only valid during load
@@ -57,7 +57,7 @@ public class server_t {
 
     String configstrings[] = new String[Defines.MAX_CONFIGSTRINGS];
 
-    entity_state_t baselines[] = new entity_state_t[Defines.MAX_EDICTS];
+    TEntityState baselines[] = new TEntityState[Defines.MAX_EDICTS];
 
     // the multicast buffer is used to send a message to a set of clients
     // it is only used to marshall data until SV_Multicast is called

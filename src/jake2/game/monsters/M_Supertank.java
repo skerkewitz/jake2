@@ -31,7 +31,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -567,7 +567,7 @@ public class M_Supertank {
 
     static EntThinkAdapter TreadSound = new EntThinkAdapter() {
     	public String getID(){ return "TreadSound"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, tread_sound, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -576,7 +576,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_search = new EntThinkAdapter() {
     	public String getID(){ return "supertank_search"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (Lib.random() < 0.5)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_search1, 1,
                         Defines.ATTN_NORM, 0);
@@ -658,7 +658,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_stand = new EntThinkAdapter() {
     	public String getID() { return "supertank_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = supertank_move_stand;
             return true;
         }
@@ -716,7 +716,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_forward = new EntThinkAdapter() {
     	public String getID(){ return "supertank_forward"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = supertank_move_forward;
             return true;
         }
@@ -724,7 +724,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_walk = new EntThinkAdapter() {
     	public String getID(){ return "supertank_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = supertank_move_forward;
             return true;
         }
@@ -732,7 +732,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_run = new EntThinkAdapter() {
     	public String getID(){ return "supertank_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = supertank_move_stand;
             else
@@ -746,7 +746,7 @@ public class M_Supertank {
     //
     static EntThinkAdapter supertank_dead = new EntThinkAdapter() {
     	public String getID(){ return "supertank_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -60, -60, 0);
             Math3D.VectorSet(self.maxs, 60, 60, 72);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -759,7 +759,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertankRocket = new EntThinkAdapter() {
     	public String getID(){ return "supertankRocket"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] start = { 0, 0, 0 };
             float[] dir = { 0, 0, 0 };
@@ -793,7 +793,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertankMachineGun = new EntThinkAdapter() {
     	public String getID(){ return "supertankMachineGun"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
             float[] start = { 0, 0, 0 };
@@ -830,7 +830,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_attack = new EntThinkAdapter() {
     	public String getID(){ return "supertank_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] vec = { 0, 0, 0 };
             float range;
             //float r;
@@ -1057,7 +1057,7 @@ public class M_Supertank {
 
     static EntThinkAdapter supertank_reattack1 = new EntThinkAdapter() {
     	public String getID(){ return "supertank_reattack1"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameUtil.visible(self, self.enemy))
                 if (Lib.random() < 0.9)
                     self.monsterinfo.currentmove = supertank_move_attack1;
@@ -1101,7 +1101,7 @@ public class M_Supertank {
 
     static EntPainAdapter supertank_pain = new EntPainAdapter() {
     	public String getID(){ return "supertank_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
                 self.s.skinnum = 1;
 
@@ -1142,8 +1142,8 @@ public class M_Supertank {
 
     static EntDieAdapter supertank_die = new EntDieAdapter() {
     	public String getID(){ return "supertank_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_death, 1,
                     Defines.ATTN_NORM, 0);
             self.deadflag = Defines.DEAD_DEAD;
@@ -1163,7 +1163,7 @@ public class M_Supertank {
      */
     public static EntThinkAdapter SP_monster_supertank = new EntThinkAdapter() {
     	public String getID(){ return "SP_monster_supertank"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameBase.deathmatch.value != 0) {
                 GameUtil.G_FreeEdict(self);
                 return true;
@@ -1215,7 +1215,7 @@ public class M_Supertank {
     
     public static EntThinkAdapter BossExplode = new EntThinkAdapter() {
     	public String getID(){ return "BossExplode"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] org = { 0, 0, 0 };
     
             int n;

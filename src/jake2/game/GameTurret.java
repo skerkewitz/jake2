@@ -63,7 +63,7 @@ public class GameTurret {
      * yaw angle : default 360
      */
 
-    public static void turret_breach_fire(edict_t self) {
+    public static void turret_breach_fire(TEntityDict self) {
         float[] f = { 0, 0, 0 }, r = { 0, 0, 0 }, u = { 0, 0, 0 };
         float[] start = { 0, 0, 0 };
         int damage;
@@ -83,7 +83,7 @@ public class GameTurret {
                 Defines.ATTN_NORM, 0);
     }
 
-    public static void SP_turret_breach(edict_t self) {
+    public static void SP_turret_breach(TEntityDict self) {
         self.solid = Defines.SOLID_BSP;
         self.movetype = Defines.MOVETYPE_PUSH;
         GameBase.gi.setmodel(self, self.model);
@@ -120,7 +120,7 @@ public class GameTurret {
      * MUST be teamed with a turret_breach.
      */
 
-    public static void SP_turret_base(edict_t self) {
+    public static void SP_turret_base(TEntityDict self) {
         self.solid = Defines.SOLID_BSP;
         self.movetype = Defines.MOVETYPE_PUSH;
         GameBase.gi.setmodel(self, self.model);
@@ -128,7 +128,7 @@ public class GameTurret {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_turret_driver(edict_t self) {
+    public static void SP_turret_driver(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;
@@ -177,8 +177,8 @@ public class GameTurret {
 
     static EntBlockedAdapter turret_blocked = new EntBlockedAdapter() {
     	public String getID() { return "turret_blocked"; }
-        public void blocked(edict_t self, edict_t other) {
-            edict_t attacker;
+        public void blocked(TEntityDict self, TEntityDict other) {
+            TEntityDict attacker;
 
             if (other.takedamage != 0) {
                 if (self.teammaster.owner != null)
@@ -194,9 +194,9 @@ public class GameTurret {
 
     static EntThinkAdapter turret_breach_think = new EntThinkAdapter() {
     	public String getID() { return "turret_breach_think"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
-            edict_t ent;
+            TEntityDict ent;
             float[] current_angles = { 0, 0, 0 };
             float[] delta = { 0, 0, 0 };
 
@@ -306,7 +306,7 @@ public class GameTurret {
 
     static EntThinkAdapter turret_breach_finish_init = new EntThinkAdapter() {
     	public String getID() { return "turret_breach_finish_init"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             // get and save info for muzzle location
             if (self.target == null) {
@@ -333,10 +333,10 @@ public class GameTurret {
      */
     static EntDieAdapter turret_driver_die = new EntDieAdapter() {
     	public String getID() { return "turret_driver_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
 
-            edict_t ent;
+            TEntityDict ent;
 
             // level the gun
             self.target_ent.move_angles[0] = 0;
@@ -357,7 +357,7 @@ public class GameTurret {
 
     static EntThinkAdapter turret_driver_think = new EntThinkAdapter() {
     	public String getID() { return "turret_driver_think"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] target = { 0, 0, 0 };
             float[] dir = { 0, 0, 0 };
@@ -410,10 +410,10 @@ public class GameTurret {
 
     public static EntThinkAdapter turret_driver_link = new EntThinkAdapter() {
     	public String getID() { return "turret_driver_link"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] vec = { 0, 0, 0 };
-            edict_t ent;
+            TEntityDict ent;
 
             self.think = turret_driver_think;
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;

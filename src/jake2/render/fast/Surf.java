@@ -262,8 +262,8 @@ public class Surf {
 				smax = (fa.extents[0]>>4)+1;
 				tmax = (fa.extents[1]>>4)+1;
 
-				RenderAPIImpl.light.R_BuildLightMap( fa, temp2, smax);
-				RenderAPIImpl.light.R_SetCacheState( fa );
+				RenderAPIImpl.light.buildLightMap( fa, temp2, smax);
+				R_SetCacheState( fa );
 
 				RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + fa.lightmaptexturenum );
 
@@ -441,8 +441,8 @@ public class Surf {
 				smax = (surf.extents[0]>>4)+1;
 				tmax = (surf.extents[1]>>4)+1;
 
-				RenderAPIImpl.light.R_BuildLightMap( surf, temp, smax);
-				RenderAPIImpl.light.R_SetCacheState( surf );
+				RenderAPIImpl.light.buildLightMap( surf, temp, smax);
+				R_SetCacheState( surf );
 
 				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + surf.lightmaptexturenum );
 
@@ -460,7 +460,7 @@ public class Surf {
 				smax = (surf.extents[0]>>4)+1;
 				tmax = (surf.extents[1]>>4)+1;
 
-				RenderAPIImpl.light.R_BuildLightMap( surf, temp, smax);
+				RenderAPIImpl.light.buildLightMap( surf, temp, smax);
 
 				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + 0 );
 
@@ -559,7 +559,7 @@ public class Surf {
 			for (int k=0 ; k<RenderAPIImpl.main.r_newrefdef.num_dlights ; k++)
 			{
 				lt = RenderAPIImpl.main.r_newrefdef.dlights[k];
-				RenderAPIImpl.light.R_MarkLights(lt, 1<<k, RenderAPIImpl.main.currentmodel.nodes[RenderAPIImpl.main.currentmodel.firstnode]);
+				RenderAPIImpl.light.markLights(lt, 1<<k, RenderAPIImpl.main.currentmodel.nodes[RenderAPIImpl.main.currentmodel.firstnode]);
 			}
 		}
 
@@ -841,7 +841,7 @@ public class Surf {
 		if (RenderAPIImpl.main.r_drawworld.value == 0)
 			return;
 
-		if ( (RenderAPIImpl.main.r_newrefdef.rdflags & Defines.RDF_NOWORLDMODEL) != 0 )
+		if ( (RenderAPIImpl.main.r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) != 0 )
 			return;
 
 		RenderAPIImpl.main.currentmodel = RenderAPIImpl.main.r_worldmodel;
@@ -1169,8 +1169,8 @@ public class Surf {
 		IntBuffer base = gl_lms.lightmap_buffer;
 		base.position(surf.light_t * BLOCK_WIDTH + surf.light_s);
 
-		RenderAPIImpl.light.R_SetCacheState( surf );
-		RenderAPIImpl.light.R_BuildLightMap(surf, base.slice(), BLOCK_WIDTH);
+		R_SetCacheState( surf );
+		RenderAPIImpl.light.buildLightMap(surf, base.slice(), BLOCK_WIDTH);
 	}
 
 	TLightStyle[] lightstyles;
@@ -1319,5 +1319,14 @@ public class Surf {
 //		frame.showImage(tmp);
 //		
 //	}
+
+	/**
+	 * R_SetCacheState
+	 */
+	void R_SetCacheState(TMapSurface surf) {
+		for (int maps = 0; maps < Defines.MAXLIGHTMAPS && surf.styles[maps] != (byte) 255; maps++) {
+			surf.cached_light[maps] = RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].white;
+		}
+	}
 
 }

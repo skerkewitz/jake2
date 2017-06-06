@@ -29,7 +29,7 @@ import jake2.util.Math3D;
 
 public class GameTrigger {
 
-    public static void InitTrigger(edict_t self) {
+    public static void InitTrigger(TEntityDict self) {
         if (!Math3D.VectorEquals(self.s.angles, Context.vec3_origin))
             GameBase.G_SetMovedir(self.s.angles, self.movedir);
 
@@ -42,7 +42,7 @@ public class GameTrigger {
     // the trigger was just activated
     // ent.activator should be set to the activator so it can be held through a
     // delay so wait for the delay time before firing
-    public static void multi_trigger(edict_t ent) {
+    public static void multi_trigger(TEntityDict ent) {
         if (ent.nextthink != 0)
             return; // already been triggered
 
@@ -60,7 +60,7 @@ public class GameTrigger {
         }
     }
 
-    public static void SP_trigger_multiple(edict_t ent) {
+    public static void SP_trigger_multiple(TEntityDict ent) {
         if (ent.sounds == 1)
             ent.noise_index = GameBase.gi.soundindex("misc/secret.wav");
         else if (ent.sounds == 2)
@@ -102,7 +102,7 @@ public class GameTrigger {
      * "message" string to be displayed when triggered
      */
 
-    public static void SP_trigger_once(edict_t ent) {
+    public static void SP_trigger_once(TEntityDict ent) {
         // make old maps work because I messed up on flag assignments here
         // triggered was on bit 1 when it should have been on bit 4
         if ((ent.spawnflags & 1) != 0) {
@@ -119,11 +119,11 @@ public class GameTrigger {
         SP_trigger_multiple(ent);
     }
 
-    public static void SP_trigger_relay(edict_t self) {
+    public static void SP_trigger_relay(TEntityDict self) {
         self.use = trigger_relay_use;
     }
 
-    public static void SP_trigger_key(edict_t self) {
+    public static void SP_trigger_key(TEntityDict self) {
         if (GameBase.st.item == null) {
             GameBase.gi.dprintf("no key item for trigger_key at "
                     + Lib.vtos(self.s.origin) + "\n");
@@ -150,7 +150,7 @@ public class GameTrigger {
         self.use = trigger_key_use;
     }
 
-    public static void SP_trigger_counter(edict_t self) {
+    public static void SP_trigger_counter(TEntityDict self) {
         self.wait = -1;
         if (0 == self.count)
             self.count = 2;
@@ -170,7 +170,7 @@ public class GameTrigger {
      * QUAKED trigger_always (.5 .5 .5) (-8 -8 -8) (8 8 8) This trigger will
      * always fire. It is activated by the world.
      */
-    public static void SP_trigger_always(edict_t ent) {
+    public static void SP_trigger_always(TEntityDict ent) {
         // we must have some delay to make sure our use targets are present
         if (ent.delay < 0.2f)
             ent.delay = 0.2f;
@@ -181,7 +181,7 @@ public class GameTrigger {
      * QUAKED trigger_push (.5 .5 .5) ? PUSH_ONCE Pushes the player "speed"
      * defaults to 1000
      */
-    public static void SP_trigger_push(edict_t self) {
+    public static void SP_trigger_push(TEntityDict self) {
         InitTrigger(self);
         windsound = GameBase.gi.soundindex("misc/windfly.wav");
         self.touch = trigger_push_touch;
@@ -190,7 +190,7 @@ public class GameTrigger {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_trigger_hurt(edict_t self) {
+    public static void SP_trigger_hurt(TEntityDict self) {
         InitTrigger(self);
 
         self.noise_index = GameBase.gi.soundindex("world/electro.wav");
@@ -210,7 +210,7 @@ public class GameTrigger {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_trigger_gravity(edict_t self) {
+    public static void SP_trigger_gravity(TEntityDict self) {
         if (GameBase.st.gravity == null) {
             GameBase.gi.dprintf("trigger_gravity without gravity set at "
                     + Lib.vtos(self.s.origin) + "\n");
@@ -223,7 +223,7 @@ public class GameTrigger {
         self.touch = trigger_gravity_touch;
     }
 
-    public static void SP_trigger_monsterjump(edict_t self) {
+    public static void SP_trigger_monsterjump(TEntityDict self) {
         if (0 == self.speed)
             self.speed = 200;
         if (0 == GameBase.st.height)
@@ -238,7 +238,7 @@ public class GameTrigger {
     // the wait time has passed, so set back up for another activation
     public static EntThinkAdapter multi_wait = new EntThinkAdapter() {
     	public String getID(){ return "multi_wait"; }
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
 
             ent.nextthink = 0;
             return true;
@@ -247,7 +247,7 @@ public class GameTrigger {
 
     static EntUseAdapter Use_Multi = new EntUseAdapter() {
     	public String getID(){ return "Use_Multi"; }
-        public void use(edict_t ent, edict_t other, edict_t activator) {
+        public void use(TEntityDict ent, TEntityDict other, TEntityDict activator) {
             ent.activator = activator;
             multi_trigger(ent);
         }
@@ -255,8 +255,8 @@ public class GameTrigger {
 
     static EntTouchAdapter Touch_Multi = new EntTouchAdapter() {
     	public String getID(){ return "Touch_Multi"; }
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             if (other.client != null) {
                 if ((self.spawnflags & 2) != 0)
                     return;
@@ -288,7 +288,7 @@ public class GameTrigger {
      */
     static EntUseAdapter trigger_enable = new EntUseAdapter() {
     	public String getID(){ return "trigger_enable"; }
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.solid = Defines.SOLID_TRIGGER;
             self.use = Use_Multi;
             GameBase.gi.linkentity(self);
@@ -301,7 +301,7 @@ public class GameTrigger {
      */
     public static EntUseAdapter trigger_relay_use = new EntUseAdapter() {
     	public String getID(){ return "trigger_relay_use"; }
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             GameUtil.G_UseTargets(self, activator);
         }
     };
@@ -322,7 +322,7 @@ public class GameTrigger {
 
     static EntUseAdapter trigger_key_use = new EntUseAdapter() {
     	public String getID(){ return "trigger_key_use"; }
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             int index;
 
             if (self.item == null)
@@ -347,7 +347,7 @@ public class GameTrigger {
                     .soundindex("misc/keyuse.wav"), 1, Defines.ATTN_NORM, 0);
             if (GameBase.coop.value != 0) {
                 int player;
-                edict_t ent;
+                TEntityDict ent;
 
                 if (Lib.strcmp(self.item.classname, "key_power_cube") == 0) {
                     int cube;
@@ -399,7 +399,7 @@ public class GameTrigger {
     static EntUseAdapter trigger_counter_use = new EntUseAdapter() {
     	public String getID(){ return "trigger_counter_use"; }
 
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if (self.count == 0)
                 return;
 
@@ -440,8 +440,8 @@ public class GameTrigger {
 
     static EntTouchAdapter trigger_push_touch = new EntTouchAdapter() {
     	public String getID(){ return "trigger_push_touch"; }
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             if (Lib.strcmp(other.classname, "grenade") == 0) {
                 Math3D.VectorScale(self.movedir, self.speed * 10,
                         other.velocity);
@@ -480,7 +480,7 @@ public class GameTrigger {
     static EntUseAdapter hurt_use = new EntUseAdapter() {
     	public String getID(){ return "hurt_use"; }
 
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if (self.solid == Defines.SOLID_NOT)
                 self.solid = Defines.SOLID_TRIGGER;
             else
@@ -494,8 +494,8 @@ public class GameTrigger {
 
     static EntTouchAdapter hurt_touch = new EntTouchAdapter() {
     	public String getID(){ return "hurt_touch"; }
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             int dflags;
 
             if (other.takedamage == 0)
@@ -541,8 +541,8 @@ public class GameTrigger {
     static EntTouchAdapter trigger_gravity_touch = new EntTouchAdapter() {
     	public String getID(){ return "trigger_gravity_touch"; }
 
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             other.gravity = self.gravity;
         }
     };
@@ -564,8 +564,8 @@ public class GameTrigger {
 
     static EntTouchAdapter trigger_monsterjump_touch = new EntTouchAdapter() {
     	public String getID(){ return "trigger_monsterjump_touch"; }
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             if ((other.flags & (Defines.FL_FLY | Defines.FL_SWIM)) != 0)
                 return;
             if ((other.svflags & Defines.SVF_DEADMONSTER) != 0)

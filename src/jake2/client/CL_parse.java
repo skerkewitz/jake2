@@ -25,7 +25,7 @@ package jake2.client;
 
 import jake2.Defines;
 import jake2.game.Cmd;
-import jake2.game.entity_state_t;
+import jake2.game.TEntityState;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.render.TModel;
@@ -338,12 +338,12 @@ public class CL_parse {
      * ================== CL_ParseBaseline ==================
      */
     public static void ParseBaseline() {
-        entity_state_t nullstate = new entity_state_t(null);
+        TEntityState nullstate = new TEntityState(null);
         //memset(nullstate, 0, sizeof(nullstate));
         int bits[] = { 0 };
-        int newnum = CL_ents.ParseEntityBits(bits);
-        entity_state_t es = Context.cl_entities[newnum].baseline;
-        CL_ents.ParseDelta(nullstate, es, newnum, bits[0]);
+        int newnum = CLEntity.ParseEntityBits(bits);
+        TEntityState es = Context.cl_entities[newnum].baseline;
+        CLEntity.ParseDelta(nullstate, es, newnum, bits[0]);
     }
 
     /*
@@ -510,7 +510,7 @@ public class CL_parse {
         if (i >= Defines.CS_LIGHTS
                 && i < Defines.CS_LIGHTS + Defines.MAX_LIGHTSTYLES) {
             
-            CL_fx.SetLightstyle(i - Defines.CS_LIGHTS);
+            CLEffects.SetLightstyle(i - Defines.CS_LIGHTS);
             
         } else if (i >= Defines.CS_MODELS && i < Defines.CS_MODELS + Defines.MAX_MODELS) {
             if (Context.cl.refresh_prepped) {
@@ -718,11 +718,11 @@ public class CL_parse {
                 break;
 
             case Defines.svc_muzzleflash:
-                CL_fx.ParseMuzzleFlash();
+                CLEffects.ParseMuzzleFlash();
                 break;
 
             case Defines.svc_muzzleflash2:
-                CL_fx.ParseMuzzleFlash2();
+                CLEffects.ParseMuzzleFlash2();
                 break;
 
             case Defines.svc_download:
@@ -730,7 +730,7 @@ public class CL_parse {
                 break;
 
             case Defines.svc_frame:
-                CL_ents.ParseFrame();
+                CLEntity.ParseFrame();
                 break;
 
             case Defines.svc_inventory:

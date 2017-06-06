@@ -37,7 +37,7 @@ public class PlayerHud {
      * ======================================================================
      */
 
-    public static void MoveClientToIntermission(edict_t ent) {
+    public static void MoveClientToIntermission(TEntityDict ent) {
         if (GameBase.deathmatch.value != 0 || GameBase.coop.value != 0)
             ent.client.showscores = true;
         Math3D.VectorCopy(GameBase.level.intermission_origin, ent.s.origin);
@@ -77,9 +77,9 @@ public class PlayerHud {
 
     }
 
-    public static void BeginIntermission(edict_t targ) {
+    public static void BeginIntermission(TEntityDict targ) {
         int i, n;
-        edict_t ent, client;
+        TEntityDict ent, client;
 
         if (GameBase.level.intermissiontime != 0)
             return; // already activated
@@ -164,7 +164,7 @@ public class PlayerHud {
      * DeathmatchScoreboardMessage
      * ==================
      */
-    public static void DeathmatchScoreboardMessage(edict_t ent, edict_t killer) {
+    public static void DeathmatchScoreboardMessage(TEntityDict ent, TEntityDict killer) {
         StringBuffer string = new StringBuffer(1400);
 
         int stringlength;
@@ -175,7 +175,7 @@ public class PlayerHud {
         int picnum;
         int x, y;
         gclient_t cl;
-        edict_t cl_ent;
+        TEntityDict cl_ent;
         String tag;
 
         // sort the clients by score
@@ -254,7 +254,7 @@ public class PlayerHud {
      * the 1400 byte message limit! 
      * ==================
      */
-    public static void DeathmatchScoreboard(edict_t ent) {
+    public static void DeathmatchScoreboard(TEntityDict ent) {
         DeathmatchScoreboardMessage(ent, ent.enemy);
         GameBase.gi.unicast(ent, true);
     }
@@ -266,7 +266,7 @@ public class PlayerHud {
      * Display the scoreboard 
      * ==================
      */
-    public static void Cmd_Score_f(edict_t ent) {
+    public static void Cmd_Score_f(TEntityDict ent) {
         ent.client.showinventory = false;
         ent.client.showhelp = false;
 
@@ -289,8 +289,8 @@ public class PlayerHud {
      * G_SetStats 
      * ===============
      */
-    public static void G_SetStats(edict_t ent) {
-        gitem_t item;
+    public static void G_SetStats(TEntityDict ent) {
+        TGItem item;
         int index, cells = 0;
         int power_armor_type;
 
@@ -447,7 +447,7 @@ public class PlayerHud {
      * G_CheckChaseStats 
      * ===============
      */
-    public static void G_CheckChaseStats(edict_t ent) {
+    public static void G_CheckChaseStats(TEntityDict ent) {
         int i;
         gclient_t cl;
 
@@ -468,7 +468,7 @@ public class PlayerHud {
      * G_SetSpectatorStats 
      * ===============
      */
-    public static void G_SetSpectatorStats(edict_t ent) {
+    public static void G_SetSpectatorStats(TEntityDict ent) {
         gclient_t cl = ent.client;
 
         if (null == cl.chase_target)
@@ -496,7 +496,7 @@ public class PlayerHud {
     /** 
      * HelpComputer. Draws the help computer.
      */
-    public static void HelpComputer(edict_t ent) {
+    public static void HelpComputer(TEntityDict ent) {
         StringBuffer sb = new StringBuffer(256);
         String sk;
     

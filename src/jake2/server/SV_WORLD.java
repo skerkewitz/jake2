@@ -47,7 +47,7 @@ public class SV_WORLD {
 
     public static float area_mins[], area_maxs[];
 
-    public static edict_t area_list[];
+    public static TEntityDict area_list[];
 
     public static int area_count, area_maxcount;
 
@@ -60,31 +60,14 @@ public class SV_WORLD {
     static int clusters[] = new int[MAX_TOTAL_ENT_LEAFS];
 
     //===========================================================================
-    static edict_t touch[] = new edict_t[Defines.MAX_EDICTS];
+    static TEntityDict touch[] = new TEntityDict[Defines.MAX_EDICTS];
 
     //===========================================================================
-    static edict_t touchlist[] = new edict_t[Defines.MAX_EDICTS];
+    static TEntityDict touchlist[] = new TEntityDict[Defines.MAX_EDICTS];
 
     public static void initNodes() {
         for (int n = 0; n < Defines.AREA_NODES; n++)
             SV_WORLD.sv_areanodes[n] = new areanode_t();
-    }
-
-    // ClearLink is used for new headnodes
-    public static void ClearLink(link_t l) {
-        l.prev = l.next = l;
-    }
-
-    public static void RemoveLink(link_t l) {
-        l.next.prev = l.prev;
-        l.prev.next = l.next;
-    }
-
-    public static void InsertLinkBefore(link_t l, link_t before) {
-        l.next = before;
-        l.prev = before.prev;
-        l.prev.next = l;
-        l.next.prev = l;
     }
 
     /*
@@ -104,8 +87,8 @@ public class SV_WORLD {
 //        Math3D.VectorCopy(mins, anode.mins_rst);
 //        Math3D.VectorCopy(maxs, anode.maxs_rst);
         SV_WORLD.sv_numareanodes++;
-        ClearLink(anode.trigger_edicts);
-        ClearLink(anode.solid_edicts);
+        TLink.ClearLink(anode.trigger_edicts);
+        TLink.ClearLink(anode.solid_edicts);
         if (depth == Defines.AREA_DEPTH) {
             anode.axis = -1;
             anode.children[0] = anode.children[1] = null;
@@ -151,14 +134,14 @@ public class SV_WORLD {
     /*
      * =============== SV_UnlinkEdict ===============
      */
-    public static void SV_UnlinkEdict(edict_t ent) {
+    public static void SV_UnlinkEdict(TEntityDict ent) {
         if (null == ent.area.prev)
             return; // not linked in anywhere
-        RemoveLink(ent.area);
+        TLink.RemoveLink(ent.area);
         ent.area.prev = ent.area.next = null;
     }
 
-    public static void SV_LinkEdict(edict_t ent) {
+    public static void SV_LinkEdict(TEntityDict ent) {
         areanode_t node;
         int num_leafs;
         int j, k;
@@ -300,9 +283,9 @@ public class SV_WORLD {
         }
         // link it in
         if (ent.solid == Defines.SOLID_TRIGGER)
-            InsertLinkBefore(ent.area, node.trigger_edicts);
+            TLink.InsertLinkBefore(ent.area, node.trigger_edicts);
         else
-            InsertLinkBefore(ent.area, node.solid_edicts);
+            TLink.InsertLinkBefore(ent.area, node.solid_edicts);
     }
 
     /*
@@ -311,8 +294,8 @@ public class SV_WORLD {
      * ====================
      */
     public static void SV_AreaEdicts_r(areanode_t node) {
-        link_t l, next, start;
-        edict_t check;
+        TLink l, next, start;
+        TEntityDict check;
         // touch linked edicts
         if (SV_WORLD.area_type == Defines.AREA_SOLID)
             start = node.solid_edicts;
@@ -320,7 +303,7 @@ public class SV_WORLD {
             start = node.trigger_edicts;
         for (l = start.next; l != start; l = next) {
             next = l.next;
-            check = (edict_t) l.o;
+            check = (TEntityDict) l.o;
             if (check.solid == Defines.SOLID_NOT)
                 continue; // deactivated
             if (check.absmin[0] > SV_WORLD.area_maxs[0]
@@ -349,7 +332,7 @@ public class SV_WORLD {
     /*
      * ================ SV_AreaEdicts ================
      */
-    public static int SV_AreaEdicts(float[] mins, float[] maxs, edict_t list[],
+    public static int SV_AreaEdicts(float[] mins, float[] maxs, TEntityDict list[],
             int maxcount, int areatype) {
         SV_WORLD.area_mins = mins;
         SV_WORLD.area_maxs = maxs;
@@ -365,7 +348,7 @@ public class SV_WORLD {
      * ============= SV_PointContents =============
      */
     public static int SV_PointContents(float[] p) {
-        edict_t hit;
+        TEntityDict hit;
         int i, num;
         int contents, c2;
         int headnode;
@@ -395,7 +378,7 @@ public class SV_WORLD {
      * be added to the testing object's origin to get a point to use with the
      * returned hull. ================
      */
-    public static int SV_HullForEntity(edict_t ent) {
+    public static int SV_HullForEntity(TEntityDict ent) {
         cmodel_t model;
         // decide which clipping hull to use, based on the size
         if (ent.solid == Defines.SOLID_BSP) {
@@ -412,7 +395,7 @@ public class SV_WORLD {
 
     public static void SV_ClipMoveToEntities(moveclip_t clip) {
         int i, num;
-        edict_t touch;
+        TEntityDict touch;
         trace_t trace;
         int headnode;
         float angles[];
@@ -490,7 +473,7 @@ public class SV_WORLD {
      * ==================
      */
     public static trace_t SV_Trace(float[] start, float[] mins, float[] maxs,
-            float[] end, edict_t passedict, int contentmask) {
+                                   float[] end, TEntityDict passedict, int contentmask) {
         moveclip_t clip = new moveclip_t();
         if (mins == null)
             mins = Context.vec3_origin;

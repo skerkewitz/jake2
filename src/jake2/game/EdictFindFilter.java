@@ -27,7 +27,7 @@ package jake2.game;
 
 public class EdictFindFilter
 {
-	boolean matches(edict_t e, String s)
+	boolean matches(TEntityDict e, String s)
 	{
 		return false;
 	}

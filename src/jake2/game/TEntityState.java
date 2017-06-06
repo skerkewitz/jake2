@@ -27,12 +27,12 @@ import jake2.io.QuakeFile;
 
 import java.io.IOException;
 
-public class entity_state_t implements Cloneable
+public class TEntityState implements Cloneable
 {
-	/** entity_state_t is the information conveyed from the server
+	/** TEntityState is the information conveyed from the server
 		in an update message about entities that the client will
 		need to render in some way. */
-	public entity_state_t(edict_t ent)
+	public TEntityState(TEntityDict ent)
 	{
 		this.surrounding_ent = ent;
 		if (ent != null)
@@ -42,7 +42,7 @@ public class entity_state_t implements Cloneable
 	/** edict index. TODO: this is critical. The index has to be proper managed. */
 	public int number = 0; 
 	// TODO: why was this introduced?
-	public edict_t surrounding_ent = null;
+	public TEntityDict surrounding_ent = null;
 	public float[] origin = { 0, 0, 0 };
 	public float[] angles = { 0, 0, 0 };
 	
@@ -119,14 +119,14 @@ public class entity_state_t implements Cloneable
 	}
 
 
-	public entity_state_t getClone()
+	public TEntityState getClone()
 	{
-		entity_state_t out = new entity_state_t(this.surrounding_ent);
+		TEntityState out = new TEntityState(this.surrounding_ent);
 		out.set(this);
 		return out;
 	}
 
-	public void set(entity_state_t from)
+	public void set(TEntityState from)
 	{
 		number = from.number;
 		Math3D.VectorCopy(from.origin, origin);

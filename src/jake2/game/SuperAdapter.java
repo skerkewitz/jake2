@@ -24,9 +24,14 @@ package jake2.game;
 
 import jake2.qcommon.Command;
 
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 
 public abstract class SuperAdapter {
+
+	/** Adapter repository. */
+	private static Map<String, SuperAdapter> adapters= new HashMap<>();
 
 	/** Constructor, does the adapter registration. */
 	public SuperAdapter() {
@@ -38,12 +43,9 @@ public abstract class SuperAdapter {
 		adapters.put(id, sa);
 	}
 
-	/** Adapter repository. */
-	private static Hashtable adapters= new Hashtable();
-
 	/** Returns the adapter from the repository given by its ID. */
 	public static SuperAdapter getFromID(String key) {
-		SuperAdapter sa= (SuperAdapter) adapters.get(key);
+		final SuperAdapter sa = adapters.get(key);
 
 		// try to create the adapter
 		if (sa == null) {

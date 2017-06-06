@@ -384,13 +384,13 @@ public final class Cmd {
      * <p>
      * Give items to a client.
      */
-    public static void Give_f(edict_t ent) {
+    public static void Give_f(TEntityDict ent) {
         String name;
-        gitem_t it;
+        TGItem it;
         int index;
         int i;
         boolean give_all;
-        edict_t it_ent;
+        TEntityDict it_ent;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             SV_GAME.PF_cprintfhigh(ent,
@@ -518,7 +518,7 @@ public final class Cmd {
      * <p>
      * argv(0) god
      */
-    public static void God_f(edict_t ent) {
+    public static void God_f(TEntityDict ent) {
         String msg;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
@@ -543,7 +543,7 @@ public final class Cmd {
      * <p>
      * argv(0) notarget.
      */
-    public static void Notarget_f(edict_t ent) {
+    public static void Notarget_f(TEntityDict ent) {
         String msg;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
@@ -566,7 +566,7 @@ public final class Cmd {
      * <p>
      * argv(0) noclip.
      */
-    public static void Noclip_f(edict_t ent) {
+    public static void Noclip_f(TEntityDict ent) {
         String msg;
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
@@ -591,9 +591,9 @@ public final class Cmd {
      * <p>
      * Use an inventory item.
      */
-    public static void Use_f(edict_t ent) {
+    public static void Use_f(TEntityDict ent) {
         int index;
-        gitem_t it;
+        TGItem it;
         String s;
 
         s = Cmd.Args();
@@ -622,9 +622,9 @@ public final class Cmd {
      * <p>
      * Drop an inventory item.
      */
-    public static void Drop_f(edict_t ent) {
+    public static void Drop_f(TEntityDict ent) {
         int index;
-        gitem_t it;
+        TGItem it;
         String s;
 
         s = Cmd.Args();
@@ -650,7 +650,7 @@ public final class Cmd {
     /**
      * Cmd_Inven_f.
      */
-    public static void Inven_f(edict_t ent) {
+    public static void Inven_f(TEntityDict ent) {
         int i;
         gclient_t cl;
 
@@ -676,8 +676,8 @@ public final class Cmd {
     /**
      * Cmd_InvUse_f.
      */
-    public static void InvUse_f(edict_t ent) {
-        gitem_t it;
+    public static void InvUse_f(TEntityDict ent) {
+        TGItem it;
 
         Cmd.ValidateSelectedItem(ent);
 
@@ -697,10 +697,10 @@ public final class Cmd {
     /**
      * Cmd_WeapPrev_f.
      */
-    public static void WeapPrev_f(edict_t ent) {
+    public static void WeapPrev_f(TEntityDict ent) {
         gclient_t cl;
         int i, index;
-        gitem_t it;
+        TGItem it;
         int selected_weapon;
 
         cl = ent.client;
@@ -731,10 +731,10 @@ public final class Cmd {
     /**
      * Cmd_WeapNext_f.
      */
-    public static void WeapNext_f(edict_t ent) {
+    public static void WeapNext_f(TEntityDict ent) {
         gclient_t cl;
         int i, index;
-        gitem_t it;
+        TGItem it;
         int selected_weapon;
 
         cl = ent.client;
@@ -767,10 +767,10 @@ public final class Cmd {
     /**
      * Cmd_WeapLast_f.
      */
-    public static void WeapLast_f(edict_t ent) {
+    public static void WeapLast_f(TEntityDict ent) {
         gclient_t cl;
         int index;
-        gitem_t it;
+        TGItem it;
 
         cl = ent.client;
 
@@ -791,8 +791,8 @@ public final class Cmd {
     /**
      * Cmd_InvDrop_f
      */
-    public static void InvDrop_f(edict_t ent) {
-        gitem_t it;
+    public static void InvDrop_f(TEntityDict ent) {
+        TGItem it;
 
         Cmd.ValidateSelectedItem(ent);
 
@@ -814,7 +814,7 @@ public final class Cmd {
      * <p>
      * Display the scoreboard.
      */
-    public static void Score_f(edict_t ent) {
+    public static void Score_f(TEntityDict ent) {
         ent.client.showinventory = false;
         ent.client.showhelp = false;
 
@@ -835,7 +835,7 @@ public final class Cmd {
      * <p>
      * Display the current help message.
      */
-    public static void Help_f(edict_t ent) {
+    public static void Help_f(TEntityDict ent) {
         // this is for backwards compatability
         if (GameBase.deathmatch.value != 0) {
             Score_f(ent);
@@ -859,7 +859,7 @@ public final class Cmd {
     /**
      * Cmd_Kill_f
      */
-    public static void Kill_f(edict_t ent) {
+    public static void Kill_f(TEntityDict ent) {
         if ((GameBase.level.time - ent.client.respawn_time) < 5)
             return;
         ent.flags &= ~Defines.FL_GODMODE;
@@ -871,7 +871,7 @@ public final class Cmd {
     /**
      * Cmd_PutAway_f
      */
-    public static void PutAway_f(edict_t ent) {
+    public static void PutAway_f(TEntityDict ent) {
         ent.client.showscores = false;
         ent.client.showhelp = false;
         ent.client.showinventory = false;
@@ -880,7 +880,7 @@ public final class Cmd {
     /**
      * Cmd_Players_f
      */
-    public static void Players_f(edict_t ent) {
+    public static void Players_f(TEntityDict ent) {
         int i;
         int count;
         String small;
@@ -922,7 +922,7 @@ public final class Cmd {
     /**
      * Cmd_Wave_f
      */
-    public static void Wave_f(edict_t ent) {
+    public static void Wave_f(TEntityDict ent) {
         int i;
 
         i = Lib.atoi(Cmd.Argv(1));
@@ -969,17 +969,17 @@ public final class Cmd {
     /**
      * Command to print the players own position.
      */
-    public static void ShowPosition_f(edict_t ent) {
+    public static void ShowPosition_f(TEntityDict ent) {
         SV_GAME.PF_cprintfhigh(ent, "pos=" + Lib.vtofsbeaty(ent.s.origin) + "\n");
     }
 
     /**
      * Cmd_Say_f
      */
-    public static void Say_f(edict_t ent, boolean team, boolean arg0) {
+    public static void Say_f(TEntityDict ent, boolean team, boolean arg0) {
 
         int i, j;
-        edict_t other;
+        TEntityDict other;
         String text;
         gclient_t cl;
 
@@ -1059,11 +1059,11 @@ public final class Cmd {
     /**
      * Returns the playerlist. TODO: The list is badly formatted at the moment.
      */
-    public static void PlayerList_f(edict_t ent) {
+    public static void PlayerList_f(TEntityDict ent) {
         int i;
         String st;
         String text;
-        edict_t e2;
+        TEntityDict e2;
 
         // connect time, ping, score, name
         text = "";
@@ -1138,7 +1138,7 @@ public final class Cmd {
     /**
      * Processes the commands the player enters in the quake console.
      */
-    public static void ClientCommand(edict_t ent) {
+    public static void ClientCommand(TEntityDict ent) {
 
         if (ent.client == null) {
             return; // not fully in game yet
@@ -1221,7 +1221,7 @@ public final class Cmd {
             Say_f(ent, false, true);
     }
 
-    public static void ValidateSelectedItem(edict_t ent) {
+    public static void ValidateSelectedItem(TEntityDict ent) {
         gclient_t cl = ent.client;
 
         if (cl.pers.inventory[cl.pers.selected_item] != 0)

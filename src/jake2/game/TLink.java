@@ -18,22 +18,35 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// Created on 27.11.2003 by RST.
-// $Id: centity_t.java,v 1.2 2004-07-08 20:56:50 hzi Exp $
+// Created on 31.10.2003 by RST 
+// $Id: TLink.java,v 1.1 2004-07-07 19:59:25 hzi Exp $
+// simple linked structure often used in quake.
 
-package jake2.client;
+package jake2.game;
 
-import jake2.game.entity_state_t;
+public class TLink<T> {
 
-public class centity_t {
-	entity_state_t baseline= new entity_state_t(null); // delta from this if not from a previous frame
-	public entity_state_t current= new entity_state_t(null);
-	entity_state_t prev= new entity_state_t(null); // will always be valid, but might just be a copy of current
+	public TLink<T> prev, next;
+	public final T o;
 
-	int serverframe; // if not current, this ent isn't in the frame
+	public TLink(T o) {
+		this.o = o;
+	}
 
-	int trailcount; // for diminishing grenade trails
-	float[] lerp_origin = { 0, 0, 0 }; // for trails (variable hz)
+	// ClearLink is used for new headnodes
+    public static void ClearLink(TLink l) {
+        l.prev = l.next = l;
+    }
 
-	int fly_stoptime;
+	public static void RemoveLink(TLink l) {
+        l.next.prev = l.prev;
+        l.prev.next = l.next;
+    }
+
+	public static void InsertLinkBefore(TLink l, TLink before) {
+        l.next = before;
+        l.prev = before.prev;
+        l.prev.next = l;
+        l.next.prev = l;
+    }
 }

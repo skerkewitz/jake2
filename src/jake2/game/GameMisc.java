@@ -31,7 +31,7 @@ import jake2.util.Lib;
 import jake2.util.Math3D;
 
 public class GameMisc {
-    public static void SP_path_corner(edict_t self) {
+    public static void SP_path_corner(TEntityDict self) {
         if (self.targetname == null) {
             GameBase.gi.dprintf("path_corner with no targetname at "
                     + Lib.vtos(self.s.origin) + "\n");
@@ -47,7 +47,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_point_combat(edict_t self) {
+    public static void SP_point_combat(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;
@@ -60,7 +60,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_viewthing(edict_t ent) {
+    public static void SP_viewthing(TEntityDict ent) {
         GameBase.gi.dprintf("viewthing spawned\n");
 
         ent.movetype = Defines.MOVETYPE_NONE;
@@ -80,7 +80,7 @@ public class GameMisc {
      * QUAKED info_null (0 0.5 0) (-4 -4 -4) (4 4 4) Used as a positional target
      * for spotlights, etc.
      */
-    public static void SP_info_null(edict_t self) {
+    public static void SP_info_null(TEntityDict self) {
         GameUtil.G_FreeEdict(self);
     }
 
@@ -88,12 +88,12 @@ public class GameMisc {
      * QUAKED info_notnull (0 0.5 0) (-4 -4 -4) (4 4 4) Used as a positional
      * target for lightning.
      */
-    public static void SP_info_notnull(edict_t self) {
+    public static void SP_info_notnull(TEntityDict self) {
         Math3D.VectorCopy(self.s.origin, self.absmin);
         Math3D.VectorCopy(self.s.origin, self.absmax);
     }
 
-    public static void SP_light(edict_t self) {
+    public static void SP_light(TEntityDict self) {
         // no targeted lights in deathmatch, because they cause global messages
         if (null == self.targetname || GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
@@ -109,7 +109,7 @@ public class GameMisc {
         }
     }
 
-    public static void SP_func_wall(edict_t self) {
+    public static void SP_func_wall(TEntityDict self) {
         self.movetype = Defines.MOVETYPE_PUSH;
         GameBase.gi.setmodel(self, self.model);
 
@@ -149,7 +149,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_func_object(edict_t self) {
+    public static void SP_func_object(TEntityDict self) {
         GameBase.gi.setmodel(self, self.model);
 
         self.mins[0] += 1;
@@ -184,7 +184,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_func_explosive(edict_t self) {
+    public static void SP_func_explosive(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) { // auto-remove for deathmatch
             GameUtil.G_FreeEdict(self);
             return;
@@ -222,7 +222,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_misc_explobox(edict_t self) {
+    public static void SP_misc_explobox(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) { // auto-remove for deathmatch
             GameUtil.G_FreeEdict(self);
             return;
@@ -259,7 +259,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_misc_blackhole(edict_t ent) {
+    public static void SP_misc_blackhole(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_NOT;
         Math3D.VectorSet(ent.mins, -64, -64, 0);
@@ -273,7 +273,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_eastertank(edict_t ent) {
+    public static void SP_misc_eastertank(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         Math3D.VectorSet(ent.mins, -32, -32, -16);
@@ -286,7 +286,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_easterchick(edict_t ent) {
+    public static void SP_misc_easterchick(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         Math3D.VectorSet(ent.mins, -32, -32, 0);
@@ -299,7 +299,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_easterchick2(edict_t ent) {
+    public static void SP_misc_easterchick2(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         Math3D.VectorSet(ent.mins, -32, -32, 0);
@@ -312,7 +312,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_monster_commander_body(edict_t self) {
+    public static void SP_monster_commander_body(TEntityDict self) {
         self.movetype = Defines.MOVETYPE_NONE;
         self.solid = Defines.SOLID_BBOX;
         self.model = "models/monsters/commandr/tris.md2";
@@ -332,7 +332,7 @@ public class GameMisc {
         self.nextthink = GameBase.level.time + 5 * Defines.FRAMETIME;
     }
 
-    public static void SP_misc_banner(edict_t ent) {
+    public static void SP_misc_banner(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_NOT;
         ent.s.modelindex = GameBase.gi
@@ -344,7 +344,7 @@ public class GameMisc {
         ent.nextthink = GameBase.level.time + Defines.FRAMETIME;
     }
 
-    public static void SP_misc_deadsoldier(edict_t ent) {
+    public static void SP_misc_deadsoldier(TEntityDict ent) {
         if (GameBase.deathmatch.value != 0) { // auto-remove for deathmatch
             GameUtil.G_FreeEdict(ent);
             return;
@@ -380,7 +380,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_viper(edict_t ent) {
+    public static void SP_misc_viper(TEntityDict ent) {
         if (null == ent.target) {
             GameBase.gi.dprintf("misc_viper without a target at "
                     + Lib.vtos(ent.absmin) + "\n");
@@ -411,7 +411,7 @@ public class GameMisc {
      * QUAKED misc_bigviper (1 .5 0) (-176 -120 -24) (176 120 72) This is a
      * large stationary viper as seen in Paul's intro
      */
-    public static void SP_misc_bigviper(edict_t ent) {
+    public static void SP_misc_bigviper(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         Math3D.VectorSet(ent.mins, -176, -120, -24);
@@ -421,7 +421,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_viper_bomb(edict_t self) {
+    public static void SP_misc_viper_bomb(TEntityDict self) {
         self.movetype = Defines.MOVETYPE_NONE;
         self.solid = Defines.SOLID_NOT;
         Math3D.VectorSet(self.mins, -8, -8, -8);
@@ -439,7 +439,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void SP_misc_strogg_ship(edict_t ent) {
+    public static void SP_misc_strogg_ship(TEntityDict ent) {
         if (null == ent.target) {
             GameBase.gi.dprintf(ent.classname + " without a target at "
                     + Lib.vtos(ent.absmin) + "\n");
@@ -466,7 +466,7 @@ public class GameMisc {
         GameBase.gi.linkentity(ent);
     }
 
-    public static void SP_misc_satellite_dish(edict_t ent) {
+    public static void SP_misc_satellite_dish(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         Math3D.VectorSet(ent.mins, -64, -64, 0);
@@ -480,7 +480,7 @@ public class GameMisc {
     /*
      * QUAKED light_mine1 (0 1 0) (-2 -2 -12) (2 2 12)
      */
-    public static void SP_light_mine1(edict_t ent) {
+    public static void SP_light_mine1(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         ent.s.modelindex = GameBase.gi
@@ -491,7 +491,7 @@ public class GameMisc {
     /*
      * QUAKED light_mine2 (0 1 0) (-2 -2 -12) (2 2 12)
      */
-    public static void SP_light_mine2(edict_t ent) {
+    public static void SP_light_mine2(TEntityDict ent) {
         ent.movetype = Defines.MOVETYPE_NONE;
         ent.solid = Defines.SOLID_BBOX;
         ent.s.modelindex = GameBase.gi
@@ -503,7 +503,7 @@ public class GameMisc {
      * QUAKED misc_gib_arm (1 0 0) (-8 -8 -8) (8 8 8) Intended for use with the
      * target_spawner
      */
-    public static void SP_misc_gib_arm(edict_t ent) {
+    public static void SP_misc_gib_arm(TEntityDict ent) {
         GameBase.gi.setmodel(ent, "models/objects/gibs/arm/tris.md2");
         ent.solid = Defines.SOLID_NOT;
         ent.s.effects |= Defines.EF_GIB;
@@ -524,7 +524,7 @@ public class GameMisc {
      * QUAKED misc_gib_leg (1 0 0) (-8 -8 -8) (8 8 8) Intended for use with the
      * target_spawner
      */
-    public static void SP_misc_gib_leg(edict_t ent) {
+    public static void SP_misc_gib_leg(TEntityDict ent) {
         GameBase.gi.setmodel(ent, "models/objects/gibs/leg/tris.md2");
         ent.solid = Defines.SOLID_NOT;
         ent.s.effects |= Defines.EF_GIB;
@@ -545,7 +545,7 @@ public class GameMisc {
      * QUAKED misc_gib_head (1 0 0) (-8 -8 -8) (8 8 8) Intended for use with the
      * target_spawner
      */
-    public static void SP_misc_gib_head(edict_t ent) {
+    public static void SP_misc_gib_head(TEntityDict ent) {
         GameBase.gi.setmodel(ent, "models/objects/gibs/head/tris.md2");
         ent.solid = Defines.SOLID_NOT;
         ent.s.effects |= Defines.EF_GIB;
@@ -569,7 +569,7 @@ public class GameMisc {
      * same "team") "count" is position in the string (starts at 1)
      */
 
-    public static void SP_target_character(edict_t self) {
+    public static void SP_target_character(TEntityDict self) {
         self.movetype = Defines.MOVETYPE_PUSH;
         GameBase.gi.setmodel(self, self.model);
         self.solid = Defines.SOLID_BSP;
@@ -578,7 +578,7 @@ public class GameMisc {
         return;
     }
 
-    public static void SP_target_string(edict_t self) {
+    public static void SP_target_string(TEntityDict self) {
         if (self.message == null)
             self.message = "";
         self.use = target_string_use;
@@ -587,7 +587,7 @@ public class GameMisc {
     // don't let field width of any clock messages change, or it
     // could cause an overwrite after a game load
 
-    public static void func_clock_reset(edict_t self) {
+    public static void func_clock_reset(TEntityDict self) {
         self.activator = null;
         if ((self.spawnflags & 1) != 0) {
             self.health = 0;
@@ -598,7 +598,7 @@ public class GameMisc {
         }
     }
 
-    public static void func_clock_format_countdown(edict_t self) {
+    public static void func_clock_format_countdown(TEntityDict self) {
         if (self.style == 0) {
             self.message = "" + self.health;
             //Com_sprintf(self.message, CLOCK_MESSAGE_SIZE, "%2i",
@@ -631,7 +631,7 @@ public class GameMisc {
         }
     }
 
-    public static void SP_func_clock(edict_t self) {
+    public static void SP_func_clock(TEntityDict self) {
         if (self.target == null) {
             GameBase.gi.dprintf(self.classname + " with no target at "
                     + Lib.vtos(self.s.origin) + "\n");
@@ -666,8 +666,8 @@ public class GameMisc {
      * this disc will teleport players to the targeted misc_teleporter_dest
      * object.
      */
-    public static void SP_misc_teleporter(edict_t ent) {
-        edict_t trig;
+    public static void SP_misc_teleporter(TEntityDict ent) {
+        TEntityDict trig;
 
         if (ent.target == null) {
             GameBase.gi.dprintf("teleporter without a target.\n");
@@ -712,7 +712,7 @@ public class GameMisc {
             Math3D.VectorScale(v, 1.2f, v);
     }
 
-    public static void BecomeExplosion1(edict_t self) {
+    public static void BecomeExplosion1(TEntityDict self) {
         GameBase.gi.WriteByte(Defines.svc_temp_entity);
         GameBase.gi.WriteByte(Defines.TE_EXPLOSION1);
         GameBase.gi.WritePosition(self.s.origin);
@@ -721,7 +721,7 @@ public class GameMisc {
         GameUtil.G_FreeEdict(self);
     }
 
-    public static void BecomeExplosion2(edict_t self) {
+    public static void BecomeExplosion2(TEntityDict self) {
         GameBase.gi.WriteByte(Defines.svc_temp_entity);
         GameBase.gi.WriteByte(Defines.TE_EXPLOSION2);
         GameBase.gi.WritePosition(self.s.origin);
@@ -730,9 +730,9 @@ public class GameMisc {
         GameUtil.G_FreeEdict(self);
     }
 
-    public static void ThrowGib(edict_t self, String gibname, int damage,
-            int type) {
-        edict_t gib;
+    public static void ThrowGib(TEntityDict self, String gibname, int damage,
+                                int type) {
+        TEntityDict gib;
     
         float[] vd = { 0, 0, 0 };
         float[] origin = { 0, 0, 0 };
@@ -776,8 +776,8 @@ public class GameMisc {
         GameBase.gi.linkentity(gib);
     }
 
-    public static void ThrowHead(edict_t self, String gibname, int damage,
-            int type) {
+    public static void ThrowHead(TEntityDict self, String gibname, int damage,
+                                 int type) {
         float vd[] = { 0, 0, 0 };
     
         float vscale;
@@ -819,7 +819,7 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void ThrowClientHead(edict_t self, int damage) {
+    public static void ThrowClientHead(TEntityDict self, int damage) {
         float vd[] = { 0, 0, 0 };
         String gibname;
     
@@ -860,9 +860,9 @@ public class GameMisc {
         GameBase.gi.linkentity(self);
     }
 
-    public static void ThrowDebris(edict_t self, String modelname, float speed,
-            float[] origin) {
-        edict_t chunk;
+    public static void ThrowDebris(TEntityDict self, String modelname, float speed,
+                                   float[] origin) {
+        TEntityDict chunk;
         float[] v = { 0, 0, 0 };
     
         chunk = GameUtil.G_Spawn();
@@ -887,7 +887,7 @@ public class GameMisc {
         GameBase.gi.linkentity(chunk);
     }
 
-    public static void ClipGibVelocity(edict_t ent) {
+    public static void ClipGibVelocity(TEntityDict ent) {
         if (ent.velocity[0] < -300)
             ent.velocity[0] = -300;
         else if (ent.velocity[0] > 300)
@@ -904,7 +904,7 @@ public class GameMisc {
 
     public static EntUseAdapter Use_Areaportal = new EntUseAdapter() {
         public String getID() { return "use_areaportal";}
-        public void use(edict_t ent, edict_t other, edict_t activator) {
+        public void use(TEntityDict ent, TEntityDict other, TEntityDict activator) {
             ent.count ^= 1; // toggle state
             //	gi.dprintf ("portalstate: %i = %i\n", ent.style, ent.count);
             GameBase.gi.SetAreaPortalState(ent.style, ent.count != 0);
@@ -921,7 +921,7 @@ public class GameMisc {
 
     static EntThinkAdapter SP_func_areaportal = new EntThinkAdapter() {
         public String getID() { return "sp_func_areaportal";}
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             ent.use = Use_Areaportal;
             ent.count = 0; // always start closed;
             return true;
@@ -935,10 +935,10 @@ public class GameMisc {
      */
     public static EntTouchAdapter path_corner_touch = new EntTouchAdapter() {
         public String getID() { return "path_corner_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             float[] v = { 0, 0, 0 };
-            edict_t next;
+            TEntityDict next;
 
             if (other.movetarget != self)
                 return;
@@ -995,9 +995,9 @@ public class GameMisc {
      */
     public static EntTouchAdapter point_combat_touch = new EntTouchAdapter() {
         public String getID() { return "point_combat_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
-            edict_t activator;
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
+            TEntityDict activator;
 
             if (other.movetarget != self)
                 return;
@@ -1054,7 +1054,7 @@ public class GameMisc {
      */
     public static EntThinkAdapter TH_viewthing = new EntThinkAdapter() {
         public String getID() { return "th_viewthing";}
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             ent.s.frame = (ent.s.frame + 1) % 7;
             ent.nextthink = GameBase.level.time + Defines.FRAMETIME;
             return true;
@@ -1072,7 +1072,7 @@ public class GameMisc {
 
     public static EntUseAdapter light_use = new EntUseAdapter() {
         public String getID() { return "light_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if ((self.spawnflags & START_OFF) != 0) {
                 GameBase.gi.configstring(Defines.CS_LIGHTS + self.style, "m");
                 self.spawnflags &= ~START_OFF;
@@ -1099,7 +1099,7 @@ public class GameMisc {
 
     static EntUseAdapter func_wall_use = new EntUseAdapter() {
         public String getID() { return "func_wall_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if (self.solid == Defines.SOLID_NOT) {
                 self.solid = Defines.SOLID_BSP;
                 self.svflags &= ~Defines.SVF_NOCLIENT;
@@ -1121,8 +1121,8 @@ public class GameMisc {
      */
     static EntTouchAdapter func_object_touch = new EntTouchAdapter() {
         public String getID() { return "func_object_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             // only squash thing we fall on top of
             if (plane == null)
                 return;
@@ -1138,7 +1138,7 @@ public class GameMisc {
 
     static EntThinkAdapter func_object_release = new EntThinkAdapter() {
         public String getID() { return "func_object_release";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.movetype = Defines.MOVETYPE_TOSS;
             self.touch = func_object_touch;
             return true;
@@ -1147,7 +1147,7 @@ public class GameMisc {
 
     static EntUseAdapter func_object_use = new EntUseAdapter() {
         public String getID() { return "func_object_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.solid = Defines.SOLID_BSP;
             self.svflags &= ~Defines.SVF_NOCLIENT;
             self.use = null;
@@ -1172,8 +1172,8 @@ public class GameMisc {
      */
     public static EntDieAdapter func_explosive_explode = new EntDieAdapter() {
         public String getID() { return "func_explosive_explode";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             float[] origin = { 0, 0, 0 };
             float[] chunkorigin = { 0, 0, 0 };
             float[] size = { 0, 0, 0 };
@@ -1240,7 +1240,7 @@ public class GameMisc {
 
     public static EntUseAdapter func_explosive_use = new EntUseAdapter() {
         public String getID() { return "func_explosive_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             func_explosive_explode.die(self, self, other, self.health,
                     Context.vec3_origin);
         }
@@ -1248,7 +1248,7 @@ public class GameMisc {
 
     public static EntUseAdapter func_explosive_spawn = new EntUseAdapter() {
         public String getID() { return "func_explosive_spawn";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.solid = Defines.SOLID_BSP;
             self.svflags &= ~Defines.SVF_NOCLIENT;
             self.use = null;
@@ -1264,8 +1264,8 @@ public class GameMisc {
 
     public static EntTouchAdapter barrel_touch = new EntTouchAdapter() {
         public String getID() { return "barrel_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             float ratio;
             float[] v = { 0, 0, 0 };
 
@@ -1281,7 +1281,7 @@ public class GameMisc {
 
     public static EntThinkAdapter barrel_explode = new EntThinkAdapter() {
         public String getID() { return "barrel_explode";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] org = { 0, 0, 0 };
             float spd;
@@ -1380,8 +1380,8 @@ public class GameMisc {
 
     public static EntDieAdapter barrel_delay = new EntDieAdapter() {
         public String getID() { return "barrel_delay";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
 
             self.takedamage = Defines.DAMAGE_NO;
             self.nextthink = GameBase.level.time + 2 * Defines.FRAMETIME;
@@ -1400,7 +1400,7 @@ public class GameMisc {
 
     static EntUseAdapter misc_blackhole_use = new EntUseAdapter() {
         public String getID() { return "misc_blavkhole_use";}
-        public void use(edict_t ent, edict_t other, edict_t activator) {
+        public void use(TEntityDict ent, TEntityDict other, TEntityDict activator) {
             /*
              * gi.writeByte (svc_temp_entity); gi.writeByte (TE_BOSSTPORT);
              * gi.WritePosition (ent.s.origin); gi.multicast (ent.s.origin,
@@ -1412,7 +1412,7 @@ public class GameMisc {
 
     static EntThinkAdapter misc_blackhole_think = new EntThinkAdapter() {
         public String getID() { return "misc_blackhole_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if (++self.s.frame < 19)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
@@ -1430,7 +1430,7 @@ public class GameMisc {
 
     static EntThinkAdapter misc_eastertank_think = new EntThinkAdapter() {
         public String getID() { return "misc_eastertank_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (++self.s.frame < 293)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             else {
@@ -1447,7 +1447,7 @@ public class GameMisc {
 
     static EntThinkAdapter misc_easterchick_think = new EntThinkAdapter() {
         public String getID() { return "misc_easterchick_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (++self.s.frame < 247)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             else {
@@ -1463,7 +1463,7 @@ public class GameMisc {
      */
     static EntThinkAdapter misc_easterchick2_think = new EntThinkAdapter() {
         public String getID() { return "misc_easterchick2_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (++self.s.frame < 287)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             else {
@@ -1482,7 +1482,7 @@ public class GameMisc {
 
     public static EntThinkAdapter commander_body_think = new EntThinkAdapter() {
         public String getID() { return "commander_body_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (++self.s.frame < 24)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             else
@@ -1497,7 +1497,7 @@ public class GameMisc {
 
     public static EntUseAdapter commander_body_use = new EntUseAdapter() {
         public String getID() { return "commander_body_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.think = commander_body_think;
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             GameBase.gi.sound(self, Defines.CHAN_BODY, GameBase.gi
@@ -1507,7 +1507,7 @@ public class GameMisc {
 
     public static EntThinkAdapter commander_body_drop = new EntThinkAdapter() {
         public String getID() { return "commander_body_group";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.movetype = Defines.MOVETYPE_TOSS;
             self.s.origin[2] += 2;
             return true;
@@ -1520,7 +1520,7 @@ public class GameMisc {
      */
     static EntThinkAdapter misc_banner_think = new EntThinkAdapter() {
         public String getID() { return "misc_banner_think";}
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             ent.s.frame = (ent.s.frame + 1) % 16;
             ent.nextthink = GameBase.level.time + Defines.FRAMETIME;
             return true;
@@ -1534,8 +1534,8 @@ public class GameMisc {
      */
     static EntDieAdapter misc_deadsoldier_die = new EntDieAdapter() {
         public String getID() { return "misc_deadsoldier_die";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             if (self.health > -80)
@@ -1562,7 +1562,7 @@ public class GameMisc {
 
     static EntUseAdapter misc_viper_use = new EntUseAdapter() {
         public String getID() { return "misc_viper_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.svflags &= ~Defines.SVF_NOCLIENT;
             self.use = GameFunc.train_use;
             GameFunc.train_use.use(self, other, activator);
@@ -1575,8 +1575,8 @@ public class GameMisc {
      */
     static EntTouchAdapter misc_viper_bomb_touch = new EntTouchAdapter() {
         public String getID() { return "misc_viper_bomb_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             GameUtil.G_UseTargets(self, self.activator);
 
             self.s.origin[2] = self.absmin[2] + 1;
@@ -1588,7 +1588,7 @@ public class GameMisc {
 
     static EntThinkAdapter misc_viper_bomb_prethink = new EntThinkAdapter() {
         public String getID() { return "misc_viper_bomb_prethink";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] v = { 0, 0, 0 };
             float diff;
@@ -1612,8 +1612,8 @@ public class GameMisc {
 
     static EntUseAdapter misc_viper_bomb_use = new EntUseAdapter() {
         public String getID() { return "misc_viper_bomb_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
-            edict_t viper = null;
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
+            TEntityDict viper = null;
 
             self.solid = Defines.SOLID_BBOX;
             self.svflags &= ~Defines.SVF_NOCLIENT;
@@ -1649,7 +1649,7 @@ public class GameMisc {
 
     static EntUseAdapter misc_strogg_ship_use = new EntUseAdapter() {
         public String getID() { return "misc_strogg_ship_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.svflags &= ~Defines.SVF_NOCLIENT;
             self.use = GameFunc.train_use;
             GameFunc.train_use.use(self, other, activator);
@@ -1661,7 +1661,7 @@ public class GameMisc {
      */
     static EntThinkAdapter misc_satellite_dish_think = new EntThinkAdapter() {
         public String getID() { return "misc_satellite_dish_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.s.frame++;
             if (self.s.frame < 38)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
@@ -1671,7 +1671,7 @@ public class GameMisc {
 
     static EntUseAdapter misc_satellite_dish_use = new EntUseAdapter() {
         public String getID() { return "misc_satellite_dish_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             self.s.frame = 0;
             self.think = misc_satellite_dish_think;
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;
@@ -1684,8 +1684,8 @@ public class GameMisc {
 
     static EntUseAdapter target_string_use = new EntUseAdapter() {
         public String getID() { return "target_string_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
-            edict_t e;
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
+            TEntityDict e;
             int n, l;
             char c;
 
@@ -1728,7 +1728,7 @@ public class GameMisc {
 
     public static EntThinkAdapter func_clock_think = new EntThinkAdapter() {
         public String getID() { return "func_clock_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (null == self.enemy) {
 
                 EdictIterator es = null;
@@ -1797,7 +1797,7 @@ public class GameMisc {
 
     public static EntUseAdapter func_clock_use = new EntUseAdapter() {
         public String getID() { return "func_clock_use";}
-        public void use(edict_t self, edict_t other, edict_t activator) {
+        public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if (0 == (self.spawnflags & 8))
                 self.use = null;
             if (self.activator != null)
@@ -1811,9 +1811,9 @@ public class GameMisc {
 
     static EntTouchAdapter teleporter_touch = new EntTouchAdapter() {
         public String getID() { return "teleporter_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
-            edict_t dest;
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
+            TEntityDict dest;
             int i;
 
             if (other.client == null)
@@ -1868,7 +1868,7 @@ public class GameMisc {
 
     public static EntThinkAdapter SP_misc_teleporter_dest = new EntThinkAdapter() {
         public String getID() { return "SP_misc_teleporter_dest";}
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             GameBase.gi.setmodel(ent, "models/objects/dmspot/tris.md2");
             ent.s.skinnum = 0;
             ent.solid = Defines.SOLID_BBOX;
@@ -1882,7 +1882,7 @@ public class GameMisc {
 
     public static EntThinkAdapter gib_think = new EntThinkAdapter() {
         public String getID() { return "gib_think";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.s.frame++;
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;
     
@@ -1897,8 +1897,8 @@ public class GameMisc {
 
     public static EntTouchAdapter gib_touch = new EntTouchAdapter() {
         public String getID() { return "gib_touch";}
-        public void touch(edict_t self, edict_t other, cplane_t plane,
-                csurface_t surf) {
+        public void touch(TEntityDict self, TEntityDict other, cplane_t plane,
+                          csurface_t surf) {
             float[] normal_angles = { 0, 0, 0 }, right = { 0, 0, 0 };
     
             if (null == self.groundentity)
@@ -1925,8 +1925,8 @@ public class GameMisc {
 
     public static EntDieAdapter gib_die = new EntDieAdapter() {
         public String getID() { return "gib_die";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             GameUtil.G_FreeEdict(self);
         }
     };
@@ -1936,8 +1936,8 @@ public class GameMisc {
      */
     public static EntDieAdapter debris_die = new EntDieAdapter() {
         public String getID() { return "debris_die";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             GameUtil.G_FreeEdict(self);
         }
     };

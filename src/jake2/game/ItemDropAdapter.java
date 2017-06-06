@@ -24,6 +24,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 public abstract class ItemDropAdapter extends SuperAdapter {
-	public void drop(edict_t ent, gitem_t item) {
+	public void drop(TEntityDict ent, TGItem item) {
 	}
 }

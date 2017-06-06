@@ -3,11 +3,10 @@ package jake2.client;
 import jake2.Defines;
 import jake2.game.TVar;
 import jake2.game.cmdalias_t;
-import jake2.game.entity_state_t;
+import jake2.game.TEntityState;
 import jake2.io.FileSystem;
 import jake2.network.TNetAddr;
 import jake2.qcommon.TSizeBuffer;
-import jake2.render.DummyRenderer;
 import jake2.render.TModel;
 
 import java.io.FileWriter;
@@ -135,19 +134,19 @@ public final class Context {
     public static client_static_t cls = new client_static_t();
     public static client_state_t cl = new client_state_t();
 
-    public static centity_t cl_entities[] = new centity_t[Defines.MAX_EDICTS];
+    public static TClEentity cl_entities[] = new TClEentity[Defines.MAX_EDICTS];
     static {
         for (int i = 0; i < cl_entities.length; i++) {
-            cl_entities[i] = new centity_t();
+            cl_entities[i] = new TClEentity();
         }
     }
 
-    public static entity_state_t cl_parse_entities[] = new entity_state_t[Defines.MAX_PARSE_ENTITIES];
+    public static TEntityState cl_parse_entities[] = new TEntityState[Defines.MAX_PARSE_ENTITIES];
 
     static {
         for (int i = 0; i < cl_parse_entities.length; i++)
         {
-            cl_parse_entities[i] = new entity_state_t(null);
+            cl_parse_entities[i] = new TEntityState(null);
         }
     }
 
@@ -333,7 +332,7 @@ public final class Context {
     public static TVar con_notifytime;
     public static viddef_t viddef = new viddef_t();
     // Renderer interface used by VID, SCR, ...
-    public static refexport_t re = new DummyRenderer();
+    public static refexport_t re = null;
 
     public static boolean[] keydown = new boolean[256];
     public static boolean chat_team = false;
@@ -348,7 +347,7 @@ public final class Context {
     public static int edit_line;
 
     public static TVar crosshair;
-    public static vrect_t scr_vrect = new vrect_t();
+    public static TRect scr_vrect = new TRect();
     public static int sys_frame_time;
     public static int chat_bufferlen = 0;
     public static int gun_frame;

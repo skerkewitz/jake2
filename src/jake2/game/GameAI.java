@@ -33,14 +33,14 @@ import jake2.util.Math3D;
 
 public class GameAI {
 
-    public static void AttackFinished(edict_t self, float time) {
+    public static void AttackFinished(TEntityDict self, float time) {
         self.monsterinfo.attack_finished = GameBase.level.time + time;
     }
 
     /** Don't move, but turn towards ideal_yaw Distance is for slight position
      * adjustments needed by the animations.
      */
-    public static void ai_turn(edict_t self, float dist) {
+    public static void ai_turn(TEntityDict self, float dist) {
         if (dist != 0)
             M.M_walkmove(self, self.s.angles[Defines.YAW], dist);
 
@@ -54,7 +54,7 @@ public class GameAI {
      * Checks, if the monster should turn left/right.
      */
 
-    public static boolean FacingIdeal(edict_t self) {
+    public static boolean FacingIdeal(TEntityDict self) {
         float delta;
 
         delta = Math3D.anglemod(self.s.angles[Defines.YAW] - self.ideal_yaw);
@@ -64,7 +64,7 @@ public class GameAI {
     /**
      * Turn and close until within an angle to launch a melee attack.
      */
-    public static void ai_run_melee(edict_t self) {
+    public static void ai_run_melee(TEntityDict self) {
         self.ideal_yaw = enemy_yaw;
         M.M_ChangeYaw(self);
 
@@ -77,7 +77,7 @@ public class GameAI {
     /**
      * Turn in place until within an angle to launch a missile attack.
      */
-    public static void ai_run_missile(edict_t self) {
+    public static void ai_run_missile(TEntityDict self) {
         self.ideal_yaw = enemy_yaw;
         M.M_ChangeYaw(self);
 
@@ -90,7 +90,7 @@ public class GameAI {
     /**
      * Strafe sideways, but stay at aproximately the same range.
      */
-    public static void ai_run_slide(edict_t self, float distance) {
+    public static void ai_run_slide(TEntityDict self, float distance) {
         float ofs;
 
         self.ideal_yaw = enemy_yaw;
@@ -131,7 +131,7 @@ public class GameAI {
      * 
      * walkmove(angle, speed) primitive is all or nothing
      */
-    public static boolean ai_checkattack(edict_t self, float dist) {
+    public static boolean ai_checkattack(TEntityDict self, float dist) {
         float temp[] = { 0, 0, 0 };
 
         boolean hesDeadJim;
@@ -238,7 +238,7 @@ public class GameAI {
     /**
      * The monster is walking it's beat.
      */
-    static void ai_walk(edict_t self, float dist) {
+    static void ai_walk(TEntityDict self, float dist) {
         M.M_MoveToGoal(self, dist);
     
         // check for noticing a player
@@ -267,7 +267,7 @@ public class GameAI {
      * In coop games, sight_client will cycle between the clients.
      */
     static void AI_SetSightClient() {
-        edict_t ent;
+        TEntityDict ent;
         int start, check;
     
         if (GameBase.level.sight_client == null)
@@ -298,7 +298,7 @@ public class GameAI {
      * Move the specified distance at current facing. This replaces the QC
      * functions: ai_forward, ai_back, ai_pain, and ai_painforward
      */
-    static void ai_move(edict_t self, float dist) {
+    static void ai_move(TEntityDict self, float dist) {
         M.M_walkmove(self, self.s.angles[Defines.YAW], dist);
     }
 
@@ -306,7 +306,7 @@ public class GameAI {
     /**
      * Decides running or standing according to flag AI_STAND_GROUND.
      */
-    static void HuntTarget(edict_t self) {
+    static void HuntTarget(TEntityDict self) {
         float[] vec = { 0, 0, 0 };
     
         self.goalentity = self.enemy;
@@ -325,7 +325,7 @@ public class GameAI {
     
     public static EntThinkAdapter walkmonster_start_go = new EntThinkAdapter() {
         public String getID() { return "walkmonster_start_go"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if (0 == (self.spawnflags & 2) && GameBase.level.time < 1) {
                 M.M_droptofloor.think(self);
@@ -351,7 +351,7 @@ public class GameAI {
     public static EntThinkAdapter walkmonster_start = new EntThinkAdapter() {
         public String getID() { return "walkmonster_start";} 
         
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             self.think = walkmonster_start_go;
             Monster.monster_start(self);
@@ -361,7 +361,7 @@ public class GameAI {
 
     public static EntThinkAdapter flymonster_start_go = new EntThinkAdapter() {
         public String getID() { return "flymonster_start_go";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (!M.M_walkmove(self, 0, 0))
                 GameBase.gi.dprintf(self.classname + " in solid at "
                         + Lib.vtos(self.s.origin) + "\n");
@@ -380,7 +380,7 @@ public class GameAI {
 
     public static EntThinkAdapter flymonster_start = new EntThinkAdapter() {
         public String getID() { return "flymonster_start";}        
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.flags |= Defines.FL_FLY;
             self.think = flymonster_start_go;
             Monster.monster_start(self);
@@ -390,7 +390,7 @@ public class GameAI {
 
     public static EntThinkAdapter swimmonster_start_go = new EntThinkAdapter() {
         public String getID() { return "swimmonster_start_go";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (0 == self.yaw_speed)
                 self.yaw_speed = 20;
             self.viewheight = 10;
@@ -405,7 +405,7 @@ public class GameAI {
 
     public static EntThinkAdapter swimmonster_start = new EntThinkAdapter() {
         public String getID() { return "swimmonster_start";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.flags |= Defines.FL_SWIM;
             self.think = swimmonster_start_go;
             Monster.monster_start(self);
@@ -420,7 +420,7 @@ public class GameAI {
      */
     public static AIAdapter ai_turn = new AIAdapter() {
         public String getID() { return "ai_turn";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
 
             if (dist != 0)
                 M.M_walkmove(self, self.s.angles[Defines.YAW], dist);
@@ -439,7 +439,7 @@ public class GameAI {
      */
     public static AIAdapter ai_move = new AIAdapter() {
         public String getID() { return "ai_move";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
             M.M_walkmove(self, self.s.angles[Defines.YAW], dist);
         }
     };
@@ -450,7 +450,7 @@ public class GameAI {
      */
     public static AIAdapter ai_walk = new AIAdapter() {
         public String getID() { return "ai_walk";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
             M.M_MoveToGoal(self, dist);
 
             // check for noticing a player
@@ -477,7 +477,7 @@ public class GameAI {
 
     public static AIAdapter ai_stand = new AIAdapter() {
         public String getID() { return "ai_stand";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
             float[] v = { 0, 0, 0 };
 
             if (dist != 0)
@@ -525,7 +525,7 @@ public class GameAI {
      */
     public static AIAdapter ai_charge = new AIAdapter() {
         public String getID() { return "ai_charge";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
             float[] v = { 0, 0, 0 };
 
             Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, v);
@@ -543,13 +543,13 @@ public class GameAI {
      */
     public static AIAdapter ai_run = new AIAdapter() {
         public String getID() { return "ai_run";}
-        public void ai(edict_t self, float dist) {
+        public void ai(TEntityDict self, float dist) {
             float[] v = { 0, 0, 0 };
 
-            edict_t tempgoal;
-            edict_t save;
+            TEntityDict tempgoal;
+            TEntityDict save;
             boolean new1;
-            edict_t marker;
+            TEntityDict marker;
             float d1, d2;
             trace_t tr; // mem
             float[] v_forward = { 0, 0, 0 }, v_right = { 0, 0, 0 };

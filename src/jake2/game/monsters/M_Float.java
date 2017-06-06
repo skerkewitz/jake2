@@ -33,7 +33,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -557,7 +557,7 @@ public class M_Float {
 
     static EntInteractAdapter floater_sight = new EntInteractAdapter() {
     	public String getID() { return "floater_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -566,7 +566,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_idle = new EntThinkAdapter() {
     	public String getID() { return "floater_idle"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_idle, 1,
                     Defines.ATTN_IDLE, 0);
             return true;
@@ -575,7 +575,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_fire_blaster = new EntThinkAdapter() {
     	public String getID() { return "floater_fire_blaster"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] start = { 0, 0, 0 };
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] end = { 0, 0, 0 };
@@ -719,7 +719,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_stand = new EntThinkAdapter() {
     	public String getID() { return "floater_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (Lib.random() <= 0.5)
                 self.monsterinfo.currentmove = floater_move_stand1;
             else
@@ -765,7 +765,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_run = new EntThinkAdapter() {
     	public String getID() { return "floater_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = floater_move_stand1;
@@ -802,7 +802,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_wham = new EntThinkAdapter() {
     	public String getID() { return "floater_wham"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_attack3, 1,
                     Defines.ATTN_NORM, 0);
@@ -845,7 +845,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_zap = new EntThinkAdapter() {
     	public String getID() { return "floater_zap"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] origin = { 0, 0, 0 };
             float[] dir = { 0, 0, 0 };
@@ -939,7 +939,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_dead = new EntThinkAdapter() {
     	public String getID() { return "floater_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -1111,7 +1111,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_walk = new EntThinkAdapter() {
     	public String getID() { return "floater_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = floater_move_walk;
             return true;
         }
@@ -1119,7 +1119,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_attack = new EntThinkAdapter() {
     	public String getID() { return "floater_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = floater_move_attack1;
             return true;
         }
@@ -1127,7 +1127,7 @@ public class M_Float {
 
     static EntThinkAdapter floater_melee = new EntThinkAdapter() {
     	public String getID() { return "floater_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if (Lib.random() < 0.5)
                 self.monsterinfo.currentmove = floater_move_attack3;
@@ -1139,7 +1139,7 @@ public class M_Float {
 
     static EntPainAdapter floater_pain = new EntPainAdapter() {
     	public String getID() { return "floater_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             int n;
 
             if (self.health < (self.max_health / 2))
@@ -1169,8 +1169,8 @@ public class M_Float {
     static EntDieAdapter floater_die = new EntDieAdapter() {
     	public String getID() { return "floater_die"; }
 
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_death1, 1,
                     Defines.ATTN_NORM, 0);
             GameMisc.BecomeExplosion1(self);
@@ -1182,7 +1182,7 @@ public class M_Float {
      * QUAKED monster_floater (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_floater(edict_t self) {
+    public static void SP_monster_floater(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

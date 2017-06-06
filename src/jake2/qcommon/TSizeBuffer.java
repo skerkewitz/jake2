@@ -27,7 +27,7 @@ package jake2.qcommon;
 
 import jake2.Defines;
 import jake2.client.Context;
-import jake2.game.entity_state_t;
+import jake2.game.TEntityState;
 import jake2.game.usercmd_t;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -302,7 +302,7 @@ public final class TSizeBuffer {
       * Writes part of a packetentities message. Can delta from either a baseline
       * or a previous packet_entity ==================
       */
-    public void writeDeltaEntity(entity_state_t from, entity_state_t to, boolean force, boolean newentity) {
+    public void writeDeltaEntity(TEntityState from, TEntityState to, boolean force, boolean newentity) {
         int bits;
 
         if (0 == to.number)

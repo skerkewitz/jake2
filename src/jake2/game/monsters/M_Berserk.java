@@ -535,7 +535,7 @@ public class M_Berserk {
 
     static EntInteractAdapter berserk_sight = new EntInteractAdapter() {
         public String getID() { return "berserk_sight";}
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -544,7 +544,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_search = new EntThinkAdapter() {
         public String getID() { return "berserk_search";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_search, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -553,7 +553,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_fidget = new EntThinkAdapter() {
         public String getID() { return "berserk_fidget";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 return true;
 
@@ -579,7 +579,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_stand = new EntThinkAdapter() {
         public String getID() { return "berserk_stand";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = berserk_move_stand;
             return true;
         }
@@ -629,7 +629,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_walk = new EntThinkAdapter() {
         public String getID() { return "berserk_walk";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = berserk_move_walk;
             return true;
         }
@@ -670,7 +670,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_run = new EntThinkAdapter() {
         public String getID() { return "berserk_run";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = berserk_move_stand;
             else
@@ -681,7 +681,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_attack_spike = new EntThinkAdapter() {
         public String getID() { return "berserk_attack_spike";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { Defines.MELEE_DISTANCE, 0f, -24f };
 
             GameWeapon.fire_hit(self, aim, (15 + (Lib.rand() % 6)), 400);
@@ -693,7 +693,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_swing = new EntThinkAdapter() {
         public String getID() { return "berserk_swing";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_punch, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -715,7 +715,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_attack_club = new EntThinkAdapter() {
         public String getID() { return "berserk_attack_club";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float aim[] = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, self.mins[0], -4);
@@ -745,7 +745,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_strike = new EntThinkAdapter() {
         public String getID() { return "berserk_strike";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             return true;
         }
     };
@@ -771,7 +771,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_melee = new EntThinkAdapter() {
         public String getID() { return "berserk_melee";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((Lib.rand() % 2) == 0)
                 self.monsterinfo.currentmove = berserk_move_attack_spike;
             else
@@ -837,7 +837,7 @@ public class M_Berserk {
 
     static EntPainAdapter berserk_pain = new EntPainAdapter() {
         public String getID() { return "berserk_pain";}
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
                 self.s.skinnum = 1;
 
@@ -860,7 +860,7 @@ public class M_Berserk {
 
     static EntThinkAdapter berserk_dead = new EntThinkAdapter() {
         public String getID() { return "berserk_dead";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -904,8 +904,8 @@ public class M_Berserk {
 
     static EntDieAdapter berserk_die = new EntDieAdapter() {
         public String getID() { return "berserk_die";}
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float point[]) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float point[]) {
             int n;
 
             if (self.health <= self.gib_health) {
@@ -945,7 +945,7 @@ public class M_Berserk {
      * QUAKED monster_berserk (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_berserk(edict_t self) {
+    public static void SP_monster_berserk(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

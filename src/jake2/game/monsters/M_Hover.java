@@ -32,7 +32,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -470,7 +470,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_reattack = new EntThinkAdapter() {
     	public String getID() { return "hover_reattack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (self.enemy.health > 0)
                 if (GameUtil.visible(self, self.enemy))
                     if (Lib.random() <= 0.6) {
@@ -484,7 +484,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_fire_blaster = new EntThinkAdapter() {
     	public String getID() { return "hover_fire_blaster"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] start = { 0, 0, 0 };
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] end = { 0, 0, 0 };
@@ -513,7 +513,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_stand = new EntThinkAdapter() {
     	public String getID() { return "hover_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = hover_move_stand;
             return true;
         }
@@ -521,7 +521,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_run = new EntThinkAdapter() {
     	public String getID() { return "hover_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = hover_move_stand;
             else
@@ -532,7 +532,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_walk = new EntThinkAdapter() {
     	public String getID() { return "hover_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = hover_move_walk;
             return true;
         }
@@ -540,7 +540,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_start_attack = new EntThinkAdapter() {
     	public String getID() { return "hover_start_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = hover_move_start_attack;
             return true;
         }
@@ -548,7 +548,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_attack = new EntThinkAdapter() {
     	public String getID() { return "hover_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = hover_move_attack1;
             return true;
         }
@@ -556,7 +556,7 @@ public class M_Hover {
 
     static EntPainAdapter hover_pain = new EntPainAdapter() {
     	public String getID() { return "hover_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
                 self.s.skinnum = 1;
 
@@ -588,7 +588,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_deadthink = new EntThinkAdapter() {
     	public String getID() { return "hover_deadthink"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (null == self.groundentity
                     && GameBase.level.time < self.timestamp) {
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
@@ -601,7 +601,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_dead = new EntThinkAdapter() {
     	public String getID() { return "hover_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -615,8 +615,8 @@ public class M_Hover {
 
     static EntDieAdapter hover_die = new EntDieAdapter() {
     	public String getID() { return "hover_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             //	check for gib
@@ -656,7 +656,7 @@ public class M_Hover {
 
     static EntInteractAdapter hover_sight = new EntInteractAdapter() {
     	public String getID() { return "hover_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -665,7 +665,7 @@ public class M_Hover {
 
     static EntThinkAdapter hover_search = new EntThinkAdapter() {
     	public String getID() { return "hover_search"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (Lib.random() < 0.5)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_search1, 1,
                         Defines.ATTN_NORM, 0);
@@ -1035,7 +1035,7 @@ public class M_Hover {
      * QUAKED monster_hover (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_hover(edict_t self) {
+    public static void SP_monster_hover(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

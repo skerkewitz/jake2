@@ -496,7 +496,7 @@ public class Mesh {
 	    for (i = 0; i < 3; i++)
 		shadelight[i] = 1.0f;
 	} else {
-		RenderAPIImpl.light.R_LightPoint(RenderAPIImpl.main.currententity.origin, shadelight);
+		RenderAPIImpl.light.lightPoint(RenderAPIImpl.main.currententity.origin, shadelight);
 
 	    // player lighting hack for communication back to server
 	    // big hack!
@@ -558,7 +558,7 @@ public class Mesh {
 
 	// =================
 	// PGM ir goggles color override
-	if ((RenderAPIImpl.main.r_newrefdef.rdflags & Defines.RDF_IRGOGGLES) != 0
+	if ((RenderAPIImpl.main.r_newrefdef.renderFlags & Defines.RDF_IRGOGGLES) != 0
 		&& (RenderAPIImpl.main.currententity.flags & Defines.RF_IR_VISIBLE) != 0) {
 	    shadelight[0] = 1.0f;
 	    shadelight[1] = 0.0f;

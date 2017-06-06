@@ -32,7 +32,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -655,7 +655,7 @@ public class M_Tank {
 
     static EntInteractAdapter tank_sight = new EntInteractAdapter() {
     	public String getID(){ return "tank_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -664,7 +664,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_footstep = new EntThinkAdapter() {
     	public String getID(){ return "tank_footstep"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_BODY, sound_step, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -673,7 +673,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_thud = new EntThinkAdapter() {
     	public String getID(){ return "tank_thud"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_BODY, sound_thud, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -682,7 +682,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_windup = new EntThinkAdapter() {
     	public String getID(){ return "tank_windup"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_windup, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -691,7 +691,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_idle = new EntThinkAdapter() {
     	public String getID(){ return "tank_idle"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_idle, 1,
                     Defines.ATTN_IDLE, 0);
             return true;
@@ -739,7 +739,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_stand = new EntThinkAdapter() {
     	public String getID(){ return "tank_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = tank_move_stand;
             return true;
         }
@@ -750,7 +750,7 @@ public class M_Tank {
     //
     static EntThinkAdapter tank_run = new EntThinkAdapter() {
     	public String getID(){ return "tank_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (self.enemy != null && self.enemy.client != null)
                 self.monsterinfo.aiflags |= Defines.AI_BRUTAL;
             else
@@ -773,7 +773,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_walk = new EntThinkAdapter() {
     	public String getID(){ return "tank_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = tank_move_walk;
             return true;
         }
@@ -909,7 +909,7 @@ public class M_Tank {
 
     static EntPainAdapter tank_pain = new EntPainAdapter() {
     	public String getID(){ return "tank_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
                 self.s.skinnum |= 1;
 
@@ -955,7 +955,7 @@ public class M_Tank {
 
     static EntThinkAdapter TankBlaster = new EntThinkAdapter() {
     	public String getID(){ return "TankBlaster"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] start = { 0, 0, 0 };
             float[] end = { 0, 0, 0 };
@@ -988,7 +988,7 @@ public class M_Tank {
 
     static EntThinkAdapter TankStrike = new EntThinkAdapter() {
     	public String getID(){ return "TankStrike"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_strike, 1,
                     Defines.ATTN_NORM, 0);
 
@@ -998,7 +998,7 @@ public class M_Tank {
 
     static EntThinkAdapter TankRocket = new EntThinkAdapter() {
     	public String getID(){ return "TankRocket"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
             float[] start = { 0, 0, 0 };
             float[] dir = { 0, 0, 0 };
@@ -1032,7 +1032,7 @@ public class M_Tank {
 
     static EntThinkAdapter TankMachineGun = new EntThinkAdapter() {
     	public String getID(){ return "TankMachineGun"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
@@ -1075,7 +1075,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_reattack_blaster = new EntThinkAdapter() {
     	public String getID(){ return "tank_reattack_blaster"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameBase.skill.value >= 2)
                 if (GameUtil.visible(self, self.enemy))
                     if (self.enemy.health > 0)
@@ -1137,7 +1137,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_poststrike = new EntThinkAdapter() {
     	public String getID(){ return "tank_poststrike"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.enemy = null;
             tank_run.think(self);
             return true;
@@ -1146,7 +1146,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_doattack_rocket = new EntThinkAdapter() {
     	public String getID(){ return "tank_doattack_rocket"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = tank_move_attack_fire_rocket;
             return true;
         }
@@ -1154,7 +1154,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_refire_rocket = new EntThinkAdapter() {
     	public String getID(){ return "tank_refire_rocket"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             // Only on hard or nightmare
             if (GameBase.skill.value >= 2)
                 if (self.enemy.health > 0)
@@ -1324,7 +1324,7 @@ public class M_Tank {
 
     static EntThinkAdapter tank_attack = new EntThinkAdapter() {
     	public String getID(){ return "tank_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] vec = { 0, 0, 0 };
             float range;
             float r;
@@ -1372,7 +1372,7 @@ public class M_Tank {
     //
     static EntThinkAdapter tank_dead = new EntThinkAdapter() {
     	public String getID(){ return "tank_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -16);
             Math3D.VectorSet(self.maxs, 16, 16, -0);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -1422,8 +1422,8 @@ public class M_Tank {
 
     static EntDieAdapter tank_die = new EntDieAdapter() {
     	public String getID(){ return "tank_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             // check for gib
@@ -1476,7 +1476,7 @@ public class M_Tank {
      */
     public static EntThinkAdapter SP_monster_tank = new EntThinkAdapter() {
     	public String getID(){ return "SP_monster_tank"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameBase.deathmatch.value != 0) {
                 GameUtil.G_FreeEdict(self);
                 return true;

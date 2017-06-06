@@ -363,7 +363,7 @@ public class SV_MAIN {
         
         int edictnum = i + 1;
         
-        edict_t ent = GameBase.g_edicts[edictnum];
+        TEntityDict ent = GameBase.g_edicts[edictnum];
         SV_INIT.svs.clients[i].edict = ent;
         
         // save challenge for checksumming
@@ -657,7 +657,7 @@ public class SV_MAIN {
      * happens outside RunWorldFrame.
      */
     public static void SV_PrepWorldFrame() {
-        edict_t ent;
+        TEntityDict ent;
         int i;
 
         for (i = 0; i < GameBase.num_edicts; i++) {

@@ -25,5 +25,5 @@ package jake2.game;
 
 public abstract class EntInteractAdapter extends SuperAdapter
 {
-	public abstract boolean interact(edict_t self, edict_t other);
+	public abstract boolean interact(TEntityDict self, TEntityDict other);
 }

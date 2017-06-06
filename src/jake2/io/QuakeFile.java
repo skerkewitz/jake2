@@ -85,7 +85,7 @@ public class QuakeFile extends RandomAccessFile {
     }
 
     /** Writes the edict reference. */
-    public void writeEdictRef(edict_t ent) throws IOException {
+    public void writeEdictRef(TEntityDict ent) throws IOException {
         if (ent == null)
             writeInt(-1);
         else {
@@ -97,7 +97,7 @@ public class QuakeFile extends RandomAccessFile {
      * Reads an edict index from a file and returns the edict.
      */
 
-    public edict_t readEdictRef() throws IOException {
+    public TEntityDict readEdictRef() throws IOException {
         int i = readInt();
 
         // handle -1
@@ -143,7 +143,7 @@ public class QuakeFile extends RandomAccessFile {
     }
 
     /** Writes an item reference. */
-    public void writeItem(gitem_t item) throws IOException {
+    public void writeItem(TGItem item) throws IOException {
         if (item == null)
             writeInt(-1);
         else
@@ -151,7 +151,7 @@ public class QuakeFile extends RandomAccessFile {
     }
 
     /** Reads the item index and returns the game item. */
-    public gitem_t readItem() throws IOException {
+    public TGItem readItem() throws IOException {
         int ndx = readInt();
         if (ndx == -1)
             return null;

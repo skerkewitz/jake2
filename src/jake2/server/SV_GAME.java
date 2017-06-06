@@ -35,7 +35,7 @@ public class SV_GAME {
      * <p>
      * Sends the contents of the mutlicast buffer to a single client.
      */
-    public static void PF_Unicast(edict_t ent, boolean reliable) {
+    public static void PF_Unicast(TEntityDict ent, boolean reliable) {
         int p;
         client_t client;
 
@@ -70,7 +70,7 @@ public class SV_GAME {
     /**
      * Centerprintf for critical messages.
      */
-    public static void PF_cprintfhigh(edict_t ent, String fmt) {
+    public static void PF_cprintfhigh(TEntityDict ent, String fmt) {
         PF_cprintf(ent, Defines.PRINT_HIGH, fmt);
     }
 
@@ -79,7 +79,7 @@ public class SV_GAME {
      * <p>
      * print to a single client.
      */
-    public static void PF_cprintf(edict_t ent, int level, String fmt) {
+    public static void PF_cprintf(TEntityDict ent, int level, String fmt) {
 
         int n = 0;
 
@@ -100,7 +100,7 @@ public class SV_GAME {
      * <p>
      * centerprint to a single client.
      */
-    public static void PF_centerprintf(edict_t ent, String fmt) {
+    public static void PF_centerprintf(TEntityDict ent, String fmt) {
         int n;
 
         n = ent.index;
@@ -130,7 +130,7 @@ public class SV_GAME {
      * <p>
      * Also sets mins and maxs for inline bmodels.
      */
-    public static void PF_setmodel(edict_t ent, String name) {
+    public static void PF_setmodel(TEntityDict ent, String name) {
         int i;
         cmodel_t mod;
 
@@ -268,7 +268,7 @@ public class SV_GAME {
         return CM.CM_AreasConnected(area1, area2);
     }
 
-    public static void PF_StartSound(edict_t entity, int channel,
+    public static void PF_StartSound(TEntityDict entity, int channel,
                                      int sound_num, float volume, float attenuation, float timeofs) {
 
         if (null == entity)

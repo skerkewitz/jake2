@@ -25,5 +25,5 @@ package jake2.game;
 
 public abstract class EntTouchAdapter extends SuperAdapter
 {
-	public abstract void touch(edict_t self, edict_t other, cplane_t plane, csurface_t surf);
+	public abstract void touch(TEntityDict self, TEntityDict other, cplane_t plane, csurface_t surf);
 }

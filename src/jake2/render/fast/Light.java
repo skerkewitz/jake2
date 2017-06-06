@@ -49,14 +49,25 @@ import java.util.Arrays;
  */
 public final class Light {
 
-    private int dynamicLightFrameCount;
-
     private static final int DLIGHT_CUTOFF = 64;
-
-    /* DYNAMIC LIGHTS BLEND RENDERING */
-
     // stack variable
     private final float[] v = {0, 0, 0};
+
+    /* DYNAMIC LIGHTS BLEND RENDERING */
+    // stack variable
+    private final float[] end = {0, 0, 0};
+    // TODO sync with jogl renderer. hoz
+    private final float[] impact = {0, 0, 0};
+    float[] pointcolor = {0, 0, 0}; // vec3_t
+
+
+    /* DYNAMIC LIGHTS  */
+    cplane_t lightplane; // used as shadow plane
+    float[] lightspot = {0, 0, 0}; // vec3_t
+
+	/* LIGHT SAMPLING */
+    float[] s_blocklights = new float[34 * 34 * 3];
+    private int dynamicLightFrameCount;
 
     /**
      * renderDynamicLight
@@ -116,13 +127,10 @@ public final class Light {
         GL11.glDepthMask(true);
     }
 
-
-    /* DYNAMIC LIGHTS  */
-
     /**
-     * R_MarkLights
+     * markLights
      */
-    void R_MarkLights(TDynamicLight light, int bit, TMNode node) {
+    void markLights(TDynamicLight light, int bit, TMNode node) {
         if (node.contents != -1)
             return;
 
@@ -130,11 +138,11 @@ public final class Light {
         float dist = Math3D.DotProduct(light.origin, splitplane.normal) - splitplane.dist;
 
         if (dist > light.intensity - DLIGHT_CUTOFF) {
-            R_MarkLights(light, bit, node.children[0]);
+            markLights(light, bit, node.children[0]);
             return;
         }
         if (dist < -light.intensity + DLIGHT_CUTOFF) {
-            R_MarkLights(light, bit, node.children[1]);
+            markLights(light, bit, node.children[1]);
             return;
         }
 
@@ -162,14 +170,14 @@ public final class Light {
             surf.dlightbits |= bit;
         }
 
-        R_MarkLights(light, bit, node.children[0]);
-        R_MarkLights(light, bit, node.children[1]);
+        markLights(light, bit, node.children[0]);
+        markLights(light, bit, node.children[1]);
     }
 
     /**
-     * R_PushDlights
+     * pushDynamicLight
      */
-    void R_PushDlights() {
+    void pushDynamicLight() {
         if (RenderAPIImpl.main.gl_flashblend.value != 0)
             return;
 
@@ -178,25 +186,21 @@ public final class Light {
 
         for (int i = 0; i < RenderAPIImpl.main.r_newrefdef.num_dlights; i++) {
             TDynamicLight l = RenderAPIImpl.main.r_newrefdef.dlights[i];
-            R_MarkLights(l, 1 << i, RenderAPIImpl.main.r_worldmodel.nodes[0]);
+            markLights(l, 1 << i, RenderAPIImpl.main.r_worldmodel.nodes[0]);
         }
     }
 
-	/* LIGHT SAMPLING */
-
-    float[] pointcolor = {0, 0, 0}; // vec3_t
-    cplane_t lightplane; // used as shadow plane
-    float[] lightspot = {0, 0, 0}; // vec3_t
+//	  ===================================================================
 
     /**
-     * RecursiveLightPoint
+     * recursiveLightPoint
      *
      * @param node
      * @param start
      * @param end
      * @return
      */
-    int RecursiveLightPoint(TMNode node, float[] start, float[] end) {
+    private int recursiveLightPoint(TMNode node, float[] start, float[] end) {
         if (node.contents != -1)
             return -1;        // didn't hit anything
 
@@ -210,7 +214,7 @@ public final class Light {
         int sideIndex = (side) ? 1 : 0;
 
         if ((back < 0) == side)
-            return RecursiveLightPoint(node.children[sideIndex], start, end);
+            return recursiveLightPoint(node.children[sideIndex], start, end);
 
         float frac = front / (front - back);
         float[] mid = Vec3Cache.get();
@@ -219,7 +223,7 @@ public final class Light {
         mid[2] = start[2] + (end[2] - start[2]) * frac;
 
         // go down front side
-        int r = RecursiveLightPoint(node.children[sideIndex], start, mid);
+        int r = recursiveLightPoint(node.children[sideIndex], start, mid);
         if (r >= 0) {
             Vec3Cache.release(); // mid
             return r;        // hit something
@@ -235,27 +239,22 @@ public final class Light {
         lightplane = plane;
         int surfIndex = node.firstsurface;
 
-        TMapSurface surf;
-        int s, t, ds, dt;
-        TMapTexInfo tex;
-        ByteBuffer lightmap;
-        int maps;
         for (int i = 0; i < node.numsurfaces; i++, surfIndex++) {
-            surf = RenderAPIImpl.main.r_worldmodel.surfaces[surfIndex];
+            TMapSurface surf = RenderAPIImpl.main.r_worldmodel.surfaces[surfIndex];
 
             if ((surf.flags & (Defines.SURF_DRAWTURB | Defines.SURF_DRAWSKY)) != 0)
                 continue;    // no lightmaps
 
-            tex = surf.texinfo;
+            TMapTexInfo tex = surf.texinfo;
 
-            s = (int) (Math3D.DotProduct(mid, tex.vecs[0]) + tex.vecs[0][3]);
-            t = (int) (Math3D.DotProduct(mid, tex.vecs[1]) + tex.vecs[1][3]);
+            int s = (int) (Math3D.DotProduct(mid, tex.vecs[0]) + tex.vecs[0][3]);
+            int t = (int) (Math3D.DotProduct(mid, tex.vecs[1]) + tex.vecs[1][3]);
 
             if (s < surf.texturemins[0] || t < surf.texturemins[1])
                 continue;
 
-            ds = s - surf.texturemins[0];
-            dt = t - surf.texturemins[1];
+            int ds = s - surf.texturemins[0];
+            int dt = t - surf.texturemins[1];
 
             if (ds > surf.extents[0] || dt > surf.extents[1])
                 continue;
@@ -266,7 +265,7 @@ public final class Light {
             ds >>= 4;
             dt >>= 4;
 
-            lightmap = surf.samples;
+            ByteBuffer lightmap = surf.samples;
             int lightmapIndex = 0;
 
             Math3D.VectorCopy(Context.vec3_origin, pointcolor);
@@ -275,7 +274,7 @@ public final class Light {
                 lightmapIndex += 3 * (dt * ((surf.extents[0] >> 4) + 1) + ds);
 
                 float scale0, scale1, scale2;
-                for (maps = 0; maps < Defines.MAXLIGHTMAPS && surf.styles[maps] != (byte) 255; maps++) {
+                for (int maps = 0; maps < Defines.MAXLIGHTMAPS && surf.styles[maps] != (byte) 255; maps++) {
                     rgb = RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb;
                     scale0 = RenderAPIImpl.main.gl_modulate.value * rgb[0];
                     scale1 = RenderAPIImpl.main.gl_modulate.value * rgb[1];
@@ -292,18 +291,15 @@ public final class Light {
         }
 
         // go down back side
-        r = RecursiveLightPoint(node.children[1 - sideIndex], mid, end);
+        r = recursiveLightPoint(node.children[1 - sideIndex], mid, end);
         Vec3Cache.release(); // mid
         return r;
     }
 
-    // stack variable
-    private final float[] end = {0, 0, 0};
-
     /**
-     * R_LightPoint
+     * lightPoint
      */
-    void R_LightPoint(float[] p, float[] color) {
+    void lightPoint(float[] p, float[] color) {
         assert (p.length == 3) : "vec3_t bug";
         assert (color.length == 3) : "rgb bug";
 
@@ -316,7 +312,7 @@ public final class Light {
         end[1] = p[1];
         end[2] = p[2] - 2048;
 
-        float r = RecursiveLightPoint(RenderAPIImpl.main.r_worldmodel.nodes[0], p, end);
+        float r = recursiveLightPoint(RenderAPIImpl.main.r_worldmodel.nodes[0], p, end);
 
         if (r == -1) {
             Math3D.VectorCopy(Context.vec3_origin, color);
@@ -340,17 +336,10 @@ public final class Light {
         Math3D.VectorScale(color, RenderAPIImpl.main.gl_modulate.value, color);
     }
 
-//	  ===================================================================
-
-    float[] s_blocklights = new float[34 * 34 * 3];
-
-    // TODO sync with jogl renderer. hoz
-    private final float[] impact = {0, 0, 0};
-
     /**
-     * R_AddDynamicLights
+     * addDynamicLights
      */
-    private void R_AddDynamicLights(TMapSurface surf) {
+    private void addDynamicLights(TMapSurface surf) {
         int sd, td;
         float fdist, frad, fminlight;
         int s, t;
@@ -415,45 +404,40 @@ public final class Light {
         }
     }
 
-    /**
-     * R_SetCacheState
-     */
-    void R_SetCacheState(TMapSurface surf) {
-        for (int maps = 0; maps < Defines.MAXLIGHTMAPS && surf.styles[maps] != (byte) 255; maps++) {
-            surf.cached_light[maps] = RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].white;
-        }
-    }
+
 
 //	TODO sync with jogl renderer. hoz
 
     /**
-     * R_BuildLightMap
+     * buildLightMap
      * <p>
      * Combine and scale multiple lightmaps into the floating format in blocklights
      */
-    void R_BuildLightMap(TMapSurface surf, IntBuffer dest, int stride) {
+    void buildLightMap(TMapSurface mapSurface, IntBuffer intBuffer, int stride) {
         int r, g, b, a, max;
         int i, j;
         int nummaps;
         float[] bl;
         //TLightStyle style;
 
-        if ((surf.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33
-                | Defines.SURF_TRANS66 | Defines.SURF_WARP)) != 0)
-            Command.Error(Defines.ERR_DROP,
-                    "R_BuildLightMap called for non-lit surface");
+        if ((mapSurface.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33 | Defines.SURF_TRANS66 | Defines.SURF_WARP)) != 0) {
+            Command.Error(Defines.ERR_DROP,"buildLightMap called for non-lit surface");
+        }
 
-        int smax = (surf.extents[0] >> 4) + 1;
-        int tmax = (surf.extents[1] >> 4) + 1;
+        int smax = (mapSurface.extents[0] >> 4) + 1;
+        int tmax = (mapSurface.extents[1] >> 4) + 1;
         int size = smax * tmax;
-        if (size > ((s_blocklights.length * Defines.SIZE_OF_FLOAT) >> 4))
+        if (size > ((s_blocklights.length * Defines.SIZE_OF_FLOAT) >> 4)) {
             Command.Error(Defines.ERR_DROP, "Bad s_blocklights size");
+        }
 
+        Main main = RenderAPIImpl.main;
         try {
             // set to full bright if no light data
-            if (surf.samples == null) {
-                for (i = 0; i < size * 3; i++)
+            if (mapSurface.samples == null) {
+                for (i = 0; i < size * 3; i++) {
                     s_blocklights[i] = 255;
+                }
 
                 // TODO useless? hoz
                 //				for (maps = 0 ; maps < Defines.MAXLIGHTMAPS &&
@@ -468,10 +452,10 @@ public final class Light {
 
             // count the # of maps
             for (nummaps = 0; nummaps < Defines.MAXLIGHTMAPS
-                    && surf.styles[nummaps] != (byte) 255; nummaps++)
+                    && mapSurface.styles[nummaps] != (byte) 255; nummaps++)
                 ;
 
-            ByteBuffer lightmap = surf.samples;
+            ByteBuffer lightmap = mapSurface.samples;
             int lightmapIndex = 0;
 
             // add all the lightmaps
@@ -481,20 +465,18 @@ public final class Light {
             if (nummaps == 1) {
                 int maps;
 
-                for (maps = 0; maps < Defines.MAXLIGHTMAPS
-                        && surf.styles[maps] != (byte) 255; maps++) {
+                for (maps = 0; maps < Defines.MAXLIGHTMAPS && mapSurface.styles[maps] != (byte) 255; maps++) {
                     bl = s_blocklights;
                     int blp = 0;
 
 //                    for (i = 0; i < 3; i++)
 //                        scale[i] = gl_modulate.value
 //                                * r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[i];
-                    scale0 = RenderAPIImpl.main.gl_modulate.value * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[0];
-                    scale1 = RenderAPIImpl.main.gl_modulate.value * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[1];
-                    scale2 = RenderAPIImpl.main.gl_modulate.value * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[2];
+                    scale0 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[0];
+                    scale1 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[1];
+                    scale2 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[2];
 
-                    if (scale0 == 1.0F && scale1 == 1.0F
-                            && scale2 == 1.0F) {
+                    if (scale0 == 1.0F && scale1 == 1.0F && scale2 == 1.0F) {
                         for (i = 0; i < size; i++) {
                             bl[blp++] = lightmap.get(lightmapIndex++) & 0xFF;
                             bl[blp++] = lightmap.get(lightmapIndex++) & 0xFF;
@@ -502,12 +484,9 @@ public final class Light {
                         }
                     } else {
                         for (i = 0; i < size; i++) {
-                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF)
-                                    * scale0;
-                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF)
-                                    * scale1;
-                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF)
-                                    * scale2;
+                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF) * scale0;
+                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF) * scale1;
+                            bl[blp++] = (lightmap.get(lightmapIndex++) & 0xFF) * scale2;
                         }
                     }
                     //lightmap += size*3; // skip to next lightmap
@@ -521,23 +500,18 @@ public final class Light {
                 Arrays.fill(s_blocklights, 0, size * 3, 0.0f);
 
                 for (maps = 0; maps < Defines.MAXLIGHTMAPS
-                        && surf.styles[maps] != (byte) 255; maps++) {
+                        && mapSurface.styles[maps] != (byte) 255; maps++) {
                     bl = s_blocklights;
                     int blp = 0;
 
 //                    for (i = 0; i < 3; i++)
 //                        scale[i] = gl_modulate.value
 //                                * r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[i];
-                    scale0 = RenderAPIImpl.main.gl_modulate.value
-                            * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[0];
-                    scale1 = RenderAPIImpl.main.gl_modulate.value
-                            * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[1];
-                    scale2 = RenderAPIImpl.main.gl_modulate.value
-                            * RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].rgb[2];
+                    scale0 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[0];
+                    scale1 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[1];
+                    scale2 = main.gl_modulate.value * main.r_newrefdef.lightstyles[mapSurface.styles[maps] & 0xFF].rgb[2];
 
-
-                    if (scale0 == 1.0F && scale1 == 1.0F
-                            && scale2 == 1.0F) {
+                    if (scale0 == 1.0F && scale1 == 1.0F && scale2 == 1.0F) {
                         for (i = 0; i < size; i++) {
                             bl[blp++] += lightmap.get(lightmapIndex++) & 0xFF;
                             bl[blp++] += lightmap.get(lightmapIndex++) & 0xFF;
@@ -558,8 +532,8 @@ public final class Light {
             }
 
             // add all the dynamic lights
-            if (surf.dlightframe == RenderAPIImpl.main.r_framecount)
-                R_AddDynamicLights(surf);
+            if (mapSurface.dlightframe == main.r_framecount)
+                addDynamicLights(mapSurface);
 
             // label store:
         } catch (Throwable store) {
@@ -570,7 +544,7 @@ public final class Light {
         bl = s_blocklights;
         int blp = 0;
 
-        int monolightmap = RenderAPIImpl.main.gl_monolightmap.string.charAt(0);
+        int monolightmap = main.gl_monolightmap.string.charAt(0);
 
         int destp = 0;
 
@@ -620,7 +594,7 @@ public final class Light {
                         a = (int) (a * t);
                     }
                     //r &= 0xFF; g &= 0xFF; b &= 0xFF; a &= 0xFF;
-                    dest.put(destp++, (a << 24) | (b << 16) | (g << 8) | r);
+                    intBuffer.put(destp++, (a << 24) | (b << 16) | (g << 8) | r);
                 }
             }
         } else {
@@ -695,7 +669,7 @@ public final class Light {
                             break;
                     }
                     //r &= 0xFF; g &= 0xFF; b &= 0xFF; a &= 0xFF;
-                    dest.put(destp++, (a << 24) | (b << 16) | (g << 8) | r);
+                    intBuffer.put(destp++, (a << 24) | (b << 16) | (g << 8) | r);
                 }
             }
         }

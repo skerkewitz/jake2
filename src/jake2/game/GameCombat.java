@@ -36,7 +36,7 @@ public class GameCombat {
      * Returns true if the inflictor can directly damage the target. Used for
      * explosions and melee attacks.
      */
-    static boolean CanDamage(edict_t targ, edict_t inflictor) {
+    static boolean CanDamage(TEntityDict targ, TEntityDict inflictor) {
         float[] dest = { 0, 0, 0 };
         trace_t trace;
     
@@ -93,8 +93,8 @@ public class GameCombat {
     /**
      * Killed.
      */
-    public static void Killed(edict_t targ, edict_t inflictor,
-            edict_t attacker, int damage, float[] point) {
+    public static void Killed(TEntityDict targ, TEntityDict inflictor,
+                              TEntityDict attacker, int damage, float[] point) {
         Command.DPrintf("Killing a " + targ.classname + "\n");
         if (targ.health < -999)
             targ.health = -999;
@@ -146,8 +146,8 @@ public class GameCombat {
         GameBase.gi.multicast(origin, Defines.MULTICAST_PVS);
     }
 
-    static int CheckPowerArmor(edict_t ent, float[] point, float[] normal,
-            int damage, int dflags) {
+    static int CheckPowerArmor(TEntityDict ent, float[] point, float[] normal,
+                               int damage, int dflags) {
         gclient_t client;
         int save;
         int power_armor_type;
@@ -223,12 +223,12 @@ public class GameCombat {
         return save;
     }
 
-    static int CheckArmor(edict_t ent, float[] point, float[] normal,
-            int damage, int te_sparks, int dflags) {
+    static int CheckArmor(TEntityDict ent, float[] point, float[] normal,
+                          int damage, int te_sparks, int dflags) {
         gclient_t client;
         int save;
         int index;
-        gitem_t armor;
+        TGItem armor;
     
         if (damage == 0)
             return 0;
@@ -266,7 +266,7 @@ public class GameCombat {
         return save;
     }
 
-    public static void M_ReactToDamage(edict_t targ, edict_t attacker) {
+    public static void M_ReactToDamage(TEntityDict targ, TEntityDict attacker) {
         if ((null != attacker.client)
                 && 0 != (attacker.svflags & Defines.SVF_MONSTER))
             return;
@@ -339,7 +339,7 @@ public class GameCombat {
         }
     }
 
-    static boolean CheckTeamDamage(edict_t targ, edict_t attacker) {
+    static boolean CheckTeamDamage(TEntityDict targ, TEntityDict attacker) {
         //FIXME make the next line real and uncomment this block
         // if ((ability to damage a teammate == OFF) && (targ's team ==
         // attacker's team))
@@ -349,8 +349,8 @@ public class GameCombat {
     /**
      * T_RadiusDamage.
      */
-    static void T_RadiusDamage(edict_t inflictor, edict_t attacker,
-            float damage, edict_t ignore, float radius, int mod) {
+    static void T_RadiusDamage(TEntityDict inflictor, TEntityDict attacker,
+                               float damage, TEntityDict ignore, float radius, int mod) {
         float points;
         EdictIterator edictit = null;
     
@@ -359,7 +359,7 @@ public class GameCombat {
     
         while ((edictit = GameBase.findradius(edictit, inflictor.s.origin,
                 radius)) != null) {
-            edict_t ent = edictit.o;
+            TEntityDict ent = edictit.o;
             if (ent == ignore)
                 continue;
             if (ent.takedamage == 0)
@@ -382,9 +382,9 @@ public class GameCombat {
         }
     }
 
-    public static void T_Damage(edict_t targ, edict_t inflictor,
-            edict_t attacker, float[] dir, float[] point, float[] normal,
-            int damage, int knockback, int dflags, int mod) {
+    public static void T_Damage(TEntityDict targ, TEntityDict inflictor,
+                                TEntityDict attacker, float[] dir, float[] point, float[] normal,
+                                int damage, int knockback, int dflags, int mod) {
         gclient_t client;
         int take;
         int save;

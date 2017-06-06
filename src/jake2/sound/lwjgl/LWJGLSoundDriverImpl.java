@@ -9,8 +9,8 @@ package jake2.sound.lwjgl;
 import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.Cmd;
+import jake2.game.TEntityState;
 import jake2.game.TVar;
-import jake2.game.entity_state_t;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.io.FileSystem;
@@ -324,7 +324,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         s_registering = false;
     }
 
-    TSound RegisterSexedSound(entity_state_t ent, String base) {
+    TSound RegisterSexedSound(TEntityState ent, String base) {
 
         TSound sfx = null;
 

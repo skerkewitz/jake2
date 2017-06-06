@@ -153,7 +153,7 @@ public interface Defines {
 
     int MAXTOUCH = 32;
 
-    // entity_state_t->effects
+    // TEntityState->effects
     // Effects are things handled on the client side (lights, particles, frame animations)
     // that happen constantly on the given entity.
     // An entity that has effects will be sent to the client
@@ -194,7 +194,7 @@ public interface Defines {
     int EF_TRACKERTRAIL = 0x80000000;
     //ROGUE
 
-    // entity_state_t->renderfx flags
+    // TEntityState->renderfx flags
     int RF_MINLIGHT = 1; // allways have some light (viewmodel)
     int RF_VIEWERMODEL = 2; // don't draw through eyes, only mirrors
     int RF_WEAPONMODEL = 4; // only draw through eyes
@@ -894,7 +894,7 @@ public interface Defines {
     int PNOISE_WEAPON = 1;
     int PNOISE_IMPACT = 2;
 
-    //	gitem_t->flags
+    //	TGItem->flags
     int IT_WEAPON = 1; // use makes active weapon
     int IT_AMMO = 2;
     int IT_ARMOR = 4;
@@ -902,7 +902,7 @@ public interface Defines {
     int IT_KEY = 16;
     int IT_POWERUP = 32;
 
-    //	gitem_t->weapmodel for weapons indicates model index
+    //	TGItem->weapmodel for weapons indicates model index
     int WEAP_BLASTER = 1;
     int WEAP_SHOTGUN = 2;
     int WEAP_SUPERSHOTGUN = 3;
@@ -1047,7 +1047,7 @@ public interface Defines {
     int PS_M_GRAVITY = (1 << 5);
     int PS_M_DELTA_ANGLES = (1 << 6);
 
-    int UPDATE_BACKUP = 16; // copies of entity_state_t to keep buffered
+    int UPDATE_BACKUP = 16; // copies of TEntityState to keep buffered
     // must be power of two
     int UPDATE_MASK = (UPDATE_BACKUP - 1);
 

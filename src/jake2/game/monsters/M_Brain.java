@@ -507,7 +507,7 @@ public class M_Brain {
 
     static EntInteractAdapter brain_sight = new EntInteractAdapter() {
     	public String getID() { return "brain_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -516,7 +516,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_search = new EntThinkAdapter() {
     	public String getID() { return "brain_search"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_search, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -564,7 +564,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_stand = new EntThinkAdapter() {
     	public String getID() { return "brain_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = brain_move_stand;
             return true;
         }
@@ -611,7 +611,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_idle = new EntThinkAdapter() {
     	public String getID() { return "brain_idle"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_AUTO, sound_idle3, 1,
                     Defines.ATTN_IDLE, 0);
             self.monsterinfo.currentmove = brain_move_idle;
@@ -640,7 +640,7 @@ public class M_Brain {
 
     //	   walk2 is FUBAR, do not use
     /*
-     * # if 0 void brain_walk2_cycle(edict_t self) { if (random() > 0.1)
+     * # if 0 void brain_walk2_cycle(TEntityDict self) { if (random() > 0.1)
      * self.monsterinfo.nextframe= FRAME_walk220; }
      * 
      * static mframe_t brain_frames_walk2[]= new mframe_t[] { new
@@ -672,7 +672,7 @@ public class M_Brain {
      */
     static EntThinkAdapter brain_walk = new EntThinkAdapter() {
     	public String getID() { return "brain_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             //			if (random() <= 0.5)
             self.monsterinfo.currentmove = brain_move_walk1;
             //		else
@@ -687,7 +687,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_duck_down = new EntThinkAdapter() {
     	public String getID() { return "brain_duck_down"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if ((self.monsterinfo.aiflags & Defines.AI_DUCKED) != 0)
                 return true;
@@ -701,7 +701,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_duck_hold = new EntThinkAdapter() {
     	public String getID() { return "brain_duck_hold"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameBase.level.time >= self.monsterinfo.pausetime)
                 self.monsterinfo.aiflags &= ~Defines.AI_HOLD_FRAME;
             else
@@ -712,7 +712,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_duck_up = new EntThinkAdapter() {
     	public String getID() { return "brain_duck_up"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.aiflags &= ~Defines.AI_DUCKED;
             self.maxs[2] += 32;
             self.takedamage = Defines.DAMAGE_AIM;
@@ -723,7 +723,7 @@ public class M_Brain {
 
     static EntDodgeAdapter brain_dodge = new EntDodgeAdapter() {
     	public String getID() { return "brain_dodge"; }
-        public void dodge(edict_t self, edict_t attacker, float eta) {
+        public void dodge(TEntityDict self, TEntityDict attacker, float eta) {
             if (Lib.random() > 0.25)
                 return;
 
@@ -745,7 +745,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_dead = new EntThinkAdapter() {
     	public String getID() { return "brain_dead"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, -8);
             self.movetype = Defines.MOVETYPE_TOSS;
@@ -788,7 +788,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_swing_right = new EntThinkAdapter() {
     	public String getID() { return "brain_swing_right"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_BODY, sound_melee1, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -797,7 +797,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_hit_right = new EntThinkAdapter() {
     	public String getID() { return "brain_hit_right"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, self.maxs[0], 8);
@@ -810,7 +810,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_swing_left = new EntThinkAdapter() {
     	public String getID() { return "brain_swing_left"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_BODY, sound_melee2, 1,
                     Defines.ATTN_NORM, 0);
 
@@ -820,7 +820,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_hit_left = new EntThinkAdapter() {
     	public String getID() { return "brain_hit_left"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, self.mins[0], 8);
@@ -834,7 +834,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_chest_open = new EntThinkAdapter() {
     	public String getID() { return "brain_chest_open"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.spawnflags &= ~65536;
             self.monsterinfo.power_armor_type = Defines.POWER_ARMOR_NONE;
             GameBase.gi.sound(self, Defines.CHAN_BODY, sound_chest_open, 1,
@@ -845,7 +845,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_tentacle_attack = new EntThinkAdapter() {
     	public String getID() { return "brain_tentacle_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             float[] aim = { 0, 0, 0 };
 
@@ -881,7 +881,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_chest_closed = new EntThinkAdapter() {
     	public String getID() { return "brain_chest_closed"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             self.monsterinfo.power_armor_type = Defines.POWER_ARMOR_SCREEN;
             if ((self.spawnflags & 65536) != 0) {
@@ -913,7 +913,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_melee = new EntThinkAdapter() {
     	public String getID() { return "brain_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (Lib.random() <= 0.5)
                 self.monsterinfo.currentmove = brain_move_attack1;
             else
@@ -945,7 +945,7 @@ public class M_Brain {
 
     static EntThinkAdapter brain_run = new EntThinkAdapter() {
     	public String getID() { return "brain_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.power_armor_type = Defines.POWER_ARMOR_SCREEN;
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = brain_move_stand;
@@ -1034,7 +1034,7 @@ public class M_Brain {
 
     static EntPainAdapter brain_pain = new EntPainAdapter() {
     	public String getID() { return "brain_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             float r;
 
             if (self.health < (self.max_health / 2))
@@ -1067,8 +1067,8 @@ public class M_Brain {
 
     static EntDieAdapter brain_die = new EntDieAdapter() {
     	public String getID() { return "brain_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             int n;
 
             self.s.effects = 0;
@@ -1118,7 +1118,7 @@ public class M_Brain {
      * QUAKED monster_brain (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_brain(edict_t self) {
+    public static void SP_monster_brain(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

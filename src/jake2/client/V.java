@@ -43,29 +43,29 @@ import static jake2.client.Context.*;
  */
 public final class V {
 
-    static TVar cl_testblend;
+    private static TVar cl_testblend;
 
-    static TVar cl_testparticles;
+    private static TVar cl_testparticles;
 
-    static TVar cl_testentities;
+    private static TVar cl_testentities;
 
-    static TVar cl_testlights;
+    private static TVar cl_testlights;
 
-    static TVar cl_stats;
+    private static TVar cl_stats;
 
-    static int r_numdlights;
+    private static int r_numdlights;
 
-    static TDynamicLight[] r_dlights = new TDynamicLight[MAX_DLIGHTS];
+    private static TDynamicLight[] r_dlights = new TDynamicLight[MAX_DLIGHTS];
 
-    static int r_numentities;
+    private static int r_numentities;
 
-    static TEntity[] r_entities = new TEntity[MAX_ENTITIES];
+    private static TEntity[] r_entities = new TEntity[MAX_ENTITIES];
 
-    static int r_numparticles;
+    private static int r_numparticles;
 
     //static TParticle[] r_particles = new TParticle[MAX_PARTICLES];
 
-    static TLightStyle[] r_lightstyles = new TLightStyle[MAX_LIGHTSTYLES];
+    private static TLightStyle[] r_lightstyles = new TLightStyle[MAX_LIGHTSTYLES];
     static {
         for (int i = 0; i < r_dlights.length; i++)
             r_dlights[i] = new TDynamicLight();
@@ -80,7 +80,7 @@ public final class V {
      * 
      * Specifies the model that will be used as the world ====================
      */
-    static void ClearScene() {
+    private static void clearScene() {
         r_numdlights = 0;
         r_numentities = 0;
         r_numparticles = 0;
@@ -125,11 +125,10 @@ public final class V {
      * =====================
      */
     static void AddLight(float[] org, float intensity, float r, float g, float b) {
-        TDynamicLight dl;
 
         if (r_numdlights >= MAX_DLIGHTS)
             return;
-        dl = r_dlights[r_numdlights++];
+        TDynamicLight dl = r_dlights[r_numdlights++];
         Math3D.VectorCopy(org, dl.origin);
         dl.intensity = intensity;
         dl.color[0] = r;
@@ -143,12 +142,10 @@ public final class V {
      * =====================
      */
     static void AddLightStyle(int style, float r, float g, float b) {
-        TLightStyle ls;
-
         if (style < 0 || style > MAX_LIGHTSTYLES)
             Command.Error(ERR_DROP, "Bad light style " + style);
-        ls = r_lightstyles[style];
 
+        TLightStyle ls = r_lightstyles[style];
         ls.white = r + g + b;
         ls.rgb[0] = r;
         ls.rgb[1] = g;
@@ -164,18 +161,16 @@ public final class V {
      * ================
      */
     static void TestParticles() {
-        int i, j;
-        float d, r, u;
 
         r_numparticles = 0;
-        for (i = 0; i < MAX_PARTICLES; i++) {
-            d = i * 0.25f;
-            r = 4 * ((i & 7) - 3.5f);
-            u = 4 * (((i >> 3) & 7) - 3.5f);
+        for (int i = 0; i < MAX_PARTICLES; i++) {
+            float d = i * 0.25f;
+            float r = 4 * ((i & 7) - 3.5f);
+            float u = 4 * (((i >> 3) & 7) - 3.5f);
 
-            for (j = 0; j < 3; j++)
-                origin[j] = cl.refdef.vieworg[j] + cl.v_forward[j] * d
-                        + cl.v_right[j] * r + cl.v_up[j] * u;
+            for (int j = 0; j < 3; j++) {
+                origin[j] = cl.refdef.vieworg[j] + cl.v_forward[j] * d + cl.v_right[j] * r + cl.v_up[j] * u;
+            }
 
             AddParticle(origin, 8, cl_testparticles.value);
         }
@@ -242,31 +237,25 @@ public final class V {
         }
     }
 
-    static TXCommand Gun_Next_f = new TXCommand() {
-        public void execute() {
-            gun_frame++;
-            Command.Printf("frame " + gun_frame + "\n");
-        }
+    static TXCommand Gun_Next_f = () -> {
+        gun_frame++;
+        Command.Printf("frame " + gun_frame + "\n");
     };
 
-    static TXCommand Gun_Prev_f = new TXCommand() {
-        public void execute() {
-            gun_frame--;
-            if (gun_frame < 0)
-                gun_frame = 0;
-            Command.Printf("frame " + gun_frame + "\n");
-        }
+    static TXCommand Gun_Prev_f = () -> {
+        gun_frame--;
+        if (gun_frame < 0)
+            gun_frame = 0;
+        Command.Printf("frame " + gun_frame + "\n");
     };
 
-    static TXCommand Gun_Model_f = new TXCommand() {
-        public void execute() {
-            if (Cmd.Argc() != 2) {
-                Context.gun_model = null;
-                return;
-            }
-            String name = "models/" + Cmd.Argv(1) + "/tris.md2";
-            Context.gun_model = re.RegisterModel(name);
+    static TXCommand Gun_Model_f = () -> {
+        if (Cmd.Argc() != 2) {
+            Context.gun_model = null;
+            return;
         }
+        String name = "models/" + Cmd.Argv(1) + "/tris.md2";
+        Context.gun_model = re.RegisterModel(name);
     };
 
     /*
@@ -294,12 +283,12 @@ public final class V {
         if (cl.frame.valid && (cl.force_refdef || cl_paused.value == 0.0f)) {
             cl.force_refdef = false;
 
-            V.ClearScene();
+            V.clearScene();
 
             // build a refresh entity list and calc cl.sim*
             // this also calls CL_CalcViewValues which loads
             // v_forward, etc.
-            CL_ents.AddEntities();
+            CLEntity.AddEntities();
 
             if (cl_testparticles.value != 0.0f)
                 TestParticles();
@@ -331,10 +320,10 @@ public final class V {
             cl.refdef.vieworg[1] += 1.0 / 16;
             cl.refdef.vieworg[2] += 1.0 / 16;
 
-            cl.refdef.x = scr_vrect.x;
-            cl.refdef.y = scr_vrect.y;
-            cl.refdef.width = scr_vrect.width;
-            cl.refdef.height = scr_vrect.height;
+            cl.refdef.x = scr_vrect.getX();
+            cl.refdef.y = scr_vrect.getY();
+            cl.refdef.width = scr_vrect.getWidth();
+            cl.refdef.height = scr_vrect.getHeight();
             cl.refdef.fov_y = Math3D.CalcFov(cl.refdef.fov_x, cl.refdef.width,
                     cl.refdef.height);
             cl.refdef.time = cl.time * 0.001f;
@@ -358,7 +347,7 @@ public final class V {
             cl.refdef.dlights = r_dlights;
             cl.refdef.lightstyles = r_lightstyles;
 
-            cl.refdef.rdflags = cl.frame.playerstate.rdflags;
+            cl.refdef.renderFlags = cl.frame.playerstate.rdflags;
 
             // sort entities for better cache locality
             // !!! useless in Java !!!
@@ -375,9 +364,9 @@ public final class V {
             } catch (IOException e) {
             }
 
-        SCR.AddDirtyPoint(scr_vrect.x, scr_vrect.y);
-        SCR.AddDirtyPoint(scr_vrect.x + scr_vrect.width - 1, scr_vrect.y
-                + scr_vrect.height - 1);
+        SCR.AddDirtyPoint(scr_vrect.getX(), scr_vrect.getY());
+        SCR.AddDirtyPoint(scr_vrect.getX() + scr_vrect.getWidth() - 1, scr_vrect.getY()
+                + scr_vrect.getHeight() - 1);
 
         SCR.DrawCrosshair();
     }
@@ -385,15 +374,11 @@ public final class V {
     /*
      * ============= V_Viewpos_f =============
      */
-    static TXCommand Viewpos_f = new TXCommand() {
-        public void execute() {
-            Command.Printf("(%i %i %i) : %i\n",
-                    (int) cl.refdef.vieworg[0],
-                    (int) cl.refdef.vieworg[1],
-                    (int) cl.refdef.vieworg[2],
-                    (int) cl.refdef.viewangles[YAW]);
-        }
-    };
+    static TXCommand Viewpos_f = () -> Command.Printf("(%i %i %i) : %i\n",
+            (int) cl.refdef.vieworg[0],
+            (int) cl.refdef.vieworg[1],
+            (int) cl.refdef.vieworg[2],
+            (int) cl.refdef.viewangles[YAW]);
 
     public static void Init() {
         Cmd.AddCommand("gun_next", Gun_Next_f);

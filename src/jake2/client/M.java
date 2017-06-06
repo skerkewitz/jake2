@@ -36,7 +36,7 @@ import jake2.util.Math3D;
  */
 public final class M {
 
-    public static void M_CheckGround(edict_t ent) {
+    public static void M_CheckGround(TEntityDict ent) {
         float[] point = { 0, 0, 0 };
         trace_t trace;
 
@@ -80,7 +80,7 @@ public final class M {
      * is not a staircase.
      */
 
-    public static boolean M_CheckBottom(edict_t ent) {
+    public static boolean M_CheckBottom(TEntityDict ent) {
         float[] mins = { 0, 0, 0 };
         float[] maxs = { 0, 0, 0 };
         float[] start = { 0, 0, 0 };
@@ -150,7 +150,7 @@ public final class M {
     /** 
      * M_ChangeYaw.
      */
-    public static void M_ChangeYaw(edict_t ent) {
+    public static void M_ChangeYaw(TEntityDict ent) {
         float ideal;
         float current;
         float move;
@@ -185,8 +185,8 @@ public final class M {
     /**
      * M_MoveToGoal.
      */
-    public static void M_MoveToGoal(edict_t ent, float dist) {
-        edict_t goal = ent.goalentity;
+    public static void M_MoveToGoal(TEntityDict ent, float dist) {
+        TEntityDict goal = ent.goalentity;
 
         if (ent.groundentity == null
                 && (ent.flags & (Defines.FL_FLY | Defines.FL_SWIM)) == 0)
@@ -207,7 +207,7 @@ public final class M {
     /** 
      * M_walkmove.
      */
-    public static boolean M_walkmove(edict_t ent, float yaw, float dist) {
+    public static boolean M_walkmove(TEntityDict ent, float yaw, float dist) {
         float[] move = { 0, 0, 0 };
 
         if ((ent.groundentity == null)
@@ -223,7 +223,7 @@ public final class M {
         return SV.SV_movestep(ent, move, true);
     }
 
-    public static void M_CatagorizePosition(edict_t ent) {
+    public static void M_CatagorizePosition(TEntityDict ent) {
         float[] point = { 0, 0, 0 };
         int cont;
 
@@ -255,7 +255,7 @@ public final class M {
             ent.waterlevel = 3;
     }
 
-    public static void M_WorldEffects(edict_t ent) {
+    public static void M_WorldEffects(TEntityDict ent) {
         int dmg;
 
         if (ent.health > 0) {
@@ -355,7 +355,7 @@ public final class M {
 
     public static EntThinkAdapter M_droptofloor = new EntThinkAdapter() {
         public String getID() { return "m_drop_to_floor";}
-        public boolean think(edict_t ent) {
+        public boolean think(TEntityDict ent) {
             float[] end = { 0, 0, 0 };
             trace_t trace;
 
@@ -378,7 +378,7 @@ public final class M {
         }
     };
 
-    public static void M_SetEffects(edict_t ent) {
+    public static void M_SetEffects(TEntityDict ent) {
         ent.s.effects &= ~(Defines.EF_COLOR_SHELL | Defines.EF_POWERSCREEN);
         ent.s.renderfx &= ~(Defines.RF_SHELL_RED | Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE);
 
@@ -401,7 +401,7 @@ public final class M {
     }
 
     //ok
-    public static void M_MoveFrame(edict_t self) {
+    public static void M_MoveFrame(TEntityDict self) {
         mmove_t move; //ptr
         int index;
 
@@ -454,7 +454,7 @@ public final class M {
     /** Stops the Flies. */
     public static EntThinkAdapter M_FliesOff = new EntThinkAdapter() {
         public String getID() { return "m_fliesoff";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.s.effects &= ~Defines.EF_FLIES;
             self.s.sound = 0;
             return true;
@@ -464,7 +464,7 @@ public final class M {
     /** Starts the Flies as setting the animation flag in the entity. */
     public static EntThinkAdapter M_FliesOn = new EntThinkAdapter() {
         public String getID() { return "m_flies_on";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (self.waterlevel != 0)
                 return true;
 
@@ -479,7 +479,7 @@ public final class M {
     /** Adds some flies after a random time */
     public static EntThinkAdapter M_FlyCheck = new EntThinkAdapter() {
         public String getID() { return "m_fly_check";}
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
 
             if (self.waterlevel != 0)
                 return true;

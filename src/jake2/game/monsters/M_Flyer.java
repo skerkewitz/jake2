@@ -32,7 +32,7 @@ import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
 import jake2.game.Monster;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
 import jake2.util.Lib;
@@ -373,7 +373,7 @@ public class M_Flyer {
 
     public static EntInteractAdapter flyer_sight = new EntInteractAdapter() {
     	public String getID() { return "flyer_sight"; }
-        public boolean interact(edict_t self, edict_t other) {
+        public boolean interact(TEntityDict self, TEntityDict other) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -382,7 +382,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_idle = new EntThinkAdapter() {
     	public String getID() { return "flyer_idle"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_idle, 1,
                     Defines.ATTN_IDLE, 0);
             return true;
@@ -391,7 +391,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_pop_blades = new EntThinkAdapter() {
     	public String getID() { return "flyer_pop_blades"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sproing, 1,
                     Defines.ATTN_NORM, 0);
             return true;
@@ -550,7 +550,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_run = new EntThinkAdapter() {
     	public String getID() { return "flyer_run"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if ((self.monsterinfo.aiflags & Defines.AI_STAND_GROUND) != 0)
                 self.monsterinfo.currentmove = flyer_move_stand;
             else
@@ -561,7 +561,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_walk = new EntThinkAdapter() {
     	public String getID() { return "flyer_walk"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flyer_move_walk;
             return true;
         }
@@ -569,7 +569,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_stand = new EntThinkAdapter() {
     	public String getID() { return "flyer_stand"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flyer_move_stand;
             return true;
         }
@@ -577,7 +577,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_nextmove = new EntThinkAdapter() {
     	public String getID() { return "flyer_nextmove"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (nextmove == ACTION_attack1)
                 self.monsterinfo.currentmove = flyer_move_start_melee;
             else if (nextmove == ACTION_attack2)
@@ -613,7 +613,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_stop = new EntThinkAdapter() {
     	public String getID() { return "flyer_stop"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flyer_move_stop;
             return true;
         }
@@ -621,7 +621,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_start = new EntThinkAdapter() {
     	public String getID() { return "flyer_start"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             self.monsterinfo.currentmove = flyer_move_start;
             return true;
         }
@@ -725,7 +725,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_fireleft = new EntThinkAdapter() {
     	public String getID() { return "flyer_fireleft"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             flyer_fire(self, Defines.MZ2_FLYER_BLASTER_1);
             return true;
         }
@@ -733,7 +733,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_fireright = new EntThinkAdapter() {
     	public String getID() { return "flyer_fireright"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             flyer_fire(self, Defines.MZ2_FLYER_BLASTER_2);
             return true;
         }
@@ -764,7 +764,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_slash_left = new EntThinkAdapter() {
     	public String getID() { return "flyer_slash_left"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, self.mins[0], 0);
@@ -777,7 +777,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_slash_right = new EntThinkAdapter() {
     	public String getID() { return "flyer_slash_right"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             float[] aim = { 0, 0, 0 };
 
             Math3D.VectorSet(aim, Defines.MELEE_DISTANCE, self.maxs[0], 0);
@@ -790,7 +790,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_loop_melee = new EntThinkAdapter() {
     	public String getID() { return "flyer_loop_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             /*
              * if (random() <= 0.5) self.monsterinfo.currentmove =
              * flyer_move_attack1; else
@@ -839,7 +839,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_check_melee = new EntThinkAdapter() {
     	public String getID() { return "flyer_check_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             if (GameUtil.range(self, self.enemy) == Defines.RANGE_MELEE)
                 if (Lib.random() <= 0.8)
                     self.monsterinfo.currentmove = flyer_move_loop_melee;
@@ -856,7 +856,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_attack = new EntThinkAdapter() {
     	public String getID() { return "flyer_attack"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             /*
              * if (random() <= 0.5) self.monsterinfo.currentmove =
              * flyer_move_attack1; else
@@ -869,7 +869,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_setstart = new EntThinkAdapter() {
     	public String getID() { return "flyer_setstart"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             nextmove = ACTION_run;
             self.monsterinfo.currentmove = flyer_move_start;
             return true;
@@ -878,7 +878,7 @@ public class M_Flyer {
 
     static EntThinkAdapter flyer_melee = new EntThinkAdapter() {
     	public String getID() { return "flyer_melee"; }
-        public boolean think(edict_t self) {
+        public boolean think(TEntityDict self) {
             //			flyer.nextmove = ACTION_attack1;
             //	 self.monsterinfo.currentmove = flyer_move_stop;
             self.monsterinfo.currentmove = flyer_move_start_melee;
@@ -888,7 +888,7 @@ public class M_Flyer {
 
     static EntPainAdapter flyer_pain = new EntPainAdapter() {
     	public String getID() { return "flyer_pain"; }
-        public void pain(edict_t self, edict_t other, float kick, int damage) {
+        public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             int n;
 
             if (self.health < (self.max_health / 2))
@@ -921,15 +921,15 @@ public class M_Flyer {
 
     static EntDieAdapter flyer_die = new EntDieAdapter() {
     	public String getID() { return "flyer_die"; }
-        public void die(edict_t self, edict_t inflictor, edict_t attacker,
-                int damage, float[] point) {
+        public void die(TEntityDict self, TEntityDict inflictor, TEntityDict attacker,
+                        int damage, float[] point) {
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_die, 1,
                     Defines.ATTN_NORM, 0);
             GameMisc.BecomeExplosion1(self);
         }
     };
 
-    static void flyer_fire(edict_t self, int flash_number) {
+    static void flyer_fire(TEntityDict self, int flash_number) {
         float[] start = { 0, 0, 0 };
 
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
@@ -960,7 +960,7 @@ public class M_Flyer {
      * QUAKED monster_flyer (1 .5 0) (-16 -16 -24) (16 16 32) Ambush
      * Trigger_Spawn Sight
      */
-    public static void SP_monster_flyer(edict_t self) {
+    public static void SP_monster_flyer(TEntityDict self) {
         if (GameBase.deathmatch.value != 0) {
             GameUtil.G_FreeEdict(self);
             return;

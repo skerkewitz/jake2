@@ -4006,7 +4006,7 @@ public final class Menu extends Key {
             refdef.num_entities = 1;
             refdef.entities = new TEntity[] { entity };
             refdef.lightstyles = null;
-            refdef.rdflags = RDF_NOWORLDMODEL;
+            refdef.renderFlags = RDF_NOWORLDMODEL;
 
             Menu_Draw(s_player_config_menu);
 

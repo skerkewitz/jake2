@@ -30,7 +30,7 @@ import jake2.util.Math3D;
 
 public class PlayerView {
 
-    public static edict_t current_player;
+    public static TEntityDict current_player;
 
     public static gclient_t current_client;
 
@@ -70,7 +70,7 @@ public class PlayerView {
      * ===============
      */
 
-    public static void P_DamageFeedback(edict_t player) {
+    public static void P_DamageFeedback(TEntityDict player) {
         gclient_t client;
         float side;
         float realcount, count, kick;
@@ -218,7 +218,7 @@ public class PlayerView {
      * fall from 640: 960 =  
      * damage = deltavelocity*deltavelocity * 0.0001
      */
-    public static void SV_CalcViewOffset(edict_t ent) {
+    public static void SV_CalcViewOffset(TEntityDict ent) {
         float angles[] = { 0, 0, 0 };
         float bob;
         float ratio;
@@ -325,7 +325,7 @@ public class PlayerView {
     /**
      * Calculates where to draw the gun.
      */
-    public static void SV_CalcGunOffset(edict_t ent) {
+    public static void SV_CalcGunOffset(TEntityDict ent) {
         int i;
         float delta;
 
@@ -388,7 +388,7 @@ public class PlayerView {
     /**
      * Calculates the blending color according to the players environment.
      */
-    public static void SV_CalcBlend(edict_t ent) {
+    public static void SV_CalcBlend(TEntityDict ent) {
         int contents;
         float[] vieworg = { 0, 0, 0 };
         int remaining;
@@ -468,7 +468,7 @@ public class PlayerView {
     /**
      * Calculates damage and effect when a player falls down.
      */
-    public static void P_FallingDamage(edict_t ent) {
+    public static void P_FallingDamage(TEntityDict ent) {
         float delta;
         int damage;
         float[] dir = { 0, 0, 0 };
@@ -733,7 +733,7 @@ public class PlayerView {
      * G_SetClientEffects 
      * ===============
      */
-    public static void G_SetClientEffects(edict_t ent) {
+    public static void G_SetClientEffects(TEntityDict ent) {
         int pa_type;
         int remaining;
 
@@ -779,7 +779,7 @@ public class PlayerView {
      * G_SetClientEvent 
      * ===============
      */
-    public static void G_SetClientEvent(edict_t ent) {
+    public static void G_SetClientEvent(TEntityDict ent) {
         if (ent.s.event != 0)
             return;
 
@@ -794,7 +794,7 @@ public class PlayerView {
      * G_SetClientSound 
      * ===============
      */
-    public static void G_SetClientSound(edict_t ent) {
+    public static void G_SetClientSound(TEntityDict ent) {
         String weap;
 
         if (ent.client.pers.game_helpchanged != GameBase.game.helpchanged) {
@@ -834,7 +834,7 @@ public class PlayerView {
      * G_SetClientFrame 
      * ===============
      */
-    public static void G_SetClientFrame(edict_t ent) {
+    public static void G_SetClientFrame(TEntityDict ent) {
         gclient_t client;
         boolean duck, run;
 
@@ -917,7 +917,7 @@ public class PlayerView {
      * Called for each player at the end of the server frame and right after
      * spawning.
      */
-    public static void ClientEndServerFrame(edict_t ent) {
+    public static void ClientEndServerFrame(TEntityDict ent) {
         float bobtime;
         int i;
 

@@ -662,7 +662,7 @@ public class CL_tent {
                         + TSizeBuffer.ReadLong(Context.net_message);
                 s[i].think = new cl_sustain_t.ThinkAdapter() {
                     void think(cl_sustain_t self) {
-                        CL_newfx.ParticleSteamEffect2(self);
+                        CLNewEffects.ParticleSteamEffect2(self);
                     }
                 };
                 s[i].thinkinterval = 100;
@@ -686,7 +686,7 @@ public class CL_tent {
             r = TSizeBuffer.ReadByte(Context.net_message);
             magnitude = TSizeBuffer.ReadShort(Context.net_message);
             color = r & 0xff;
-            CL_newfx.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
+            CLNewEffects.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
             //			S_StartSound (pos, 0, 0, cl_sfx_lashit, 1, ATTN_NORM, 0);
         }
     }
@@ -714,7 +714,7 @@ public class CL_tent {
             s[i].endtime = Context.cl.time + 2100;
             s[i].think = new cl_sustain_t.ThinkAdapter() {
                 void think(cl_sustain_t self) {
-                    CL_newfx.Widowbeamout(self);
+                    CLNewEffects.Widowbeamout(self);
                 }
             };
             s[i].thinkinterval = 1;
@@ -747,7 +747,7 @@ public class CL_tent {
             s[i].endtime = Context.cl.time + 1000;
             s[i].think = new cl_sustain_t.ThinkAdapter() {
                 void think(cl_sustain_t self) {
-                    CL_newfx.Nukeblast(self);
+                    CLNewEffects.Nukeblast(self);
                 }
             };
             s[i].thinkinterval = 1;
@@ -785,7 +785,7 @@ public class CL_tent {
         case Defines.TE_BLOOD: // bullet hitting flesh
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
-            CL_fx.ParticleEffect(pos, dir, 0xe8, 60);
+            CLEffects.ParticleEffect(pos, dir, 0xe8, 60);
             break;
 
         case Defines.TE_GUNSHOT: // bullet hitting wall
@@ -794,9 +794,9 @@ public class CL_tent {
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             if (type == Defines.TE_GUNSHOT)
-                CL_fx.ParticleEffect(pos, dir, 0, 40);
+                CLEffects.ParticleEffect(pos, dir, 0, 40);
             else
-                CL_fx.ParticleEffect(pos, dir, 0xe0, 6);
+                CLEffects.ParticleEffect(pos, dir, 0xe0, 6);
 
             if (type != Defines.TE_SPARKS) {
                 SmokeAndFlash(pos);
@@ -821,9 +821,9 @@ public class CL_tent {
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             if (type == Defines.TE_SCREEN_SPARKS)
-                CL_fx.ParticleEffect(pos, dir, 0xd0, 40);
+                CLEffects.ParticleEffect(pos, dir, 0xd0, 40);
             else
-                CL_fx.ParticleEffect(pos, dir, 0xb0, 40);
+                CLEffects.ParticleEffect(pos, dir, 0xb0, 40);
             //FIXME : replace or remove this sound
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
@@ -831,7 +831,7 @@ public class CL_tent {
         case Defines.TE_SHOTGUN: // bullet hitting wall
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
-            CL_fx.ParticleEffect(pos, dir, 0, 20);
+            CLEffects.ParticleEffect(pos, dir, 0, 20);
             SmokeAndFlash(pos);
             break;
 
@@ -844,7 +844,7 @@ public class CL_tent {
                 color = 0x00;
             else
                 color = splash_color[r];
-            CL_fx.ParticleEffect(pos, dir, color, cnt);
+            CLEffects.ParticleEffect(pos, dir, color, cnt);
 
             if (r == Defines.SPLASH_SPARKS) {
                 r = Lib.rand() & 3;
@@ -865,20 +865,20 @@ public class CL_tent {
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             color = TSizeBuffer.ReadByte(Context.net_message);
-            CL_fx.ParticleEffect2(pos, dir, color, cnt);
+            CLEffects.ParticleEffect2(pos, dir, color, cnt);
             break;
 
         // RAFAEL
         case Defines.TE_BLUEHYPERBLASTER:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, dir);
-            CL_fx.BlasterParticles(pos, dir);
+            CLEffects.BlasterParticles(pos, dir);
             break;
 
         case Defines.TE_BLASTER: // blaster hitting wall
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
-            CL_fx.BlasterParticles(pos, dir);
+            CLEffects.BlasterParticles(pos, dir);
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -908,7 +908,7 @@ public class CL_tent {
         case Defines.TE_RAILTRAIL: // railgun effect
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, pos2);
-            CL_fx.RailTrail(pos, pos2);
+            CLEffects.RailTrail(pos, pos2);
             Sound.StartSound(pos2, 0, 0, cl_sfx_railg, 1, Defines.ATTN_NORM, 0);
             break;
 
@@ -930,7 +930,7 @@ public class CL_tent {
             ex.frames = 19;
             ex.baseframe = 30;
             ex.ent.angles[1] = Lib.rand() % 360;
-            CL_fx.ExplosionParticles(pos);
+            CLEffects.ExplosionParticles(pos);
             if (type == Defines.TE_GRENADE_EXPLOSION_WATER)
                 Sound
                         .StartSound(pos, 0, 0, cl_sfx_watrexp, 1,
@@ -958,7 +958,7 @@ public class CL_tent {
             if (Context.rnd.nextFloat() < 0.5)
                 ex.baseframe = 15;
             ex.frames = 15;
-            CL_fx.ExplosionParticles(pos);
+            CLEffects.ExplosionParticles(pos);
             Sound.StartSound(pos, 0, 0, cl_sfx_rockexp, 1, Defines.ATTN_NORM, 0);
             break;
 
@@ -988,7 +988,7 @@ public class CL_tent {
             ex.frames = 15;
             if ((type != Defines.TE_EXPLOSION1_BIG)
                     && (type != Defines.TE_EXPLOSION1_NP)) // PMM
-                CL_fx.ExplosionParticles(pos); // PMM
+                CLEffects.ExplosionParticles(pos); // PMM
             if (type == Defines.TE_ROCKET_EXPLOSION_WATER)
                 Sound
                         .StartSound(pos, 0, 0, cl_sfx_watrexp, 1,
@@ -1018,7 +1018,7 @@ public class CL_tent {
 
         case Defines.TE_BFG_BIGEXPLOSION:
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_fx.BFGExplosionParticles(pos);
+            CLEffects.BFGExplosionParticles(pos);
             break;
 
         case Defines.TE_BFG_LASER:
@@ -1028,7 +1028,7 @@ public class CL_tent {
         case Defines.TE_BUBBLETRAIL:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, pos2);
-            CL_fx.BubbleTrail(pos, pos2);
+            CLEffects.BubbleTrail(pos, pos2);
             break;
 
         case Defines.TE_PARASITE_ATTACK:
@@ -1038,7 +1038,7 @@ public class CL_tent {
 
         case Defines.TE_BOSSTPORT: // boss teleporting to station
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_fx.BigTeleportParticles(pos);
+            CLEffects.BigTeleportParticles(pos);
             Sound.StartSound(pos, 0, 0, Sound.RegisterSound("misc/bigtele.wav"), 1,
                     Defines.ATTN_NONE, 0);
             break;
@@ -1053,7 +1053,7 @@ public class CL_tent {
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             color = TSizeBuffer.ReadByte(Context.net_message);
-            CL_fx.ParticleEffect2(pos, dir, color, cnt);
+            CLEffects.ParticleEffect2(pos, dir, color, cnt);
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -1073,7 +1073,7 @@ public class CL_tent {
         case Defines.TE_GREENBLOOD:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
-            CL_fx.ParticleEffect2(pos, dir, 0xdf, 30);
+            CLEffects.ParticleEffect2(pos, dir, 0xdf, 30);
             break;
 
         // RAFAEL
@@ -1082,7 +1082,7 @@ public class CL_tent {
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             color = TSizeBuffer.ReadByte(Context.net_message);
-            CL_fx.ParticleEffect3(pos, dir, color, cnt);
+            CLEffects.ParticleEffect3(pos, dir, color, cnt);
             break;
 
         //	  =============
@@ -1095,9 +1095,9 @@ public class CL_tent {
 
             // PMM
             if (type == Defines.TE_BLASTER2)
-                CL_newfx.BlasterParticles2(pos, dir, 0xd0);
+                CLNewEffects.BlasterParticles2(pos, dir, 0xd0);
             else
-                CL_newfx.BlasterParticles2(pos, dir, 0x6f); // 75
+                CLNewEffects.BlasterParticles2(pos, dir, 0x6f); // 75
 
             ex = AllocExplosion();
             Math3D.VectorCopy(pos, ex.ent.origin);
@@ -1148,7 +1148,7 @@ public class CL_tent {
         case Defines.TE_DEBUGTRAIL:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, pos2);
-            CL_newfx.DebugTrail(pos, pos2);
+            CLNewEffects.DebugTrail(pos, pos2);
             break;
 
         case Defines.TE_PLAIN_EXPLOSION:
@@ -1181,14 +1181,14 @@ public class CL_tent {
         case Defines.TE_FLASHLIGHT:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             ent = TSizeBuffer.ReadShort(Context.net_message);
-            CL_newfx.Flashlight(ent, pos);
+            CLNewEffects.Flashlight(ent, pos);
             break;
 
         case Defines.TE_FORCEWALL:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, pos2);
             color = TSizeBuffer.ReadByte(Context.net_message);
-            CL_newfx.ForceWall(pos, pos2, color);
+            CLNewEffects.ForceWall(pos, pos2, color);
             break;
 
         case Defines.TE_HEATBEAM:
@@ -1209,7 +1209,7 @@ public class CL_tent {
             r = 8;
             magnitude = 60;
             color = r & 0xff;
-            CL_newfx.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
+            CLNewEffects.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
 
@@ -1223,7 +1223,7 @@ public class CL_tent {
             //			color = r & 0xff;
             color = 0xe0;
             magnitude = 60;
-            CL_newfx.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
+            CLNewEffects.ParticleSteamEffect(pos, dir, color, cnt, magnitude);
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
 
@@ -1236,14 +1236,14 @@ public class CL_tent {
             cnt = 8;
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadPos(Context.net_message, pos2);
-            CL_newfx.BubbleTrail2(pos, pos2, cnt);
+            CLNewEffects.BubbleTrail2(pos, pos2, cnt);
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
 
         case Defines.TE_MOREBLOOD:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
-            CL_fx.ParticleEffect(pos, dir, 0xe8, 250);
+            CLEffects.ParticleEffect(pos, dir, 0xe8, 250);
             break;
 
         case Defines.TE_CHAINFIST_SMOKE:
@@ -1251,29 +1251,29 @@ public class CL_tent {
             dir[1] = 0;
             dir[2] = 1;
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_newfx.ParticleSmokeEffect(pos, dir, 0, 20, 20);
+            CLNewEffects.ParticleSmokeEffect(pos, dir, 0, 20, 20);
             break;
 
         case Defines.TE_ELECTRIC_SPARKS:
             TSizeBuffer.ReadPos(Context.net_message, pos);
             TSizeBuffer.ReadDir(Context.net_message, dir);
             //			CL_ParticleEffect (pos, dir, 109, 40);
-            CL_fx.ParticleEffect(pos, dir, 0x75, 40);
+            CLEffects.ParticleEffect(pos, dir, 0x75, 40);
             //FIXME : replace or remove this sound
             Sound.StartSound(pos, 0, 0, cl_sfx_lashit, 1, Defines.ATTN_NORM, 0);
             break;
 
         case Defines.TE_TRACKER_EXPLOSION:
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_newfx.ColorFlash(pos, 0, 150, -1, -1, -1);
-            CL_newfx.ColorExplosionParticles(pos, 0, 1);
+            CLNewEffects.ColorFlash(pos, 0, 150, -1, -1, -1);
+            CLNewEffects.ColorExplosionParticles(pos, 0, 1);
             Sound.StartSound(pos, 0, 0, cl_sfx_disrexp, 1, Defines.ATTN_NORM, 0);
             break;
 
         case Defines.TE_TELEPORT_EFFECT:
         case Defines.TE_DBALL_GOAL:
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_fx.TeleportParticles(pos);
+            CLEffects.TeleportParticles(pos);
             break;
 
         case Defines.TE_WIDOWBEAMOUT:
@@ -1286,7 +1286,7 @@ public class CL_tent {
 
         case Defines.TE_WIDOWSPLASH:
             TSizeBuffer.ReadPos(Context.net_message, pos);
-            CL_newfx.WidowSplash(pos);
+            CLNewEffects.WidowSplash(pos);
             break;
         //	  PGM
         //	  ==============
@@ -1570,7 +1570,7 @@ public class CL_tent {
                         Math3D.VectorMA(org, -(b[i].offset[2]) - 10, u, org);
                     } else {
                         // if it's a monster, do the particle effect
-                        CL_newfx.MonsterPlasma_Shell(b[i].start);
+                        CLNewEffects.MonsterPlasma_Shell(b[i].start);
                     }
                 } else {
                     framenum = 1;
@@ -1579,7 +1579,7 @@ public class CL_tent {
 
             // if it's the heatbeam, draw the particle effect
             if ((cl_mod_heatbeam != null && (b[i].model == cl_mod_heatbeam) && (b[i].entity == Context.cl.playernum + 1))) {
-                CL_newfx.Heatbeam(org, dist);
+                CLNewEffects.Heatbeam(org, dist);
             }
 
             // add new entities for the beams

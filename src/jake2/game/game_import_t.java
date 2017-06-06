@@ -39,22 +39,22 @@ public class game_import_t {
         SV_GAME.PF_dprintf(s);
     }
 
-    public void cprintf(edict_t ent, int printlevel, String s) {
+    public void cprintf(TEntityDict ent, int printlevel, String s) {
         SV_GAME.PF_cprintf(ent, printlevel, s);
     }
 
-    public void centerprintf(edict_t ent, String s) {
+    public void centerprintf(TEntityDict ent, String s) {
         SV_GAME.PF_centerprintf(ent, s);
     }
 
-    public void sound(edict_t ent, int channel, int soundindex, float volume,
-            float attenuation, float timeofs) {
+    public void sound(TEntityDict ent, int channel, int soundindex, float volume,
+                      float attenuation, float timeofs) {
         SV_GAME.PF_StartSound(ent, channel, soundindex, volume, attenuation,
                 timeofs);
     }
 
-    public void positioned_sound(float[] origin, edict_t ent, int channel,
-            int soundinedex, float volume, float attenuation, float timeofs) {
+    public void positioned_sound(float[] origin, TEntityDict ent, int channel,
+                                 int soundinedex, float volume, float attenuation, float timeofs) {
 
         SV_SEND.SV_StartSound(origin, ent, channel, soundinedex, volume,
                 attenuation, timeofs);
@@ -89,13 +89,13 @@ public class game_import_t {
         return SV_INIT.SV_ImageIndex(name);
     }
 
-    public void setmodel(edict_t ent, String name) {
+    public void setmodel(TEntityDict ent, String name) {
         SV_GAME.PF_setmodel(ent, name);
     }
 
     // collision detection
     public trace_t trace(float[] start, float[] mins, float[] maxs,
-            float[] end, edict_t passent, int contentmask) {
+                         float[] end, TEntityDict passent, int contentmask) {
         return SV_WORLD.SV_Trace(start, mins, maxs, end, passent, contentmask);
     }
 
@@ -120,16 +120,16 @@ public class game_import_t {
     // an entity will never be sent to a client or used for collision
     // if it is not passed to linkentity. If the size, position, or
     // solidity changes, it must be relinked.
-    public void linkentity(edict_t ent) {
+    public void linkentity(TEntityDict ent) {
         SV_WORLD.SV_LinkEdict(ent);
     }
 
-    public void unlinkentity(edict_t ent) {
+    public void unlinkentity(TEntityDict ent) {
         SV_WORLD.SV_UnlinkEdict(ent);
     }
 
     // call before removing an interactive edict
-    public int BoxEdicts(float[] mins, float[] maxs, edict_t list[],
+    public int BoxEdicts(float[] mins, float[] maxs, TEntityDict list[],
             int maxcount, int areatype) {
         return SV_WORLD.SV_AreaEdicts(mins, maxs, list, maxcount, areatype);
     }
@@ -144,7 +144,7 @@ public class game_import_t {
         SV_SEND.SV_Multicast(origin, to);
     }
 
-    public void unicast(edict_t ent, boolean reliable) {
+    public void unicast(TEntityDict ent, boolean reliable) {
         SV_GAME.PF_Unicast(ent, reliable);
     }
 

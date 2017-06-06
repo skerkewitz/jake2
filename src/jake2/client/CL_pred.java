@@ -88,7 +88,7 @@ public class CL_pred {
         trace_t trace;
         int headnode;
         float[] angles;
-        entity_state_t ent;
+        TEntityState ent;
         int num;
         cmodel_t cmodel;
         float[] bmins = new float[3];
@@ -150,7 +150,7 @@ public class CL_pred {
      * ================ CL_PMTrace ================
      */
 
-    public static edict_t DUMMY_ENT = new edict_t(-1);
+    public static TEntityDict DUMMY_ENT = new TEntityDict(-1);
 
     static trace_t PMTrace(float[] start, float[] mins, float[] maxs,
             float[] end) {
@@ -176,7 +176,7 @@ public class CL_pred {
      */
     static int PMpointcontents(float[] point) {
         int i;
-        entity_state_t ent;
+        TEntityState ent;
         int num;
         cmodel_t cmodel;
         int contents;

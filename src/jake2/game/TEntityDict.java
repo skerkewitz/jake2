@@ -29,21 +29,21 @@ import jake2.io.QuakeFile;
 
 import java.io.IOException;
 
-public class edict_t {
+public class TEntityDict {
 
     /** Constructor. */
-    public edict_t(int i) {
+    public TEntityDict(int i) {
         s.number = i;
         index = i;
     }
 
     /** Used during level loading. */
     public void cleararealinks() {
-        area = new link_t(this);
+        area = new TLink(this);
     }
 
     /** Integrated entity state. */
-    public entity_state_t s = new entity_state_t(this);
+    public TEntityState s = new TEntityState(this);
 
     public boolean inuse;
 
@@ -53,7 +53,7 @@ public class edict_t {
      * FIXME: move these fields to a server private sv_entity_t. linked to a
      * division node or leaf.
      */
-    public link_t area = new link_t(this);
+    public TLink area = new TLink(this);
 
     /** if -1, use headnode instead. */
     public int num_clusters;
@@ -122,7 +122,7 @@ public class edict_t {
 
     public String combattarget = null;
 
-    public edict_t target_ent = null;
+    public TEntityDict target_ent = null;
 
     public float speed, accel, decel;
 
@@ -145,9 +145,9 @@ public class edict_t {
 
     /** use for lowgrav artifact, flares. */
 
-    public edict_t goalentity = null;
+    public TEntityDict goalentity = null;
 
-    public edict_t movetarget = null;
+    public TEntityDict movetarget = null;
 
     public float yaw_speed;
 
@@ -212,26 +212,26 @@ public class edict_t {
 
     public int count;
 
-    public edict_t chain = null;
+    public TEntityDict chain = null;
 
-    public edict_t enemy = null;
+    public TEntityDict enemy = null;
 
-    public edict_t oldenemy = null;
+    public TEntityDict oldenemy = null;
 
-    public edict_t activator = null;
+    public TEntityDict activator = null;
 
-    public edict_t groundentity = null;
+    public TEntityDict groundentity = null;
 
     public int groundentity_linkcount;
 
-    public edict_t teamchain = null;
+    public TEntityDict teamchain = null;
 
-    public edict_t teammaster = null;
+    public TEntityDict teammaster = null;
 
     /** can go in client only. */
-    public edict_t mynoise = null;
+    public TEntityDict mynoise = null;
 
-    public edict_t mynoise2 = null;
+    public TEntityDict mynoise2 = null;
 
     public int noise_index;
 
@@ -265,7 +265,7 @@ public class edict_t {
     /** also used as areaportal number. */
     public int style;
 
-    public gitem_t item; // for bonus items
+    public TGItem item; // for bonus items
 
     /** common integrated data blocks. */
     public moveinfo_t moveinfo = new moveinfo_t();
@@ -274,7 +274,7 @@ public class edict_t {
 
     public gclient_t client;
 
-    public edict_t owner;
+    public TEntityDict owner;
 
     /** Introduced by rst. */
     public int index;

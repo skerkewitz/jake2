@@ -21,25 +21,25 @@
 // Created on 20.11.2003 by RST.
 package jake2.game;
 
-public class gitem_t {
+public class TGItem {
     private static int id = 0;
 
-    public gitem_t(int xxx) {
+    public TGItem(int xxx) {
         index = xxx;
     }
 
-    public gitem_t(String classname, EntInteractAdapter pickup,
-            ItemUseAdapter use, ItemDropAdapter drop,
-            EntThinkAdapter weaponthink) {
+    public TGItem(String classname, EntInteractAdapter pickup,
+                  ItemUseAdapter use, ItemDropAdapter drop,
+                  EntThinkAdapter weaponthink) {
     }
 
-    public gitem_t(String classname, EntInteractAdapter pickup,
-            ItemUseAdapter use, ItemDropAdapter drop,
-            EntThinkAdapter weaponthink, String pickup_sound,
-            String world_model, int world_model_flags, String view_model,
-            String icon, String pickup_name, int count_width, int quantity,
-            String ammo, int flags, int weapmodel, gitem_armor_t info, int tag,
-            String precaches) {
+    public TGItem(String classname, EntInteractAdapter pickup,
+                  ItemUseAdapter use, ItemDropAdapter drop,
+                  EntThinkAdapter weaponthink, String pickup_sound,
+                  String world_model, int world_model_flags, String view_model,
+                  String icon, String pickup_name, int count_width, int quantity,
+                  String ammo, int flags, int weapmodel, gitem_armor_t info, int tag,
+                  String precaches) {
         this.classname = classname;
         this.pickup = pickup;
         this.use = use;

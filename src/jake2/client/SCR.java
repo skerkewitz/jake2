@@ -174,10 +174,10 @@ public final class SCR {
 
         // draw the graph
 
-        w = scr_vrect.width;
+        w = scr_vrect.getWidth();
 
-        x = scr_vrect.x;
-        y = scr_vrect.y + scr_vrect.height;
+        x = scr_vrect.getX();
+        y = scr_vrect.getY() + scr_vrect.getHeight();
         re.DrawFill(x, (int) (y - scr_graphheight.value), w,
                 (int) scr_graphheight.value, 8);
 
@@ -355,14 +355,14 @@ public final class SCR {
 
         size = (int) scr_viewsize.value;
 
-        scr_vrect.width = viddef.getWidth() * size / 100;
-        scr_vrect.width &= ~7;
+        scr_vrect.setWidth(viddef.getWidth() * size / 100);
+        scr_vrect.setWidth(scr_vrect.getWidth() & ~7);
 
-        scr_vrect.height = viddef.getHeight() * size / 100;
-        scr_vrect.height &= ~1;
+        scr_vrect.setHeight(viddef.getHeight() * size / 100);
+        scr_vrect.setHeight(scr_vrect.getHeight() & ~1);
 
-        scr_vrect.x = (viddef.getWidth() - scr_vrect.width) / 2;
-        scr_vrect.y = (viddef.getHeight() - scr_vrect.height) / 2;
+        scr_vrect.setX((viddef.getWidth() - scr_vrect.getWidth()) / 2);
+        scr_vrect.setY((viddef.getHeight() - scr_vrect.getHeight()) / 2);
     }
 
     /*
@@ -473,7 +473,7 @@ public final class SCR {
         if (cls.netchan.outgoing_sequence - cls.netchan.incoming_acknowledged < CMD_BACKUP - 1)
             return;
 
-        re.DrawPic(scr_vrect.x + 64, scr_vrect.y, "net");
+        re.DrawPic(scr_vrect.getX() + 64, scr_vrect.getY(), "net");
     }
 
     /*
@@ -700,10 +700,10 @@ public final class SCR {
         if (clear.y2 <= clear.y1)
             return; // nothing disturbed
 
-        top = scr_vrect.y;
-        bottom = top + scr_vrect.height - 1;
-        left = scr_vrect.x;
-        right = left + scr_vrect.width - 1;
+        top = scr_vrect.getY();
+        bottom = top + scr_vrect.getHeight() - 1;
+        left = scr_vrect.getX();
+        right = left + scr_vrect.getWidth() - 1;
 
         if (clear.y1 < top) { // clear above view screen
             i = clear.y2 < top - 1 ? clear.y2 : top - 1;
@@ -1293,8 +1293,8 @@ public final class SCR {
         if (crosshair_pic.length() == 0)
             return;
 
-        re.DrawPic(scr_vrect.x + ((scr_vrect.width - crosshair_width) >> 1),
-                scr_vrect.y + ((scr_vrect.height - crosshair_height) >> 1),
+        re.DrawPic(scr_vrect.getX() + ((scr_vrect.getWidth() - crosshair_width) >> 1),
+                scr_vrect.getY() + ((scr_vrect.getHeight() - crosshair_height) >> 1),
                 crosshair_pic);
     }
 

@@ -1,4 +1,10 @@
 /*
+ * vrect_t.java
+ * Copyright (C) 2003
+ *
+ * $Id: vrect_t.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
+ */
+/*
 Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
@@ -8,7 +14,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -17,17 +23,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+package jake2.client
 
-// Created on 31.10.2003 by RST 
-// $Id: link_t.java,v 1.1 2004-07-07 19:59:25 hzi Exp $
-// simple linked structure often used in quake.
+/**
+ * TRect
 
-package jake2.game;
-
-public class link_t {
-	public link_t(Object o) {
-		this.o = o;
-	}
-	public link_t prev, next;
-	public Object o;
+ * @author cwei
+ */
+class TRect {
+    var x: Int = 0
+    var y: Int = 0
+    var width: Int = 0
+    var height: Int = 0
 }

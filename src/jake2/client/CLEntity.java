@@ -32,7 +32,7 @@ import jake2.qcommon.*;
 import jake2.util.Math3D;
 
 /**
- * CL_ents
+ * CLEntity
  */
 //	   cl_ents.c -- entity parsing and management
 /*
@@ -42,7 +42,7 @@ import jake2.util.Math3D;
  * 
  * =========================================================================
  */
-public class CL_ents {
+public class CLEntity {
 
 	static int bitcounts[] = new int[32]; /// just for protocol profiling
 
@@ -96,7 +96,7 @@ public class CL_ents {
 	 * Can go from either a baseline or a previous packet_entity
 	 * ==================
 	 */
-	public static void ParseDelta(entity_state_t from, entity_state_t to, int number, int bits) {
+	public static void ParseDelta(TEntityState from, TEntityState to, int number, int bits) {
 		// set everything to the state we are delta'ing from
 		to.set(from);
 
@@ -176,9 +176,9 @@ public class CL_ents {
 	 * Parses deltas from the given base and adds the resulting entity to the
 	 * current frame ==================
 	 */
-	public static void DeltaEntity(TFrame frame, int newnum, entity_state_t old, int bits) {
-		centity_t ent;
-		entity_state_t state;
+	public static void DeltaEntity(TFrame frame, int newnum, TEntityState old, int bits) {
+		TClEentity ent;
+		TEntityState state;
 
 		ent = Context.cl_entities[newnum];
 
@@ -235,7 +235,7 @@ public class CL_ents {
 		int newnum;
 		int bits = 0;
 
-		entity_state_t oldstate = null;
+		TEntityState oldstate = null;
 		int oldnum;
 
 		newframe.parse_entities = Context.cl.parse_entities;
@@ -468,18 +468,18 @@ public class CL_ents {
 	 * ==================
 	 */
 	public static void FireEntityEvents(TFrame frame) {
-		entity_state_t s1;
+		TEntityState s1;
 		int pnum, num;
 
 		for (pnum = 0; pnum < frame.num_entities; pnum++) {
 			num = (frame.parse_entities + pnum) & (Defines.MAX_PARSE_ENTITIES - 1);
 			s1 = Context.cl_parse_entities[num];
 			if (s1.event != 0)
-				CL_fx.EntityEvent(s1);
+				CLEffects.EntityEvent(s1);
 
 			// EF_TELEPORTER acts like an event, but is not cleared each frame
 			if ((s1.effects & Defines.EF_TELEPORTER) != 0)
-				CL_fx.TeleporterParticles(s1);
+				CLEffects.TeleporterParticles(s1);
 		}
 	}
 
@@ -597,11 +597,11 @@ public class CL_ents {
 	 * ===============
 	 */
 	static void AddPacketEntities(TFrame frame) {
-		entity_state_t s1;
+		TEntityState s1;
 		float autorotate;
 		int i;
 		int pnum;
-		centity_t cent;
+		TClEentity cent;
 		int autoanim;
 		clientinfo_t ci;
 		int effects, renderfx;
@@ -914,7 +914,7 @@ public class CL_ents {
 			// add automatic particle trails
 			if ((effects & ~Defines.EF_ROTATE) != 0) {
 				if ((effects & Defines.EF_ROCKET) != 0) {
-					CL_fx.RocketTrail(cent.lerp_origin, ent.origin, cent);
+					CLEffects.RocketTrail(cent.lerp_origin, ent.origin, cent);
 					V.AddLight(ent.origin, 200, 1, 1, 0);
 				}
 				// PGM - Do not reorder EF_BLASTER and EF_HYPERBLASTER.
@@ -926,10 +926,10 @@ public class CL_ents {
 					if ((effects & Defines.EF_TRACKER) != 0) // lame...
 															 // problematic?
 					{
-						CL_newfx.BlasterTrail2(cent.lerp_origin, ent.origin);
+						CLNewEffects.BlasterTrail2(cent.lerp_origin, ent.origin);
 						V.AddLight(ent.origin, 200, 0, 1, 0);
 					} else {
-						CL_fx.BlasterTrail(cent.lerp_origin, ent.origin);
+						CLEffects.BlasterTrail(cent.lerp_origin, ent.origin);
 						V.AddLight(ent.origin, 200, 1, 1, 0);
 					}
 					//	  PGM
@@ -941,15 +941,15 @@ public class CL_ents {
 						// PGM
 						V.AddLight(ent.origin, 200, 1, 1, 0);
 				} else if ((effects & Defines.EF_GIB) != 0) {
-					CL_fx.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
+					CLEffects.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
 				} else if ((effects & Defines.EF_GRENADE) != 0) {
-					CL_fx.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
+					CLEffects.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
 				} else if ((effects & Defines.EF_FLIES) != 0) {
-					CL_fx.FlyEffect(cent, ent.origin);
+					CLEffects.FlyEffect(cent, ent.origin);
 				} else if ((effects & Defines.EF_BFG) != 0) {
 
 					if ((effects & Defines.EF_ANIM_ALLFAST) != 0) {
-						CL_fx.BfgParticles(ent);
+						CLEffects.BfgParticles(ent);
 						i = 200;
 					} else {
 						i = bfg_lightramp[s1.frame];
@@ -959,20 +959,20 @@ public class CL_ents {
 				// RAFAEL
 				else if ((effects & Defines.EF_TRAP) != 0) {
 					ent.origin[2] += 32;
-					CL_fx.TrapParticles(ent);
+					CLEffects.TrapParticles(ent);
 					i = (Context.rnd.nextInt(100)) + 100;
 					V.AddLight(ent.origin, i, 1, 0.8f, 0.1f);
 				} else if ((effects & Defines.EF_FLAG1) != 0) {
-					CL_fx.FlagTrail(cent.lerp_origin, ent.origin, 242);
+					CLEffects.FlagTrail(cent.lerp_origin, ent.origin, 242);
 					V.AddLight(ent.origin, 225, 1, 0.1f, 0.1f);
 				} else if ((effects & Defines.EF_FLAG2) != 0) {
-					CL_fx.FlagTrail(cent.lerp_origin, ent.origin, 115);
+					CLEffects.FlagTrail(cent.lerp_origin, ent.origin, 115);
 					V.AddLight(ent.origin, 225, 0.1f, 0.1f, 1);
 				}
 				//	  ======
 				//	  ROGUE
 				else if ((effects & Defines.EF_TAGTRAIL) != 0) {
-					CL_newfx.TagTrail(cent.lerp_origin, ent.origin, 220);
+					CLNewEffects.TagTrail(cent.lerp_origin, ent.origin, 220);
 					V.AddLight(ent.origin, 225, 1.0f, 1.0f, 0.0f);
 				} else if ((effects & Defines.EF_TRACKERTRAIL) != 0) {
 					if ((effects & Defines.EF_TRACKER) != 0) {
@@ -985,11 +985,11 @@ public class CL_ents {
 						else
 							V.AddLight(ent.origin, -1.0f * intensity, 1.0f, 1.0f, 1.0f);
 					} else {
-						CL_newfx.Tracker_Shell(cent.lerp_origin);
+						CLNewEffects.Tracker_Shell(cent.lerp_origin);
 						V.AddLight(ent.origin, 155, -1.0f, -1.0f, -1.0f);
 					}
 				} else if ((effects & Defines.EF_TRACKER) != 0) {
-					CL_newfx.TrackerTrail(cent.lerp_origin, ent.origin, 0);
+					CLNewEffects.TrackerTrail(cent.lerp_origin, ent.origin, 0);
 					// FIXME - check out this effect in rendition
 					if (Context.vidref_val == Defines.VIDREF_GL)
 						V.AddLight(ent.origin, 200, -1, -1, -1);
@@ -1000,11 +1000,11 @@ public class CL_ents {
 				//	  ======
 				// RAFAEL
 				else if ((effects & Defines.EF_GREENGIB) != 0) {
-					CL_fx.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
+					CLEffects.DiminishingTrail(cent.lerp_origin, ent.origin, cent, effects);
 				}
 				// RAFAEL
 				else if ((effects & Defines.EF_IONRIPPER) != 0) {
-					CL_fx.IonripperTrail(cent.lerp_origin, ent.origin);
+					CLEffects.IonripperTrail(cent.lerp_origin, ent.origin);
 					V.AddLight(ent.origin, 100, 1, 0.5f, 0.5f);
 				}
 				// RAFAEL
@@ -1014,7 +1014,7 @@ public class CL_ents {
 				// RAFAEL
 				else if ((effects & Defines.EF_PLASMA) != 0) {
 					if ((effects & Defines.EF_ANIM_ALLFAST) != 0) {
-						CL_fx.BlasterTrail(cent.lerp_origin, ent.origin);
+						CLEffects.BlasterTrail(cent.lerp_origin, ent.origin);
 					}
 					V.AddLight(ent.origin, 130, 1, 0.5f, 0.5f);
 				}
@@ -1191,9 +1191,9 @@ public class CL_ents {
 		AddPacketEntities(Context.cl.frame);
 
 		CL_tent.AddTEnts();
-		CL_fx.AddParticles();
-		CL_fx.AddDLights();
-		CL_fx.AddLightStyles();
+		CLEffects.AddParticles();
+		CLEffects.AddDLights();
+		CLEffects.AddLightStyles();
 	}
 
 	/*
@@ -1202,7 +1202,7 @@ public class CL_ents {
 	 * Called to get the sound spatialization origin ===============
 	 */
 	public static void GetEntitySoundOrigin(int ent, float[] org) {
-		centity_t old;
+		TClEentity old;
 
 		if (ent < 0 || ent >= Defines.MAX_EDICTS)
 			Command.Error(Defines.ERR_DROP, "CL_GetEntitySoundOrigin: bad ent");

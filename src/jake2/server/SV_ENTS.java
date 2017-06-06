@@ -50,11 +50,11 @@ public class SV_ENTS {
      */
 
     /**
-     * Writes a delta update of an entity_state_t list to the message.
+     * Writes a delta update of an TEntityState list to the message.
      */
     static void SV_EmitPacketEntities(client_frame_t from, client_frame_t to,
             TSizeBuffer msg) {
-        entity_state_t oldent = null, newent = null;
+        TEntityState oldent = null, newent = null;
         int oldindex, newindex;
         int oldnum, newnum;
         int from_num_entities;
@@ -400,10 +400,10 @@ public class SV_ENTS {
     public static void SV_BuildClientFrame(client_t client) {
         int e, i;
         float[] org = { 0, 0, 0 };
-        edict_t ent;
-        edict_t clent;
+        TEntityDict ent;
+        TEntityDict clent;
         client_frame_t frame;
-        entity_state_t state;
+        TEntityState state;
         int l;
         int clientarea, clientcluster;
         int leafnum;
@@ -541,7 +541,7 @@ public class SV_ENTS {
             return;
 
         //memset (nostate, 0, sizeof(nostate));
-        entity_state_t nostate = new entity_state_t(null);
+        TEntityState nostate = new TEntityState(null);
         TSizeBuffer buf = new TSizeBuffer();
         buf.init(buf_data, buf_data.length);
 
@@ -552,7 +552,7 @@ public class SV_ENTS {
         buf.writeByte(Defines.svc_packetentities);
 
         int e = 1;
-        edict_t ent = GameBase.g_edicts[e];
+        TEntityDict ent = GameBase.g_edicts[e];
 
         while (e < GameBase.num_edicts) {
             // ignore ents without visible models unless they have an effect

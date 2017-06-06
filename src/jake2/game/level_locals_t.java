@@ -46,15 +46,15 @@ public class level_locals_t
 	public float[] intermission_origin= { 0, 0, 0 };
 	public float[] intermission_angle= { 0, 0, 0 };
 
-	public edict_t sight_client; // changed once each frame for coop games
+	public TEntityDict sight_client; // changed once each frame for coop games
 
-	public edict_t sight_entity;
+	public TEntityDict sight_entity;
 	public int sight_entity_framenum;
 	
-	public edict_t sound_entity;
+	public TEntityDict sound_entity;
 	public int sound_entity_framenum;
 	
-	public edict_t sound2_entity;
+	public TEntityDict sound2_entity;
 	public int sound2_entity_framenum;
 
 	public int pic_health;
@@ -68,7 +68,7 @@ public class level_locals_t
 	public int total_monsters;
 	public int killed_monsters;
 
-	public edict_t current_entity; // entity running from G_RunFrame
+	public TEntityDict current_entity; // entity running from G_RunFrame
 	public int body_que; // dead bodies
 
 	public int power_cubes; // ugly necessity for coop

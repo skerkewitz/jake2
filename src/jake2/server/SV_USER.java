@@ -33,7 +33,7 @@ import java.io.IOException;
 
 public class SV_USER {
 
-    static edict_t sv_player;
+    static TEntityDict sv_player;
 
     public static class ucmd_t {
         public ucmd_t(String n, Runnable r) {
@@ -132,7 +132,7 @@ public class SV_USER {
     public static void SV_New_f() {
         String gamedir;
         int playernum;
-        edict_t ent;
+        TEntityDict ent;
 
         Command.DPrintf("New() from " + SV_MAIN.sv_client.name + "\n");
 
@@ -243,8 +243,8 @@ public class SV_USER {
      */
     public static void SV_Baselines_f() {
         int start;
-        entity_state_t nullstate;
-        entity_state_t base;
+        TEntityState nullstate;
+        TEntityState base;
 
         Command.DPrintf("Baselines() from " + SV_MAIN.sv_client.name + "\n");
 
@@ -263,7 +263,7 @@ public class SV_USER {
         start = Lib.atoi(Cmd.Argv(2));
 
         //memset (&nullstate, 0, sizeof(nullstate));
-        nullstate = new entity_state_t(null);
+        nullstate = new TEntityState(null);
 
         // write a packet full of data
 

@@ -196,7 +196,7 @@ public class player_state_t {
 
 		Command.Println("fov: " + fov);
 
-		Command.Println("rdflags: " + rdflags);
+		Command.Println("renderFlags: " + rdflags);
 
 		for (int n= 0; n < Defines.MAX_STATS; n++)
 			System.out.println("stats[" + n + "]: " + stats[n]);

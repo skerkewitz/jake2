@@ -27,9 +27,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sound.lwjgl;
 
 import jake2.Defines;
-import jake2.client.CL_ents;
+import jake2.client.CLEntity;
 import jake2.client.Context;
-import jake2.game.entity_state_t;
+import jake2.game.TEntityState;
 import jake2.qcommon.Command;
 import jake2.sound.*;
 import jake2.util.Lib;
@@ -318,7 +318,7 @@ public class Channel {
 		    sourceOrigin.put(2, listenerOrigin.get(2));
 		    break;
 		case Channel.DYNAMIC:
-		    CL_ents.GetEntitySoundOrigin(ch.entnum, entityOrigin);
+		    CLEntity.GetEntitySoundOrigin(ch.entnum, entityOrigin);
 		    convertVector(entityOrigin, sourceOrigin);
 		    break;
 		case Channel.FIXED:
@@ -373,7 +373,7 @@ public class Channel {
 	TSound sfx;
 	TSoundData sc;
 	int num;
-	entity_state_t ent;
+	TEntityState ent;
 	Object key;
 	int sound = 0;
 

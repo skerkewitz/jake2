@@ -23,7 +23,7 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.game.entity_state_t;
+import jake2.game.TEntityState;
 import jake2.qcommon.TSizeBuffer;
 
 import java.io.RandomAccessFile;
@@ -51,7 +51,7 @@ public class server_static_t {
 
     int next_client_entities; // next client_entity to use
 
-    entity_state_t client_entities[]; // [num_client_entities]
+    TEntityState client_entities[]; // [num_client_entities]
 
     int last_heartbeat;
 

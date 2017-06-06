@@ -25,7 +25,7 @@ package jake2.server;
 import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.EndianHandler;
-import jake2.game.edict_t;
+import jake2.game.TEntityDict;
 import jake2.network.Netchan;
 import jake2.qcommon.*;
 import jake2.util.Lib;
@@ -249,7 +249,7 @@ public class SV_SEND {
 	*/
 	public static void SV_StartSound(
 		float[] origin,
-		edict_t entity,
+		TEntityDict entity,
 		int channel,
 		int soundindex,
 		float volume,
@@ -371,7 +371,7 @@ public class SV_SEND {
 		msg.init(msgbuf, msgbuf.length);
 		msg.allowoverflow = true;
 
-		// send over all the relevant entity_state_t
+		// send over all the relevant TEntityState
 		// and the player_state_t
 		SV_ENTS.SV_WriteFrameToClient(client, msg);
 

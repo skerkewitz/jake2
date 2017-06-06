@@ -32,9 +32,10 @@ public class TRefDef {
     public float viewangles[] = {0, 0, 0};
     public float blend[] = {0, 0, 0, 0};            // rgba 0-1 full screen blend
     public float time;                // time is uesed to auto animate
-    public int rdflags;            // RDF_UNDERWATER, etc
+    public int renderFlags;            // RDF_UNDERWATER, etc
 
-    public byte areabits[];            // if not NULL, only areas with set bits will be drawn
+    /** If not NULL, only areas with set bits will be drawn. */
+    public byte areabits[];
 
     public TLightStyle lightstyles[];    // [MAX_LIGHTSTYLES]
 

@@ -31,6 +31,6 @@ public class EdictIterator
 	{
 		this.i = i;
 	}
-	public edict_t o;
+	public TEntityDict o;
 	int i;
 }

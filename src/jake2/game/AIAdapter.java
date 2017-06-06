@@ -25,5 +25,5 @@ package jake2.game;
 
 public abstract class AIAdapter extends SuperAdapter
 {
-	public abstract void ai(edict_t self, float dist);
+	public abstract void ai(TEntityDict self, float dist);
 }
