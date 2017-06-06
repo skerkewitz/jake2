@@ -19,7 +19,7 @@
  */
 
 // Created on 14.01.2004 by RST.
-// $Id: server_t.java,v 1.2 2004-09-22 19:22:12 salomo Exp $
+// $Id: TServer.java,v 1.2 2004-09-22 19:22:12 salomo Exp $
 package jake2.server;
 
 import jake2.Defines;
@@ -29,9 +29,9 @@ import jake2.qcommon.TSizeBuffer;
 
 import java.io.RandomAccessFile;
 
-public class server_t {
+public class TServer {
 
-    public server_t() {
+    public TServer() {
         models = new cmodel_t[Defines.MAX_MODELS];
         for (int n = 0; n < Defines.MAX_MODELS; n++)
             models[n] = new cmodel_t();

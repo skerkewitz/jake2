@@ -19,7 +19,7 @@
  */
 
 // Created on 14.01.2004 by RST.
-// $Id: server_static_t.java,v 1.2 2004-09-22 19:22:12 salomo Exp $
+// $Id: TServerStatic.java,v 1.2 2004-09-22 19:22:12 salomo Exp $
 package jake2.server;
 
 import jake2.Defines;
@@ -28,8 +28,8 @@ import jake2.qcommon.TSizeBuffer;
 
 import java.io.RandomAccessFile;
 
-public class server_static_t {
-    public server_static_t() {
+public class TServerStatic {
+    public TServerStatic() {
         for (int n = 0; n < Defines.MAX_CHALLENGES; n++) {
             challenges[n] = new challenge_t();
         }

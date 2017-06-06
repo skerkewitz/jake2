@@ -43,18 +43,18 @@ public class SV_GAME {
             return;
 
         p = ent.index;
-        if (p < 1 || p > SV_MAIN.maxclients.value)
+        if (p < 1 || p > ServerMain.maxclients.value)
             return;
 
-        client = SV_INIT.svs.clients[p - 1];
+        client = ServerInit.svs.clients[p - 1];
 
         if (reliable) {
-            client.netchan.message.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+            client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
         } else {
-            client.datagram.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+            client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
         }
 
-        SV_INIT.sv.multicast.clear();
+        ServerInit.sv.multicast.clear();
     }
 
     /**
@@ -85,12 +85,12 @@ public class SV_GAME {
 
         if (ent != null) {
             n = ent.index;
-            if (n < 1 || n > SV_MAIN.maxclients.value)
+            if (n < 1 || n > ServerMain.maxclients.value)
                 Command.Error(Defines.ERR_DROP, "cprintf to a non-client");
         }
 
         if (ent != null)
-            SV_SEND.SV_ClientPrintf(SV_INIT.svs.clients[n - 1], level, fmt);
+            SV_SEND.SV_ClientPrintf(ServerInit.svs.clients[n - 1], level, fmt);
         else
             Command.Printf(fmt);
     }
@@ -104,11 +104,11 @@ public class SV_GAME {
         int n;
 
         n = ent.index;
-        if (n < 1 || n > SV_MAIN.maxclients.value)
+        if (n < 1 || n > ServerMain.maxclients.value)
             return; // Com_Error (ERR_DROP, "centerprintf to a non-client");
 
-        SV_INIT.sv.multicast.writeByte(Defines.svc_centerprint);
-        SV_INIT.sv.multicast.writeString(fmt);
+        ServerInit.sv.multicast.writeByte(Defines.svc_centerprint);
+        ServerInit.sv.multicast.writeString(fmt);
         PF_Unicast(ent, true);
     }
 
@@ -137,7 +137,7 @@ public class SV_GAME {
         if (name == null)
             Command.Error(Defines.ERR_DROP, "PF_setmodel: NULL");
 
-        i = SV_INIT.SV_ModelIndex(name);
+        i = ServerInit.modelIndexOf(name);
 
         ent.s.modelindex = i;
 
@@ -146,7 +146,7 @@ public class SV_GAME {
             mod = CM.InlineModel(name);
             Math3D.VectorCopy(mod.mins, ent.mins);
             Math3D.VectorCopy(mod.maxs, ent.maxs);
-            SV_WORLD.SV_LinkEdict(ent);
+            ServerWorld.SV_LinkEdict(ent);
         }
     }
 
@@ -162,53 +162,53 @@ public class SV_GAME {
             val = "";
 
         // change the string in sv
-        SV_INIT.sv.configstrings[index] = val;
+        ServerInit.sv.configstrings[index] = val;
 
-        if (SV_INIT.sv.state != Defines.ss_loading) { // send the update to
+        if (ServerInit.sv.state != Defines.ss_loading) { // send the update to
             // everyone
-            SV_INIT.sv.multicast.clear();
-            SV_INIT.sv.multicast.writeChar(Defines.svc_configstring);
-            SV_INIT.sv.multicast.writeShort(index);
-            SV_INIT.sv.multicast.writeString(val);
+            ServerInit.sv.multicast.clear();
+            ServerInit.sv.multicast.writeChar(Defines.svc_configstring);
+            ServerInit.sv.multicast.writeShort(index);
+            ServerInit.sv.multicast.writeString(val);
 
             SV_SEND.SV_Multicast(Context.vec3_origin, Defines.MULTICAST_ALL_R);
         }
     }
 
     public static void PF_WriteChar(int c) {
-        SV_INIT.sv.multicast.writeChar(c);
+        ServerInit.sv.multicast.writeChar(c);
     }
 
     public static void PF_WriteByte(int c) {
-        SV_INIT.sv.multicast.writeByte(c);
+        ServerInit.sv.multicast.writeByte(c);
     }
 
     public static void PF_WriteShort(int c) {
-        SV_INIT.sv.multicast.writeShort(c);
+        ServerInit.sv.multicast.writeShort(c);
     }
 
     public static void PF_WriteLong(int c) {
-        SV_INIT.sv.multicast.writeLong(c);
+        ServerInit.sv.multicast.writeLong(c);
     }
 
     public static void PF_WriteFloat(float f) {
-        SV_INIT.sv.multicast.writeFloat(Float.floatToIntBits(f));
+        ServerInit.sv.multicast.writeFloat(Float.floatToIntBits(f));
     }
 
     public static void PF_WriteString(String s) {
-        SV_INIT.sv.multicast.writeString(s);
+        ServerInit.sv.multicast.writeString(s);
     }
 
     public static void PF_WritePos(float[] pos) {
-        SV_INIT.sv.multicast.writePos(pos);
+        ServerInit.sv.multicast.writePos(pos);
     }
 
     public static void PF_WriteDir(float[] dir) {
-        SV_INIT.sv.multicast.writeDir(dir);
+        ServerInit.sv.multicast.writeDir(dir);
     }
 
     public static void PF_WriteAngle(float f) {
-        SV_INIT.sv.multicast.writeAngle(f);
+        ServerInit.sv.multicast.writeAngle(f);
     }
 
     /**

@@ -1578,7 +1578,7 @@ public class PlayerClient {
             return;
         }
 
-        // run weapon animations if it hasn't been done by a ucmd_t
+        // run weapon animations if it hasn't been done by a TUserCommand
         if (!client.weapon_thunk && !client.resp.spectator)
             PlayerWeapon.Think_Weapon(ent);
         else

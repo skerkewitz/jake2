@@ -50,9 +50,9 @@ public class SV_SEND {
 			Netchan.Netchan_OutOfBand(Defines.NS_SERVER, Context.net_from, s.length(), Lib.stringToBytes(s));
 		}
 		else if (sv_redirected == Defines.RD_CLIENT) {
-			SV_MAIN.sv_client.netchan.message.writeByte(Defines.svc_print);
-			SV_MAIN.sv_client.netchan.message.writeByte(Defines.PRINT_HIGH);
-			SV_MAIN.sv_client.netchan.message.writeString(outputbuf);
+			ServerMain.sv_client.netchan.message.writeByte(Defines.svc_print);
+			ServerMain.sv_client.netchan.message.writeByte(Defines.PRINT_HIGH);
+			ServerMain.sv_client.netchan.message.writeString(outputbuf);
         }
 	}
 	/*
@@ -96,8 +96,8 @@ public class SV_SEND {
 			Command.Printf(s);
 		}
 
-		for (int i = 0; i < SV_MAIN.maxclients.value; i++) {
-			cl = SV_INIT.svs.clients[i];
+		for (int i = 0; i < ServerMain.maxclients.value; i++) {
+			cl = ServerInit.svs.clients[i];
 			if (level < cl.messagelevel)
 				continue;
 			if (cl.state != Defines.cs_spawned)
@@ -116,11 +116,11 @@ public class SV_SEND {
 	*/
 	public static void SV_BroadcastCommand(String s) {
 
-		if (SV_INIT.sv.state == 0)
+		if (ServerInit.sv.state == 0)
 			return;
 
-		SV_INIT.sv.multicast.writeByte(Defines.svc_stufftext);
-		SV_INIT.sv.multicast.writeString(s);
+		ServerInit.sv.multicast.writeByte(Defines.svc_stufftext);
+		ServerInit.sv.multicast.writeString(s);
 		SV_Multicast(null, Defines.MULTICAST_ALL_R);
 	}
 	/*
@@ -155,8 +155,8 @@ public class SV_SEND {
 		}
 
 		// if doing a serverrecord, store everything
-		if (SV_INIT.svs.demofile != null)
-			SV_INIT.svs.demo_multicast.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+		if (ServerInit.svs.demofile != null)
+			ServerInit.svs.demo_multicast.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
 
 		switch (to) {
 			case Defines.MULTICAST_ALL_R :
@@ -188,8 +188,8 @@ public class SV_SEND {
 		}
 
 		// send the data to all relevent clients
-		for (j = 0; j < SV_MAIN.maxclients.value; j++) {
-			client = SV_INIT.svs.clients[j];
+		for (j = 0; j < ServerMain.maxclients.value; j++) {
+			client = ServerInit.svs.clients[j];
 
 			if (client.state == Defines.cs_free || client.state == Defines.cs_zombie)
 				continue;
@@ -211,13 +211,13 @@ public class SV_SEND {
 			}
 
 			if (reliable) {
-				client.netchan.message.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+				client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
 			} else {
-				client.datagram.write(SV_INIT.sv.multicast.data, SV_INIT.sv.multicast.cursize);
+				client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
 			}
 		}
 
-		SV_INIT.sv.multicast.clear();
+		ServerInit.sv.multicast.clear();
 	}
 
 	private static final float[] origin_v = { 0, 0, 0 };
@@ -314,22 +314,22 @@ public class SV_SEND {
 			}
 		}
 
-		SV_INIT.sv.multicast.writeByte(Defines.svc_sound);
-		SV_INIT.sv.multicast.writeByte(flags);
-		SV_INIT.sv.multicast.writeByte(soundindex);
+		ServerInit.sv.multicast.writeByte(Defines.svc_sound);
+		ServerInit.sv.multicast.writeByte(flags);
+		ServerInit.sv.multicast.writeByte(soundindex);
 
 		if ((flags & Defines.SND_VOLUME) != 0)
-			SV_INIT.sv.multicast.writeByte(volume * 255);
+			ServerInit.sv.multicast.writeByte(volume * 255);
 		if ((flags & Defines.SND_ATTENUATION) != 0)
-			SV_INIT.sv.multicast.writeByte(attenuation * 64);
+			ServerInit.sv.multicast.writeByte(attenuation * 64);
 		if ((flags & Defines.SND_OFFSET) != 0)
-			SV_INIT.sv.multicast.writeByte(timeofs * 1000);
+			ServerInit.sv.multicast.writeByte(timeofs * 1000);
 
 		if ((flags & Defines.SND_ENT) != 0)
-			SV_INIT.sv.multicast.writeShort(sendchan);
+			ServerInit.sv.multicast.writeShort(sendchan);
 
 		if ((flags & Defines.SND_POS) != 0)
-			SV_INIT.sv.multicast.writePos(origin);
+			ServerInit.sv.multicast.writePos(origin);
 
 		// if the sound doesn't attenuate,send it to everyone
 		// (global radio chatter, voiceovers, etc)
@@ -394,7 +394,7 @@ public class SV_SEND {
 		Netchan.Transmit(client.netchan, msg.cursize, msg.data);
 
 		// record the size for rate estimation
-		client.message_size[SV_INIT.sv.framenum % Defines.RATE_MESSAGES] = msg.cursize;
+		client.message_size[ServerInit.sv.framenum % Defines.RATE_MESSAGES] = msg.cursize;
 
 		return true;
 	}
@@ -404,16 +404,16 @@ public class SV_SEND {
 	==================
 	*/
 	public static void SV_DemoCompleted() {
-		if (SV_INIT.sv.demofile != null) {
+		if (ServerInit.sv.demofile != null) {
 			try {
-				SV_INIT.sv.demofile.close();
+				ServerInit.sv.demofile.close();
 			}
 			catch (IOException e) {
 				Command.Printf("IOError closing d9emo fiele:" + e);
 			}
-			SV_INIT.sv.demofile = null;
+			ServerInit.sv.demofile = null;
 		}
-		SV_USER.SV_Nextserver();
+		ServerUser.SV_Nextserver();
 	}
 	/*
 	=======================
@@ -439,7 +439,7 @@ public class SV_SEND {
 
 		if (total > c.rate) {
 			c.surpressCount++;
-			c.message_size[SV_INIT.sv.framenum % Defines.RATE_MESSAGES] = 0;
+			c.message_size[ServerInit.sv.framenum % Defines.RATE_MESSAGES] = 0;
 			return true;
 		}
 
@@ -462,14 +462,14 @@ public class SV_SEND {
 		msglen = 0;
 
 		// read the next demo message if needed
-		if (SV_INIT.sv.state == Defines.ss_demo && SV_INIT.sv.demofile != null) {
-			if (SV_MAIN.sv_paused.value != 0)
+		if (ServerInit.sv.state == Defines.ss_demo && ServerInit.sv.demofile != null) {
+			if (ServerMain.sv_paused.value != 0)
 				msglen = 0;
 			else {
 				// get the next message
 				//r = fread (&msglen, 4, 1, sv.demofile);
 				try {
-					msglen = EndianHandler.swapInt(SV_INIT.sv.demofile.readInt());
+					msglen = EndianHandler.swapInt(ServerInit.sv.demofile.readInt());
 				}
 				catch (Exception e) {
 					SV_DemoCompleted();
@@ -487,7 +487,7 @@ public class SV_SEND {
 				//r = fread (msgbuf, msglen, 1, sv.demofile);
 				r = 0;
 				try {
-					r = SV_INIT.sv.demofile.read(msgbuf, 0, msglen);
+					r = ServerInit.sv.demofile.read(msgbuf, 0, msglen);
 				}
 				catch (IOException e1) {
 					Command.Printf("IOError: reading demo file, " + e1);
@@ -500,8 +500,8 @@ public class SV_SEND {
 		}
 
 		// send a message to each connected client
-		for (i = 0; i < SV_MAIN.maxclients.value; i++) {
-			c = SV_INIT.svs.clients[i];
+		for (i = 0; i < ServerMain.maxclients.value; i++) {
+			c = ServerInit.svs.clients[i];
 
 			if (c.state == 0)
 				continue;
@@ -511,12 +511,12 @@ public class SV_SEND {
 				c.netchan.message.clear();
 				c.datagram.clear();
 				SV_BroadcastPrintf(Defines.PRINT_HIGH, c.name + " overflowed\n");
-				SV_MAIN.SV_DropClient(c);
+				ServerMain.SV_DropClient(c);
 			}
 
-			if (SV_INIT.sv.state == Defines.ss_cinematic
-				|| SV_INIT.sv.state == Defines.ss_demo
-				|| SV_INIT.sv.state == Defines.ss_pic)
+			if (ServerInit.sv.state == Defines.ss_cinematic
+				|| ServerInit.sv.state == Defines.ss_demo
+				|| ServerInit.sv.state == Defines.ss_pic)
 				Netchan.Transmit(c.netchan, msglen, msgbuf);
 			else if (c.state == Defines.cs_spawned) {
 				// don't overrun bandwidth

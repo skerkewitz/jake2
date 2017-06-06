@@ -77,29 +77,29 @@ public class SV_CCMDS {
 		ConsoleVar.Set("public", "1");
 
 		for (i = 1; i < Defines.MAX_MASTERS; i++)
-			SV_MAIN.master_adr[i] = new TNetAddr();
+			ServerMain.master_adr[i] = new TNetAddr();
 
 		slot = 1; // slot 0 will always contain the id master
 		for (i = 1; i < Cmd.Argc(); i++) {
 			if (slot == Defines.MAX_MASTERS)
 				break;
 
-			if (!NET.StringToAdr(Cmd.Argv(i), SV_MAIN.master_adr[i])) {
+			if (!NET.StringToAdr(Cmd.Argv(i), ServerMain.master_adr[i])) {
 				Command.Printf("Bad address: " + Cmd.Argv(i) + "\n");
 				continue;
 			}
-			if (SV_MAIN.master_adr[slot].port == 0)
-				SV_MAIN.master_adr[slot].port = Defines.PORT_MASTER;
+			if (ServerMain.master_adr[slot].port == 0)
+				ServerMain.master_adr[slot].port = Defines.PORT_MASTER;
 
-			Command.Printf("Master server at " + NET.AdrToString(SV_MAIN.master_adr[slot]) + "\n");
+			Command.Printf("Master server at " + NET.AdrToString(ServerMain.master_adr[slot]) + "\n");
 			Command.Printf("Sending a ping.\n");
 
-			Netchan.OutOfBandPrint(Defines.NS_SERVER, SV_MAIN.master_adr[slot], "ping");
+			Netchan.OutOfBandPrint(Defines.NS_SERVER, ServerMain.master_adr[slot], "ping");
 
 			slot++;
 		}
 
-		SV_INIT.svs.last_heartbeat = -9999999;
+		ServerInit.svs.last_heartbeat = -9999999;
 	}
 	/*
 	==================
@@ -122,14 +122,14 @@ public class SV_CCMDS {
 		// numeric values are just slot numbers
 		if (s.charAt(0) >= '0' && s.charAt(0) <= '9') {
 			idnum = Lib.atoi(Cmd.Argv(1));
-			if (idnum < 0 || idnum >= SV_MAIN.maxclients.value) {
+			if (idnum < 0 || idnum >= ServerMain.maxclients.value) {
 				Command.Printf("Bad client slot: " + idnum + "\n");
 				return false;
 			}
 
-			SV_MAIN.sv_client = SV_INIT.svs.clients[idnum];
-			SV_USER.sv_player = SV_MAIN.sv_client.edict;
-			if (0 == SV_MAIN.sv_client.state) {
+			ServerMain.sv_client = ServerInit.svs.clients[idnum];
+			ServerUser.sv_player = ServerMain.sv_client.edict;
+			if (0 == ServerMain.sv_client.state) {
 				Command.Printf("Client " + idnum + " is not active\n");
 				return false;
 			}
@@ -137,13 +137,13 @@ public class SV_CCMDS {
 		}
 
 		// check for a name match
-		for (i = 0; i < SV_MAIN.maxclients.value; i++) {
-			cl = SV_INIT.svs.clients[i];
+		for (i = 0; i < ServerMain.maxclients.value; i++) {
+			cl = ServerInit.svs.clients[i];
 			if (0 == cl.state)
 				continue;
 			if (0 == Lib.strcmp(cl.name, s)) {
-				SV_MAIN.sv_client = cl;
-				SV_USER.sv_player = SV_MAIN.sv_client.edict;
+				ServerMain.sv_client = cl;
+				ServerUser.sv_player = ServerMain.sv_client.edict;
 				return true;
 			}
 		}
@@ -317,13 +317,13 @@ public class SV_CCMDS {
 
 		Command.DPrintf("SV_WriteLevelFile()\n");
 
-		name = FileSystem.Gamedir() + "/save/current/" + SV_INIT.sv.name + ".sv2";
+		name = FileSystem.Gamedir() + "/save/current/" + ServerInit.sv.name + ".sv2";
 
 		try {
 			f = new QuakeFile(name, "rw");
 
 			for (int i = 0; i < Defines.MAX_CONFIGSTRINGS; i++)
-				f.writeString(SV_INIT.sv.configstrings[i]);
+				f.writeString(ServerInit.sv.configstrings[i]);
 
 			CM.CM_WritePortalState(f);
 			f.close();
@@ -333,7 +333,7 @@ public class SV_CCMDS {
 			e.printStackTrace();
 		}
 
-		name = FileSystem.Gamedir() + "/save/current/" + SV_INIT.sv.name + ".sav";
+		name = FileSystem.Gamedir() + "/save/current/" + ServerInit.sv.name + ".sav";
 		GameSave.WriteLevel(name);
 	}
 	/*
@@ -349,12 +349,12 @@ public class SV_CCMDS {
 
 		Command.DPrintf("SV_ReadLevelFile()\n");
 
-		name = FileSystem.Gamedir() + "/save/current/" + SV_INIT.sv.name + ".sv2";
+		name = FileSystem.Gamedir() + "/save/current/" + ServerInit.sv.name + ".sv2";
 		try {
 			f = new QuakeFile(name, "r");
 
 			for (int n = 0; n < Defines.MAX_CONFIGSTRINGS; n++)
-				SV_INIT.sv.configstrings[n] = f.readString();
+				ServerInit.sv.configstrings[n] = f.readString();
 
 			CM.CM_ReadPortalState(f);
 
@@ -365,7 +365,7 @@ public class SV_CCMDS {
 			e1.printStackTrace();
 		}
 
-		name = FileSystem.Gamedir() + "/save/current/" + SV_INIT.sv.name + ".sav";
+		name = FileSystem.Gamedir() + "/save/current/" + ServerInit.sv.name + ".sav";
 		GameSave.ReadLevel(name);
 	}
 	/*
@@ -390,15 +390,15 @@ public class SV_CCMDS {
 						"%2i:%2i %2i/%2i  ",
 							c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.MONTH) + 1,
 							c.get(Calendar.DAY_OF_MONTH));
-				comment += SV_INIT.sv.configstrings[Defines.CS_NAME];
+				comment += ServerInit.sv.configstrings[Defines.CS_NAME];
 			}
 			else {
 				// autosaved
-				comment = "ENTERING " + SV_INIT.sv.configstrings[Defines.CS_NAME];
+				comment = "ENTERING " + ServerInit.sv.configstrings[Defines.CS_NAME];
 			}
 
 			f.writeString(comment);
-			f.writeString(SV_INIT.svs.mapcmd);
+			f.writeString(ServerInit.svs.mapcmd);
 
 			// write the mapcmd
 
@@ -474,9 +474,9 @@ public class SV_CCMDS {
 			f.close();
 
 			// start a new game fresh with new cvars
-			SV_INIT.SV_InitGame();
+			ServerInit.initGame();
 
-			SV_INIT.svs.mapcmd = mapcmd;
+			ServerInit.svs.mapcmd = mapcmd;
 
 			// read game state
 			filename = FileSystem.Gamedir() + "/save/current/game.ssv";
@@ -497,7 +497,7 @@ public class SV_CCMDS {
 	==================
 	*/
 	public static void SV_DemoMap_f() {
-		SV_INIT.SV_Map(true, Cmd.Argv(1), false);
+		ServerInit.SV_Map(true, Cmd.Argv(1), false);
 	}
 	/*
 	==================
@@ -535,14 +535,14 @@ public class SV_CCMDS {
 			SV_WipeSavegame("current");
 		}
 		else { // save the map just exited
-			if (SV_INIT.sv.state == Defines.ss_game) {
+			if (ServerInit.sv.state == Defines.ss_game) {
 				// clear all the client inuse flags before saving so that
 				// when the level is re-entered, the clients will spawn
 				// at spawn points instead of occupying body shells
 				client_t cl;
-				boolean[] savedInuse = new boolean[(int) SV_MAIN.maxclients.value];
-				for (int i = 0; i < SV_MAIN.maxclients.value; i++) {
-					cl = SV_INIT.svs.clients[i];
+				boolean[] savedInuse = new boolean[(int) ServerMain.maxclients.value];
+				for (int i = 0; i < ServerMain.maxclients.value; i++) {
+					cl = ServerInit.svs.clients[i];
 					savedInuse[i] = cl.edict.inuse;
 					cl.edict.inuse = false;
 				}
@@ -550,8 +550,8 @@ public class SV_CCMDS {
 				SV_WriteLevelFile();
 
 				// we must restore these for clients to transfer over correctly
-				for (int i = 0; i < SV_MAIN.maxclients.value; i++) {
-					cl = SV_INIT.svs.clients[i];
+				for (int i = 0; i < ServerMain.maxclients.value; i++) {
+					cl = ServerInit.svs.clients[i];
 					cl.edict.inuse = savedInuse[i];
 
 				}
@@ -560,10 +560,10 @@ public class SV_CCMDS {
 		}
 
 		// start up the next map
-		SV_INIT.SV_Map(false, Cmd.Argv(1), false);
+		ServerInit.SV_Map(false, Cmd.Argv(1), false);
 
 		// archive server state
-		SV_INIT.svs.mapcmd = Cmd.Argv(1);
+		ServerInit.svs.mapcmd = Cmd.Argv(1);
 
 		// copy off the level to the autosave slot
 		if (0 == Context.dedicated.value) {
@@ -595,7 +595,7 @@ public class SV_CCMDS {
 			}
 		}
 
-		SV_INIT.sv.state = Defines.ss_dead; // don't save current level when changing
+		ServerInit.sv.state = Defines.ss_dead; // don't save current level when changing
 
 		SV_WipeSavegame("current");
 		SV_GameMap_f();
@@ -650,8 +650,8 @@ public class SV_CCMDS {
 		SV_ReadServerFile();
 
 		// go to the map
-		SV_INIT.sv.state = Defines.ss_dead; // don't save current level when changing
-		SV_INIT.SV_Map(false, SV_INIT.svs.mapcmd, true);
+		ServerInit.sv.state = Defines.ss_dead; // don't save current level when changing
+		ServerInit.SV_Map(false, ServerInit.svs.mapcmd, true);
 	}
 	/*
 	==============
@@ -662,7 +662,7 @@ public class SV_CCMDS {
 	public static void SV_Savegame_f() {
 		String dir;
 
-		if (SV_INIT.sv.state != Defines.ss_game) {
+		if (ServerInit.sv.state != Defines.ss_game) {
 			Command.Printf("You must be in a game to save.\n");
 			return;
 		}
@@ -682,7 +682,7 @@ public class SV_CCMDS {
 			return;
 		}
 
-		if (SV_MAIN.maxclients.value == 1 && SV_INIT.svs.clients[0].edict.client.ps.stats[Defines.STAT_HEALTH] <= 0) {
+		if (ServerMain.maxclients.value == 1 && ServerInit.svs.clients[0].edict.client.ps.stats[Defines.STAT_HEALTH] <= 0) {
 			Command.Printf("\nCan't savegame while dead!\n");
 			return;
 		}
@@ -720,7 +720,7 @@ public class SV_CCMDS {
 	==================
 	*/
 	public static void SV_Kick_f() {
-		if (!SV_INIT.svs.initialized) {
+		if (!ServerInit.svs.initialized) {
 			Command.Printf("No server running.\n");
 			return;
 		}
@@ -733,12 +733,12 @@ public class SV_CCMDS {
 		if (!SV_SetPlayer())
 			return;
 
-		SV_SEND.SV_BroadcastPrintf(Defines.PRINT_HIGH, SV_MAIN.sv_client.name + " was kicked\n");
+		SV_SEND.SV_BroadcastPrintf(Defines.PRINT_HIGH, ServerMain.sv_client.name + " was kicked\n");
 		// print directly, because the dropped client won't get the
 		// SV_BroadcastPrintf message
-		SV_SEND.SV_ClientPrintf(SV_MAIN.sv_client, Defines.PRINT_HIGH, "You were kicked from the game\n");
-		SV_MAIN.SV_DropClient(SV_MAIN.sv_client);
-		SV_MAIN.sv_client.lastmessage = SV_INIT.svs.realtime; // min case there is a funny zombie
+		SV_SEND.SV_ClientPrintf(ServerMain.sv_client, Defines.PRINT_HIGH, "You were kicked from the game\n");
+		ServerMain.SV_DropClient(ServerMain.sv_client);
+		ServerMain.sv_client.lastmessage = ServerInit.svs.realtime; // min case there is a funny zombie
 	}
 	/*
 	================
@@ -750,16 +750,16 @@ public class SV_CCMDS {
 		client_t cl;
 		String s;
 		int ping;
-		if (SV_INIT.svs.clients == null) {
+		if (ServerInit.svs.clients == null) {
 			Command.Printf("No server running.\n");
 			return;
 		}
-		Command.Printf("map              : " + SV_INIT.sv.name + "\n");
+		Command.Printf("map              : " + ServerInit.sv.name + "\n");
 
 		Command.Printf("num score ping name            lastmsg address               qport \n");
 		Command.Printf("--- ----- ---- --------------- ------- --------------------- ------\n");
-		for (i = 0; i < SV_MAIN.maxclients.value; i++) {
-			cl = SV_INIT.svs.clients[i];
+		for (i = 0; i < ServerMain.maxclients.value; i++) {
+			cl = ServerInit.svs.clients[i];
 			if (0 == cl.state)
 				continue;
 
@@ -780,7 +780,7 @@ public class SV_CCMDS {
 			for (j = 0; j < l; j++)
 				Command.Printf(" ");
 
-			Command.Printf("%7i ", SV_INIT.svs.realtime - cl.lastmessage);
+			Command.Printf("%7i ", ServerInit.svs.realtime - cl.lastmessage);
 
 			s = NET.AdrToString(cl.netchan.remote_address);
 			Command.Printf(s);
@@ -817,8 +817,8 @@ public class SV_CCMDS {
 
 		text += p;
 
-		for (j = 0; j < SV_MAIN.maxclients.value; j++) {
-			client = SV_INIT.svs.clients[j];
+		for (j = 0; j < ServerMain.maxclients.value; j++) {
+			client = ServerInit.svs.clients[j];
 			if (client.state != Defines.cs_spawned)
 				continue;
 			SV_SEND.SV_ClientPrintf(client, Defines.PRINT_CHAT, text + "\n");
@@ -830,7 +830,7 @@ public class SV_CCMDS {
 	==================
 	*/
 	public static void SV_Heartbeat_f() {
-		SV_INIT.svs.last_heartbeat = -9999999;
+		ServerInit.svs.last_heartbeat = -9999999;
 	}
 	/*
 	===========
@@ -861,7 +861,7 @@ public class SV_CCMDS {
 
 		Command.Printf("userinfo\n");
 		Command.Printf("--------\n");
-		Info.Print(SV_MAIN.sv_client.userinfo);
+		Info.Print(ServerMain.sv_client.userinfo);
 
 	}
 	/*
@@ -885,12 +885,12 @@ public class SV_CCMDS {
 			return;
 		}
 
-		if (SV_INIT.svs.demofile != null) {
+		if (ServerInit.svs.demofile != null) {
 			Command.Printf("Already recording.\n");
 			return;
 		}
 
-		if (SV_INIT.sv.state != Defines.ss_game) {
+		if (ServerInit.sv.state != Defines.ss_game) {
 			Command.Printf("You must be in a level to record.\n");
 			return;
 		}
@@ -903,7 +903,7 @@ public class SV_CCMDS {
 		Command.Printf("recording to " + name + ".\n");
 		FileSystem.CreatePath(name);
 		try {
-			SV_INIT.svs.demofile = new RandomAccessFile(name, "rw");
+			ServerInit.svs.demofile = new RandomAccessFile(name, "rw");
 		}
 		catch (Exception e) {
 			Command.Printf("ERROR: couldn't open.\n");
@@ -911,7 +911,7 @@ public class SV_CCMDS {
 		}
 
 		// setup a buffer to catch all multicasts
-		SV_INIT.svs.demo_multicast.init(SV_INIT.svs.demo_multicast_buf, SV_INIT.svs.demo_multicast_buf.length);
+		ServerInit.svs.demo_multicast.init(ServerInit.svs.demo_multicast_buf, ServerInit.svs.demo_multicast_buf.length);
 
 		//
 		// write a single giant fake message with all the startup info
@@ -925,19 +925,19 @@ public class SV_CCMDS {
 		// send the serverdata
 		buf.writeByte(Defines.svc_serverdata);
 		buf.writeLong(Defines.PROTOCOL_VERSION);
-		buf.writeLong(SV_INIT.svs.spawncount);
+		buf.writeLong(ServerInit.svs.spawncount);
 		// 2 means server demo
 		buf.writeByte(2); // demos are always attract loops
 		buf.writeString(ConsoleVar.VariableString("gamedir"));
 		buf.writeShort(-1);
 		// send full levelname
-		buf.writeString(SV_INIT.sv.configstrings[Defines.CS_NAME]);
+		buf.writeString(ServerInit.sv.configstrings[Defines.CS_NAME]);
 
 		for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++)
-			if (SV_INIT.sv.configstrings[i].length() == 0) {
+			if (ServerInit.sv.configstrings[i].length() == 0) {
 				buf.writeByte(Defines.svc_configstring);
 				buf.writeShort(i);
-				buf.writeString(SV_INIT.sv.configstrings[i]);
+				buf.writeString(ServerInit.sv.configstrings[i]);
 			}
 
 		// write it to the demo file
@@ -946,8 +946,8 @@ public class SV_CCMDS {
 		//fwrite(len, 4, 1, svs.demofile);
 		//fwrite(buf.data, buf.cursize, 1, svs.demofile);
 		try {
-			SV_INIT.svs.demofile.writeInt(len);
-			SV_INIT.svs.demofile.write(buf.data, 0, buf.cursize);
+			ServerInit.svs.demofile.writeInt(len);
+			ServerInit.svs.demofile.write(buf.data, 0, buf.cursize);
 		}
 		catch (IOException e1) {
 			// TODO: do quake2 error handling!
@@ -964,17 +964,17 @@ public class SV_CCMDS {
 	==============
 	*/
 	public static void SV_ServerStop_f() {
-		if (SV_INIT.svs.demofile == null) {
+		if (ServerInit.svs.demofile == null) {
 			Command.Printf("Not doing a serverrecord.\n");
 			return;
 		}
 		try {
-			SV_INIT.svs.demofile.close();
+			ServerInit.svs.demofile.close();
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-		SV_INIT.svs.demofile = null;
+		ServerInit.svs.demofile = null;
 		Command.Printf("Recording completed.\n");
 	}
 	/*
@@ -986,9 +986,9 @@ public class SV_CCMDS {
 	===============
 	*/
 	public static void SV_KillServer_f() {
-		if (!SV_INIT.svs.initialized)
+		if (!ServerInit.svs.initialized)
 			return;
-		SV_MAIN.SV_Shutdown("Server was killed.\n", false);
+		ServerMain.SV_Shutdown("Server was killed.\n", false);
 		NET.Config(false); // close network sockets
 	}
 	/*

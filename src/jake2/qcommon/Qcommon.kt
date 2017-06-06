@@ -32,7 +32,7 @@ import jake2.game.Cmd
 import jake2.game.TVar
 import jake2.io.FileSystem
 import jake2.network.Netchan
-import jake2.server.SV_MAIN
+import jake2.server.ServerMain
 import jake2.sys.*
 import jake2.sys.NET
 import jake2.sys.QSystem
@@ -122,7 +122,7 @@ class Qcommon {
 
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing server subsystem...");
-                SV_MAIN.SV_Init()    //ok
+                ServerMain.SV_Init()    //ok
 
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing client subsystem...");
@@ -242,7 +242,7 @@ class Qcommon {
                     time_before = Timer.Milliseconds()
 
                 Command.debugContext = "SV:"
-                SV_MAIN.SV_Frame(msec.toLong())
+                ServerMain.SV_Frame(msec.toLong())
 
                 if (Context.host_speeds.value != 0.0f)
                     time_between = Timer.Milliseconds()

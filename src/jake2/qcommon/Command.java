@@ -31,7 +31,7 @@ import jake2.client.Console;
 import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.io.FileSystem;
-import jake2.server.SV_MAIN;
+import jake2.server.ServerMain;
 import jake2.sys.QSystem;
 
 import java.io.FileNotFoundException;
@@ -361,23 +361,16 @@ public final class Command {
             throw new QuakeException();
         } else if (code == Defines.ERR_DROP) {
             Command.Printf("********************\nERROR: " + msg + "\n********************\n");
-            SV_MAIN.SV_Shutdown("Server crashed: " + msg + "\n", false);
+            ServerMain.SV_Shutdown("Server crashed: " + msg + "\n", false);
             CL.Drop();
             recursive = false;
             throw new QuakeException();
         } else {
-            SV_MAIN.SV_Shutdown("Server fatal crashed: %s" + msg + "\n", false);
+            ServerMain.SV_Shutdown("Server fatal crashed: %s" + msg + "\n", false);
             CL.Shutdown();
         }
 
         QSystem.Error(msg);
-    }
-
-
-    public static void DPrintf(String fmt) {
-        _debugContext = debugContext;
-        DPrintf(fmt, null);
-        _debugContext = "";
     }
 
     public static void dprintln(String fmt) {
@@ -462,7 +455,7 @@ public final class Command {
     }
 
     public static void Quit() {
-        SV_MAIN.SV_Shutdown("Server quit\n", false);
+        ServerMain.SV_Shutdown("Server quit\n", false);
         CL.Shutdown();
 
         if (Context.logfile != null) {

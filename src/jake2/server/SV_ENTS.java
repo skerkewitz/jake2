@@ -73,16 +73,16 @@ public class SV_ENTS {
             if (newindex >= to.num_entities)
                 newnum = 9999;
             else {
-                newent = SV_INIT.svs.client_entities[(to.first_entity + newindex)
-                        % SV_INIT.svs.num_client_entities];
+                newent = ServerInit.svs.client_entities[(to.first_entity + newindex)
+                        % ServerInit.svs.num_client_entities];
                 newnum = newent.number;
             }
 
             if (oldindex >= from_num_entities)
                 oldnum = 9999;
             else {
-                oldent = SV_INIT.svs.client_entities[(from.first_entity + oldindex)
-                        % SV_INIT.svs.num_client_entities];
+                oldent = ServerInit.svs.client_entities[(from.first_entity + oldindex)
+                        % ServerInit.svs.num_client_entities];
                 oldnum = oldent.number;
             }
 
@@ -93,7 +93,7 @@ public class SV_ENTS {
                 // all note that players are always 'newentities', this updates
                 // their oldorigin always
                 // and prevents warping
-                msg.writeDeltaEntity(oldent, newent, false, newent.number <= SV_MAIN.maxclients.value);
+                msg.writeDeltaEntity(oldent, newent, false, newent.number <= ServerMain.maxclients.value);
                 oldindex++;
                 newindex++;
                 continue;
@@ -101,7 +101,7 @@ public class SV_ENTS {
 
             if (newnum < oldnum) { 
             	// this is a new entity, send it from the baseline
-                msg.writeDeltaEntity(SV_INIT.sv.baselines[newnum], newent, true, true);
+                msg.writeDeltaEntity(ServerInit.sv.baselines[newnum], newent, true, true);
                 newindex++;
                 continue;
             }
@@ -310,11 +310,11 @@ public class SV_ENTS {
         //Command.Printf ("%i . %i\n", new
         // Vargs().add(client.lastframe).add(sv.framenum));
         // this is the frame we are creating
-        frame = client.frames[SV_INIT.sv.framenum & Defines.UPDATE_MASK];
+        frame = client.frames[ServerInit.sv.framenum & Defines.UPDATE_MASK];
         if (client.lastframe <= 0) { // client is asking for a retransmit
             oldframe = null;
             lastframe = -1;
-        } else if (SV_INIT.sv.framenum - client.lastframe >= (Defines.UPDATE_BACKUP - 3)) {
+        } else if (ServerInit.sv.framenum - client.lastframe >= (Defines.UPDATE_BACKUP - 3)) {
             // client hasn't gotten a good message through in a long time
             // Com_Printf ("%s: Delta request from out-of-date packet.\n",
             // client.name);
@@ -326,7 +326,7 @@ public class SV_ENTS {
         }
 
         msg.writeByte(Defines.svc_frame);
-        msg.writeLong(SV_INIT.sv.framenum);
+        msg.writeLong(ServerInit.sv.framenum);
         msg.writeLong(lastframe);
         msg.writeByte(client.surpressCount); // rate dropped packets
         client.surpressCount = 0;
@@ -416,9 +416,9 @@ public class SV_ENTS {
             return; // not in game yet
 
         // this is the frame we are creating
-        frame = client.frames[SV_INIT.sv.framenum & Defines.UPDATE_MASK];
+        frame = client.frames[ServerInit.sv.framenum & Defines.UPDATE_MASK];
 
-        frame.senttime = SV_INIT.svs.realtime; // save it for ping calc later
+        frame.senttime = ServerInit.svs.realtime; // save it for ping calc later
 
         // find the client's PVS
         for (i = 0; i < 3; i++)
@@ -440,7 +440,7 @@ public class SV_ENTS {
 
         // build up the list of visible entities
         frame.num_entities = 0;
-        frame.first_entity = SV_INIT.svs.next_client_entities;
+        frame.first_entity = ServerInit.svs.next_client_entities;
 
         c_fullsend = 0;
 
@@ -508,22 +508,22 @@ public class SV_ENTS {
             }
 
             // add it to the circular client_entities array
-            int ix = SV_INIT.svs.next_client_entities
-                    % SV_INIT.svs.num_client_entities;
-            state = SV_INIT.svs.client_entities[ix];
+            int ix = ServerInit.svs.next_client_entities
+                    % ServerInit.svs.num_client_entities;
+            state = ServerInit.svs.client_entities[ix];
             if (ent.s.number != e) {
                 Command.DPrintf("FIXING ENT.Sound.NUMBER!!!\n");
                 ent.s.number = e;
             }
 
             //*state = ent.s;
-            SV_INIT.svs.client_entities[ix].set(ent.s);
+            ServerInit.svs.client_entities[ix].set(ent.s);
 
             // don't mark players missiles as solid
             if (ent.owner == client.edict)
                 state.solid = 0;
 
-            SV_INIT.svs.next_client_entities++;
+            ServerInit.svs.next_client_entities++;
             frame.num_entities++;
         }
     }
@@ -537,7 +537,7 @@ public class SV_ENTS {
      * footage for merged or assembled demos.
      */
     public static void SV_RecordDemoMessage() {
-        if (SV_INIT.svs.demofile == null)
+        if (ServerInit.svs.demofile == null)
             return;
 
         //memset (nostate, 0, sizeof(nostate));
@@ -547,7 +547,7 @@ public class SV_ENTS {
 
         // write a frame message that doesn't contain a player_state_t
         buf.writeByte(Defines.svc_frame);
-        buf.writeLong(SV_INIT.sv.framenum);
+        buf.writeLong(ServerInit.sv.framenum);
 
         buf.writeByte(Defines.svc_packetentities);
 
@@ -570,17 +570,17 @@ public class SV_ENTS {
         buf.writeShort(0);
 
         // now add the accumulated multicast information
-        buf.write(SV_INIT.svs.demo_multicast.data, SV_INIT.svs.demo_multicast.cursize);
-        SV_INIT.svs.demo_multicast.clear();
+        buf.write(ServerInit.svs.demo_multicast.data, ServerInit.svs.demo_multicast.cursize);
+        ServerInit.svs.demo_multicast.clear();
 
         // now write the entire message to the file, prefixed by the length
         int len = EndianHandler.swapInt(buf.cursize);
 
         try {
             //fwrite (len, 4, 1, svs.demofile);
-            SV_INIT.svs.demofile.writeInt(len);
+            ServerInit.svs.demofile.writeInt(len);
             //fwrite (buf.data, buf.cursize, 1, svs.demofile);
-            SV_INIT.svs.demofile.write(buf.data, 0, buf.cursize);
+            ServerInit.svs.demofile.write(buf.data, 0, buf.cursize);
         } catch (IOException e1) {
             Command.Printf("Error writing demo file:" + e);
         }

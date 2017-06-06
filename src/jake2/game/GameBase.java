@@ -652,7 +652,7 @@ public class GameBase {
         gi = imp;
         gi.pointcontents = new pmove_t.PointContentsAdapter() {
             public int pointcontents(float[] o) {
-                return SV_WORLD.SV_PointContents(o);
+                return ServerWorld.SV_PointContents(o);
             }
         };
     }

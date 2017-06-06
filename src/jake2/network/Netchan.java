@@ -27,7 +27,7 @@ import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.TVar;
 import jake2.qcommon.*;
-import jake2.server.SV_MAIN;
+import jake2.server.ServerMain;
 import jake2.sys.NET;
 import jake2.sys.Timer;
 import jake2.util.Lib;
@@ -35,7 +35,7 @@ import jake2.util.Lib;
 /**
  * Netchan
  */
-public final class Netchan extends SV_MAIN {
+public final class Netchan extends ServerMain {
 
     /*
      * 

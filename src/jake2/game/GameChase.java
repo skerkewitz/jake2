@@ -25,7 +25,7 @@ package jake2.game;
 
 import jake2.Defines;
 import jake2.client.Context;
-import jake2.server.SV_WORLD;
+import jake2.server.ServerWorld;
 import jake2.util.Math3D;
 
 
@@ -121,7 +121,7 @@ public class GameChase {
     
         ent.viewheight = 0;
         ent.client.ps.pmove.pm_flags |= pmove_t.PMF_NO_PREDICTION;
-        SV_WORLD.SV_LinkEdict(ent);
+        ServerWorld.SV_LinkEdict(ent);
     }
 
     public static void ChaseNext(TEntityDict ent) {

@@ -78,15 +78,15 @@ public class game_import_t {
 
     // the *index functions create configstrings and some internal server state
     public int modelindex(String name) {
-        return SV_INIT.SV_ModelIndex(name);
+        return ServerInit.modelIndexOf(name);
     }
 
     public int soundindex(String name) {
-        return SV_INIT.SV_SoundIndex(name);
+        return ServerInit.soundIndexOf(name);
     }
 
     public int imageindex(String name) {
-        return SV_INIT.SV_ImageIndex(name);
+        return ServerInit.imageIndexOf(name);
     }
 
     public void setmodel(TEntityDict ent, String name) {
@@ -96,7 +96,7 @@ public class game_import_t {
     // collision detection
     public trace_t trace(float[] start, float[] mins, float[] maxs,
                          float[] end, TEntityDict passent, int contentmask) {
-        return SV_WORLD.SV_Trace(start, mins, maxs, end, passent, contentmask);
+        return ServerWorld.SV_Trace(start, mins, maxs, end, passent, contentmask);
     }
 
     public pmove_t.PointContentsAdapter pointcontents = new pmove_t.PointContentsAdapter() {
@@ -121,17 +121,17 @@ public class game_import_t {
     // if it is not passed to linkentity. If the size, position, or
     // solidity changes, it must be relinked.
     public void linkentity(TEntityDict ent) {
-        SV_WORLD.SV_LinkEdict(ent);
+        ServerWorld.SV_LinkEdict(ent);
     }
 
     public void unlinkentity(TEntityDict ent) {
-        SV_WORLD.SV_UnlinkEdict(ent);
+        ServerWorld.SV_UnlinkEdict(ent);
     }
 
     // call before removing an interactive edict
     public int BoxEdicts(float[] mins, float[] maxs, TEntityDict list[],
             int maxcount, int areatype) {
-        return SV_WORLD.SV_AreaEdicts(mins, maxs, list, maxcount, areatype);
+        return ServerWorld.SV_AreaEdicts(mins, maxs, list, maxcount, areatype);
     }
 
     public void Pmove(pmove_t pmove) {

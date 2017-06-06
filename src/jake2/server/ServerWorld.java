@@ -28,7 +28,7 @@ import jake2.qcommon.CM;
 import jake2.qcommon.Command;
 import jake2.util.Math3D;
 
-public class SV_WORLD {
+public class ServerWorld {
     // world.c -- world query functions
     //
     //
@@ -40,7 +40,7 @@ public class SV_WORLD {
     //===============================================================================
     public static areanode_t sv_areanodes[] = new areanode_t[Defines.AREA_NODES];
     static {
-        SV_WORLD.initNodes();
+        ServerWorld.initNodes();
     }
 
     public static int sv_numareanodes;
@@ -67,7 +67,7 @@ public class SV_WORLD {
 
     public static void initNodes() {
         for (int n = 0; n < Defines.AREA_NODES; n++)
-            SV_WORLD.sv_areanodes[n] = new areanode_t();
+            ServerWorld.sv_areanodes[n] = new areanode_t();
     }
 
     /*
@@ -82,11 +82,11 @@ public class SV_WORLD {
         float[] size = { 0, 0, 0 };
         float[] mins1 = { 0, 0, 0 }, maxs1 = { 0, 0, 0 }, mins2 = { 0, 0, 0 }, maxs2 = {
                 0, 0, 0 };
-        anode = SV_WORLD.sv_areanodes[SV_WORLD.sv_numareanodes];
+        anode = ServerWorld.sv_areanodes[ServerWorld.sv_numareanodes];
         // just for debugging (rst)
 //        Math3D.VectorCopy(mins, anode.mins_rst);
 //        Math3D.VectorCopy(maxs, anode.maxs_rst);
-        SV_WORLD.sv_numareanodes++;
+        ServerWorld.sv_numareanodes++;
         TLink.ClearLink(anode.trigger_edicts);
         TLink.ClearLink(anode.solid_edicts);
         if (depth == Defines.AREA_DEPTH) {
@@ -117,9 +117,9 @@ public class SV_WORLD {
      */
     public static void SV_ClearWorld() {
         initNodes();
-        SV_WORLD.sv_numareanodes = 0;
-        SV_CreateAreaNode(0, SV_INIT.sv.models[1].mins,
-                SV_INIT.sv.models[1].maxs);
+        ServerWorld.sv_numareanodes = 0;
+        SV_CreateAreaNode(0, ServerInit.sv.models[1].mins,
+                ServerInit.sv.models[1].maxs);
         /*
          * Command.p("areanodes:" + sv_numareanodes + " (sollten 32 sein)."); for
          * (int n = 0; n < sv_numareanodes; n++) { Command.Printf( "|%3i|%2i|%8.2f
@@ -218,19 +218,19 @@ public class SV_WORLD {
         ent.areanum2 = 0;
         // get all leafs, including solids
         int iw[] = { topnode };
-        num_leafs = CM.CM_BoxLeafnums(ent.absmin, ent.absmax, SV_WORLD.leafs,
-                SV_WORLD.MAX_TOTAL_ENT_LEAFS, iw);
+        num_leafs = CM.CM_BoxLeafnums(ent.absmin, ent.absmax, ServerWorld.leafs,
+                ServerWorld.MAX_TOTAL_ENT_LEAFS, iw);
         topnode = iw[0];
         // set areas
         for (int i = 0; i < num_leafs; i++) {
-            SV_WORLD.clusters[i] = CM.CM_LeafCluster(SV_WORLD.leafs[i]);
-            area = CM.CM_LeafArea(SV_WORLD.leafs[i]);
+            ServerWorld.clusters[i] = CM.CM_LeafCluster(ServerWorld.leafs[i]);
+            area = CM.CM_LeafArea(ServerWorld.leafs[i]);
             if (area != 0) {
                 // doors may legally straggle two areas,
                 // but nothing should evern need more than that
                 if (ent.areanum != 0 && ent.areanum != area) {
                     if (ent.areanum2 != 0 && ent.areanum2 != area
-                            && SV_INIT.sv.state == Defines.ss_loading)
+                            && ServerInit.sv.state == Defines.ss_loading)
                         Command.DPrintf("Object touching 3 areas at "
                                 + ent.absmin[0] + " " + ent.absmin[1] + " "
                                 + ent.absmin[2] + "\n");
@@ -239,17 +239,17 @@ public class SV_WORLD {
                     ent.areanum = area;
             }
         }
-        if (num_leafs >= SV_WORLD.MAX_TOTAL_ENT_LEAFS) {
+        if (num_leafs >= ServerWorld.MAX_TOTAL_ENT_LEAFS) {
             // assume we missed some leafs, and mark by headnode
             ent.num_clusters = -1;
             ent.headnode = topnode;
         } else {
             ent.num_clusters = 0;
             for (int i = 0; i < num_leafs; i++) {
-                if (SV_WORLD.clusters[i] == -1)
+                if (ServerWorld.clusters[i] == -1)
                     continue; // not a visible leaf
                 for (j = 0; j < i; j++)
-                    if (SV_WORLD.clusters[j] == SV_WORLD.clusters[i])
+                    if (ServerWorld.clusters[j] == ServerWorld.clusters[i])
                         break;
                 if (j == i) {
                     if (ent.num_clusters == Defines.MAX_ENT_CLUSTERS) {
@@ -258,7 +258,7 @@ public class SV_WORLD {
                         ent.headnode = topnode;
                         break;
                     }
-                    ent.clusternums[ent.num_clusters++] = SV_WORLD.clusters[i];
+                    ent.clusternums[ent.num_clusters++] = ServerWorld.clusters[i];
                 }
             }
         }
@@ -270,7 +270,7 @@ public class SV_WORLD {
         if (ent.solid == Defines.SOLID_NOT)
             return;
         // find the first node that the ent's box crosses
-        node = SV_WORLD.sv_areanodes[0];
+        node = ServerWorld.sv_areanodes[0];
         while (true) {
             if (node.axis == -1)
                 break;
@@ -297,7 +297,7 @@ public class SV_WORLD {
         TLink l, next, start;
         TEntityDict check;
         // touch linked edicts
-        if (SV_WORLD.area_type == Defines.AREA_SOLID)
+        if (ServerWorld.area_type == Defines.AREA_SOLID)
             start = node.solid_edicts;
         else
             start = node.trigger_edicts;
@@ -306,26 +306,26 @@ public class SV_WORLD {
             check = (TEntityDict) l.o;
             if (check.solid == Defines.SOLID_NOT)
                 continue; // deactivated
-            if (check.absmin[0] > SV_WORLD.area_maxs[0]
-                    || check.absmin[1] > SV_WORLD.area_maxs[1]
-                    || check.absmin[2] > SV_WORLD.area_maxs[2]
-                    || check.absmax[0] < SV_WORLD.area_mins[0]
-                    || check.absmax[1] < SV_WORLD.area_mins[1]
-                    || check.absmax[2] < SV_WORLD.area_mins[2])
+            if (check.absmin[0] > ServerWorld.area_maxs[0]
+                    || check.absmin[1] > ServerWorld.area_maxs[1]
+                    || check.absmin[2] > ServerWorld.area_maxs[2]
+                    || check.absmax[0] < ServerWorld.area_mins[0]
+                    || check.absmax[1] < ServerWorld.area_mins[1]
+                    || check.absmax[2] < ServerWorld.area_mins[2])
                 continue; // not touching
-            if (SV_WORLD.area_count == SV_WORLD.area_maxcount) {
+            if (ServerWorld.area_count == ServerWorld.area_maxcount) {
                 Command.Printf("SV_AreaEdicts: MAXCOUNT\n");
                 return;
             }
-            SV_WORLD.area_list[SV_WORLD.area_count] = check;
-            SV_WORLD.area_count++;
+            ServerWorld.area_list[ServerWorld.area_count] = check;
+            ServerWorld.area_count++;
         }
         if (node.axis == -1)
             return; // terminal node
         // recurse down both sides
-        if (SV_WORLD.area_maxs[node.axis] > node.dist)
+        if (ServerWorld.area_maxs[node.axis] > node.dist)
             SV_AreaEdicts_r(node.children[0]);
-        if (SV_WORLD.area_mins[node.axis] < node.dist)
+        if (ServerWorld.area_mins[node.axis] < node.dist)
             SV_AreaEdicts_r(node.children[1]);
     }
 
@@ -334,14 +334,14 @@ public class SV_WORLD {
      */
     public static int SV_AreaEdicts(float[] mins, float[] maxs, TEntityDict list[],
             int maxcount, int areatype) {
-        SV_WORLD.area_mins = mins;
-        SV_WORLD.area_maxs = maxs;
-        SV_WORLD.area_list = list;
-        SV_WORLD.area_count = 0;
-        SV_WORLD.area_maxcount = maxcount;
-        SV_WORLD.area_type = areatype;
-        SV_AreaEdicts_r(SV_WORLD.sv_areanodes[0]);
-        return SV_WORLD.area_count;
+        ServerWorld.area_mins = mins;
+        ServerWorld.area_maxs = maxs;
+        ServerWorld.area_list = list;
+        ServerWorld.area_count = 0;
+        ServerWorld.area_maxcount = maxcount;
+        ServerWorld.area_type = areatype;
+        SV_AreaEdicts_r(ServerWorld.sv_areanodes[0]);
+        return ServerWorld.area_count;
     }
 
     /*
@@ -353,12 +353,12 @@ public class SV_WORLD {
         int contents, c2;
         int headnode;
         // get base contents from world
-        contents = CM.PointContents(p, SV_INIT.sv.models[1].headnode);
+        contents = CM.PointContents(p, ServerInit.sv.models[1].headnode);
         // or in contents from all the other entities
-        num = SV_AreaEdicts(p, p, SV_WORLD.touch, Defines.MAX_EDICTS,
+        num = SV_AreaEdicts(p, p, ServerWorld.touch, Defines.MAX_EDICTS,
                 Defines.AREA_SOLID);
         for (i = 0; i < num; i++) {
-            hit = SV_WORLD.touch[i];
+            hit = ServerWorld.touch[i];
             // might intersect, so do an exact clip
             headnode = SV_HullForEntity(hit);
             if (hit.solid != Defines.SOLID_BSP) {
@@ -383,7 +383,7 @@ public class SV_WORLD {
         // decide which clipping hull to use, based on the size
         if (ent.solid == Defines.SOLID_BSP) {
             // explicit hulls in the BSP model
-            model = SV_INIT.sv.models[ent.s.modelindex];
+            model = ServerInit.sv.models[ent.s.modelindex];
             if (null == model)
                 Command.Error(Defines.ERR_FATAL,
                         "MOVETYPE_PUSH with a non bsp model");
@@ -399,12 +399,12 @@ public class SV_WORLD {
         trace_t trace;
         int headnode;
         float angles[];
-        num = SV_AreaEdicts(clip.boxmins, clip.boxmaxs, SV_WORLD.touchlist,
+        num = SV_AreaEdicts(clip.boxmins, clip.boxmaxs, ServerWorld.touchlist,
                 Defines.MAX_EDICTS, Defines.AREA_SOLID);
         // be careful, it is possible to have an entity in this
         // list removed before we get to it (killtriggered)
         for (i = 0; i < num; i++) {
-            touch = SV_WORLD.touchlist[i];
+            touch = ServerWorld.touchlist[i];
             if (touch.solid == Defines.SOLID_NOT)
                 continue;
             if (touch == clip.passedict)
