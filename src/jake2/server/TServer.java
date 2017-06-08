@@ -23,8 +23,8 @@
 package jake2.server;
 
 import jake2.Defines;
+import jake2.game.TCModel;
 import jake2.game.TEntityState;
-import jake2.game.cmodel_t;
 import jake2.qcommon.TSizeBuffer;
 
 import java.io.RandomAccessFile;
@@ -32,9 +32,9 @@ import java.io.RandomAccessFile;
 public class TServer {
 
     public TServer() {
-        models = new cmodel_t[Defines.MAX_MODELS];
+        models = new TCModel[Defines.MAX_MODELS];
         for (int n = 0; n < Defines.MAX_MODELS; n++)
-            models[n] = new cmodel_t();
+            models[n] = new TCModel();
 
         for (int n = 0; n < Defines.MAX_EDICTS; n++)
             baselines[n] = new TEntityState(null);
@@ -53,7 +53,7 @@ public class TServer {
 
     String name = ""; // map name, or cinematic name
 
-    cmodel_t models[];
+    TCModel models[];
 
     String configstrings[] = new String[Defines.MAX_CONFIGSTRINGS];
 

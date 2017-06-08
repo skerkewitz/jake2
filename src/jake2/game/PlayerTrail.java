@@ -81,13 +81,13 @@ public class PlayerTrail {
         if (!trail_active)
             return;
 
-        Math3D.VectorCopy(spot, PlayerTrail.trail[trail_head].s.origin);
+        Math3D.VectorCopy(spot, PlayerTrail.trail[trail_head].entityState.origin);
 
         PlayerTrail.trail[trail_head].timestamp = GameBase.level.time;
 
         Math3D.VectorSubtract(spot,
-                PlayerTrail.trail[PREV(trail_head)].s.origin, temp);
-        PlayerTrail.trail[trail_head].s.angles[1] = Math3D.vectoyaw(temp);
+                PlayerTrail.trail[PREV(trail_head)].entityState.origin, temp);
+        PlayerTrail.trail[trail_head].entityState.angles[1] = Math3D.vectoyaw(temp);
 
         trail_head = NEXT(trail_head);
     }

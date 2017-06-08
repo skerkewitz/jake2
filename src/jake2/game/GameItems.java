@@ -72,7 +72,7 @@ public class GameItems {
             GameBase.gi.linkentity(ent);
     
             // send an effect
-            ent.s.event = Defines.EV_ITEM_RESPAWN;
+            ent.entityState.event = Defines.EV_ITEM_RESPAWN;
     
             return false;
         }
@@ -230,7 +230,7 @@ public class GameItems {
                                 .soundindex("items/l_health.wav"), 1,
                                 Defines.ATTN_NORM, 0);
                     else
-                        // (ent.count == 100)
+                        // (entityDict.count == 100)
                         GameBase.gi.sound(other, Defines.CHAN_ITEM, GameBase.gi
                                 .soundindex("items/m_health.wav"), 1,
                                 Defines.ATTN_NORM, 0);
@@ -670,16 +670,16 @@ public class GameItems {
     public static EntThinkAdapter droptofloor = new EntThinkAdapter() {
         public String getID() { return "drop_to_floor";}
         public boolean think(TEntityDict ent) {
-            trace_t tr;
+            TTrace tr;
             float[] dest = { 0, 0, 0 };
     
             //float v[];
     
             //v = Lib.tv(-15, -15, -15);
-            //Math3D.VectorCopy(v, ent.mins);
+            //Math3D.VectorCopy(v, entityDict.mins);
             ent.mins[0] = ent.mins[1] = ent.mins[2] = -15;
             //v = Lib.tv(15, 15, 15);
-            //Math3D.VectorCopy(v, ent.maxs);
+            //Math3D.VectorCopy(v, entityDict.maxs);
             ent.maxs[0] = ent.maxs[1] = ent.maxs[2] = 15;
     
             if (ent.model != null)
@@ -691,18 +691,18 @@ public class GameItems {
             ent.touch = Touch_Item;
     
             float v[] = { 0, 0, -128 };
-            Math3D.VectorAdd(ent.s.origin, v, dest);
+            Math3D.VectorAdd(ent.entityState.origin, v, dest);
     
-            tr = GameBase.gi.trace(ent.s.origin, ent.mins, ent.maxs, dest, ent,
+            tr = GameBase.gi.trace(ent.entityState.origin, ent.mins, ent.maxs, dest, ent,
                     Defines.MASK_SOLID);
-            if (tr.startsolid) {
+            if (tr.startSolid) {
                 GameBase.gi.dprintf("droptofloor: " + ent.classname
-                        + " startsolid at " + Lib.vtos(ent.s.origin) + "\n");
+                        + " startSolid at " + Lib.vtos(ent.entityState.origin) + "\n");
                 GameUtil.G_FreeEdict(ent);
                 return true;
             }
     
-            Math3D.VectorCopy(tr.endpos, ent.s.origin);
+            Math3D.VectorCopy(tr.endpos, ent.entityState.origin);
     
             if (ent.team != null) {
                 ent.flags &= ~Defines.FL_TEAMSLAVE;
@@ -720,8 +720,8 @@ public class GameItems {
             if ((ent.spawnflags & Defines.ITEM_NO_TOUCH) != 0) {
                 ent.solid = Defines.SOLID_BBOX;
                 ent.touch = null;
-                ent.s.effects &= ~Defines.EF_ROTATE;
-                ent.s.renderfx &= ~Defines.RF_GLOW;
+                ent.entityState.effects &= ~Defines.EF_ROTATE;
+                ent.entityState.renderfx &= ~Defines.RF_GLOW;
             }
     
             if ((ent.spawnflags & Defines.ITEM_TRIGGER_SPAWN) != 0) {
@@ -848,8 +848,8 @@ public class GameItems {
         dropped.classname = item.classname;
         dropped.item = item;
         dropped.spawnflags = Defines.DROPPED_ITEM;
-        dropped.s.effects = item.world_model_flags;
-        dropped.s.renderfx = Defines.RF_GLOW;
+        dropped.entityState.effects = item.world_model_flags;
+        dropped.entityState.renderfx = Defines.RF_GLOW;
         Math3D.VectorSet(dropped.mins, -15, -15, -15);
         Math3D.VectorSet(dropped.maxs, 15, 15, 15);
         GameBase.gi.setmodel(dropped, dropped.item.world_model);
@@ -861,18 +861,18 @@ public class GameItems {
         dropped.owner = ent;
     
         if (ent.client != null) {
-            trace_t trace;
+            TTrace trace;
     
             Math3D.AngleVectors(ent.client.v_angle, forward, right, null);
             Math3D.VectorSet(offset, 24, 0, -16);
-            Math3D.G_ProjectSource(ent.s.origin, offset, forward, right,
-                    dropped.s.origin);
-            trace = GameBase.gi.trace(ent.s.origin, dropped.mins, dropped.maxs,
-                    dropped.s.origin, ent, Defines.CONTENTS_SOLID);
-            Math3D.VectorCopy(trace.endpos, dropped.s.origin);
+            Math3D.G_ProjectSource(ent.entityState.origin, offset, forward, right,
+                    dropped.entityState.origin);
+            trace = GameBase.gi.trace(ent.entityState.origin, dropped.mins, dropped.maxs,
+                    dropped.entityState.origin, ent, Defines.CONTENTS_SOLID);
+            Math3D.VectorCopy(trace.endpos, dropped.entityState.origin);
         } else {
-            Math3D.AngleVectors(ent.s.angles, forward, right, null);
-            Math3D.VectorCopy(ent.s.origin, dropped.s.origin);
+            Math3D.AngleVectors(ent.entityState.angles, forward, right, null);
+            Math3D.VectorCopy(ent.entityState.origin, dropped.entityState.origin);
         }
     
         Math3D.VectorScale(forward, 100, dropped.velocity);
@@ -1076,7 +1076,7 @@ public class GameItems {
      * =============== PrecacheItem
      * 
      * Precaches all data needed for a given item. This will be called for each
-     * item spawned in a level, and for each item in each client's inventory.
+     * item spawned in a level, and for each item in each client'entityState inventory.
      * ===============
      */
     public static void PrecacheItem(TGItem it) {
@@ -1153,7 +1153,7 @@ public class GameItems {
             if (Lib.strcmp(ent.classname, "key_power_cube") != 0) {
                 ent.spawnflags = 0;
                 GameBase.gi.dprintf("" + ent.classname + " at "
-                        + Lib.vtos(ent.s.origin)
+                        + Lib.vtos(ent.entityState.origin)
                         + " has invalid spawnflags set\n");
             }
         }
@@ -1206,8 +1206,8 @@ public class GameItems {
         ent.nextthink = GameBase.level.time + 2 * Defines.FRAMETIME;
         // items start after other solids
         ent.think = droptofloor;
-        ent.s.effects = item.world_model_flags;
-        ent.s.renderfx = Defines.RF_GLOW;
+        ent.entityState.effects = item.world_model_flags;
+        ent.entityState.renderfx = Defines.RF_GLOW;
     
         if (ent.model != null)
             GameBase.gi.modelindex(ent.model);
@@ -1325,7 +1325,7 @@ public class GameItems {
                             .soundindex("items/l_health.wav"), 1,
                             Defines.ATTN_NORM, 0);
                 else
-                    // (ent.count == 100)
+                    // (entityDict.count == 100)
                     GameBase.gi.sound(other, Defines.CHAN_ITEM, GameBase.gi
                             .soundindex("items/m_health.wav"), 1,
                             Defines.ATTN_NORM, 0);

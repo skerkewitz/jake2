@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render.fast;
 
 import jake2.Defines;
-import jake2.client.Dimension;
+import jake2.common.Dimension;
 import jake2.client.VID;
 import jake2.client.TParticle;
 import jake2.game.TVar;
@@ -387,7 +387,7 @@ public class Image {
             texels += image.upload_width * image.upload_height;
             switch (image.type) {
                 case it_skin:
-                    VID.Printf(VID.PRINT_ALL, "M");
+                    VID.Printf(VID.PRINT_ALL, "Monster");
                     break;
                 case it_sprite:
                     VID.Printf(VID.PRINT_ALL, "S");
@@ -405,7 +405,7 @@ public class Image {
 
             VID.Printf(
                     VID.PRINT_ALL,
-                    " %3i %3i %s: %s\n",
+                    " %3i %3i %entityState: %entityState\n",
                     4, image.upload_width, image.upload_height, palstrings[(image.paletted) ? 1 : 0],
                                  image.name);
         }
@@ -467,7 +467,7 @@ public class Image {
         //
         // load the file
         //
-        byte[] raw = FileSystem.LoadFile(filename);
+        byte[] raw = FileSystem.loadFile(filename);
 
         if (raw == null) {
             VID.Printf(VID.PRINT_DEVELOPER, "Bad pcx file " + filename + '\n');
@@ -560,7 +560,7 @@ public class Image {
         //
         // load the file
         //
-        raw = FileSystem.LoadFile(name);
+        raw = FileSystem.loadFile(name);
 
         if (raw == null) {
             VID.Printf(VID.PRINT_DEVELOPER, "Bad tga file " + name + '\n');
@@ -1362,7 +1362,7 @@ public class Image {
 
         TImage image = null;
 
-        byte[] raw = FileSystem.LoadFile(name);
+        byte[] raw = FileSystem.loadFile(name);
         if (raw == null) {
             VID.Printf(VID.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
             return RenderAPIImpl.main.r_notexture;
@@ -1538,7 +1538,7 @@ public class Image {
         Draw_GetPalette();
 
         if (RenderAPIImpl.main.qglColorTableEXT) {
-            RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.LoadFile("pics/16to8.dat");
+            RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.loadFile("pics/16to8.dat");
             if (RenderAPIImpl.main.gl_state.d_16to8table == null)
                 Command.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
         }

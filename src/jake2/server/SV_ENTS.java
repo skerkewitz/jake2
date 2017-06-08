@@ -52,8 +52,8 @@ public class SV_ENTS {
     /**
      * Writes a delta update of an TEntityState list to the message.
      */
-    static void SV_EmitPacketEntities(client_frame_t from, client_frame_t to,
-            TSizeBuffer msg) {
+    static void SV_EmitPacketEntities(TClientFrame from, TClientFrame to,
+                                      TSizeBuffer msg) {
         TEntityState oldent = null, newent = null;
         int oldindex, newindex;
         int oldnum, newnum;
@@ -65,15 +65,15 @@ public class SV_ENTS {
         if (from == null)
             from_num_entities = 0;
         else
-            from_num_entities = from.num_entities;
+            from_num_entities = from.getNumEntities();
 
         newindex = 0;
         oldindex = 0;
-        while (newindex < to.num_entities || oldindex < from_num_entities) {
-            if (newindex >= to.num_entities)
+        while (newindex < to.getNumEntities() || oldindex < from_num_entities) {
+            if (newindex >= to.getNumEntities())
                 newnum = 9999;
             else {
-                newent = ServerInit.svs.client_entities[(to.first_entity + newindex)
+                newent = ServerInit.svs.client_entities[(to.getFirstEntity() + newindex)
                         % ServerInit.svs.num_client_entities];
                 newnum = newent.number;
             }
@@ -81,7 +81,7 @@ public class SV_ENTS {
             if (oldindex >= from_num_entities)
                 oldnum = 9999;
             else {
-                oldent = ServerInit.svs.client_entities[(from.first_entity + oldindex)
+                oldent = ServerInit.svs.client_entities[(from.getFirstEntity() + oldindex)
                         % ServerInit.svs.num_client_entities];
                 oldnum = oldent.number;
             }
@@ -133,20 +133,20 @@ public class SV_ENTS {
     /** 
      * Writes the status of a player to a client system.
      */
-    static void SV_WritePlayerstateToClient(client_frame_t from,
-            client_frame_t to, TSizeBuffer msg) {
+    static void SV_WritePlayerstateToClient(TClientFrame from,
+                                            TClientFrame to, TSizeBuffer msg) {
         // ptr
-        player_state_t ps, ops;
+        TPlayerState ps, ops;
         // mem
-        player_state_t dummy;
+        TPlayerState dummy;
 
-        ps = to.ps;
+        ps = to.getPlayerState();
         if (from == null) {
             //memset (dummy, 0, sizeof(dummy));
-            dummy = new player_state_t();
+            dummy = new TPlayerState();
             ops = dummy;
         } else {
-            ops = from.ps;
+            ops = from.getPlayerState();
         }
 
         // determine what needs to be sent
@@ -244,7 +244,7 @@ public class SV_ENTS {
             msg.writeShort((int) ps.pmove.delta_angles[2]);
         }
 
-        // write the rest of the player_state_t
+        // write the rest of the TPlayerState
         if ((pflags & Defines.PS_VIEWOFFSET) != 0) {
             msg.writeChar(ps.viewoffset[0] * 4);
             msg.writeChar(ps.viewoffset[1] * 4);
@@ -302,9 +302,9 @@ public class SV_ENTS {
     /**
      * Writes a frame to a client system.
      */
-    public static void SV_WriteFrameToClient(client_t client, TSizeBuffer msg) {
+    public static void SV_WriteFrameToClient(TClient client, TSizeBuffer msg) {
         //ptr
-        client_frame_t frame, oldframe;
+        TClientFrame frame, oldframe;
         int lastframe;
 
         //Command.Printf ("%i . %i\n", new
@@ -316,7 +316,7 @@ public class SV_ENTS {
             lastframe = -1;
         } else if (ServerInit.sv.framenum - client.lastframe >= (Defines.UPDATE_BACKUP - 3)) {
             // client hasn't gotten a good message through in a long time
-            // Com_Printf ("%s: Delta request from out-of-date packet.\n",
+            // Com_Printf ("%entityState: Delta request from out-of-date packet.\n",
             // client.name);
             oldframe = null;
             lastframe = -1;
@@ -331,9 +331,9 @@ public class SV_ENTS {
         msg.writeByte(client.surpressCount); // rate dropped packets
         client.surpressCount = 0;
 
-        // send over the areabits
-        msg.writeByte(frame.areabytes);
-        msg.write(frame.areabits, frame.areabytes);
+        // send over the areaBits
+        msg.writeByte(frame.getAreaBytes());
+        msg.write(frame.getAreaBits(), frame.getAreaBytes());
 
         // delta encode the playerstate
         SV_WritePlayerstateToClient(oldframe, frame, msg);
@@ -395,14 +395,14 @@ public class SV_ENTS {
 
     /**
      * Decides which entities are going to be visible to the client, and copies
-     * off the playerstat and areabits.
+     * off the playerstat and areaBits.
      */
-    public static void SV_BuildClientFrame(client_t client) {
+    public static void SV_BuildClientFrame(TClient client) {
         int e, i;
         float[] org = { 0, 0, 0 };
         TEntityDict ent;
         TEntityDict clent;
-        client_frame_t frame;
+        TClientFrame frame;
         TEntityState state;
         int l;
         int clientarea, clientcluster;
@@ -418,9 +418,9 @@ public class SV_ENTS {
         // this is the frame we are creating
         frame = client.frames[ServerInit.sv.framenum & Defines.UPDATE_MASK];
 
-        frame.senttime = ServerInit.svs.realtime; // save it for ping calc later
+        frame.setSentTime(ServerInit.svs.realtime); // save it for ping calc later
 
-        // find the client's PVS
+        // find the client'entityState PVS
         for (i = 0; i < 3; i++)
             org[i] = clent.client.ps.pmove.origin[i] * 0.125f
                     + clent.client.ps.viewoffset[i];
@@ -430,30 +430,30 @@ public class SV_ENTS {
         clientcluster = CM.CM_LeafCluster(leafnum);
 
         // calculate the visible areas
-        frame.areabytes = CM.CM_WriteAreaBits(frame.areabits, clientarea);
+        frame.setAreaBytes(CM.CM_WriteAreaBits(frame.getAreaBits(), clientarea));
 
-        // grab the current player_state_t
-        frame.ps.set(clent.client.ps);
+        // grab the current TPlayerState
+        frame.getPlayerState().set(clent.client.ps);
 
         SV_FatPVS(org);
         clientphs = CM.CM_ClusterPHS(clientcluster);
 
         // build up the list of visible entities
-        frame.num_entities = 0;
-        frame.first_entity = ServerInit.svs.next_client_entities;
+        frame.setNumEntities(0);
+        frame.setFirstEntity(ServerInit.svs.next_client_entities);
 
         c_fullsend = 0;
 
         for (e = 1; e < GameBase.num_edicts; e++) {
-            ent = GameBase.g_edicts[e];
+            ent = GameBase.entityDicts[e];
 
             // ignore ents without visible models
             if ((ent.svflags & Defines.SVF_NOCLIENT) != 0)
                 continue;
 
             // ignore ents without visible models unless they have an effect
-            if (0 == ent.s.modelindex && 0 == ent.s.effects && 0 == ent.s.sound
-                    && 0 == ent.s.event)
+            if (0 == ent.entityState.modelIndex && 0 == ent.entityState.effects && 0 == ent.entityState.sound
+                    && 0 == ent.entityState.event)
                 continue;
 
             // ignore if not touching a PV leaf
@@ -466,14 +466,14 @@ public class SV_ENTS {
                 }
 
                 // beams just check one point for PHS
-                if ((ent.s.renderfx & Defines.RF_BEAM) != 0) {
+                if ((ent.entityState.renderfx & Defines.RF_BEAM) != 0) {
                     l = ent.clusternums[0];
                     if (0 == (clientphs[l >> 3] & (1 << (l & 7))))
                         continue;
                 } else {
-                    // FIXME: if an ent has a model and a sound, but isn't
+                    // FIXME: if an entityDict has a model and a sound, but isn't
                     // in the PVS, only the PHS, clear the model
-                    if (ent.s.sound == 0) {
+                    if (ent.entityState.sound == 0) {
                         bitvector = SV_ENTS.fatpvs; //clientphs;
                     } else
                         bitvector = SV_ENTS.fatpvs;
@@ -494,12 +494,12 @@ public class SV_ENTS {
                             continue; // not visible
                     }
 
-                    if (ent.s.modelindex == 0) { // don't send sounds if they
+                    if (ent.entityState.modelIndex == 0) { // don't send sounds if they
                                                  // will be attenuated away
                         float[] delta = { 0, 0, 0 };
                         float len;
 
-                        Math3D.VectorSubtract(org, ent.s.origin, delta);
+                        Math3D.VectorSubtract(org, ent.entityState.origin, delta);
                         len = Math3D.VectorLength(delta);
                         if (len > 400)
                             continue;
@@ -511,20 +511,20 @@ public class SV_ENTS {
             int ix = ServerInit.svs.next_client_entities
                     % ServerInit.svs.num_client_entities;
             state = ServerInit.svs.client_entities[ix];
-            if (ent.s.number != e) {
+            if (ent.entityState.number != e) {
                 Command.DPrintf("FIXING ENT.Sound.NUMBER!!!\n");
-                ent.s.number = e;
+                ent.entityState.number = e;
             }
 
-            //*state = ent.s;
-            ServerInit.svs.client_entities[ix].set(ent.s);
+            //*state = entityDict.entityState;
+            ServerInit.svs.client_entities[ix].set(ent.entityState);
 
             // don't mark players missiles as solid
             if (ent.owner == client.edict)
                 state.solid = 0;
 
             ServerInit.svs.next_client_entities++;
-            frame.num_entities++;
+            frame.setNumEntities(frame.getNumEntities() + 1);
         }
     }
 
@@ -545,26 +545,26 @@ public class SV_ENTS {
         TSizeBuffer buf = new TSizeBuffer();
         buf.init(buf_data, buf_data.length);
 
-        // write a frame message that doesn't contain a player_state_t
+        // write a frame message that doesn't contain a TPlayerState
         buf.writeByte(Defines.svc_frame);
         buf.writeLong(ServerInit.sv.framenum);
 
         buf.writeByte(Defines.svc_packetentities);
 
         int e = 1;
-        TEntityDict ent = GameBase.g_edicts[e];
+        TEntityDict ent = GameBase.entityDicts[e];
 
         while (e < GameBase.num_edicts) {
             // ignore ents without visible models unless they have an effect
-            if (ent.inuse
-                    && ent.s.number != 0
-                    && (ent.s.modelindex != 0 || ent.s.effects != 0
-                            || ent.s.sound != 0 || ent.s.event != 0)
+            if (ent.inUse
+                    && ent.entityState.number != 0
+                    && (ent.entityState.modelIndex != 0 || ent.entityState.effects != 0
+                            || ent.entityState.sound != 0 || ent.entityState.event != 0)
                     && 0 == (ent.svflags & Defines.SVF_NOCLIENT))
-                buf.writeDeltaEntity(nostate, ent.s, false, true);
+                buf.writeDeltaEntity(nostate, ent.entityState, false, true);
 
             e++;
-            ent = GameBase.g_edicts[e];
+            ent = GameBase.entityDicts[e];
         }
 
         buf.writeShort(0);

@@ -38,53 +38,53 @@ public class GameCombat {
      */
     static boolean CanDamage(TEntityDict targ, TEntityDict inflictor) {
         float[] dest = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
     
         // bmodels need special checking because their origin is 0,0,0
         if (targ.movetype == Defines.MOVETYPE_PUSH) {
             Math3D.VectorAdd(targ.absmin, targ.absmax, dest);
             Math3D.VectorScale(dest, 0.5f, dest);
-            trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+            trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
                     Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
             if (trace.fraction == 1.0f)
                 return true;
-            return trace.ent == targ;
+            return trace.entityDict == targ;
         }
     
-        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
-                Context.vec3_origin, targ.s.origin, inflictor,
+        trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
+                Context.vec3_origin, targ.entityState.origin, inflictor,
                 Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
-        Math3D.VectorCopy(targ.s.origin, dest);
+        Math3D.VectorCopy(targ.entityState.origin, dest);
         dest[0] += 15.0;
         dest[1] += 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+        trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
                 Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
-        Math3D.VectorCopy(targ.s.origin, dest);
+        Math3D.VectorCopy(targ.entityState.origin, dest);
         dest[0] += 15.0;
         dest[1] -= 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+        trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
                 Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
-        Math3D.VectorCopy(targ.s.origin, dest);
+        Math3D.VectorCopy(targ.entityState.origin, dest);
         dest[0] -= 15.0;
         dest[1] += 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+        trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
                 Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         if (trace.fraction == 1.0)
             return true;
     
-        Math3D.VectorCopy(targ.s.origin, dest);
+        Math3D.VectorCopy(targ.entityState.origin, dest);
         dest[0] -= 15.0;
         dest[1] -= 15.0;
-        trace = GameBase.gi.trace(inflictor.s.origin, Context.vec3_origin,
+        trace = GameBase.gi.trace(inflictor.entityState.origin, Context.vec3_origin,
                 Context.vec3_origin, dest, inflictor, Defines.MASK_SOLID);
         return trace.fraction == 1.0;
 
@@ -188,8 +188,8 @@ public class GameCombat {
             float[] forward = { 0, 0, 0 };
     
             // only works if damage point is in front
-            Math3D.AngleVectors(ent.s.angles, forward, null, null);
-            Math3D.VectorSubtract(point, ent.s.origin, vec);
+            Math3D.AngleVectors(ent.entityState.angles, forward, null, null);
+            Math3D.VectorSubtract(point, ent.entityState.origin, vec);
             Math3D.VectorNormalize(vec);
             dot = Math3D.DotProduct(vec, forward);
             if (dot <= 0.3)
@@ -284,7 +284,7 @@ public class GameCombat {
     
         // we now know that we are not both good guys
     
-        // if attacker is a client, get mad at them because he's good and we're
+        // if attacker is a client, get mad at them because he'entityState good and we're
         // not
         if (attacker.client != null) {
             targ.monsterinfo.aiflags &= ~Defines.AI_SOUND_TARGET;
@@ -305,8 +305,8 @@ public class GameCombat {
             return;
         }
     
-        // it's the same base (walk/swim/fly) type and a different classname and
-        // it's not a tank
+        // it'entityState the same base (walk/swim/fly) type and a different classname and
+        // it'entityState not a tank
         // (they spray too much), get mad at them
         if (((targ.flags & (Defines.FL_FLY | Defines.FL_SWIM)) == (attacker.flags & (Defines.FL_FLY | Defines.FL_SWIM)))
                 && (!(targ.classname.equals(attacker.classname)))
@@ -341,8 +341,8 @@ public class GameCombat {
 
     static boolean CheckTeamDamage(TEntityDict targ, TEntityDict attacker) {
         //FIXME make the next line real and uncomment this block
-        // if ((ability to damage a teammate == OFF) && (targ's team ==
-        // attacker's team))
+        // if ((ability to damage a teammate == OFF) && (targ'entityState team ==
+        // attacker'entityState team))
         return false;
     }
 
@@ -357,7 +357,7 @@ public class GameCombat {
         float[] v = { 0, 0, 0 };
         float[] dir = { 0, 0, 0 };
     
-        while ((edictit = GameBase.findradius(edictit, inflictor.s.origin,
+        while ((edictit = GameBase.findradius(edictit, inflictor.entityState.origin,
                 radius)) != null) {
             TEntityDict ent = edictit.o;
             if (ent == ignore)
@@ -366,15 +366,15 @@ public class GameCombat {
                 continue;
     
             Math3D.VectorAdd(ent.mins, ent.maxs, v);
-            Math3D.VectorMA(ent.s.origin, 0.5f, v, v);
-            Math3D.VectorSubtract(inflictor.s.origin, v, v);
+            Math3D.VectorMA(ent.entityState.origin, 0.5f, v, v);
+            Math3D.VectorSubtract(inflictor.entityState.origin, v, v);
             points = damage - 0.5f * Math3D.VectorLength(v);
             if (ent == attacker)
                 points = points * 0.5f;
             if (points > 0) {
                 if (CanDamage(ent, inflictor)) {
-                    Math3D.VectorSubtract(ent.s.origin, inflictor.s.origin, dir);
-                    T_Damage(ent, inflictor, attacker, dir, inflictor.s.origin,
+                    Math3D.VectorSubtract(ent.entityState.origin, inflictor.entityState.origin, dir);
+                    T_Damage(ent, inflictor, attacker, dir, inflictor.entityState.origin,
                             Context.vec3_origin, (int) points, (int) points,
                             Defines.DAMAGE_RADIUS, mod);
                 }

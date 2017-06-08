@@ -710,12 +710,12 @@ public class CLEffects {
                 dl.getColor()[2] = 1.0f;
                 break;
 
-            //	   --- Xian's shit starts ---
+            //	   --- Xian'entityState shit starts ---
             case Defines.MZ2_MAKRON_BFG:
                 dl.getColor()[0] = 0.5f;
                 dl.getColor()[1] = 1;
                 dl.getColor()[2] = 0.5f;
-                //Sound.StartSound (null, ent, CHAN_WEAPON,
+                //Sound.StartSound (null, entityDict, CHAN_WEAPON,
                 // Sound.RegisterSound("makron/bfg_fire.wav"), 1, ATTN_NORM, 0);
                 break;
 
@@ -871,7 +871,7 @@ public class CLEffects {
             //	   ROGUE
             //	   ======
 
-            //	   --- Xian's shit ends ---
+            //	   --- Xian'entityState shit ends ---
 
         }
     }

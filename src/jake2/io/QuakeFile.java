@@ -89,7 +89,7 @@ public class QuakeFile extends RandomAccessFile {
         if (ent == null)
             writeInt(-1);
         else {
-            writeInt(ent.s.number);
+            writeInt(ent.entityState.number);
         }
     }
 
@@ -104,13 +104,13 @@ public class QuakeFile extends RandomAccessFile {
         if (i < 0)
             return null;
 
-        if (i > GameBase.g_edicts.length) {
+        if (i > GameBase.entityDicts.length) {
             Command.DPrintf("jake2: illegal edict num:" + i + "\n");
             return null;
         }
 
         // valid edict.
-        return GameBase.g_edicts[i];
+        return GameBase.entityDicts[i];
     }
 
     /** Writes the Adapter-ID to the file. */

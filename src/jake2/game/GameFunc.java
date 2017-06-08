@@ -31,7 +31,7 @@ public class GameFunc {
 
     static void Move_Calc(TEntityDict ent, float[] dest, EntThinkAdapter func) {
         Math3D.VectorClear(ent.velocity);
-        Math3D.VectorSubtract(dest, ent.s.origin, ent.moveinfo.dir);
+        Math3D.VectorSubtract(dest, ent.entityState.origin, ent.moveinfo.dir);
         ent.moveinfo.remaining_distance = Math3D
                 .VectorNormalize(ent.moveinfo.dir);
 
@@ -183,7 +183,7 @@ public class GameFunc {
                 GameBase.gi.sound(ent, Defines.CHAN_NO_PHS_ADD
                         + Defines.CHAN_VOICE, ent.moveinfo.sound_start, 1,
                         Defines.ATTN_STATIC, 0);
-            ent.s.sound = ent.moveinfo.sound_middle;
+            ent.entityState.sound = ent.moveinfo.sound_middle;
         }
         ent.moveinfo.state = STATE_UP;
         Move_Calc(ent, ent.moveinfo.start_origin, plat_hit_top);
@@ -244,13 +244,13 @@ public class GameFunc {
      * overrides default 8 pixel lip
      * 
      * If the "height" key is set, that will determine the amount the plat
-     * moves, instead of being implicitly determoveinfoned by the model's
+     * moves, instead of being implicitly determoveinfoned by the model'entityState
      * height.
      * 
      * Set "sounds" to one of the following: 1) base fast 2) chain slow
      */
     static void SP_func_plat(TEntityDict ent) {
-        Math3D.VectorClear(ent.s.angles);
+        Math3D.VectorClear(ent.entityState.angles);
         ent.solid = Defines.SOLID_BSP;
         ent.movetype = Defines.MOVETYPE_PUSH;
 
@@ -280,8 +280,8 @@ public class GameFunc {
             GameBase.st.lip = 8;
 
         // pos1 is the top position, pos2 is the bottom
-        Math3D.VectorCopy(ent.s.origin, ent.pos1);
-        Math3D.VectorCopy(ent.s.origin, ent.pos2);
+        Math3D.VectorCopy(ent.entityState.origin, ent.pos1);
+        Math3D.VectorCopy(ent.entityState.origin, ent.pos2);
         if (GameBase.st.height != 0)
             ent.pos2[2] -= GameBase.st.height;
         else
@@ -294,7 +294,7 @@ public class GameFunc {
         if (ent.targetname != null) {
             ent.moveinfo.state = STATE_UP;
         } else {
-            Math3D.VectorCopy(ent.pos2, ent.s.origin);
+            Math3D.VectorCopy(ent.pos2, ent.entityState.origin);
             GameBase.gi.linkentity(ent);
             ent.moveinfo.state = STATE_BOTTOM;
         }
@@ -304,9 +304,9 @@ public class GameFunc {
         ent.moveinfo.decel = ent.decel;
         ent.moveinfo.wait = ent.wait;
         Math3D.VectorCopy(ent.pos1, ent.moveinfo.start_origin);
-        Math3D.VectorCopy(ent.s.angles, ent.moveinfo.start_angles);
+        Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.start_angles);
         Math3D.VectorCopy(ent.pos2, ent.moveinfo.end_origin);
-        Math3D.VectorCopy(ent.s.angles, ent.moveinfo.end_angles);
+        Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.end_angles);
 
         ent.moveinfo.sound_start = GameBase.gi.soundindex("plats/pt1_strt.wav");
         ent.moveinfo.sound_middle = GameBase.gi.soundindex("plats/pt1_mid.wav");
@@ -372,7 +372,7 @@ public class GameFunc {
                 GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                         + Defines.CHAN_VOICE, self.moveinfo.sound_start, 1,
                         Defines.ATTN_STATIC, 0);
-            self.s.sound = self.moveinfo.sound_middle;
+            self.entityState.sound = self.moveinfo.sound_middle;
         }
         self.moveinfo.state = STATE_UP;
         if (Lib.strcmp(self.classname, "func_door") == 0)
@@ -401,7 +401,7 @@ public class GameFunc {
     static void SP_func_water(TEntityDict self) {
         float[] abs_movedir = { 0, 0, 0 };
 
-        GameBase.G_SetMovedir(self.s.angles, self.movedir);
+        GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
         self.movetype = Defines.MOVETYPE_PUSH;
         self.solid = Defines.SOLID_BSP;
         GameBase.gi.setmodel(self, self.model);
@@ -426,7 +426,7 @@ public class GameFunc {
         }
 
         // calculate second position
-        Math3D.VectorCopy(self.s.origin, self.pos1);
+        Math3D.VectorCopy(self.entityState.origin, self.pos1);
         abs_movedir[0] = Math.abs(self.movedir[0]);
         abs_movedir[1] = Math.abs(self.movedir[1]);
         abs_movedir[2] = Math.abs(self.movedir[2]);
@@ -438,15 +438,15 @@ public class GameFunc {
 
         // if it starts open, switch the positions
         if ((self.spawnflags & DOOR_START_OPEN) != 0) {
-            Math3D.VectorCopy(self.pos2, self.s.origin);
+            Math3D.VectorCopy(self.pos2, self.entityState.origin);
             Math3D.VectorCopy(self.pos1, self.pos2);
-            Math3D.VectorCopy(self.s.origin, self.pos1);
+            Math3D.VectorCopy(self.entityState.origin, self.pos1);
         }
 
         Math3D.VectorCopy(self.pos1, self.moveinfo.start_origin);
-        Math3D.VectorCopy(self.s.angles, self.moveinfo.start_angles);
+        Math3D.VectorCopy(self.entityState.angles, self.moveinfo.start_angles);
         Math3D.VectorCopy(self.pos2, self.moveinfo.end_origin);
-        Math3D.VectorCopy(self.s.angles, self.moveinfo.end_angles);
+        Math3D.VectorCopy(self.entityState.angles, self.moveinfo.end_angles);
 
         self.moveinfo.state = STATE_BOTTOM;
 
@@ -474,9 +474,9 @@ public class GameFunc {
 
         ent = self.target_ent;
 
-        Math3D.VectorSubtract(ent.s.origin, self.mins, dest);
+        Math3D.VectorSubtract(ent.entityState.origin, self.mins, dest);
         self.moveinfo.state = STATE_TOP;
-        Math3D.VectorCopy(self.s.origin, self.moveinfo.start_origin);
+        Math3D.VectorCopy(self.entityState.origin, self.moveinfo.start_origin);
         Math3D.VectorCopy(dest, self.moveinfo.end_origin);
         Move_Calc(self, dest, train_wait);
         self.spawnflags |= TRAIN_START_ON;
@@ -486,7 +486,7 @@ public class GameFunc {
     static void SP_func_train(TEntityDict self) {
         self.movetype = Defines.MOVETYPE_PUSH;
 
-        Math3D.VectorClear(self.s.angles);
+        Math3D.VectorClear(self.entityState.angles);
         self.blocked = train_blocked;
         if ((self.spawnflags & TRAIN_BLOCK_STOPS) != 0)
             self.dmg = 0;
@@ -532,7 +532,7 @@ public class GameFunc {
 
         if (self.random >= self.wait) {
             self.random = self.wait - Defines.FRAMETIME;
-            GameBase.gi.dprintf("func_timer at " + Lib.vtos(self.s.origin)
+            GameBase.gi.dprintf("func_timer at " + Lib.vtos(self.entityState.origin)
                     + " has random >= wait\n");
         }
 
@@ -660,10 +660,10 @@ public class GameFunc {
             float[] move = { 0, 0, 0 };
 
             if (ent.moveinfo.state == STATE_UP)
-                Math3D.VectorSubtract(ent.moveinfo.end_angles, ent.s.angles,
+                Math3D.VectorSubtract(ent.moveinfo.end_angles, ent.entityState.angles,
                         move);
             else
-                Math3D.VectorSubtract(ent.moveinfo.start_angles, ent.s.angles,
+                Math3D.VectorSubtract(ent.moveinfo.start_angles, ent.entityState.angles,
                         move);
 
             if (Math3D.VectorEquals(move, Context.vec3_origin)) {
@@ -689,10 +689,10 @@ public class GameFunc {
 
             // set destdelta to the vector needed to move
             if (ent.moveinfo.state == STATE_UP)
-                Math3D.VectorSubtract(ent.moveinfo.end_angles, ent.s.angles,
+                Math3D.VectorSubtract(ent.moveinfo.end_angles, ent.entityState.angles,
                         destdelta);
             else
-                Math3D.VectorSubtract(ent.moveinfo.start_angles, ent.s.angles,
+                Math3D.VectorSubtract(ent.moveinfo.start_angles, ent.entityState.angles,
                         destdelta);
 
             // calculate length of vector
@@ -751,7 +751,7 @@ public class GameFunc {
                     GameBase.gi.sound(ent, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, ent.moveinfo.sound_end, 1,
                             Defines.ATTN_STATIC, 0);
-                ent.s.sound = 0;
+                ent.entityState.sound = 0;
             }
             ent.moveinfo.state = STATE_TOP;
 
@@ -770,7 +770,7 @@ public class GameFunc {
                     GameBase.gi.sound(ent, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, ent.moveinfo.sound_end, 1,
                             Defines.ATTN_STATIC, 0);
-                ent.s.sound = 0;
+                ent.entityState.sound = 0;
             }
             ent.moveinfo.state = STATE_BOTTOM;
             return true;
@@ -785,7 +785,7 @@ public class GameFunc {
                     GameBase.gi.sound(ent, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, ent.moveinfo.sound_start, 1,
                             Defines.ATTN_STATIC, 0);
-                ent.s.sound = ent.moveinfo.sound_middle;
+                ent.entityState.sound = ent.moveinfo.sound_middle;
             }
             ent.moveinfo.state = STATE_DOWN;
             Move_Calc(ent, ent.moveinfo.end_origin, plat_hit_bottom);
@@ -798,18 +798,18 @@ public class GameFunc {
         public void blocked(TEntityDict self, TEntityDict other) {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
-                // give it a chance to go away on it's own terms (like gibs)
+                // give it a chance to go away on it'entityState own terms (like gibs)
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
+                        other.entityState.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
-                // if it's still there, nuke it
+                // if it'entityState still there, nuke it
                 if (other != null)
                     GameMisc.BecomeExplosion1(other);
                 return;
             }
 
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
 
             if (self.moveinfo.state == STATE_UP)
@@ -868,7 +868,7 @@ public class GameFunc {
         public String getID() { return "rotating_blocked";}
         public void blocked(TEntityDict self, TEntityDict other) {
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -880,7 +880,7 @@ public class GameFunc {
             if (self.avelocity[0] != 0 || self.avelocity[1] != 0
                     || self.avelocity[2] != 0)
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                        other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                         Defines.MOD_CRUSH);
         }
     };
@@ -889,11 +889,11 @@ public class GameFunc {
         public String getID() { return "rotating_use";}
         public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             if (!Math3D.VectorEquals(self.avelocity, Context.vec3_origin)) {
-                self.s.sound = 0;
+                self.entityState.sound = 0;
                 Math3D.VectorClear(self.avelocity);
                 self.touch = null;
             } else {
-                self.s.sound = self.moveinfo.sound_middle;
+                self.entityState.sound = self.moveinfo.sound_middle;
                 Math3D.VectorScale(self.movedir, self.speed, self.avelocity);
                 if ((self.spawnflags & 16) != 0)
                     self.touch = rotating_touch;
@@ -929,7 +929,7 @@ public class GameFunc {
             if (0 == ent.dmg)
                 ent.dmg = 2;
 
-            //		ent.moveinfo.sound_middle = "doors/hydro1.wav";
+            //		entityDict.moveinfo.sound_middle = "doors/hydro1.wav";
 
             ent.use = rotating_use;
             if (ent.dmg != 0)
@@ -939,9 +939,9 @@ public class GameFunc {
                 ent.use.use(ent, null, null);
 
             if ((ent.spawnflags & 64) != 0)
-                ent.s.effects |= Defines.EF_ANIM_ALL;
+                ent.entityState.effects |= Defines.EF_ANIM_ALL;
             if ((ent.spawnflags & 128) != 0)
-                ent.s.effects |= Defines.EF_ANIM_ALLFAST;
+                ent.entityState.effects |= Defines.EF_ANIM_ALLFAST;
 
             GameBase.gi.setmodel(ent, ent.model);
             GameBase.gi.linkentity(ent);
@@ -959,8 +959,8 @@ public class GameFunc {
 
     /*
      * QUAKED func_button (0 .5 .8) ? When a button is touched, it moves some
-     * distance in the direction of it's angle, triggers all of it's targets,
-     * waits some time, then returns to it's original position where it can be
+     * distance in the direction of it'entityState angle, triggers all of it'entityState targets,
+     * waits some time, then returns to it'entityState original position where it can be
      * triggered again.
      * 
      * "angle" determines the opening direction "target" all entities with a
@@ -976,8 +976,8 @@ public class GameFunc {
         public boolean think(TEntityDict self) {
 
             self.moveinfo.state = STATE_BOTTOM;
-            self.s.effects &= ~Defines.EF_ANIM23;
-            self.s.effects |= Defines.EF_ANIM01;
+            self.entityState.effects &= ~Defines.EF_ANIM23;
+            self.entityState.effects |= Defines.EF_ANIM01;
             return true;
         }
     };
@@ -989,7 +989,7 @@ public class GameFunc {
 
             Move_Calc(self, self.moveinfo.start_origin, button_done);
 
-            self.s.frame = 0;
+            self.entityState.frame = 0;
 
             if (self.health != 0)
                 self.takedamage = Defines.DAMAGE_YES;
@@ -1001,11 +1001,11 @@ public class GameFunc {
         public String getID() { return "button_wait";}
         public boolean think(TEntityDict self) {
             self.moveinfo.state = STATE_TOP;
-            self.s.effects &= ~Defines.EF_ANIM01;
-            self.s.effects |= Defines.EF_ANIM23;
+            self.entityState.effects &= ~Defines.EF_ANIM01;
+            self.entityState.effects |= Defines.EF_ANIM23;
 
             GameUtil.G_UseTargets(self, self.activator);
-            self.s.frame = 1;
+            self.entityState.frame = 1;
             if (self.moveinfo.wait >= 0) {
                 self.nextthink = GameBase.level.time + self.moveinfo.wait;
                 self.think = button_return;
@@ -1075,7 +1075,7 @@ public class GameFunc {
             float[] abs_movedir = { 0, 0, 0 };
             float dist;
 
-            GameBase.G_SetMovedir(ent.s.angles, ent.movedir);
+            GameBase.G_SetMovedir(ent.entityState.angles, ent.movedir);
             ent.movetype = Defines.MOVETYPE_STOP;
             ent.solid = Defines.SOLID_BSP;
             GameBase.gi.setmodel(ent, ent.model);
@@ -1096,7 +1096,7 @@ public class GameFunc {
             if (0 == GameBase.st.lip)
                 GameBase.st.lip = 4;
 
-            Math3D.VectorCopy(ent.s.origin, ent.pos1);
+            Math3D.VectorCopy(ent.entityState.origin, ent.pos1);
             abs_movedir[0] = Math.abs(ent.movedir[0]);
             abs_movedir[1] = Math.abs(ent.movedir[1]);
             abs_movedir[2] = Math.abs(ent.movedir[2]);
@@ -1105,7 +1105,7 @@ public class GameFunc {
             Math3D.VectorMA(ent.pos1, dist, ent.movedir, ent.pos2);
 
             ent.use = button_use;
-            ent.s.effects |= Defines.EF_ANIM01;
+            ent.entityState.effects |= Defines.EF_ANIM01;
 
             if (ent.health != 0) {
                 ent.max_health = ent.health;
@@ -1121,9 +1121,9 @@ public class GameFunc {
             ent.moveinfo.decel = ent.decel;
             ent.moveinfo.wait = ent.wait;
             Math3D.VectorCopy(ent.pos1, ent.moveinfo.start_origin);
-            Math3D.VectorCopy(ent.s.angles, ent.moveinfo.start_angles);
+            Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.start_angles);
             Math3D.VectorCopy(ent.pos2, ent.moveinfo.end_origin);
-            Math3D.VectorCopy(ent.s.angles, ent.moveinfo.end_angles);
+            Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.end_angles);
 
             GameBase.gi.linkentity(ent);
             return true;
@@ -1138,7 +1138,7 @@ public class GameFunc {
                     GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, self.moveinfo.sound_end, 1,
                             Defines.ATTN_STATIC, 0);
-                self.s.sound = 0;
+                self.entityState.sound = 0;
             }
             self.moveinfo.state = STATE_TOP;
             if ((self.spawnflags & DOOR_TOGGLE) != 0)
@@ -1159,7 +1159,7 @@ public class GameFunc {
                     GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, self.moveinfo.sound_end, 1,
                             Defines.ATTN_STATIC, 0);
-                self.s.sound = 0;
+                self.entityState.sound = 0;
             }
             self.moveinfo.state = STATE_BOTTOM;
             door_use_areaportals(self, false);
@@ -1175,7 +1175,7 @@ public class GameFunc {
                     GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, self.moveinfo.sound_start, 1,
                             Defines.ATTN_STATIC, 0);
-                self.s.sound = self.moveinfo.sound_middle;
+                self.entityState.sound = self.moveinfo.sound_middle;
             }
             if (self.max_health != 0) {
                 self.takedamage = Defines.DAMAGE_YES;
@@ -1333,18 +1333,18 @@ public class GameFunc {
 
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
-                // give it a chance to go away on it's own terms (like gibs)
+                // give it a chance to go away on it'entityState own terms (like gibs)
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
+                        other.entityState.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
-                // if it's still there, nuke it
+                // if it'entityState still there, nuke it
                 if (other != null)
                     GameMisc.BecomeExplosion1(other);
                 return;
             }
 
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
 
             if ((self.spawnflags & DOOR_CRUSHER) != 0)
@@ -1410,7 +1410,7 @@ public class GameFunc {
                         .soundindex("doors/dr1_end.wav");
             }
 
-            GameBase.G_SetMovedir(ent.s.angles, ent.movedir);
+            GameBase.G_SetMovedir(ent.entityState.angles, ent.movedir);
             ent.movetype = Defines.MOVETYPE_PUSH;
             ent.solid = Defines.SOLID_BSP;
             GameBase.gi.setmodel(ent, ent.model);
@@ -1436,7 +1436,7 @@ public class GameFunc {
                 ent.dmg = 2;
 
             // calculate second position
-            Math3D.VectorCopy(ent.s.origin, ent.pos1);
+            Math3D.VectorCopy(ent.entityState.origin, ent.pos1);
             abs_movedir[0] = Math.abs(ent.movedir[0]);
             abs_movedir[1] = Math.abs(ent.movedir[1]);
             abs_movedir[2] = Math.abs(ent.movedir[2]);
@@ -1449,9 +1449,9 @@ public class GameFunc {
 
             // if it starts open, switch the positions
             if ((ent.spawnflags & DOOR_START_OPEN) != 0) {
-                Math3D.VectorCopy(ent.pos2, ent.s.origin);
+                Math3D.VectorCopy(ent.pos2, ent.entityState.origin);
                 Math3D.VectorCopy(ent.pos1, ent.pos2);
-                Math3D.VectorCopy(ent.s.origin, ent.pos1);
+                Math3D.VectorCopy(ent.entityState.origin, ent.pos1);
             }
 
             ent.moveinfo.state = STATE_BOTTOM;
@@ -1470,14 +1470,14 @@ public class GameFunc {
             ent.moveinfo.decel = ent.decel;
             ent.moveinfo.wait = ent.wait;
             Math3D.VectorCopy(ent.pos1, ent.moveinfo.start_origin);
-            Math3D.VectorCopy(ent.s.angles, ent.moveinfo.start_angles);
+            Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.start_angles);
             Math3D.VectorCopy(ent.pos2, ent.moveinfo.end_origin);
-            Math3D.VectorCopy(ent.s.angles, ent.moveinfo.end_angles);
+            Math3D.VectorCopy(ent.entityState.angles, ent.moveinfo.end_angles);
 
             if ((ent.spawnflags & 16) != 0)
-                ent.s.effects |= Defines.EF_ANIM_ALL;
+                ent.entityState.effects |= Defines.EF_ANIM_ALL;
             if ((ent.spawnflags & 64) != 0)
-                ent.s.effects |= Defines.EF_ANIM_ALLFAST;
+                ent.entityState.effects |= Defines.EF_ANIM_ALLFAST;
 
             // to simplify logic elsewhere, make non-teamed doors into a team of
             // one
@@ -1527,7 +1527,7 @@ public class GameFunc {
     static EntThinkAdapter SP_func_door_rotating = new EntThinkAdapter() {
         public String getID() { return "sp_func_door_rotating";}
         public boolean think(TEntityDict ent) {
-            Math3D.VectorClear(ent.s.angles);
+            Math3D.VectorClear(ent.entityState.angles);
 
             // set the axis of rotation
             Math3D.VectorClear(ent.movedir);
@@ -1545,12 +1545,12 @@ public class GameFunc {
 
             if (0 == GameBase.st.distance) {
                 GameBase.gi.dprintf(ent.classname + " at "
-                        + Lib.vtos(ent.s.origin) + " with no distance set\n");
+                        + Lib.vtos(ent.entityState.origin) + " with no distance set\n");
                 GameBase.st.distance = 90;
             }
 
-            Math3D.VectorCopy(ent.s.angles, ent.pos1);
-            Math3D.VectorMA(ent.s.angles, GameBase.st.distance, ent.movedir,
+            Math3D.VectorCopy(ent.entityState.angles, ent.pos1);
+            Math3D.VectorMA(ent.entityState.angles, GameBase.st.distance, ent.movedir,
                     ent.pos2);
             ent.moveinfo.distance = GameBase.st.distance;
 
@@ -1584,9 +1584,9 @@ public class GameFunc {
 
             // if it starts open, switch the positions
             if ((ent.spawnflags & DOOR_START_OPEN) != 0) {
-                Math3D.VectorCopy(ent.pos2, ent.s.angles);
+                Math3D.VectorCopy(ent.pos2, ent.entityState.angles);
                 Math3D.VectorCopy(ent.pos1, ent.pos2);
-                Math3D.VectorCopy(ent.s.angles, ent.pos1);
+                Math3D.VectorCopy(ent.entityState.angles, ent.pos1);
                 Math3D.VectorNegate(ent.movedir, ent.movedir);
             }
 
@@ -1606,13 +1606,13 @@ public class GameFunc {
             ent.moveinfo.accel = ent.accel;
             ent.moveinfo.decel = ent.decel;
             ent.moveinfo.wait = ent.wait;
-            Math3D.VectorCopy(ent.s.origin, ent.moveinfo.start_origin);
+            Math3D.VectorCopy(ent.entityState.origin, ent.moveinfo.start_origin);
             Math3D.VectorCopy(ent.pos1, ent.moveinfo.start_angles);
-            Math3D.VectorCopy(ent.s.origin, ent.moveinfo.end_origin);
+            Math3D.VectorCopy(ent.entityState.origin, ent.moveinfo.end_origin);
             Math3D.VectorCopy(ent.pos2, ent.moveinfo.end_angles);
 
             if ((ent.spawnflags & 16) != 0)
-                ent.s.effects |= Defines.EF_ANIM_ALL;
+                ent.entityState.effects |= Defines.EF_ANIM_ALL;
 
             // to simplify logic elsewhere, make non-teamed doors into a team of
             // one
@@ -1651,11 +1651,11 @@ public class GameFunc {
         public void blocked(TEntityDict self, TEntityDict other) {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
-                // give it a chance to go away on it's own terms (like gibs)
+                // give it a chance to go away on it'entityState own terms (like gibs)
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
+                        other.entityState.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
-                // if it's still there, nuke it
+                // if it'entityState still there, nuke it
                 if (other != null)
                     GameMisc.BecomeExplosion1(other);
                 return;
@@ -1668,7 +1668,7 @@ public class GameFunc {
                 return;
             self.touch_debounce_time = GameBase.level.time + 0.5f;
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -1687,7 +1687,7 @@ public class GameFunc {
                 ent.target = savetarget;
 
                 // make sure we didn't get killed by a killtarget
-                if (!self.inuse)
+                if (!self.inUse)
                     return true;
             }
 
@@ -1708,7 +1708,7 @@ public class GameFunc {
                         GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                                 + Defines.CHAN_VOICE, self.moveinfo.sound_end,
                                 1, Defines.ATTN_STATIC, 0);
-                    self.s.sound = 0;
+                    self.entityState.sound = 0;
                 }
             } else {
                 train_next.think(self);
@@ -1749,14 +1749,14 @@ public class GameFunc {
                                 .dprintf("connected teleport path_corners, see "
                                         + ent.classname
                                         + " at "
-                                        + Lib.vtos(ent.s.origin) + "\n");
+                                        + Lib.vtos(ent.entityState.origin) + "\n");
                         return true;
                     }
                     first = false;
-                    Math3D.VectorSubtract(ent.s.origin, self.mins,
-                            self.s.origin);
-                    Math3D.VectorCopy(self.s.origin, self.s.old_origin);
-                    self.s.event = Defines.EV_OTHER_TELEPORT;
+                    Math3D.VectorSubtract(ent.entityState.origin, self.mins,
+                            self.entityState.origin);
+                    Math3D.VectorCopy(self.entityState.origin, self.entityState.old_origin);
+                    self.entityState.event = Defines.EV_OTHER_TELEPORT;
                     GameBase.gi.linkentity(self);
                     dogoto = true;
                 }
@@ -1769,12 +1769,12 @@ public class GameFunc {
                     GameBase.gi.sound(self, Defines.CHAN_NO_PHS_ADD
                             + Defines.CHAN_VOICE, self.moveinfo.sound_start, 1,
                             Defines.ATTN_STATIC, 0);
-                self.s.sound = self.moveinfo.sound_middle;
+                self.entityState.sound = self.moveinfo.sound_middle;
             }
 
-            Math3D.VectorSubtract(ent.s.origin, self.mins, dest);
+            Math3D.VectorSubtract(ent.entityState.origin, self.mins, dest);
             self.moveinfo.state = STATE_TOP;
-            Math3D.VectorCopy(self.s.origin, self.moveinfo.start_origin);
+            Math3D.VectorCopy(self.entityState.origin, self.moveinfo.start_origin);
             Math3D.VectorCopy(dest, self.moveinfo.end_origin);
             Move_Calc(self, dest, train_wait);
             self.spawnflags |= TRAIN_START_ON;
@@ -1799,7 +1799,7 @@ public class GameFunc {
             }
             self.target = ent.target;
 
-            Math3D.VectorSubtract(ent.s.origin, self.mins, self.s.origin);
+            Math3D.VectorSubtract(ent.entityState.origin, self.mins, self.entityState.origin);
             GameBase.gi.linkentity(self);
 
             // if not triggered, start immediately
@@ -1947,7 +1947,7 @@ public class GameFunc {
 
     /*
      * QUAKED func_conveyor (0 .5 .8) ? START_ON TOGGLE Conveyors are stationary
-     * brushes that move what's on them. The brush should be have a surface with
+     * brushes that move what'entityState on them. The brush should be have a surface with
      * at least one current content enabled. speed default 100
      */
 
@@ -2011,7 +2011,7 @@ public class GameFunc {
         public String getID() { return "door_secret_use";}
         public void use(TEntityDict self, TEntityDict other, TEntityDict activator) {
             // make sure we're not already moving
-            if (!Math3D.VectorEquals(self.s.origin, Context.vec3_origin))
+            if (!Math3D.VectorEquals(self.entityState.origin, Context.vec3_origin))
                 return;
 
             Move_Calc(self, self.pos1, door_secret_move1);
@@ -2090,11 +2090,11 @@ public class GameFunc {
         public void blocked(TEntityDict self, TEntityDict other) {
             if (0 == (other.svflags & Defines.SVF_MONSTER)
                     && (null == other.client)) {
-                // give it a chance to go away on it's own terms (like gibs)
+                // give it a chance to go away on it'entityState own terms (like gibs)
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin, 100000, 1, 0,
+                        other.entityState.origin, Context.vec3_origin, 100000, 1, 0,
                         Defines.MOD_CRUSH);
-                // if it's still there, nuke it
+                // if it'entityState still there, nuke it
                 if (other != null)
                     GameMisc.BecomeExplosion1(other);
                 return;
@@ -2105,7 +2105,7 @@ public class GameFunc {
             self.touch_debounce_time = GameBase.level.time + 0.5f;
 
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, 1, 0,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, 1, 0,
                     Defines.MOD_CRUSH);
         }
     };
@@ -2157,8 +2157,8 @@ public class GameFunc {
             ent.moveinfo.accel = ent.moveinfo.decel = ent.moveinfo.speed = 50;
 
             // calculate positions
-            Math3D.AngleVectors(ent.s.angles, forward, right, up);
-            Math3D.VectorClear(ent.s.angles);
+            Math3D.AngleVectors(ent.entityState.angles, forward, right, up);
+            Math3D.VectorClear(ent.entityState.angles);
             side = 1.0f - (ent.spawnflags & SECRET_1ST_LEFT);
             if ((ent.spawnflags & SECRET_1ST_DOWN) != 0)
                 width = Math.abs(Math3D.DotProduct(up, ent.size));
@@ -2166,9 +2166,9 @@ public class GameFunc {
                 width = Math.abs(Math3D.DotProduct(right, ent.size));
             length = Math.abs(Math3D.DotProduct(forward, ent.size));
             if ((ent.spawnflags & SECRET_1ST_DOWN) != 0)
-                Math3D.VectorMA(ent.s.origin, -1 * width, up, ent.pos1);
+                Math3D.VectorMA(ent.entityState.origin, -1 * width, up, ent.pos1);
             else
-                Math3D.VectorMA(ent.s.origin, side * width, right, ent.pos1);
+                Math3D.VectorMA(ent.entityState.origin, side * width, right, ent.pos1);
             Math3D.VectorMA(ent.pos1, length, forward, ent.pos2);
 
             if (ent.health != 0) {

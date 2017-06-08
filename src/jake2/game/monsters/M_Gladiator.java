@@ -417,10 +417,10 @@ public class M_Gladiator {
             float[] dir = { 0, 0, 0 };
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             Math3D
                     .G_ProjectSource(
-                            self.s.origin,
+                            self.entityState.origin,
                             M_Flash.monster_flash_offset[Defines.MZ2_GLADIATOR_RAILGUN_1],
                             forward, right, start);
 
@@ -457,7 +457,7 @@ public class M_Gladiator {
             float[] v = { 0, 0, 0 };
 
             // a small safe zone
-            Math3D.VectorSubtract(self.s.origin, self.enemy.s.origin, v);
+            Math3D.VectorSubtract(self.entityState.origin, self.enemy.entityState.origin, v);
             range = Math3D.VectorLength(v);
             if (range <= (Defines.MELEE_DISTANCE + 32))
                 return true;
@@ -465,7 +465,7 @@ public class M_Gladiator {
             // charge up the railgun
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_gun, 1,
                     Defines.ATTN_NORM, 0);
-            Math3D.VectorCopy(self.enemy.s.origin, self.pos1);
+            Math3D.VectorCopy(self.enemy.entityState.origin, self.pos1);
             //save for aiming the shot
             self.pos1[2] += self.enemy.viewheight;
             self.monsterinfo.currentmove = gladiator_move_attack_gun;
@@ -501,7 +501,7 @@ public class M_Gladiator {
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time) {
                 if ((self.velocity[2] > 100)
@@ -633,7 +633,7 @@ public class M_Gladiator {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/gladiatr/tris.md2");
         Math3D.VectorSet(self.mins, -32, -32, -24);
         Math3D.VectorSet(self.maxs, 32, 32, 64);

@@ -45,12 +45,12 @@ public class PlayerClient {
             self.takedamage = Defines.DAMAGE_YES;
             self.movetype = Defines.MOVETYPE_TOSS;
     
-            self.s.modelindex2 = 0; // remove linked weapon model
+            self.entityState.modelindex2 = 0; // remove linked weapon model
     
-            self.s.angles[0] = 0;
-            self.s.angles[2] = 0;
+            self.entityState.angles[0] = 0;
+            self.entityState.angles[2] = 0;
     
-            self.s.sound = 0;
+            self.entityState.sound = 0;
             self.client.weapon_sound = 0;
     
             self.maxs[2] = -8;
@@ -68,7 +68,7 @@ public class PlayerClient {
                     Cmd.Help_f(self); // show scores
     
                 // clear inventory
-                // this is kind of ugly, but it's how we want to handle keys in
+                // this is kind of ugly, but it'entityState how we want to handle keys in
                 // coop
                 for (n = 0; n < GameBase.game.num_items; n++) {
                     if (GameBase.coop.value != 0
@@ -103,20 +103,20 @@ public class PlayerClient {
                     // start a death animation
                     self.client.anim_priority = Defines.ANIM_DEATH;
                     if ((self.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                        self.s.frame = M_Player.FRAME_crdeath1 - 1;
+                        self.entityState.frame = M_Player.FRAME_crdeath1 - 1;
                         self.client.anim_end = M_Player.FRAME_crdeath5;
                     } else
                         switch (player_die_i) {
                         case 0:
-                            self.s.frame = M_Player.FRAME_death101 - 1;
+                            self.entityState.frame = M_Player.FRAME_death101 - 1;
                             self.client.anim_end = M_Player.FRAME_death106;
                             break;
                         case 1:
-                            self.s.frame = M_Player.FRAME_death201 - 1;
+                            self.entityState.frame = M_Player.FRAME_death201 - 1;
                             self.client.anim_end = M_Player.FRAME_death206;
                             break;
                         case 2:
-                            self.s.frame = M_Player.FRAME_death301 - 1;
+                            self.entityState.frame = M_Player.FRAME_death301 - 1;
                             self.client.anim_end = M_Player.FRAME_death308;
                             break;
                         }
@@ -153,13 +153,13 @@ public class PlayerClient {
                 
                 if (spot.targetname == null)
                     continue;
-                Math3D.VectorSubtract(self.s.origin, spot.s.origin, d);
+                Math3D.VectorSubtract(self.entityState.origin, spot.entityState.origin, d);
                 if (Math3D.VectorLength(d) < 384) {
                     if ((self.targetname == null)
                             || Lib.Q_stricmp(self.targetname, spot.targetname) != 0) {
-                        // gi.dprintf("FixCoopSpots changed %s at %s targetname
-                        // from %s to %s\n", self.classname,
-                        // vtos(self.s.origin), self.targetname,
+                        // gi.dprintf("FixCoopSpots changed %entityState at %entityState targetname
+                        // from %entityState to %entityState\n", self.classname,
+                        // vtos(self.entityState.origin), self.targetname,
                         // spot.targetname);
                         self.targetname = spot.targetname;
                     }
@@ -177,27 +177,27 @@ public class PlayerClient {
             if (Lib.Q_stricmp(GameBase.level.mapname, "security") == 0) {
                 spot = GameUtil.G_Spawn();
                 spot.classname = "info_player_coop";
-                spot.s.origin[0] = 188 - 64;
-                spot.s.origin[1] = -164;
-                spot.s.origin[2] = 80;
+                spot.entityState.origin[0] = 188 - 64;
+                spot.entityState.origin[1] = -164;
+                spot.entityState.origin[2] = 80;
                 spot.targetname = "jail3";
-                spot.s.angles[1] = 90;
+                spot.entityState.angles[1] = 90;
     
                 spot = GameUtil.G_Spawn();
                 spot.classname = "info_player_coop";
-                spot.s.origin[0] = 188 + 64;
-                spot.s.origin[1] = -164;
-                spot.s.origin[2] = 80;
+                spot.entityState.origin[0] = 188 + 64;
+                spot.entityState.origin[1] = -164;
+                spot.entityState.origin[2] = 80;
                 spot.targetname = "jail3";
-                spot.s.angles[1] = 90;
+                spot.entityState.angles[1] = 90;
     
                 spot = GameUtil.G_Spawn();
                 spot.classname = "info_player_coop";
-                spot.s.origin[0] = 188 + 128;
-                spot.s.origin[1] = -164;
-                spot.s.origin[2] = 80;
+                spot.entityState.origin[0] = 188 + 128;
+                spot.entityState.origin[1] = -164;
+                spot.entityState.origin[2] = 80;
                 spot.targetname = "jail3";
-                spot.s.angles[1] = 90;
+                spot.entityState.angles[1] = 90;
             }
             return true;
         }
@@ -221,7 +221,7 @@ public class PlayerClient {
                 for (n = 0; n < 4; n++)
                     GameMisc.ThrowGib(self, "models/objects/gibs/sm_meat/tris.md2", damage,
                             Defines.GIB_ORGANIC);
-                self.s.origin[2] -= 48;
+                self.entityState.origin[2] -= 48;
                 GameMisc.ThrowClientHead(self, damage);
                 self.takedamage = Defines.DAMAGE_NO;
             }
@@ -231,8 +231,8 @@ public class PlayerClient {
     // pmove doesn't need to know about passent and contentmask
     public static pmove_t.TraceAdapter PM_trace = new pmove_t.TraceAdapter() {
     
-        public trace_t trace(float[] start, float[] mins, float[] maxs,
-                float[] end) {
+        public TTrace trace(float[] start, float[] mins, float[] maxs,
+                            float[] end) {
             if (pm_passent.health > 0)
                 return GameBase.gi.trace(start, mins, maxs, end, pm_passent,
                         Defines.MASK_PLAYERSOLID);
@@ -418,65 +418,65 @@ public class PlayerClient {
                     break;
                 case Defines.MOD_SSHOTGUN:
                     message = "was blown away by";
-                    message2 = "'s super shotgun";
+                    message2 = "'entityState super shotgun";
                     break;
                 case Defines.MOD_MACHINEGUN:
                     message = "was machinegunned by";
                     break;
                 case Defines.MOD_CHAINGUN:
                     message = "was cut in half by";
-                    message2 = "'s chaingun";
+                    message2 = "'entityState chaingun";
                     break;
                 case Defines.MOD_GRENADE:
                     message = "was popped by";
-                    message2 = "'s grenade";
+                    message2 = "'entityState grenade";
                     break;
                 case Defines.MOD_G_SPLASH:
                     message = "was shredded by";
-                    message2 = "'s shrapnel";
+                    message2 = "'entityState shrapnel";
                     break;
                 case Defines.MOD_ROCKET:
                     message = "ate";
-                    message2 = "'s rocket";
+                    message2 = "'entityState rocket";
                     break;
                 case Defines.MOD_R_SPLASH:
                     message = "almost dodged";
-                    message2 = "'s rocket";
+                    message2 = "'entityState rocket";
                     break;
                 case Defines.MOD_HYPERBLASTER:
                     message = "was melted by";
-                    message2 = "'s hyperblaster";
+                    message2 = "'entityState hyperblaster";
                     break;
                 case Defines.MOD_RAILGUN:
                     message = "was railed by";
                     break;
                 case Defines.MOD_BFG_LASER:
                     message = "saw the pretty lights from";
-                    message2 = "'s BFG";
+                    message2 = "'entityState BFG";
                     break;
                 case Defines.MOD_BFG_BLAST:
                     message = "was disintegrated by";
-                    message2 = "'s BFG blast";
+                    message2 = "'entityState BFG blast";
                     break;
                 case Defines.MOD_BFG_EFFECT:
                     message = "couldn't hide from";
-                    message2 = "'s BFG";
+                    message2 = "'entityState BFG";
                     break;
                 case Defines.MOD_HANDGRENADE:
                     message = "caught";
-                    message2 = "'s handgrenade";
+                    message2 = "'entityState handgrenade";
                     break;
                 case Defines.MOD_HG_SPLASH:
                     message = "didn't see";
-                    message2 = "'s handgrenade";
+                    message2 = "'entityState handgrenade";
                     break;
                 case Defines.MOD_HELD_GRENADE:
                     message = "feels";
-                    message2 = "'s pain";
+                    message2 = "'entityState pain";
                     break;
                 case Defines.MOD_TELEFRAG:
                     message = "tried to invade";
-                    message2 = "'s personal space";
+                    message2 = "'entityState personal space";
                     break;
                 }
                 if (message != null) {
@@ -552,8 +552,8 @@ public class PlayerClient {
         TEntityDict ent;
 
         for (i = 0; i < GameBase.game.maxclients; i++) {
-            ent = GameBase.g_edicts[1 + i];
-            if (!ent.inuse)
+            ent = GameBase.entityDicts[1 + i];
+            if (!ent.inUse)
                 continue;
 
             GameBase.game.clients[i].pers.health = ent.health;
@@ -587,15 +587,15 @@ public class PlayerClient {
         bestplayerdistance = 9999999;
 
         for (n = 1; n <= GameBase.maxclients.value; n++) {
-            player = GameBase.g_edicts[n];
+            player = GameBase.entityDicts[n];
 
-            if (!player.inuse)
+            if (!player.inUse)
                 continue;
 
             if (player.health <= 0)
                 continue;
 
-            Math3D.VectorSubtract(spot.s.origin, player.s.origin, v);
+            Math3D.VectorSubtract(spot.entityState.origin, player.entityState.origin, v);
             playerdistance = Math3D.VectorLength(v);
 
             if (playerdistance < bestplayerdistance)
@@ -712,7 +712,7 @@ public class PlayerClient {
         TEntityDict spot = null;
         String target;
 
-        //index = ent.client - game.clients;
+        //index = entityDict.client - game.clients;
         index = ent.client.index;
 
         // player 0 starts in normal player spawn point
@@ -799,9 +799,9 @@ public class PlayerClient {
             }
         }
 
-        Math3D.VectorCopy(spot.s.origin, origin);
+        Math3D.VectorCopy(spot.entityState.origin, origin);
         origin[2] += 9;
-        Math3D.VectorCopy(spot.s.angles, angles);
+        Math3D.VectorCopy(spot.entityState.angles, angles);
     }
 
 
@@ -821,7 +821,7 @@ public class PlayerClient {
 
         // grab a body que and cycle to the next one
         int i = (int) GameBase.maxclients.value + GameBase.level.body_que + 1;
-        body = GameBase.g_edicts[i];
+        body = GameBase.entityDicts[i];
         GameBase.level.body_que = (GameBase.level.body_que + 1)
                 % Defines.BODY_QUEUE_SIZE;
 
@@ -830,9 +830,9 @@ public class PlayerClient {
         GameBase.gi.unlinkentity(ent);
 
         GameBase.gi.unlinkentity(body);
-        body.s = ent.s.getClone();
+        body.entityState = ent.entityState.getClone();
 
-        body.s.number = body.index;
+        body.entityState.number = body.index;
 
         body.svflags = ent.svflags;
         Math3D.VectorCopy(ent.mins, body.mins);
@@ -853,14 +853,14 @@ public class PlayerClient {
 
     public static void respawn(TEntityDict self) {
         if (GameBase.deathmatch.value != 0 || GameBase.coop.value != 0) {
-            // spectator's don't leave bodies
+            // spectator'entityState don't leave bodies
             if (self.movetype != Defines.MOVETYPE_NOCLIP)
                 CopyToBodyQue(self);
             self.svflags &= ~Defines.SVF_NOCLIENT;
             PutClientInServer(self);
 
             // add a teleportation effect
-            self.s.event = Defines.EV_PLAYER_TELEPORT;
+            self.entityState.event = Defines.EV_PLAYER_TELEPORT;
 
             // hold in place briefly
             self.client.ps.pmove.pm_flags = pmove_t.PMF_TIME_TELEPORT;
@@ -905,8 +905,8 @@ public class PlayerClient {
 
             // count spectators
             for (i = 1, numspec = 0; i <= GameBase.maxclients.value; i++)
-                if (GameBase.g_edicts[i].inuse
-                        && GameBase.g_edicts[i].client.pers.spectator)
+                if (GameBase.entityDicts[i].inUse
+                        && GameBase.entityDicts[i].client.pers.spectator)
                     numspec++;
 
             if (numspec >= GameBase.maxspectators.value) {
@@ -945,11 +945,11 @@ public class PlayerClient {
         if (!ent.client.pers.spectator) {
             // send effect
             GameBase.gi.WriteByte(Defines.svc_muzzleflash);
-            //gi.WriteShort(ent - g_edicts);
+            //gi.WriteShort(entityDict - entityDicts);
             GameBase.gi.WriteShort(ent.index);
 
             GameBase.gi.WriteByte(Defines.MZ_LOGIN);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             // hold in place briefly
             ent.client.ps.pmove.pm_flags = pmove_t.PMF_TIME_TELEPORT;
@@ -1030,7 +1030,7 @@ public class PlayerClient {
         ent.takedamage = Defines.DAMAGE_AIM;
         ent.movetype = Defines.MOVETYPE_WALK;
         ent.viewheight = 22;
-        ent.inuse = true;
+        ent.inUse = true;
         ent.classname = "player";
         ent.mass = 200;
         ent.solid = Defines.SOLID_BBOX;
@@ -1072,17 +1072,17 @@ public class PlayerClient {
                 .modelindex(client.pers.weapon.view_model);
 
         // clear entity state values
-        ent.s.effects = 0;
-        ent.s.modelindex = 255; // will use the skin specified model
-        ent.s.modelindex2 = 255; // custom gun model
+        ent.entityState.effects = 0;
+        ent.entityState.modelIndex = 255; // will use the skin specified model
+        ent.entityState.modelindex2 = 255; // custom gun model
         // sknum is player num and weapon number
         // weapon number will be added in changeweapon
-        ent.s.skinnum = ent.index - 1;
+        ent.entityState.skinnum = ent.index - 1;
 
-        ent.s.frame = 0;
-        Math3D.VectorCopy(spawn_origin, ent.s.origin);
-        ent.s.origin[2] += 1; // make sure off ground
-        Math3D.VectorCopy(ent.s.origin, ent.s.old_origin);
+        ent.entityState.frame = 0;
+        Math3D.VectorCopy(spawn_origin, ent.entityState.origin);
+        ent.entityState.origin[2] += 1; // make sure off ground
+        Math3D.VectorCopy(ent.entityState.origin, ent.entityState.old_origin);
 
         // set the delta angle
         for (i = 0; i < 3; i++) {
@@ -1090,11 +1090,11 @@ public class PlayerClient {
                     .ANGLE2SHORT(spawn_angles[i] - client.resp.cmd_angles[i]);
         }
 
-        ent.s.angles[Defines.PITCH] = 0;
-        ent.s.angles[Defines.YAW] = spawn_angles[Defines.YAW];
-        ent.s.angles[Defines.ROLL] = 0;
-        Math3D.VectorCopy(ent.s.angles, client.ps.viewangles);
-        Math3D.VectorCopy(ent.s.angles, client.v_angle);
+        ent.entityState.angles[Defines.PITCH] = 0;
+        ent.entityState.angles[Defines.YAW] = spawn_angles[Defines.YAW];
+        ent.entityState.angles[Defines.ROLL] = 0;
+        Math3D.VectorCopy(ent.entityState.angles, client.ps.viewangles);
+        Math3D.VectorCopy(ent.entityState.angles, client.v_angle);
 
         // spawn a spectator
         if (client.pers.spectator) {
@@ -1130,7 +1130,7 @@ public class PlayerClient {
 
         InitClientResp(ent.client);
 
-        // locate ent at a spawn point
+        // locate entityDict at a spawn point
         PutClientInServer(ent);
 
         if (GameBase.level.intermissiontime != 0) {
@@ -1138,10 +1138,10 @@ public class PlayerClient {
         } else {
             // send effect
             GameBase.gi.WriteByte(Defines.svc_muzzleflash);
-            //gi.WriteShort(ent - g_edicts);
+            //gi.WriteShort(entityDict - entityDicts);
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_LOGIN);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
         }
 
         GameBase.gi.bprintf(Defines.PRINT_HIGH, ent.client.pers.netname
@@ -1158,7 +1158,7 @@ public class PlayerClient {
     public static void ClientBegin(TEntityDict ent) {
         int i;
 
-        //ent.client = game.clients + (ent - g_edicts - 1);
+        //entityDict.client = game.clients + (entityDict - entityDicts - 1);
         ent.client = GameBase.game.clients[ent.index - 1];
 
         if (GameBase.deathmatch.value != 0) {
@@ -1168,7 +1168,7 @@ public class PlayerClient {
 
         // if there is already a body waiting for us (a loadgame), just
         // take it, otherwise spawn one from scratch
-        if (ent.inuse == true) {
+        if (ent.inUse == true) {
             // the client has cleared the client side viewangles upon
             // connecting to the server, which is different than the
             // state when the game is saved, so we need to compensate
@@ -1194,7 +1194,7 @@ public class PlayerClient {
                 GameBase.gi.WriteByte(Defines.svc_muzzleflash);
                 GameBase.gi.WriteShort(ent.index);
                 GameBase.gi.WriteByte(Defines.MZ_LOGIN);
-                GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+                GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
                 GameBase.gi.bprintf(Defines.PRINT_HIGH, ent.client.pers.netname
                         + " entered the game\n");
@@ -1296,8 +1296,8 @@ public class PlayerClient {
 
             // count spectators
             for (i = numspec = 0; i < GameBase.maxclients.value; i++)
-                if (GameBase.g_edicts[i + 1].inuse
-                        && GameBase.g_edicts[i + 1].client.pers.spectator)
+                if (GameBase.entityDicts[i + 1].inUse
+                        && GameBase.entityDicts[i + 1].client.pers.spectator)
                     numspec++;
 
             if (numspec >= GameBase.maxspectators.value) {
@@ -1320,7 +1320,7 @@ public class PlayerClient {
 
         // if there is already a body waiting for us (a loadgame), just
         // take it, otherwise spawn one from scratch
-        if (ent.inuse == false) {
+        if (ent.inUse == false) {
             // clear the respawning variables
             InitClientResp(ent.client);
             if (!GameBase.game.autosaved || null == ent.client.pers.weapon)
@@ -1353,12 +1353,12 @@ public class PlayerClient {
         GameBase.gi.WriteByte(Defines.svc_muzzleflash);
         GameBase.gi.WriteShort(ent.index);
         GameBase.gi.WriteByte(Defines.MZ_LOGOUT);
-        GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+        GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
         GameBase.gi.unlinkentity(ent);
-        ent.s.modelindex = 0;
+        ent.entityState.modelIndex = 0;
         ent.solid = Defines.SOLID_NOT;
-        ent.inuse = false;
+        ent.inUse = false;
         ent.classname = "disconnected";
         ent.client.pers.connected = false;
 
@@ -1380,7 +1380,7 @@ public class PlayerClient {
      * { 
      *		unsigned c1, c2;
      * 
-     * 		c1 = CheckBlock(&pm.s, sizeof(pm.s));
+     * 		c1 = CheckBlock(&pm.entityState, sizeof(pm.entityState));
      * 		c2 = CheckBlock(&pm.cmd, sizeof(pm.cmd)); 
      *      Com_Printf("sv %3i:%i %i\n", pm.cmd.impulse, c1, c2); 
      * }
@@ -1423,7 +1423,7 @@ public class PlayerClient {
 
             if (ent.movetype == Defines.MOVETYPE_NOCLIP)
                 client.ps.pmove.pm_type = Defines.PM_SPECTATOR;
-            else if (ent.s.modelindex != 255)
+            else if (ent.entityState.modelIndex != 255)
                 client.ps.pmove.pm_type = Defines.PM_GIB;
             else if (ent.deadflag != 0)
                 client.ps.pmove.pm_type = Defines.PM_DEAD;
@@ -1434,7 +1434,7 @@ public class PlayerClient {
             pm.s.set(client.ps.pmove);
 
             for (i = 0; i < 3; i++) {
-                pm.s.origin[i] = (short) (ent.s.origin[i] * 8);
+                pm.s.origin[i] = (short) (ent.entityState.origin[i] * 8);
                 pm.s.velocity[i] = (short) (ent.velocity[i] * 8);
             }
 
@@ -1457,7 +1457,7 @@ public class PlayerClient {
             client.old_pmove.set(pm.s);
 
             for (i = 0; i < 3; i++) {
-                ent.s.origin[i] = pm.s.origin[i] * 0.125f;
+                ent.entityState.origin[i] = pm.s.origin[i] * 0.125f;
                 ent.velocity[i] = pm.s.velocity[i] * 0.125f;
             }
 
@@ -1472,7 +1472,7 @@ public class PlayerClient {
                     && (pm.cmd.upmove >= 10) && (pm.waterlevel == 0)) {
                 GameBase.gi.sound(ent, Defines.CHAN_VOICE, GameBase.gi
                         .soundindex("*jump1.wav"), 1, Defines.ATTN_NORM, 0);
-                PlayerWeapon.PlayerNoise(ent, ent.s.origin, Defines.PNOISE_SELF);
+                PlayerWeapon.PlayerNoise(ent, ent.entityState.origin, Defines.PNOISE_SELF);
             }
 
             ent.viewheight = (int) pm.viewheight;
@@ -1480,7 +1480,7 @@ public class PlayerClient {
             ent.watertype = pm.watertype;
             ent.groundentity = pm.groundentity;
             if (pm.groundentity != null)
-                ent.groundentity_linkcount = pm.groundentity.linkcount;
+                ent.groundentity_linkcount = pm.groundentity.linkCount;
 
             if (ent.deadflag != 0) {
                 client.ps.viewangles[Defines.ROLL] = 40;
@@ -1552,8 +1552,8 @@ public class PlayerClient {
 
         // update chase cam if being followed
         for (i = 1; i <= GameBase.maxclients.value; i++) {
-            other = GameBase.g_edicts[i];
-            if (other.inuse && other.client.chase_target == ent)
+            other = GameBase.entityDicts[i];
+            if (other.inUse && other.client.chase_target == ent)
                 GameChase.UpdateChaseCam(other);
         }
     }
@@ -1605,7 +1605,7 @@ public class PlayerClient {
         // add player trail so monsters can follow
         if (GameBase.deathmatch.value != 0)
             if (!GameUtil.visible(ent, PlayerTrail.LastSpot()))
-                PlayerTrail.Add(ent.s.old_origin);
+                PlayerTrail.Add(ent.entityState.old_origin);
 
         client.latched_buttons = 0;
     }
@@ -1647,14 +1647,14 @@ public class PlayerClient {
                                     TEntityDict attacker) {
         float dir[] = { 0, 0, 0 };
     
-        TEntityDict world = GameBase.g_edicts[0];
+        TEntityDict world = GameBase.entityDicts[0];
     
         if (attacker != null && attacker != world && attacker != self) {
-            Math3D.VectorSubtract(attacker.s.origin, self.s.origin, dir);
+            Math3D.VectorSubtract(attacker.entityState.origin, self.entityState.origin, dir);
         } else if (inflictor != null && inflictor != world && inflictor != self) {
-            Math3D.VectorSubtract(inflictor.s.origin, self.s.origin, dir);
+            Math3D.VectorSubtract(inflictor.entityState.origin, self.entityState.origin, dir);
         } else {
-            self.client.killer_yaw = self.s.angles[Defines.YAW];
+            self.client.killer_yaw = self.entityState.angles[Defines.YAW];
             return;
         }
     

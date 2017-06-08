@@ -117,7 +117,7 @@ public class CL_inv {
 		for (i = top; i < num && i < top + DISPLAY_ITEMS; i++) {
 			item = index[i];
 			// search for a binding
-			//Com_sprintf (binding, sizeof(binding), "use %s",
+			//Com_sprintf (binding, sizeof(binding), "use %entityState",
 			// cl.configstrings[CS_ITEMS+item]);
 			binding = "use " + Context.cl.configstrings[Defines.CS_ITEMS + item];
 			bind = "";
@@ -127,12 +127,12 @@ public class CL_inv {
 					break;
 				}
 
-			string = Command.sprintf("%6s %3i %s", bind, Context.cl.inventory[item], Context.cl.configstrings[Defines.CS_ITEMS + item]);
+			string = Command.sprintf("%6s %3i %entityState", bind, Context.cl.inventory[item], Context.cl.configstrings[Defines.CS_ITEMS + item]);
 			if (item != selected)
 				string = getHighBitString(string);
 			else // draw a blinky cursor by the selected item
 			{
-				if ((Context.cls.realtime * 10 & 1) != 0)
+				if ((Context.cls.getRealtime() * 10 & 1) != 0)
 					Context.re.DrawChar(x - 8, y, 15);
 			}
 			Inv_DrawString(x, y, string);

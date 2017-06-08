@@ -37,7 +37,7 @@ public class gclient_t
 	//	except for 'client->pers'
 
 	// known to server
-	public player_state_t ps = new player_state_t(); // communicated by server to clients
+	public TPlayerState ps = new TPlayerState(); // communicated by server to clients
 	public int ping;
 
 	// private to game

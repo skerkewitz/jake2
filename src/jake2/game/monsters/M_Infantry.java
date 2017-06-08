@@ -23,7 +23,7 @@
 package jake2.game.monsters;
 
 import jake2.Defines;
-import jake2.client.M;
+import jake2.client.Monster;
 import jake2.game.*;
 import jake2.game.EntDieAdapter;
 import jake2.game.EntDodgeAdapter;
@@ -33,7 +33,6 @@ import jake2.game.EntThinkAdapter;
 import jake2.game.GameAI;
 import jake2.game.GameBase;
 import jake2.game.GameUtil;
-import jake2.game.Monster;
 import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
@@ -667,7 +666,7 @@ public class M_Infantry {
             int n;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -706,37 +705,37 @@ public class M_Infantry {
             float[] vec = { 0, 0, 0 };
             int flash_number;
 
-            if (self.s.frame == FRAME_attak111) {
+            if (self.entityState.frame == FRAME_attak111) {
                 flash_number = Defines.MZ2_INFANTRY_MACHINEGUN_1;
-                Math3D.AngleVectors(self.s.angles, forward, right, null);
-                Math3D.G_ProjectSource(self.s.origin,
+                Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+                Math3D.G_ProjectSource(self.entityState.origin,
                         M_Flash.monster_flash_offset[flash_number], forward,
                         right, start);
 
                 if (self.enemy != null) {
-                    Math3D.VectorMA(self.enemy.s.origin, -0.2f,
+                    Math3D.VectorMA(self.enemy.entityState.origin, -0.2f,
                             self.enemy.velocity, target);
                     target[2] += self.enemy.viewheight;
                     Math3D.VectorSubtract(target, start, forward);
                     Math3D.VectorNormalize(forward);
                 } else {
-                    Math3D.AngleVectors(self.s.angles, forward, right, null);
+                    Math3D.AngleVectors(self.entityState.angles, forward, right, null);
                 }
             } else {
                 flash_number = Defines.MZ2_INFANTRY_MACHINEGUN_2
-                        + (self.s.frame - FRAME_death211);
+                        + (self.entityState.frame - FRAME_death211);
 
-                Math3D.AngleVectors(self.s.angles, forward, right, null);
-                Math3D.G_ProjectSource(self.s.origin,
+                Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+                Math3D.G_ProjectSource(self.entityState.origin,
                         M_Flash.monster_flash_offset[flash_number], forward,
                         right, start);
 
-                Math3D.VectorSubtract(self.s.angles, aimangles[flash_number
+                Math3D.VectorSubtract(self.entityState.angles, aimangles[flash_number
                         - Defines.MZ2_INFANTRY_MACHINEGUN_2], vec);
                 Math3D.AngleVectors(vec, forward, null, null);
             }
 
-            Monster.monster_fire_bullet(self, start, forward, 3, 4,
+            jake2.game.Monster.monster_fire_bullet(self, start, forward, 3, 4,
                     Defines.DEFAULT_BULLET_HSPREAD,
                     Defines.DEFAULT_BULLET_VSPREAD, flash_number);
             return true;
@@ -763,7 +762,7 @@ public class M_Infantry {
             self.svflags |= Defines.SVF_DEADMONSTER;
             GameBase.gi.linkentity(self);
 
-            M.M_FlyCheck.think(self);
+            Monster.M_FlyCheck.think(self);
             return true;
         }
     };
@@ -1067,7 +1066,7 @@ public class M_Infantry {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/infantry/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);

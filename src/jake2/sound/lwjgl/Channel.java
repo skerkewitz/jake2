@@ -364,7 +364,7 @@ public class Channel {
      */
     static void addLoopSounds() {
 
-	if ((Context.cl_paused.value != 0.0f) || (Context.cls.state != ca_active) || !Context.cl.sound_prepped) {
+	if ((Context.cl_paused.value != 0.0f) || (Context.cls.getState() != ca_active) || !Context.cl.sound_prepped) {
 	    removeUnusedLoopSounds();
 	    return;
 	}

@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 import jake2.Defines;
-import jake2.game.cmodel_t;
+import jake2.game.TCModel;
 import jake2.game.usercmd_t;
 import jake2.render.TImage;
 import jake2.render.TModel;
@@ -31,9 +31,9 @@ import jake2.sound.TSound;
 
 import java.nio.ByteBuffer;
 
-public class client_state_t {
+public class TClientState {
 
-	public client_state_t() {
+	public TClientState() {
 		for (int n = 0; n < Defines.CMD_BACKUP; n++)
 			cmds[n] = new usercmd_t();
 		for (int i = 0; i < frames.length; i++) {
@@ -44,10 +44,10 @@ public class client_state_t {
 			configstrings[n] = new String();
 			
 		for (int n=0; n < Defines.MAX_CLIENTS; n++)
-			clientinfo[n] = new clientinfo_t();
+			clientinfo[n] = new TClientInfo();
 	}
 	//
-	//	   the client_state_t structure is wiped completely at every
+	//	   the TClientState structure is wiped completely at every
 	//	   server map change
 	//
 	int timeoutcount;
@@ -107,7 +107,7 @@ public class client_state_t {
 	// FIXME: move this cinematic stuff into the cin_t structure
 	ByteBuffer cinematic_file;
 	
-	int cinematictime; // cls.realtime for first cinematic frame
+	public int cinematictime; // cls.realtime for first cinematic frame
 	int cinematicframe;
 	byte cinematicpalette[] = new byte[768];
 	public boolean cinematicpalette_active;
@@ -115,8 +115,8 @@ public class client_state_t {
 	//
 	// server state information
 	//
-	boolean attractloop; // running the attract loop, any key will menu
-	int servercount; // server identification for prespawns
+	public boolean attractloop; // running the attract loop, any key will menu
+	public int servercount; // server identification for prespawns
 	String gamedir ="";
 	public int playernum;
 
@@ -126,12 +126,12 @@ public class client_state_t {
 	// locally derived information from server state
 	//
 	TModel model_draw[] = new TModel[Defines.MAX_MODELS];
-	cmodel_t model_clip[] = new cmodel_t[Defines.MAX_MODELS];
+	TCModel model_clip[] = new TCModel[Defines.MAX_MODELS];
 
 	public TSound sound_precache[] = new TSound[Defines.MAX_SOUNDS];
 	TImage image_precache[] = new TImage[Defines.MAX_IMAGES];
 
-	clientinfo_t clientinfo[] = new clientinfo_t[Defines.MAX_CLIENTS];
-	clientinfo_t baseclientinfo = new clientinfo_t();
+	TClientInfo clientinfo[] = new TClientInfo[Defines.MAX_CLIENTS];
+	TClientInfo baseclientinfo = new TClientInfo();
 
 }

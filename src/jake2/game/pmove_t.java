@@ -31,8 +31,8 @@ public class pmove_t {
 
     public static class TraceAdapter {
         // callbacks to test the world
-        public trace_t trace(float[] start, float[] mins, float[] maxs,
-                float[] end) {
+        public TTrace trace(float[] start, float[] mins, float[] maxs,
+                            float[] end) {
             return null;
         }
     }
@@ -50,7 +50,7 @@ public class pmove_t {
     // command (in)
     public usercmd_t cmd = new usercmd_t();
 
-    public boolean snapinitial; // if s has been changed outside pmove
+    public boolean snapinitial; // if entityState has been changed outside pmove
 
     // results (out)
     public int numtouch;

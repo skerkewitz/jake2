@@ -30,7 +30,7 @@ import jake2.game.TVar;
 import jake2.qcommon.Cbuf;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
-import jake2.sys.QSystem;
+import jake2.qcommon.Qcommon;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -40,6 +40,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * QUAKE FILESYSTEM
@@ -48,17 +50,78 @@ import java.util.List;
  */
 public final class FileSystem {
 
-    public static String fs_gamedir;
+    private static String gameDir;
+    private static int fileindex;
+    private static String findbase;
+    private static String findpattern;
+    private static File[] fdir;
 
     private static String fs_userdir;
 
-    public static TVar fs_basedir;
+    private static TVar varBaseDir;
 
-    public static TVar fs_cddir;
+    private static TVar varCdDir;
 
-    public static TVar fs_gamedirvar;
+    public static TVar varGameDir;
 
-    public static class TFileLink {
+    //ok!
+    private static File[] findAll(String path, int musthave, int canthave) {
+
+        int index = path.lastIndexOf('/');
+
+        if (index != -1) {
+            findbase = path.substring(0, index);
+            findpattern = path.substring(index + 1, path.length());
+        } else {
+            findbase = path;
+            findpattern = "*";
+        }
+
+        if (findpattern.equals("*.*")) {
+            findpattern = "*";
+        }
+
+        File fdir = new File(findbase);
+
+        if (!fdir.exists())
+            return null;
+
+        FilenameFilter filter = new FileFilter(findpattern, musthave, canthave);
+
+        return fdir.listFiles(filter);
+    }
+
+    // ok.
+    public static File FindFirst(String path, int musthave, int canthave) {
+
+        if (fdir != null) {
+            Qcommon.Error("Sys_BeginFind without close");
+        }
+
+        //	COM_FilePath (path, findbase);
+
+        fdir = findAll(path, canthave, musthave);
+        fileindex = 0;
+
+        if (fdir == null)
+            return null;
+
+        return findNext();
+    }
+
+    public static File findNext() {
+
+        if (fileindex >= fdir.length)
+            return null;
+
+        return fdir[fileindex++];
+    }
+
+    public static void findClose() {
+        fdir = null;
+    }
+
+    private static class TFileLink {
         String from;
 
         int fromlength;
@@ -66,10 +129,12 @@ public final class FileSystem {
         String to;
     }
 
-    // with TFileLink entries
-    public static List fs_links = new LinkedList();
+    /**
+     * with TFileLink entries
+     */
+    private static List<TFileLink> fileLinks = new LinkedList<>();
 
-    public static class TSearchPath {
+    private static class TSearchPath {
         String filename;
 
         TPack pack; // only one of filename or pack will be used
@@ -77,13 +142,15 @@ public final class FileSystem {
         TSearchPath next;
     }
 
-    public static TSearchPath fs_searchpaths;
+    private static TSearchPath searchPath;
 
-    // without gamedirs
-    public static TSearchPath fs_base_searchpaths;
+    /**
+     * Without gamedirs
+     */
+    private static TSearchPath baseSearchPaths;
 
     /*
-     * All of Quake's data access is through a hierchal file system, but the
+     * All of Quake'entityState data access is through a hierchal file system, but the
      * contents of the file system can be transparently merged from several
      * sources.
      * 
@@ -106,7 +173,7 @@ public final class FileSystem {
      * InitFilesystem
      */
     public FileSystem() {
-        Cmd.AddCommand("path", () -> Path_f());
+        Cmd.AddCommand("path", FileSystem::funcPath);
         Cmd.AddCommand("link", () -> Link_f());
         Cmd.AddCommand("dir", () -> Dir_f());
 
@@ -118,7 +185,7 @@ public final class FileSystem {
         // basedir <path>
         // allows the game to run from outside the data tree
         //
-        fs_basedir = ConsoleVar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
+        varBaseDir = ConsoleVar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
 
         //
         // cddir <path>
@@ -131,16 +198,16 @@ public final class FileSystem {
         //
         // start up with baseq2 by default
         //
-        AddGameDirectory(fs_basedir.string + '/' + Context.BASEDIRNAME);
+        AddGameDirectory(varBaseDir.string + '/' + Context.BASEDIRNAME);
 
         // any set gamedirs will be freed up to here
         markBaseSearchPaths();
 
         // check for game override
-        fs_gamedirvar = ConsoleVar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
+        varGameDir = ConsoleVar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
 
-        if (fs_gamedirvar.string.length() > 0)
-            SetGamedir(fs_gamedirvar.string);
+        if (varGameDir.string.length() > 0)
+            SetGamedir(varGameDir.string);
     }
 
 
@@ -163,7 +230,7 @@ public final class FileSystem {
     /*
      * FCloseFile
      * 
-     * For some reason, other dll's can't just call fclose() on files returned
+     * For some reason, other dll'entityState can't just call fclose() on files returned
      * by FS_FOpenFile...
      */
     public static void FCloseFile(RandomAccessFile file) throws IOException {
@@ -183,7 +250,7 @@ public final class FileSystem {
         file_from_pak = 0;
 
         // check for links first
-        for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
+        for (Iterator it = fileLinks.iterator(); it.hasNext(); ) {
             link = (TFileLink) it.next();
 
             if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
@@ -199,7 +266,7 @@ public final class FileSystem {
 
         // search through the path, one element at a time
 
-        for (search = fs_searchpaths; search != null; search = search.next) {
+        for (search = searchPath; search != null; search = search.next) {
             // is the element a pak file?
             if (search.pack != null) {
                 // look through all the pak file elements
@@ -240,29 +307,21 @@ public final class FileSystem {
     public static int file_from_pak = 0;
 
     /*
-     * FOpenFile
+     * openfile
      * 
      * Finds the file in the search path. returns a RadomAccesFile. Used for
      * streaming data out of either a pak file or a seperate file.
      */
-    public static RandomAccessFile FOpenFile(String filename)
-            throws IOException {
-        TSearchPath search;
-        String netpath;
-        TPack pak;
-        TFileLink link;
-        File file = null;
+    public static RandomAccessFile openfile(String filename) throws IOException {
 
         file_from_pak = 0;
 
         // check for links first
-        for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            link = (TFileLink) it.next();
-
+        for (TFileLink link : fileLinks) {
             //			if (!strncmp (filename, link->from, link->fromlength))
             if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
-                netpath = link.to + filename.substring(link.fromlength);
-                file = new File(netpath);
+                String netpath = link.to + filename.substring(link.fromlength);
+                File file = new File(netpath);
                 if (file.canRead()) {
                     //Command.DPrintf ("link file: " + netpath +'\n');
                     return new RandomAccessFile(file, "r");
@@ -274,11 +333,11 @@ public final class FileSystem {
         //
         // search through the path, one element at a time
         //
-        for (search = fs_searchpaths; search != null; search = search.next) {
+        for (TSearchPath search = searchPath; search != null; search = search.next) {
             // is the element a pak file?
             if (search.pack != null) {
                 // look through all the pak file elements
-                pak = search.pack;
+                TPack pak = search.pack;
                 filename = filename.toLowerCase();
                 TPackfile entry = (TPackfile) pak.files.get(filename);
 
@@ -287,7 +346,7 @@ public final class FileSystem {
                     file_from_pak = 1;
                     //Command.DPrintf ("PackFile: " + pak.filename + " : " +
                     // filename + '\n');
-                    file = new File(pak.filename);
+                    File file = new File(pak.filename);
                     if (!file.canRead())
                         Command.Error(Defines.ERR_FATAL, "Couldn't reopen "
                                 + pak.filename);
@@ -304,9 +363,9 @@ public final class FileSystem {
                 }
             } else {
                 // check a file in the directory tree
-                netpath = search.filename + '/' + filename;
+                String netpath = search.filename + '/' + filename;
 
-                file = new File(netpath);
+                File file = new File(netpath);
                 if (!file.canRead())
                     continue;
 
@@ -356,17 +415,11 @@ public final class FileSystem {
         }
     }
 
-    /*
-     * LoadFile
-     * 
-     * Filename are reletive to the quake search path a null buffer will just
+    /**
+     * Filename are relative to the quake search path a null buffer will just
      * return the file content as byte[]
      */
-    public static byte[] LoadFile(String path) {
-        RandomAccessFile file;
-
-        byte[] buf = null;
-        int len = 0;
+    public static byte[] loadFile(String path) {
 
         // TODO hack for bad strings (fuck \0)
         int index = path.indexOf('\0');
@@ -374,13 +427,14 @@ public final class FileSystem {
             path = path.substring(0, index);
 
         // look for it in the filesystem or pack files
-        len = FileLength(path);
-
-        if (len < 1)
+        int len = FileLength(path);
+        if (len < 1) {
             return null;
+        }
 
+        byte[] buf = null;
         try {
-            file = FOpenFile(path);
+            RandomAccessFile file = openfile(path);
             //Read(buf = new byte[len], len, h);
             buf = new byte[len];
             file.readFully(buf);
@@ -413,7 +467,7 @@ public final class FileSystem {
 
         try {
             // check for links first
-            for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
+            for (Iterator it = fileLinks.iterator(); it.hasNext(); ) {
                 link = (TFileLink) it.next();
 
                 if (filename.regionMatches(0, link.from, 0, link.fromlength)) {
@@ -435,7 +489,7 @@ public final class FileSystem {
             //
             // search through the path, one element at a time
             //
-            for (search = fs_searchpaths; search != null; search = search.next) {
+            for (search = searchPath; search != null; search = search.next) {
                 // is the element a pak file?
                 if (search.pack != null) {
                     // look through all the pak file elements
@@ -601,7 +655,7 @@ public final class FileSystem {
     /*
      * AddGameDirectory
      * 
-     * Sets fs_gamedir, adds the directory to the head of the path, then loads
+     * Sets gameDir, adds the directory to the head of the path, then loads
      * and adds pak1.pak pak2.pak ...
      */
     static void AddGameDirectory(String dir) {
@@ -610,18 +664,18 @@ public final class FileSystem {
         TPack pak;
         String pakfile;
 
-        fs_gamedir = new String(dir);
+        gameDir = new String(dir);
 
         //
         // add the directory to the search path
         // ensure fs_userdir is first in searchpath
         search = new TSearchPath();
         search.filename = new String(dir);
-        if (fs_searchpaths != null) {
-            search.next = fs_searchpaths.next;
-            fs_searchpaths.next = search;
+        if (searchPath != null) {
+            search.next = searchPath.next;
+            searchPath.next = search;
         } else {
-            fs_searchpaths = search;
+            searchPath = search;
         }
 
         //
@@ -639,18 +693,18 @@ public final class FileSystem {
             search = new TSearchPath();
             search.pack = pak;
             search.filename = "";
-            search.next = fs_searchpaths;
-            fs_searchpaths = search;
+            search.next = searchPath;
+            searchPath = search;
         }
     }
 
     /*
-     * Gamedir
+     * gamedir
      * 
      * Called to find where to write a file (demos, savegames, etc)
      * this is modified to <user.home>/.jake2 
      */
-    public static String Gamedir() {
+    public static String gamedir() {
         return (fs_userdir != null) ? fs_userdir : Context.BASEDIRNAME;
     }
 
@@ -660,7 +714,7 @@ public final class FileSystem {
      * Called to find where to write a downloaded file
      */
     public static String BaseGamedir() {
-        return (fs_gamedir != null) ? fs_gamedir : Context.BASEDIRNAME;
+        return (gameDir != null) ? gameDir : Context.BASEDIRNAME;
     }
 
     /*
@@ -673,14 +727,14 @@ public final class FileSystem {
         if (dir != null && dir.length() > 0) {
             name = dir + "/autoexec.cfg";
         } else {
-            name = fs_basedir.string + '/' + Context.BASEDIRNAME
+            name = varBaseDir.string + '/' + Context.BASEDIRNAME
                     + "/autoexec.cfg";
         }
 
         int canthave = Defines.SFF_SUBDIR | Defines.SFF_HIDDEN
                 | Defines.SFF_SYSTEM;
 
-        if (QSystem.FindAll(name, 0, canthave) != null) {
+        if (findAll(name, 0, canthave) != null) {
             Cbuf.AddText("exec autoexec.cfg\n");
         }
     }
@@ -695,28 +749,28 @@ public final class FileSystem {
 
         if (dir.indexOf("..") != -1 || dir.indexOf("/") != -1
                 || dir.indexOf("\\") != -1 || dir.indexOf(":") != -1) {
-            Command.Printf("Gamedir should be a single filename, not a path\n");
+            Command.Printf("gamedir should be a single filename, not a path\n");
             return;
         }
 
         //
         // free up any current game dir info
         //
-        while (fs_searchpaths != fs_base_searchpaths) {
-            if (fs_searchpaths.pack != null) {
+        while (searchPath != baseSearchPaths) {
+            if (searchPath.pack != null) {
                 try {
-                    fs_searchpaths.pack.handle.close();
+                    searchPath.pack.handle.close();
                 } catch (IOException e) {
                     Command.DPrintf(e.getMessage() + '\n');
                 }
                 // clear the hashtable
-                fs_searchpaths.pack.files.clear();
-                fs_searchpaths.pack.files = null;
-                fs_searchpaths.pack = null;
+                searchPath.pack.files.clear();
+                searchPath.pack.files = null;
+                searchPath.pack = null;
             }
-            next = fs_searchpaths.next;
-            fs_searchpaths = null;
-            fs_searchpaths = next;
+            next = searchPath.next;
+            searchPath = null;
+            searchPath = next;
         }
 
         //
@@ -725,17 +779,17 @@ public final class FileSystem {
         if ((Context.dedicated != null) && (Context.dedicated.value == 0.0f))
             Cbuf.AddText("vid_restart\nsnd_restart\n");
 
-        fs_gamedir = fs_basedir.string + '/' + dir;
+        gameDir = varBaseDir.string + '/' + dir;
 
         if (dir.equals(Context.BASEDIRNAME) || (dir.length() == 0)) {
             ConsoleVar.FullSet("gamedir", "", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
             ConsoleVar.FullSet("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
         } else {
             ConsoleVar.FullSet("gamedir", dir, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
-            if (fs_cddir.string != null && fs_cddir.string.length() > 0)
-                AddGameDirectory(fs_cddir.string + '/' + dir);
+            if (varCdDir.string != null && varCdDir.string.length() > 0)
+                AddGameDirectory(varCdDir.string + '/' + dir);
 
-            AddGameDirectory(fs_basedir.string + '/' + dir);
+            AddGameDirectory(varBaseDir.string + '/' + dir);
         }
     }
 
@@ -745,7 +799,6 @@ public final class FileSystem {
      * Creates a TFileLink
      */
     public static void Link_f() {
-        TFileLink entry = null;
 
         if (Cmd.Argc() != 3) {
             Command.Printf("USAGE: link <from> <to>\n");
@@ -753,8 +806,8 @@ public final class FileSystem {
         }
 
         // see if the link already exists
-        for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            entry = (TFileLink) it.next();
+        for (Iterator it = fileLinks.iterator(); it.hasNext(); ) {
+            TFileLink entry = (TFileLink) it.next();
 
             if (entry.from.equals(Cmd.Argv(1))) {
                 if (Cmd.Argv(2).length() < 1) {
@@ -769,11 +822,11 @@ public final class FileSystem {
 
         // create a new link if the <to> is not empty
         if (Cmd.Argv(2).length() > 0) {
-            entry = new TFileLink();
+            TFileLink entry = new TFileLink();
             entry.from = new String(Cmd.Argv(1));
             entry.fromlength = entry.from.length();
             entry.to = new String(Cmd.Argv(2));
-            fs_links.add(entry);
+            fileLinks.add(entry);
         }
     }
 
@@ -783,7 +836,7 @@ public final class FileSystem {
     public static String[] ListFiles(String findname, int musthave, int canthave) {
         String[] list = null;
 
-        File[] files = QSystem.FindAll(findname, musthave, canthave);
+        File[] files = findAll(findname, musthave, canthave);
 
         if (files != null) {
             list = new String[files.length];
@@ -837,28 +890,23 @@ public final class FileSystem {
         }
     }
 
-    /*
-     * Path_f
-     */
-    public static void Path_f() {
-
-        TSearchPath s;
-        TFileLink link;
+    private static void funcPath() {
 
         Command.Printf("Current search path:\n");
-        for (s = fs_searchpaths; s != null; s = s.next) {
-            if (s == fs_base_searchpaths)
+
+        for (TSearchPath s = searchPath; s != null; s = s.next) {
+            if (s == baseSearchPaths)
                 Command.Printf("----------\n");
-            if (s.pack != null)
-                Command.Printf(s.pack.filename + " (" + s.pack.numfiles
-                        + " files)\n");
-            else
+            if (s.pack != null) {
+                Command.Printf(s.pack.filename + " (" + s.pack.numfiles + " files)\n");
+            } else {
                 Command.Printf(s.filename + '\n');
+            }
         }
 
         Command.Printf("\nLinks:\n");
-        for (Iterator it = fs_links.iterator(); it.hasNext(); ) {
-            link = (TFileLink) it.next();
+        for (Object fs_link : fileLinks) {
+            TFileLink link = (TFileLink) fs_link;
             Command.Printf(link.from + " : " + link.to + '\n');
         }
     }
@@ -873,10 +921,10 @@ public final class FileSystem {
         String prev;
 
         if (prevpath == null || prevpath.length() == 0)
-            return fs_gamedir;
+            return gameDir;
 
-        prev = fs_gamedir;
-        for (s = fs_searchpaths; s != null; s = s.next) {
+        prev = gameDir;
+        for (s = searchPath; s != null; s = s.next) {
             if (s.pack != null)
                 continue;
 
@@ -893,14 +941,14 @@ public final class FileSystem {
      * set baseq2 directory
      */
     public void setCDDir() {
-        fs_cddir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
-        if (fs_cddir.string.length() > 0)
-            AddGameDirectory(fs_cddir.string);
+        varCdDir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
+        if (varCdDir.string.length() > 0)
+            AddGameDirectory(varCdDir.string);
     }
 
     public void markBaseSearchPaths() {
         // any set gamedirs will be freed up to here
-        fs_base_searchpaths = fs_searchpaths;
+        baseSearchPaths = searchPath;
     }
 
     //	RAFAEL
@@ -913,7 +961,7 @@ public final class FileSystem {
         //	 char *start;
         TSearchPath s;
 
-        for (s = fs_searchpaths; s != null; s = s.next) {
+        for (s = searchPath; s != null; s = s.next) {
             if (s.filename.indexOf("xatrix") != -1)
                 return 1;
 
@@ -922,5 +970,102 @@ public final class FileSystem {
         }
 
         return 0;
+    }
+
+    /**
+     * Match the pattern findpattern against the filename.
+     * <p>
+     * In the pattern string, `*' matches any sequence of characters, `?'
+     * matches any character, [SET] matches any character in the specified set,
+     * [!SET] matches any character not in the specified set. A set is composed
+     * of characters or ranges; a range looks like character hyphen character
+     * (as in 0-9 or A-Z). [0-9a-zA-Z_] is the set of characters allowed in C
+     * identifiers. Any other character in the pattern must be matched exactly.
+     * To suppress the special syntactic significance of any of `[]*?!-\', and
+     * match the character exactly, precede it with a `\'.
+     */
+    static class FileFilter implements FilenameFilter {
+
+        String regexpr;
+
+        int musthave, canthave;
+
+        FileFilter(String findpattern, int musthave, int canthave) {
+            this.regexpr = convert2regexpr(findpattern);
+            this.musthave = musthave;
+            this.canthave = canthave;
+
+        }
+
+        /*
+         * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
+         */
+        public boolean accept(File dir, String name) {
+            if (name.matches(regexpr)) {
+                return CompareAttributes(dir, musthave, canthave);
+            }
+            return false;
+        }
+
+        String convert2regexpr(String pattern) {
+
+            StringBuffer sb = new StringBuffer();
+
+            char c;
+            boolean escape = false;
+
+            String subst;
+
+            // convert pattern
+            for (int i = 0; i < pattern.length(); i++) {
+                c = pattern.charAt(i);
+                subst = null;
+                switch (c) {
+                    case '*':
+                        subst = (!escape) ? ".*" : "*";
+                        break;
+                    case '.':
+                        subst = (!escape) ? "\\." : ".";
+                        break;
+                    case '!':
+                        subst = (!escape) ? "^" : "!";
+                        break;
+                    case '?':
+                        subst = (!escape) ? "." : "?";
+                        break;
+                    case '\\':
+                        escape = !escape;
+                        break;
+                    default:
+                        escape = false;
+                }
+                if (subst != null) {
+                    sb.append(subst);
+                    escape = false;
+                } else
+                    sb.append(c);
+            }
+
+            // the converted pattern
+            String regexpr = sb.toString();
+
+            //Command.DPrintf("pattern: " + pattern + " regexpr: " + regexpr +
+            // '\n');
+            try {
+                Pattern.compile(regexpr);
+            } catch (PatternSyntaxException e) {
+                Command.Printf("invalid file pattern ( *.* is used instead )\n");
+                return ".*"; // the default
+            }
+            return regexpr;
+        }
+
+        boolean CompareAttributes(File dir, int musthave, int canthave) {
+            // . and .. never match
+            String name = dir.getName();
+
+            return !(name.equals(".") || name.equals(".."));
+        }
+
     }
 }

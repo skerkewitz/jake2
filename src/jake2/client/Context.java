@@ -131,8 +131,8 @@ public final class Context {
 
     public static TVar cl_vwep;
 
-    public static client_static_t cls = new client_static_t();
-    public static client_state_t cl = new client_state_t();
+    public static TClientStatic cls = new TClientStatic();
+    public static TClientState cl = new TClientState();
 
     public static TClEentity cl_entities[] = new TClEentity[Defines.MAX_EDICTS];
     static {
@@ -330,7 +330,7 @@ public final class Context {
 
     public static final TConsole console = new TConsole();
     public static TVar con_notifytime;
-    public static viddef_t viddef = new viddef_t();
+    public static TVideoDef viddef = new TVideoDef();
     // Renderer interface used by VID, SCR, ...
     public static refexport_t re = null;
 

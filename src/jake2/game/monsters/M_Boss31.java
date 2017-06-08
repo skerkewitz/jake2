@@ -520,11 +520,11 @@ public class M_Boss31 {
                 if (Lib.random() < 0.9)
                     self.monsterinfo.currentmove = jorg_move_attack1;
                 else {
-                    self.s.sound = 0;
+                    self.entityState.sound = 0;
                     self.monsterinfo.currentmove = jorg_move_end_attack1;
                 }
             else {
-                self.s.sound = 0;
+                self.entityState.sound = 0;
                 self.monsterinfo.currentmove = jorg_move_end_attack1;
             }
             return true;
@@ -543,9 +543,9 @@ public class M_Boss31 {
     	public String getID() { return "jorg_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
-            self.s.sound = 0;
+            self.entityState.sound = 0;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -557,22 +557,22 @@ public class M_Boss31 {
                     return;
 
             /*
-             * If he's entering his attack1 or using attack1, lessen the chance
+             * If he'entityState entering his attack1 or using attack1, lessen the chance
              * of him going into pain
              */
 
-            if ((self.s.frame >= FRAME_attak101)
-                    && (self.s.frame <= FRAME_attak108))
+            if ((self.entityState.frame >= FRAME_attak101)
+                    && (self.entityState.frame <= FRAME_attak108))
                 if (Lib.random() <= 0.005)
                     return;
 
-            if ((self.s.frame >= FRAME_attak109)
-                    && (self.s.frame <= FRAME_attak114))
+            if ((self.entityState.frame >= FRAME_attak109)
+                    && (self.entityState.frame <= FRAME_attak114))
                 if (Lib.random() <= 0.00005)
                     return;
 
-            if ((self.s.frame >= FRAME_attak201)
-                    && (self.s.frame <= FRAME_attak208))
+            if ((self.entityState.frame >= FRAME_attak201)
+                    && (self.entityState.frame <= FRAME_attak208))
                 if (Lib.random() <= 0.005)
                     return;
 
@@ -608,12 +608,12 @@ public class M_Boss31 {
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_JORG_BFG_1],
                     forward, right, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -637,14 +637,14 @@ public class M_Boss31 {
                     0, 0 };
             float[] start = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             Math3D
                     .G_ProjectSource(
-                            self.s.origin,
+                            self.entityState.origin,
                             M_Flash.monster_flash_offset[Defines.MZ2_JORG_MACHINEGUN_R1],
                             forward, right, start);
 
-            Math3D.VectorMA(self.enemy.s.origin, -0.2f, self.enemy.velocity,
+            Math3D.VectorMA(self.enemy.entityState.origin, -0.2f, self.enemy.velocity,
                     target);
             target[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(target, start, forward);
@@ -665,14 +665,14 @@ public class M_Boss31 {
                     0, 0 };
             float[] start = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             Math3D
                     .G_ProjectSource(
-                            self.s.origin,
+                            self.entityState.origin,
                             M_Flash.monster_flash_offset[Defines.MZ2_JORG_MACHINEGUN_L1],
                             forward, right, start);
 
-            Math3D.VectorMA(self.enemy.s.origin, -0.2f, self.enemy.velocity,
+            Math3D.VectorMA(self.enemy.entityState.origin, -0.2f, self.enemy.velocity,
                     target);
             target[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(target, start, forward);
@@ -701,13 +701,13 @@ public class M_Boss31 {
             float[] vec = { 0, 0, 0 };
             float range = 0;
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, vec);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, vec);
             range = Math3D.VectorLength(vec);
 
             if (Lib.random() <= 0.75) {
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_attack1, 1,
                         Defines.ATTN_NORM, 0);
-                self.s.sound = GameBase.gi.soundindex("boss3/w_loop.wav");
+                self.entityState.sound = GameBase.gi.soundindex("boss3/w_loop.wav");
                 self.monsterinfo.currentmove = jorg_move_start_attack1;
             } else {
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_attack2, 1,
@@ -731,8 +731,8 @@ public class M_Boss31 {
              * 72); self.movetype= MOVETYPE_TOSS; self.nextthink= 0;
              * gi.linkentity(self);
              * 
-             * tempent= G_Spawn(); VectorCopy(self.s.origin, tempent.s.origin);
-             * VectorCopy(self.s.angles, tempent.s.angles); tempent.killtarget=
+             * tempent= G_Spawn(); VectorCopy(self.entityState.origin, tempent.entityState.origin);
+             * VectorCopy(self.entityState.angles, tempent.entityState.angles); tempent.killtarget=
              * self.killtarget; tempent.target= self.target; tempent.activator=
              * self.enemy; self.killtarget= 0; self.target= 0;
              * SP_monster_makron(tempent);
@@ -750,7 +750,7 @@ public class M_Boss31 {
                     Defines.ATTN_NORM, 0);
             self.deadflag = Defines.DEAD_DEAD;
             self.takedamage = Defines.DAMAGE_NO;
-            self.s.sound = 0;
+            self.entityState.sound = 0;
             self.count = 0;
             self.monsterinfo.currentmove = jorg_move_death;
             return;
@@ -763,16 +763,16 @@ public class M_Boss31 {
             float[] spot1 = { 0, 0, 0 }, spot2 = { 0, 0, 0 };
             float[] temp = { 0, 0, 0 };
             float chance;
-            trace_t tr;
+            TTrace tr;
 
             int enemy_range;
             float enemy_yaw;
 
             if (self.enemy.health > 0) {
                 // see if any entities are in the way of the shot
-                Math3D.VectorCopy(self.s.origin, spot1);
+                Math3D.VectorCopy(self.entityState.origin, spot1);
                 spot1[2] += self.viewheight;
-                Math3D.VectorCopy(self.enemy.s.origin, spot2);
+                Math3D.VectorCopy(self.enemy.entityState.origin, spot2);
                 spot2[2] += self.enemy.viewheight;
 
                 tr = GameBase.gi.trace(spot1, null, null, spot2, self,
@@ -781,12 +781,12 @@ public class M_Boss31 {
                                 | Defines.CONTENTS_LAVA);
 
                 // do we have a clear shot?
-                if (tr.ent != self.enemy)
+                if (tr.entityDict != self.enemy)
                     return false;
             }
 
             enemy_range = GameUtil.range(self, self.enemy);
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, temp);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, temp);
             enemy_yaw = Math3D.vectoyaw(temp);
 
             self.ideal_yaw = enemy_yaw;
@@ -1174,9 +1174,9 @@ public class M_Boss31 {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/boss3/rider/tris.md2");
-        self.s.modelindex2 = GameBase.gi
+        self.entityState.modelindex2 = GameBase.gi
                 .modelindex("models/monsters/boss3/jorg/tris.md2");
         Math3D.VectorSet(self.mins, -80, -80, 0);
         Math3D.VectorSet(self.maxs, 80, 80, 140);

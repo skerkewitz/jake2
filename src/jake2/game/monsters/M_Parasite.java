@@ -35,7 +35,7 @@ import jake2.game.GameUtil;
 import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
-import jake2.game.trace_t;
+import jake2.game.TTrace;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -574,7 +574,7 @@ public class M_Parasite {
     	public String getID(){ return "parasite_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -600,35 +600,35 @@ public class M_Parasite {
         public boolean think(TEntityDict self) {
             float[] offset = { 0, 0, 0 }, start = { 0, 0, 0 }, f = { 0, 0, 0 }, r = {
                     0, 0, 0 }, end = { 0, 0, 0 }, dir = { 0, 0, 0 };
-            trace_t tr;
+            TTrace tr;
             int damage;
 
-            Math3D.AngleVectors(self.s.angles, f, r, null);
+            Math3D.AngleVectors(self.entityState.angles, f, r, null);
             Math3D.VectorSet(offset, 24, 0, 6);
-            Math3D.G_ProjectSource(self.s.origin, offset, f, r, start);
+            Math3D.G_ProjectSource(self.entityState.origin, offset, f, r, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             if (!parasite_drain_attack_ok(start, end)) {
-                end[2] = self.enemy.s.origin[2] + self.enemy.maxs[2] - 8;
+                end[2] = self.enemy.entityState.origin[2] + self.enemy.maxs[2] - 8;
                 if (!parasite_drain_attack_ok(start, end)) {
-                    end[2] = self.enemy.s.origin[2] + self.enemy.mins[2] + 8;
+                    end[2] = self.enemy.entityState.origin[2] + self.enemy.mins[2] + 8;
                     if (!parasite_drain_attack_ok(start, end))
                         return true;
                 }
             }
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
 
             tr = GameBase.gi.trace(start, null, null, end, self,
                     Defines.MASK_SHOT);
-            if (tr.ent != self.enemy)
+            if (tr.entityDict != self.enemy)
                 return true;
 
-            if (self.s.frame == FRAME_drain03) {
+            if (self.entityState.frame == FRAME_drain03) {
                 damage = 5;
                 GameBase.gi.sound(self.enemy, Defines.CHAN_AUTO, sound_impact,
                         1, Defines.ATTN_NORM, 0);
             } else {
-                if (self.s.frame == FRAME_drain04)
+                if (self.entityState.frame == FRAME_drain04)
                     GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_suck, 1,
                             Defines.ATTN_NORM, 0);
                 damage = 2;
@@ -636,14 +636,14 @@ public class M_Parasite {
 
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(Defines.TE_PARASITE_ATTACK);
-            //gi.WriteShort(self - g_edicts);
+            //gi.WriteShort(self - entityDicts);
             GameBase.gi.WriteShort(self.index);
             GameBase.gi.WritePosition(start);
             GameBase.gi.WritePosition(end);
-            GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(self.entityState.origin, Defines.MULTICAST_PVS);
 
             Math3D.VectorSubtract(start, end, dir);
-            GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.s.origin,
+            GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.entityState.origin,
                     Context.vec3_origin, damage, 0,
                     Defines.DAMAGE_NO_KNOCKBACK, Defines.MOD_UNKNOWN);
             return true;
@@ -822,7 +822,7 @@ public class M_Parasite {
             sound_scratch = GameBase.gi.soundindex("parasite/paridle2.wav");
             sound_search = GameBase.gi.soundindex("parasite/parsrch1.wav");
 
-            self.s.modelindex = GameBase.gi
+            self.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/parasite/tris.md2");
             Math3D.VectorSet(self.mins, -16, -16, -24);
             Math3D.VectorSet(self.maxs, 16, 16, 24);

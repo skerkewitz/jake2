@@ -26,8 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 import jake2.Defines;
+import jake2.client.ui.Menu;
 import jake2.game.Cmd;
 import jake2.qcommon.*;
+import jake2.sys.Timer;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -306,8 +308,8 @@ public class Key {
         if (down) {
             key_repeats[key]++;
             if (key_repeats[key] > 1
-                    && Context.cls.key_dest == Defines.key_game
-                    && !(Context.cls.state == Defines.ca_disconnected))
+                    && Context.cls.getKey_dest() == Defines.key_game
+                    && !(Context.cls.getState() == Defines.ca_disconnected))
                 return; // ignore most autorepeats
 
             if (key >= 200 && keybindings[key] == null)
@@ -329,7 +331,7 @@ public class Key {
         }
 
         // any key during the attract mode will bring up the menu
-        if (Context.cl.attractloop && Context.cls.key_dest != Defines.key_menu && !(key >= K_F1 && key <= K_F12))
+        if (Context.cl.attractloop && Context.cls.getKey_dest() != Defines.key_menu && !(key >= K_F1 && key <= K_F12))
             key = K_ESCAPE;
 
         // menu key is hardcoded, so the user can never unbind it
@@ -337,12 +339,12 @@ public class Key {
             if (!down)
                 return;
 
-            if (Context.cl.frame.playerstate.stats[Defines.STAT_LAYOUTS] != 0 && Context.cls.key_dest == Defines.key_game) {
+            if (Context.cl.frame.playerstate.stats[Defines.STAT_LAYOUTS] != 0 && Context.cls.getKey_dest() == Defines.key_game) {
                 // put away help computer / inventory
                 Cbuf.AddText("cmd putaway\n");
                 return;
             }
-            switch (Context.cls.key_dest) {
+            switch (Context.cls.getKey_dest()) {
                 case Defines.key_message:
                     Key.Message(key);
                     break;
@@ -398,9 +400,9 @@ public class Key {
         //
         // if not a consolekey, send to the interpreter no matter what mode is
         //
-        if ((Context.cls.key_dest == Defines.key_menu && menubound[key])
-                || (Context.cls.key_dest == Defines.key_console && !consolekeys[key])
-                || (Context.cls.key_dest == Defines.key_game && (Context.cls.state == Defines.ca_active || !consolekeys[key]))) {
+        if ((Context.cls.getKey_dest() == Defines.key_menu && menubound[key])
+                || (Context.cls.getKey_dest() == Defines.key_console && !consolekeys[key])
+                || (Context.cls.getKey_dest() == Defines.key_game && (Context.cls.getState() == Defines.ca_active || !consolekeys[key]))) {
             kb = keybindings[key];
             if (kb != null) {
                 if (kb.length() > 0 && kb.charAt(0) == '+') {
@@ -420,7 +422,7 @@ public class Key {
 //		if (shift_down)
 //			key = keyshift[key];
 
-        switch (Context.cls.key_dest) {
+        switch (Context.cls.getKey_dest()) {
             case Defines.key_message:
 //				Key.Message(key);
                 break;
@@ -438,7 +440,7 @@ public class Key {
     }
 
     public static void charEvent(int codepoint) {
-        switch (Context.cls.key_dest) {
+        switch (Context.cls.getKey_dest()) {
             case Defines.key_message:
                 Key.Message(codepoint);
                 break;
@@ -456,7 +458,7 @@ public class Key {
      * Returns a string (either a single ascii char, or a K_* name) for the
      * given keynum.
      */
-    static String KeynumToString(int keynum) {
+    public  static String KeynumToString(int keynum) {
         if (keynum < 0 || keynum > 255)
             return "<KEY NOT FOUND>";
         if (keynum > 32 && keynum < 127)
@@ -500,13 +502,13 @@ public class Key {
             Cbuf.AddText(Context.chat_buffer);
             Cbuf.AddText("\"\n");
 
-            Context.cls.key_dest = Defines.key_game;
+            Context.cls.setKey_dest(Defines.key_game);
             Context.chat_buffer = "";
             return;
         }
 
         if (key == K_ESCAPE) {
-            Context.cls.key_dest = Defines.key_game;
+            Context.cls.setKey_dest(Defines.key_game);
             Context.chat_buffer = "";
             return;
         }
@@ -603,7 +605,7 @@ public class Key {
 
             key_lines[edit_line][0] = ']';
             key_linepos = 1;
-            if (Context.cls.state == Defines.ca_disconnected)
+            if (Context.cls.getState() == Defines.ca_disconnected)
                 SCR.UpdateScreen(); // force an update, because the command may take some time
             return;
         }
@@ -767,7 +769,7 @@ public class Key {
         SetBinding(b, cmd);
     }
 
-    static void SetBinding(int keynum, String binding) {
+    public static void SetBinding(int keynum, String binding) {
         if (keynum == -1)
             return;
 
@@ -804,7 +806,7 @@ public class Key {
                 Command.Printf(Key.KeynumToString(i) + " \"" + keybindings[i] + "\"\n");
     };
 
-    static void ClearStates() {
+    public static void ClearStates() {
         int i;
 
         Key.anykeydown = 0;
@@ -826,4 +828,10 @@ public class Key {
                 }
     }
 
+    public static void SendKeyEvents() {
+		re.getKeyboardHandler().Update();
+
+        // grab frame time
+        sys_frame_time = Timer.Milliseconds();
+    }
 }

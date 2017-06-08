@@ -26,12 +26,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.client;
 
 import jake2.Defines;
+import jake2.client.ui.*;
+import jake2.common.Dimension;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.render.Renderer;
 import jake2.sound.Sound;
-import jake2.sys.IN;
+import jake2.sys.Input;
 import jake2.sys.Keyboard;
 
 import static jake2.Defines.MTYPE_ACTION;
@@ -146,7 +148,7 @@ public class VID {
 			if (keyboardHandler != null) {
 				keyboardHandler.Close();
 			}
-			IN.Shutdown();
+			Input.Shutdown();
 		}
 
 		re = null;
@@ -164,7 +166,7 @@ public class VID {
 		if ( reflib_active )
 		{
 			re.getKeyboardHandler().Close();
-			IN.Shutdown();
+			Input.Shutdown();
 
 			re.Shutdown();
 			FreeReflib();
@@ -201,7 +203,7 @@ public class VID {
 			Command.Error(Defines.ERR_FATAL, name + " has incompatible api_version");
 		}
 
-		IN.Real_IN_Init();
+		Input.Real_IN_Init();
 
 		if ( !re.Init((int)vid_xpos.value, (int)vid_ypos.value) )
 		{
@@ -222,7 +224,7 @@ public class VID {
 	============
 	VID_CheckChanges
 
-	This function gets called once just before drawing each frame, and it's sole purpose in life
+	This function gets called once just before drawing each frame, and it'entityState sole purpose in life
 	is to check to see if any of the video mode parameters have changed, and if they have to 
 	update the rendering DLL and/or video mode to match.
 	============
@@ -244,7 +246,7 @@ public class VID {
 			vid_ref.modified = false;
 			vid_fullscreen.modified = true;
 			Context.cl.refresh_prepped = false;
-			Context.cls.disable_screen = 1.0f; // true;
+			Context.cls.setDisableScreen(1.0f); // true;
 
 			
 			if ( !LoadRefresh( vid_ref.string, true ) )
@@ -275,7 +277,7 @@ public class VID {
 				/*
 				 * drop the console if we fail to load a refresh
 				 */
-				if ( Context.cls.key_dest != Defines.key_console )
+				if ( Context.cls.getKey_dest() != Defines.key_console )
 				{
 					try {
 						Console.ToggleConsole_f.execute();
@@ -283,7 +285,7 @@ public class VID {
 					}
 				}
 			}
-			Context.cls.disable_screen = 0.0f; //false;
+			Context.cls.setDisableScreen(0.0f); //false;
 		}
 	}
 
@@ -330,7 +332,7 @@ public class VID {
 		if ( reflib_active )
 		{
 			re.getKeyboardHandler().Close();
-			IN.Shutdown();
+			Input.Shutdown();
 
 			re.Shutdown();
 			FreeReflib();
@@ -361,27 +363,27 @@ public class VID {
 	====================================================================
 	*/
 
-	static Menu.menuframework_s	s_opengl_menu = new Menu.menuframework_s();
-	static Menu.menuframework_s s_current_menu; // referenz
+	static TMenuFramework s_opengl_menu = new TMenuFramework();
+	static TMenuFramework s_current_menu; // referenz
 
-	static Menu.menulist_s s_mode_list = new Menu.menulist_s();
+	static TMenuList s_mode_list = new TMenuList();
 
-	static Menu.menulist_s s_ref_list = new Menu.menulist_s();
+	static TMenuList s_ref_list = new TMenuList();
 
-	static Menu.menuslider_s s_tq_slider = new Menu.menuslider_s();
-	static Menu.menuslider_s s_screensize_slider = new Menu.menuslider_s();
+	static TMenuSlider s_tq_slider = new TMenuSlider();
+	static TMenuSlider s_screensize_slider = new TMenuSlider();
 
-	static Menu.menuslider_s s_brightness_slider = new Menu.menuslider_s();
+	static TMenuSlider s_brightness_slider = new TMenuSlider();
 
-	static Menu.menulist_s s_fs_box = new Menu.menulist_s();
+	static TMenuList s_fs_box = new TMenuList();
 
-	static Menu.menulist_s s_stipple_box = new Menu.menulist_s();
-	static Menu.menulist_s s_paletted_texture_box = new Menu.menulist_s();
-	static Menu.menulist_s s_vsync_box = new Menu.menulist_s();
-	static Menu.menulist_s s_windowed_mouse = new Menu.menulist_s();
-	static Menu.menuaction_s s_apply_action = new Menu.menuaction_s();
+	static TMenuList s_stipple_box = new TMenuList();
+	static TMenuList s_paletted_texture_box = new TMenuList();
+	static TMenuList s_vsync_box = new TMenuList();
+	static TMenuList s_windowed_mouse = new TMenuList();
+	static TMenuAction s_apply_action = new TMenuAction();
 
-	static Menu.menuaction_s s_defaults_action= new Menu.menuaction_s();
+	static TMenuAction s_defaults_action= new TMenuAction();
 
 	static void DriverCallback( Object unused )
 	{
@@ -390,14 +392,14 @@ public class VID {
 
 	static void ScreenSizeCallback( Object s )
 	{
-		Menu.menuslider_s slider = (Menu.menuslider_s) s;
+		TMenuSlider slider = (TMenuSlider) s;
 
 		ConsoleVar.SetValue( "viewsize", slider.curvalue * 10 );
 	}
 
 	static void BrightnessCallback( Object s )
 	{
-		Menu.menuslider_s slider = (Menu.menuslider_s) s;
+		TMenuSlider slider = (TMenuSlider) s;
 
 		// if ( stricmp( vid_ref.string, "soft" ) == 0 ||
 		//	stricmp( vid_ref.string, "softx" ) == 0 )
@@ -443,7 +445,7 @@ public class VID {
 		if (gl_driver.modified)
 			vid_ref.modified = true;
 		
-		Menu.ForceMenuOff();
+		Menu.forceMenuOff();
 	}
 
 	static final String[] resolutions = 
@@ -563,7 +565,7 @@ public class VID {
 		s_ref_list.name = "driver";
 		s_ref_list.x = 0;
 		s_ref_list.y = 0;
-		s_ref_list.callback = new Menu.mcallback() {
+		s_ref_list.callback = new TMCallback() {
 			public void execute(Object self) {
 				DriverCallback(self);
 			}
@@ -581,7 +583,7 @@ public class VID {
 		s_screensize_slider.name	= "screen size";
 		s_screensize_slider.minvalue = 3;
 		s_screensize_slider.maxvalue = 12;
-		s_screensize_slider.callback = new Menu.mcallback() {
+		s_screensize_slider.callback = new TMCallback() {
 			public void execute(Object self) {
 				ScreenSizeCallback(self);
 			}
@@ -590,7 +592,7 @@ public class VID {
 		s_brightness_slider.x	= 0;
 		s_brightness_slider.y	= 30;
 		s_brightness_slider.name	= "brightness";
-		s_brightness_slider.callback =  new Menu.mcallback() {
+		s_brightness_slider.callback =  new TMCallback() {
 			public void execute(Object self) {
 				BrightnessCallback(self);
 			}
@@ -605,9 +607,9 @@ public class VID {
 		s_fs_box.name	= "fullscreen";
 		s_fs_box.itemnames = yesno_names;
 		s_fs_box.curvalue = (int)vid_fullscreen.value;
-		s_fs_box.callback = new Menu.mcallback() {
+		s_fs_box.callback = new TMCallback() {
 			public void execute(Object o) {
-				int fs = ((Menu.menulist_s)o).curvalue;
+				int fs = ((TMenuList)o).curvalue;
 				if (fs == 0) {
 					s_mode_list.itemnames = resolutions;
 					int i = vid_modes.length - 2;
@@ -649,7 +651,7 @@ public class VID {
 		s_defaults_action.name = "reset to default";
 		s_defaults_action.x    = 0;
 		s_defaults_action.y    = 100;
-		s_defaults_action.callback = new Menu.mcallback() {
+		s_defaults_action.callback = new TMCallback() {
 			public void execute(Object self) {
 				ResetDefaults(self);
 			}
@@ -659,7 +661,7 @@ public class VID {
 		s_apply_action.name = "apply";
 		s_apply_action.x    = 0;
 		s_apply_action.y    = 110;
-		s_apply_action.callback = new Menu.mcallback() {
+		s_apply_action.callback = new TMCallback() {
 			public void execute(Object self) {
 				ApplyChanges(self);
 			}
@@ -687,7 +689,7 @@ public class VID {
 	VID_MenuDraw
 	================
 	*/
-	static void MenuDraw()
+	public static void MenuDraw()
 	{
 		s_current_menu = s_opengl_menu;
 
@@ -714,15 +716,15 @@ public class VID {
 	VID_MenuKey
 	================
 	*/
-	static String MenuKey( int key )
+	public static String MenuKey( int key )
 	{
-		Menu.menuframework_s m = s_current_menu;
+		TMenuFramework m = s_current_menu;
 		final String sound = "misc/menu1.wav";
 
 		switch ( key )
 		{
 		case K_ESCAPE:
-			Menu.PopMenu();
+			Menu.popMenu();
 			return null;
 		case K_UPARROW:
 			m.cursor--;

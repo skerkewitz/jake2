@@ -141,9 +141,9 @@ public class GameSpawn {
         public boolean think(TEntityDict ent) {
             ent.movetype = Defines.MOVETYPE_PUSH;
             ent.solid = Defines.SOLID_BSP;
-            ent.inuse = true;
+            ent.inUse = true;
             // since the world doesn't use G_Spawn()
-            ent.s.modelindex = 1;
+            ent.entityState.modelIndex = 1;
             // world model is always index 1
             //---------------
             // reserve some spots for dead player bodies for coop / deathmatch
@@ -215,7 +215,7 @@ public class GameSpawn {
             GameBase.gi.soundindex("*pain100_1.wav");
             GameBase.gi.soundindex("*pain100_2.wav");
             // sexed models
-            // THIS ORDER MUST MATCH THE DEFINES IN g_local.h
+            // THIS ORDER MUST MATCH THE DEFINES Input g_local.h
             // you can add more, max 15
             GameBase.gi.modelindex("#w_blaster.md2");
             GameBase.gi.modelindex("#w_shotgun.md2");
@@ -413,9 +413,9 @@ public class GameSpawn {
         c = 0;
         c2 = 0;
         for (i = 1; i < GameBase.num_edicts; i++) {
-            e = GameBase.g_edicts[i];
+            e = GameBase.entityDicts[i];
 
-            if (!e.inuse)
+            if (!e.inUse)
                 continue;
             if (e.team == null)
                 continue;
@@ -427,8 +427,8 @@ public class GameSpawn {
             c2++;
             
             for (j = i + 1; j < GameBase.num_edicts; j++) {
-                e2 = GameBase.g_edicts[j];
-                if (!e2.inuse)
+                e2 = GameBase.entityDicts[j];
+                if (!e2.inUse)
                     continue;
                 if (null == e2.team)
                     continue;
@@ -449,8 +449,8 @@ public class GameSpawn {
     /**
      * SpawnEntities
      * 
-     * Creates a server's entity / program execution context by parsing textual
-     * entity definitions out of an ent file.
+     * Creates a server'entityState entity / program execution context by parsing textual
+     * entity definitions out of an entityDict file.
      */
 
     public static void SpawnEntities(String mapname, String entities,
@@ -476,7 +476,7 @@ public class GameSpawn {
 
         GameBase.level = new level_locals_t();
         for (int n = 0; n < GameBase.game.maxentities; n++) {
-            GameBase.g_edicts[n] = new TEntityDict(n);
+            GameBase.entityDicts[n] = new TEntityDict(n);
         }
         
         GameBase.level.mapname = mapname;
@@ -484,7 +484,7 @@ public class GameSpawn {
 
         // set client fields on player ents
         for (i = 0; i < GameBase.game.maxclients; i++)
-            GameBase.g_edicts[i + 1].client = GameBase.game.clients[i];
+            GameBase.entityDicts[i + 1].client = GameBase.game.clients[i];
 
         ent = null;
         inhibit = 0; 
@@ -501,12 +501,12 @@ public class GameSpawn {
                         + " when expecting {");
 
             if (ent == null)
-                ent = GameBase.g_edicts[0];
+                ent = GameBase.entityDicts[0];
             else
                 ent = GameUtil.G_Spawn();
 
             ED_ParseEdict(ph, ent);
-            Command.DPrintf("spawning ent[" + ent.index + "], classname=" +
+            Command.DPrintf("spawning entityDict[" + ent.index + "], classname=" +
                     ent.classname + ", flags= " + Integer.toHexString(ent.spawnflags));
             
             // yet another map hack
@@ -517,7 +517,7 @@ public class GameSpawn {
 
             // remove things (except the world) from different skill levels or
             // deathmatch
-            if (ent != GameBase.g_edicts[0]) {
+            if (ent != GameBase.entityDicts[0]) {
                 if (GameBase.deathmatch.value != 0) {
                     if ((ent.spawnflags & Defines.SPAWNFLAG_NOT_DEATHMATCH) != 0) {
                         
@@ -528,7 +528,7 @@ public class GameSpawn {
                     }
                 } else {
                     if (/*
-                         * ((coop.value) && (ent.spawnflags &
+                         * ((coop.value) && (entityDict.spawnflags &
                          * SPAWNFLAG_NOT_COOP)) ||
                          */
                     ((GameBase.skill.value == 0) && (ent.spawnflags & Defines.SPAWNFLAG_NOT_EASY) != 0)

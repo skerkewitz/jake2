@@ -221,7 +221,7 @@ public class qfiles {
 	//	   vertex structures.
 	//	   a negative integer starts a trifan command, followed by -x vertexes
 	//	   a zero indicates the end of the command list.
-	//	   a vertex consists of a floating point s, a floating point t,
+	//	   a vertex consists of a floating point entityState, a floating point t,
 	//	   and an integer vertex index.
 	
 	public static class dmdl_t {

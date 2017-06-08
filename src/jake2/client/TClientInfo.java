@@ -19,14 +19,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 // Created on 28.11.2003 by RST.
-//$Id: clientinfo_t.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
+//$Id: TClientInfo.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
 
 package jake2.client;
 
 import jake2.*;
 import jake2.render.*;
 
-public class clientinfo_t {
+public class TClientInfo {
 	String	name	="";
 	String	cinfo	="";
 	TImage skin;	// ptr
@@ -37,10 +37,10 @@ public class clientinfo_t {
 	
 //	public void reset()
 //	{
-//		set(new clientinfo_t());
+//		set(new TClientInfo());
 //	}
 	
-	public void set (clientinfo_t from)
+	public void set (TClientInfo from)
 	{
 		name = from.name;
 		cinfo = from.cinfo;

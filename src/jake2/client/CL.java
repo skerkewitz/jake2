@@ -26,6 +26,7 @@
 package jake2.client;
 
 import jake2.Defines;
+import jake2.client.ui.Menu;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.network.Netchan;
@@ -34,7 +35,6 @@ import jake2.qcommon.*;
 import jake2.server.ServerMain;
 import jake2.sound.Sound;
 import jake2.sys.*;
-import jake2.sys.QSystem;
 import jake2.util.*;
 
 import java.io.IOException;
@@ -98,17 +98,17 @@ public final class CL {
 
                 int len;
 
-                if (!Context.cls.demorecording) {
+                if (!Context.cls.getDemorecording()) {
                     Command.Printf("Not recording a demo.\n");
                     return;
                 }
 
                 //	   finish up
                 len = -1;
-                Context.cls.demofile.writeInt(EndianHandler.swapInt(len));
-                Context.cls.demofile.close();
-                Context.cls.demofile = null;
-                Context.cls.demorecording = false;
+                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(len));
+                Context.cls.getDemofile().close();
+                Context.cls.setDemofile(null);
+                Context.cls.setDemorecording(false);
                 Command.Printf("Stopped demo.\n");
             } catch (IOException e) {
             }
@@ -137,12 +137,12 @@ public final class CL {
                     return;
                 }
 
-                if (Context.cls.demorecording) {
+                if (Context.cls.getDemorecording()) {
                     Command.Printf("Already recording.\n");
                     return;
                 }
 
-                if (Context.cls.state != Defines.ca_active) {
+                if (Context.cls.getState() != Defines.ca_active) {
                     Command.Printf("You must be in a level to record.\n");
                     return;
                 }
@@ -150,20 +150,20 @@ public final class CL {
                 //
                 // open the demo file
                 //
-                name = FileSystem.Gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
+                name = FileSystem.gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
 
                 Command.Printf("recording to " + name + ".\n");
                 FileSystem.CreatePath(name);
-                Context.cls.demofile = new RandomAccessFile(name, "rw");
-                if (Context.cls.demofile == null) {
+                Context.cls.setDemofile(new RandomAccessFile(name, "rw"));
+                if (Context.cls.getDemofile() == null) {
                     Command.Printf("ERROR: couldn't open.\n");
                     return;
                 }
-                Context.cls.demorecording = true;
+                Context.cls.setDemorecording(true);
 
                 // don't start saving messages until a non-delta compressed
                 // message is received
-                Context.cls.demowaiting = true;
+                Context.cls.setDemowaiting(true);
 
                 //
                 // write out messages to hold the startup information
@@ -186,8 +186,8 @@ public final class CL {
                         if (buf.cursize + Context.cl.configstrings[i].length()
                                 + 32 > buf.maxsize) { 
                             // write it out
-                            Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                            Context.cls.demofile
+                            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
+                            Context.cls.getDemofile()
                                     .write(buf.data, 0, buf.cursize);
                             buf.cursize = 0;
                         }
@@ -203,12 +203,12 @@ public final class CL {
                 nullstate.clear();
                 for (i = 0; i < Defines.MAX_EDICTS; i++) {
                     ent = Context.cl_entities[i].baseline;
-                    if (ent.modelindex == 0)
+                    if (ent.modelIndex == 0)
                         continue;
 
                     if (buf.cursize + 64 > buf.maxsize) { // write it out
-                        Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                        Context.cls.demofile.write(buf.data, 0, buf.cursize);
+                        Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
+                        Context.cls.getDemofile().write(buf.data, 0, buf.cursize);
                         buf.cursize = 0;
                     }
 
@@ -220,8 +220,8 @@ public final class CL {
                 buf.writeString("precache\n");
 
                 // write it to the demo file
-                Context.cls.demofile.writeInt(EndianHandler.swapInt(buf.cursize));
-                Context.cls.demofile.write(buf.data, 0, buf.cursize);
+                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
+                Context.cls.getDemofile().write(buf.data, 0, buf.cursize);
                 // the rest of the demo file will be individual frames
 
             } catch (IOException e) {
@@ -234,16 +234,16 @@ public final class CL {
      */
     static TXCommand ForwardToServer_f = new TXCommand() {
         public void execute() {
-            if (Context.cls.state != Defines.ca_connected
-                    && Context.cls.state != Defines.ca_active) {
+            if (Context.cls.getState() != Defines.ca_connected
+                    && Context.cls.getState() != Defines.ca_active) {
                 Command.Printf("Can't \"" + Cmd.Argv(0) + "\", not connected\n");
                 return;
             }
 
             // don't forward the first argument
             if (Cmd.Argc() > 1) {
-                Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-                Context.cls.netchan.message.print(Cmd.Args());
+                Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+                Context.cls.getNetchan().message.print(Cmd.Args());
             }
         }
     };
@@ -268,11 +268,9 @@ public final class CL {
     /**
      * Quit_f
      */
-    static TXCommand Quit_f = new TXCommand() {
-        public void execute() {
-            Disconnect();
-            Command.Quit();
-        }
+    public static TXCommand Quit_f = () -> {
+        Disconnect();
+        Command.Quit();
     };
 
     /**
@@ -296,14 +294,14 @@ public final class CL {
 
             server = Cmd.Argv(1);
 
-            NET.Config(true); // allow remote
+            Network.Config(true); // allow remote
 
             Disconnect();
 
-            Context.cls.state = Defines.ca_connecting;
+            Context.cls.setState(Defines.ca_connecting);
             //strncpy (cls.servername, server, sizeof(cls.servername)-1);
-            Context.cls.servername = server;
-            Context.cls.connect_time = -99999;
+            Context.cls.setServername(server);
+            Context.cls.setConnectTime(-99999);
             // CL_CheckForResend() will fire immediately
         }
     };
@@ -330,7 +328,7 @@ public final class CL {
             message.append('\u00ff');
 
             // allow remote
-            NET.Config(true);
+            Network.Config(true);
 
             message.append("rcon ");
             message.append(Context.rcon_client_password.string);
@@ -343,19 +341,19 @@ public final class CL {
 
             TNetAddr to = new TNetAddr();
 
-            if (Context.cls.state >= Defines.ca_connected)
-                to = Context.cls.netchan.remote_address;
+            if (Context.cls.getState() >= Defines.ca_connected)
+                to = Context.cls.getNetchan().remote_address;
             else {
                 if (Context.rcon_address.string.length() == 0) {
                     Command.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
                     return;
                 }
-                NET.StringToAdr(Context.rcon_address.string, to);
+                Network.StringToAdr(Context.rcon_address.string, to);
                 if (to.port == 0) to.port = Defines.PORT_SERVER;
             }
             message.append('\0');
             String b = message.toString();
-            NET.SendPacket(Defines.NS_CLIENT, b.length(), Lib.stringToBytes(b), to);
+            Network.SendPacket(Defines.NS_CLIENT, b.length(), Lib.stringToBytes(b), to);
         }
     };
 
@@ -376,11 +374,11 @@ public final class CL {
             //if we are downloading, we don't change!
             // This so we don't suddenly stop downloading a map
 
-            if (Context.cls.download != null)
+            if (Context.cls.getDownload() != null)
                 return;
 
             SCR.BeginLoadingPlaque();
-            Context.cls.state = Defines.ca_connected; // not active anymore, but
+            Context.cls.setState(Defines.ca_connected); // not active anymore, but
                                                       // not disconnected
             Command.Printf("\nChanging map...\n");
         }
@@ -396,26 +394,26 @@ public final class CL {
             //ZOID
             //if we are downloading, we don't change! This so we don't suddenly
             // stop downloading a map
-            if (Context.cls.download != null)
+            if (Context.cls.getDownload() != null)
                 return;
 
             Sound.StopAllSounds();
-            if (Context.cls.state == Defines.ca_connected) {
+            if (Context.cls.getState() == Defines.ca_connected) {
                 Command.Printf("reconnecting...\n");
-                Context.cls.state = Defines.ca_connected;
-                Context.cls.netchan.message.writeChar(Defines.clc_stringcmd);
-                Context.cls.netchan.message.writeString("new");
+                Context.cls.setState(Defines.ca_connected);
+                Context.cls.getNetchan().message.writeChar(Defines.clc_stringcmd);
+                Context.cls.getNetchan().message.writeString("new");
                 return;
             }
 
-            if (Context.cls.servername != null) {
-                if (Context.cls.state >= Defines.ca_connected) {
+            if (Context.cls.getServername() != null) {
+                if (Context.cls.getState() >= Defines.ca_connected) {
                     Disconnect();
-                    Context.cls.connect_time = Context.cls.realtime - 1500;
+                    Context.cls.setConnectTime(Context.cls.getRealtime() - 1500);
                 } else
-                    Context.cls.connect_time = -99999; // fire immediately
+                    Context.cls.setConnectTime(-99999); // fire immediately
 
-                Context.cls.state = Defines.ca_connecting;
+                Context.cls.setState(Defines.ca_connecting);
                 Command.Printf("reconnecting...\n");
             }
         }
@@ -424,59 +422,57 @@ public final class CL {
     /**
      * PingServers_f
      */
-    static TXCommand PingServers_f = new TXCommand() {
-        public void execute() {
-            int i;
-            TNetAddr adr = new TNetAddr();
-            //char name[32];
-            String name;
-            String adrstring;
-            TVar noudp;
-            TVar noipx;
+    public static TXCommand PingServers_f = () -> {
+        int i;
+        TNetAddr adr = new TNetAddr();
+        //char name[32];
+        String name;
+        String adrstring;
+        TVar noudp;
+        TVar noipx;
 
-            NET.Config(true); // allow remote
+        Network.Config(true); // allow remote
 
-            // send a broadcast packet
-            Command.Printf("pinging broadcast...\n");
+        // send a broadcast packet
+        Command.Printf("pinging broadcast...\n");
 
-            noudp = ConsoleVar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
-            if (noudp.value == 0.0f) {
-                adr.type = Defines.NA_BROADCAST;
-                adr.port = Defines.PORT_SERVER;
+        noudp = ConsoleVar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
+        if (noudp.value == 0.0f) {
+            adr.type = Defines.NA_BROADCAST;
+            adr.port = Defines.PORT_SERVER;
+            //adr.port = BigShort(PORT_SERVER);
+            Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
+                    + Defines.PROTOCOL_VERSION);
+        }
+
+        // we use no IPX
+        noipx = ConsoleVar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
+        if (noipx.value == 0.0f) {
+            adr.type = Defines.NA_BROADCAST_IPX;
+            //adr.port = BigShort(PORT_SERVER);
+            adr.port = Defines.PORT_SERVER;
+            Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
+                    + Defines.PROTOCOL_VERSION);
+        }
+
+        // send a packet to each address book entry
+        for (i = 0; i < 16; i++) {
+            //Com_sprintf (name, sizeof(name), "adr%i", i);
+            name = "adr" + i;
+            adrstring = ConsoleVar.VariableString(name);
+            if (adrstring == null || adrstring.length() == 0)
+                continue;
+
+            Command.Printf("pinging " + adrstring + "...\n");
+            if (!Network.StringToAdr(adrstring, adr)) {
+                Command.Printf("Bad address: " + adrstring + "\n");
+                continue;
+            }
+            if (adr.port == 0)
                 //adr.port = BigShort(PORT_SERVER);
-                Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
-                        + Defines.PROTOCOL_VERSION);
-            }
-
-            // we use no IPX
-            noipx = ConsoleVar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
-            if (noipx.value == 0.0f) {
-                adr.type = Defines.NA_BROADCAST_IPX;
-                //adr.port = BigShort(PORT_SERVER);
                 adr.port = Defines.PORT_SERVER;
-                Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
-                        + Defines.PROTOCOL_VERSION);
-            }
-
-            // send a packet to each address book entry
-            for (i = 0; i < 16; i++) {
-                //Com_sprintf (name, sizeof(name), "adr%i", i);
-                name = "adr" + i;
-                adrstring = ConsoleVar.VariableString(name);
-                if (adrstring == null || adrstring.length() == 0)
-                    continue;
-
-                Command.Printf("pinging " + adrstring + "...\n");
-                if (!NET.StringToAdr(adrstring, adr)) {
-                    Command.Printf("Bad address: " + adrstring + "\n");
-                    continue;
-                }
-                if (adr.port == 0)
-                    //adr.port = BigShort(PORT_SERVER);
-                    adr.port = Defines.PORT_SERVER;
-                Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
-                        + Defines.PROTOCOL_VERSION);
-            }
+            Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "info "
+                    + Defines.PROTOCOL_VERSION);
         }
     };
 
@@ -496,7 +492,7 @@ public final class CL {
                         + Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                         + "\n");
                 SCR.UpdateScreen();
-                QSystem.SendKeyEvents(); // pump message loop
+                Key.SendKeyEvents(); // pump message loop
                 CL_parse.ParseClientinfo(i);
             }
         }
@@ -505,11 +501,9 @@ public final class CL {
     /**
      * Userinfo_f
      */
-    static TXCommand Userinfo_f = new TXCommand() {
-        public void execute() {
-            Command.Printf("User info settings:\n");
-            Info.Print(ConsoleVar.Userinfo());
-        }
+    public static TXCommand Userinfo_f = () -> {
+        Command.Printf("User info settings:\n");
+        Info.Print(ConsoleVar.Userinfo());
     };
 
     /**
@@ -518,12 +512,10 @@ public final class CL {
      * Restart the sound subsystem so it can pick up new parameters and flush
      * all sounds.
      */
-    static TXCommand Snd_Restart_f = new TXCommand() {
-        public void execute() {
-            Sound.Shutdown();
-            Sound.Init();
-            CL_parse.RegisterSounds();
-        }
+    public static TXCommand Snd_Restart_f = () -> {
+        Sound.Shutdown();
+        Sound.Init();
+        CL_parse.RegisterSounds();
     };
 
     //	   ENV_CNT is map load, ENV_CNT+1 is first env map
@@ -586,8 +578,8 @@ public final class CL {
         swlen = Context.net_message.cursize - 8;
 
         try {
-            Context.cls.demofile.writeInt(EndianHandler.swapInt(swlen));
-            Context.cls.demofile.write(Context.net_message.data, 8, swlen);
+            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(swlen));
+            Context.cls.getDemofile().write(Context.net_message.data, 8, swlen);
         } catch (IOException e) {
         }
 
@@ -602,9 +594,9 @@ public final class CL {
         TNetAddr adr = new TNetAddr();
         int port;
 
-        if (!NET.StringToAdr(Context.cls.servername, adr)) {
+        if (!Network.StringToAdr(Context.cls.getServername(), adr)) {
             Command.Printf("Bad server address\n");
-            Context.cls.connect_time = 0;
+            Context.cls.setConnectTime(0);
             return;
         }
         if (adr.port == 0)
@@ -616,7 +608,7 @@ public final class CL {
 
         Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "connect "
                 + Defines.PROTOCOL_VERSION + " " + port + " "
-                + Context.cls.challenge + " \"" + ConsoleVar.Userinfo() + "\"\n");
+                + Context.cls.getChallenge() + " \"" + ConsoleVar.Userinfo() + "\"\n");
     }
 
     /**
@@ -627,35 +619,35 @@ public final class CL {
     static void CheckForResend() {
         // if the local server is running and we aren't
         // then connect
-        if (Context.cls.state == Defines.ca_disconnected
+        if (Context.cls.getState() == Defines.ca_disconnected
                 && Context.server_state != 0) {
-            Context.cls.state = Defines.ca_connecting;
-            Context.cls.servername = "localhost";
+            Context.cls.setState(Defines.ca_connecting);
+            Context.cls.setServername("localhost");
             // we don't need a challenge on the localhost
             SendConnectPacket();
             return;
         }
 
         // resend if we haven't gotten a reply yet
-        if (Context.cls.state != Defines.ca_connecting)
+        if (Context.cls.getState() != Defines.ca_connecting)
             return;
 
-        if (Context.cls.realtime - Context.cls.connect_time < 3000)
+        if (Context.cls.getRealtime() - Context.cls.getConnectTime() < 3000)
             return;
 
         TNetAddr adr = new TNetAddr();
-        if (!NET.StringToAdr(Context.cls.servername, adr)) {
+        if (!Network.StringToAdr(Context.cls.getServername(), adr)) {
             Command.Printf("Bad server address\n");
-            Context.cls.state = Defines.ca_disconnected;
+            Context.cls.setState(Defines.ca_disconnected);
             return;
         }
         if (adr.port == 0)
             adr.port = Defines.PORT_SERVER;
 
         // for retransmit requests
-        Context.cls.connect_time = Context.cls.realtime;
+        Context.cls.setConnectTime(Context.cls.getRealtime());
 
-        Command.Printf("Connecting to " + Context.cls.servername + "...\n");
+        Command.Printf("Connecting to " + Context.cls.getServername() + "...\n");
 
         Netchan.OutOfBandPrint(Defines.NS_CLIENT, adr, "getchallenge\n");
     }
@@ -671,12 +663,12 @@ public final class CL {
 
         // wipe the entire cl structure
 
-        Context.cl = new client_state_t();
+        Context.cl = new TClientState();
         for (int i = 0; i < Context.cl_entities.length; i++) {
             Context.cl_entities[i] = new TClEentity();
         }
 
-        Context.cls.netchan.message.clear();
+        Context.cls.getNetchan().message.clear();
     }
 
     /**
@@ -690,7 +682,7 @@ public final class CL {
 
         String fin;
 
-        if (Context.cls.state == Defines.ca_disconnected)
+        if (Context.cls.getState() == Defines.ca_disconnected)
             return;
 
         if (Context.cl_timedemo != null && Context.cl_timedemo.value != 0.0f) {
@@ -706,30 +698,30 @@ public final class CL {
         
         Context.re.CinematicSetPalette(null);
 
-        Menu.ForceMenuOff();
+        Menu.forceMenuOff();
 
-        Context.cls.connect_time = 0;
+        Context.cls.setConnectTime(0);
 
         SCR.StopCinematic();
 
-        if (Context.cls.demorecording)
+        if (Context.cls.getDemorecording())
             Stop_f.execute();
 
         // send a disconnect message to the server
         fin = (char) Defines.clc_stringcmd + "disconnect";
-        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Context.cls.netchan, fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
+        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
 
         ClearState();
 
         // stop download
-        if (Context.cls.download != null) {
-            Lib.fclose(Context.cls.download);
-            Context.cls.download = null;
+        if (Context.cls.getDownload() != null) {
+            Lib.fclose(Context.cls.getDownload());
+            Context.cls.setDownload(null);
         }
 
-        Context.cls.state = Defines.ca_disconnected;
+        Context.cls.setState(Defines.ca_disconnected);
     }
 
     /**
@@ -768,15 +760,15 @@ public final class CL {
 
         // server connection
         if (c.equals("client_connect")) {
-            if (Context.cls.state == Defines.ca_connected) {
+            if (Context.cls.getState() == Defines.ca_connected) {
                 Command.Printf("Dup connect received.  Ignored.\n");
                 return;
             }
-            Netchan.Setup(Defines.NS_CLIENT, Context.cls.netchan,
-                    Context.net_from, Context.cls.quakePort);
-            Context.cls.netchan.message.writeChar(Defines.clc_stringcmd);
-            Context.cls.netchan.message.writeString("new");
-            Context.cls.state = Defines.ca_connected;
+            Netchan.Setup(Defines.NS_CLIENT, Context.cls.getNetchan(),
+                    Context.net_from, Context.cls.getQuakePort());
+            Context.cls.getNetchan().message.writeChar(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.writeString("new");
+            Context.cls.setState(Defines.ca_connected);
             return;
         }
 
@@ -788,7 +780,7 @@ public final class CL {
 
         // remote command from gui front end
         if (c.equals("cmd")) {
-            if (!NET.IsLocalAddress(Context.net_from)) {
+            if (!Network.IsLocalAddress(Context.net_from)) {
                 Command.Printf("Command packet from remote host.  Ignored.\n");
                 return;
             }
@@ -813,7 +805,7 @@ public final class CL {
 
         // challenge from the server we are connecting to
         if (c.equals("challenge")) {
-            Context.cls.challenge = Lib.atoi(Cmd.Argv(1));
+            Context.cls.setChallenge(Lib.atoi(Cmd.Argv(1)));
             SendConnectPacket();
             return;
         }
@@ -833,7 +825,7 @@ public final class CL {
      * ReadPackets
      */
     static void ReadPackets() {
-        while (NET.GetPacket(Defines.NS_CLIENT, Context.net_from,
+        while (Network.GetPacket(Defines.NS_CLIENT, Context.net_from,
                 Context.net_message)) {
 
             //
@@ -848,12 +840,12 @@ public final class CL {
                 continue;
             }
 
-            if (Context.cls.state == Defines.ca_disconnected
-                    || Context.cls.state == Defines.ca_connecting)
+            if (Context.cls.getState() == Defines.ca_disconnected
+                    || Context.cls.getState() == Defines.ca_connecting)
                 continue; // dump it if not connected
 
             if (Context.net_message.cursize < 8) {
-                Command.Printf(NET.AdrToString(Context.net_from)
+                Command.Printf(Network.AdrToString(Context.net_from)
                         + ": Runt packet\n");
                 continue;
             }
@@ -861,13 +853,13 @@ public final class CL {
             //
             // packet from server
             //
-            if (!NET.CompareAdr(Context.net_from,
-                    Context.cls.netchan.remote_address)) {
-                Command.DPrintf(NET.AdrToString(Context.net_from)
+            if (!Network.CompareAdr(Context.net_from,
+                    Context.cls.getNetchan().remote_address)) {
+                Command.DPrintf(Network.AdrToString(Context.net_from)
                         + ":sequenced packet without connection\n");
                 continue;
             }
-            if (!Netchan.Process(Context.cls.netchan, Context.net_message))
+            if (!Netchan.Process(Context.cls.getNetchan(), Context.net_message))
                 continue; // wasn't accepted for some reason
             CL_parse.ParseServerMessage();
         }
@@ -875,8 +867,8 @@ public final class CL {
         //
         // check timeout
         //
-        if (Context.cls.state >= Defines.ca_connected
-                && Context.cls.realtime - Context.cls.netchan.last_received > Context.cl_timeout.value * 1000) {
+        if (Context.cls.getState() >= Defines.ca_connected
+                && Context.cls.getRealtime() - Context.cls.getNetchan().last_received > Context.cl_timeout.value * 1000) {
             if (++Context.cl.timeoutcount > 5) // timeoutcount saves debugger
             {
                 Command.Printf("\nServer connection timed out.\n");
@@ -922,7 +914,7 @@ public final class CL {
 
         qfiles.dmdl_t pheader;
 
-        if (Context.cls.state != Defines.ca_connected)
+        if (Context.cls.getState() != Defines.ca_connected)
             return;
 
         if (ServerMain.allow_download.value == 0 && CL.precache_check < ENV_CNT)
@@ -961,7 +953,7 @@ public final class CL {
                     if (CL.precache_model == null) {
 
                         CL.precache_model = FileSystem
-                                .LoadFile(Context.cl.configstrings[CL.precache_check]);
+                                .loadFile(Context.cl.configstrings[CL.precache_check]);
                         if (CL.precache_model == null) {
                             CL.precache_model_skin = 0;
                             CL.precache_check++;
@@ -1228,8 +1220,8 @@ public final class CL {
         CL_parse.RegisterSounds();
         ClientView.PrepRefresh();
 
-        Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-        Context.cls.netchan.message.writeString("begin "
+        Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+        Context.cls.getNetchan().message.writeString("begin "
                 + CL.precache_spawncount + "\n");
     }
 
@@ -1237,8 +1229,8 @@ public final class CL {
      * InitLocal
      */
     public static void InitLocal() {
-        Context.cls.state = Defines.ca_disconnected;
-        Context.cls.realtime = Timer.Milliseconds();
+        Context.cls.setState(Defines.ca_disconnected);
+        Context.cls.setRealtime(Timer.Milliseconds());
 
         CL_input.InitInput();
 
@@ -1395,7 +1387,7 @@ public final class CL {
 //        if (Context.cls.state == Defines.ca_uninitialized)
 //            return;
 
-        path = FileSystem.Gamedir() + "/config.cfg";
+        path = FileSystem.gamedir() + "/config.cfg";
         f = Lib.fopen(path, "rw");
         if (f == null) {
             Command.Printf("Couldn't write config.cfg.\n");
@@ -1454,10 +1446,10 @@ public final class CL {
      */
     public static void SendCommand() {
         // get new key events
-        QSystem.SendKeyEvents();
+        Key.SendKeyEvents();
 
         // allow mice or other external controllers to add commands
-        IN.Commands();
+        Input.Commands();
 
         // process console commands
         Cbuf.Execute();
@@ -1485,7 +1477,7 @@ public final class CL {
         extratime += msec;
 
         if (Context.cl_timedemo.value == 0.0f) {
-            if (Context.cls.state == Defines.ca_connected && extratime < 100) {
+            if (Context.cls.getState() == Defines.ca_connected && extratime < 100) {
                 return; // don't flood packets out while connecting
             }
             if (extratime < 1000 / Context.cl_maxfps.value) {
@@ -1494,21 +1486,21 @@ public final class CL {
         }
 
         // let the mouse activate or deactivate
-        IN.Frame();
+        Input.Frame();
 
         // decide the simulation time
-        Context.cls.frametime = extratime / 1000.0f;
+        Context.cls.setFrametime(extratime / 1000.0f);
         Context.cl.time += extratime;
-        Context.cls.realtime = Context.curtime;
+        Context.cls.setRealtime(Context.curtime);
 
         extratime = 0;
 
-        if (Context.cls.frametime > (1.0f / 5))
-            Context.cls.frametime = (1.0f / 5);
+        if (Context.cls.getFrametime() > (1.0f / 5))
+            Context.cls.setFrametime((1.0f / 5));
 
         // if in the debugger last frame, don't timeout
         if (msec > 5000)
-            Context.cls.netchan.last_received = Timer.Milliseconds();
+            Context.cls.getNetchan().last_received = Timer.Milliseconds();
 
         // fetch results from server
         ReadPackets();
@@ -1522,7 +1514,7 @@ public final class CL {
         // allow rendering DLL change
         VID.CheckChanges();
         if (!Context.cl.refresh_prepped
-                && Context.cls.state == Defines.ca_active) {
+                && Context.cls.getState() == Defines.ca_active) {
             ClientView.PrepRefresh();
             // force GC after level loading
             // but not on playing a cinematic
@@ -1538,12 +1530,12 @@ public final class CL {
         // advance local effects for next frame
         CLEffects.RunDLights();
         CLEffects.RunLightStyles();
-        SCR.RunCinematic();
+        SCR.runCinematic();
         SCR.RunConsole();
 
-        Context.cls.framecount++;
-        if (Context.cls.state != Defines.ca_active
-                || Context.cls.key_dest != Defines.key_game) {
+        Context.cls.setFramecount(Context.cls.getFramecount() + 1);
+        if (Context.cls.getState() != Defines.ca_active
+                || Context.cls.getKey_dest() != Defines.key_game) {
             try {
                 Thread.sleep(20);
             } catch (InterruptedException e) {
@@ -1565,7 +1557,7 @@ public final class CL {
         WriteConfiguration();
 
         Sound.Shutdown();
-        IN.Shutdown();
+        Input.Shutdown();
         VID.Shutdown();
     }
 
@@ -1591,10 +1583,10 @@ public final class CL {
         Menu.Init();
 
         SCR.Init();
-        //Context.cls.disable_screen = 1.0f; // don't draw yet
+        //Context.cls.disableScreen = 1.0f; // don't draw yet
 
         InitLocal();
-        IN.Init();
+        Input.Init();
 
         FileSystem.ExecAutoexec();
         Cbuf.Execute();
@@ -1604,15 +1596,15 @@ public final class CL {
      * Called after an ERR_DROP was thrown.
      */
     public static void Drop() {
-        if (Context.cls.state == Defines.ca_uninitialized)
+        if (Context.cls.getState() == Defines.ca_uninitialized)
             return;
-        if (Context.cls.state == Defines.ca_disconnected)
+        if (Context.cls.getState() == Defines.ca_disconnected)
             return;
 
         Disconnect();
 
         // drop loading plaque unless this is the initial game start
-        if (Context.cls.disable_servercount != -1)
+        if (Context.cls.getDisableServerCount() != -1)
             SCR.EndLoadingPlaque(); // get rid of loading plaque
     }
 }

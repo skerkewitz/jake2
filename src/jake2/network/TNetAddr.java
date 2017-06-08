@@ -23,7 +23,7 @@
 package jake2.network;
 
 import jake2.Defines;
-import jake2.sys.NET;
+import jake2.sys.Network;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -70,7 +70,7 @@ public class TNetAddr {
     }
 
     public String toString() {
-        return (type == Defines.NA_LOOPBACK) ? "loopback" : NET
+        return (type == Defines.NA_LOOPBACK) ? "loopback" : Network
                 .AdrToString(this);
     }
 }

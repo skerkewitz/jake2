@@ -22,31 +22,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.server;
 
-import jake2.game.TEntityDict;
-import jake2.game.trace_t;
-import jake2.util.Math3D;
+import jake2.game.TLink;
 
-public class moveclip_t 
-{
-	float [] boxmins={0,0,0}, boxmaxs={0,0,0};// enclose the test object along entire move
-	float [] mins, maxs;	// size of the moving object
-	float [] mins2={0,0,0}, maxs2={0,0,0};	// size when clipping against mosnters
-	float [] start, end;
-	// mem
-	trace_t	trace	= new trace_t();
-	TEntityDict passedict;
-	int contentmask;
-	
-	public void clear() {
-		Math3D.VectorClear(boxmins);
-		Math3D.VectorClear(boxmaxs);
-		Math3D.VectorClear(mins);
-		Math3D.VectorClear(maxs);
-		Math3D.VectorClear(mins2);
-		Math3D.VectorClear(maxs2);
-		start = end = null;
-		trace.clear();
-		passedict = null;
-		contentmask = 0;
-	}
+public class TAreaNode {
+    int axis; // -1 = leaf node
+    float dist;
+    TAreaNode children[] = new TAreaNode[2];
+    TLink trigger_edicts = new TLink(this);
+    TLink solid_edicts = new TLink(this);
+
+    // used for debugging
+//	float mins_rst[] = {0,0,0};
+//	float maxs_rst[] = {0,0,0};
 }

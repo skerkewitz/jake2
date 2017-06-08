@@ -119,7 +119,7 @@ public class MD4 extends MessageDigest implements Cloneable {
 	 * MD4 block update operation.
 	 * <p>
 	 * Continues an MD4 message digest operation, by filling the buffer,
-	 * transform(ing) data in 512-bit message block(s), updating the variables
+	 * transform(ing) data in 512-bit message block(entityState), updating the variables
 	 * context and count, and leaving (buffering) the remaining bytes in buffer
 	 * for the next update or finish.
 	 *
@@ -128,7 +128,7 @@ public class MD4 extends MessageDigest implements Cloneable {
 	 * @param    len        count of bytes in input block to consider
 	 */
 	public void engineUpdate(byte[] input, int offset, int len) {
-		// make sure we don't exceed input's allocated size/length
+		// make sure we don't exceed input'entityState allocated size/length
 		if (offset < 0 || len < 0 || (long) offset + len > input.length)
 			throw new ArrayIndexOutOfBoundsException();
 
@@ -176,7 +176,7 @@ public class MD4 extends MessageDigest implements Cloneable {
 		engineUpdate(tail, 0, tail.length);
 
 		byte[] result = new byte[16];
-		// cast this MD4's context (array of 4 ints) into an array of 16 bytes.
+		// cast this MD4'entityState context (array of 4 ints) into an array of 16 bytes.
 		for (int i = 0; i < 4; i++)
 			for (int j = 0; j < 4; j++)
 				result[i * 4 + j] = (byte) (context[i] >>> (8 * j));

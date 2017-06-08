@@ -104,7 +104,7 @@ public class CLEntity {
 		to.number = number;
 
 		if ((bits & Defines.U_MODEL) != 0)
-			to.modelindex = TSizeBuffer.ReadByte(Context.net_message);
+			to.modelIndex = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL2) != 0)
 			to.modelindex2 = TSizeBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL3) != 0)
@@ -189,7 +189,7 @@ public class CLEntity {
 		ParseDelta(old, state, newnum, bits);
 
 		// some data changes will force no lerping
-		if (state.modelindex != ent.current.modelindex || state.modelindex2 != ent.current.modelindex2
+		if (state.modelIndex != ent.current.modelIndex || state.modelindex2 != ent.current.modelindex2
 				|| state.modelindex3 != ent.current.modelindex3 || state.modelindex4 != ent.current.modelindex4
 				|| Math.abs(state.origin[0] - ent.current.origin[0]) > 512 || Math.abs(state.origin[1] - ent.current.origin[1]) > 512
 				|| Math.abs(state.origin[2] - ent.current.origin[2]) > 512 || state.event == Defines.EV_PLAYER_TELEPORT
@@ -353,7 +353,7 @@ public class CLEntity {
 	 */
 	public static void ParsePlayerstate(TFrame oldframe, TFrame newframe) {
 		int flags;
-		player_state_t state;
+		TPlayerState state;
 		int i;
 		int statbits;
 
@@ -406,7 +406,7 @@ public class CLEntity {
 			state.pmove.pm_type = Defines.PM_FREEZE; // demo playback
 
 		//
-		// parse the rest of the player_state_t
+		// parse the rest of the TPlayerState
 		//
 		if ((flags & Defines.PS_VIEWOFFSET) != 0) {
 			state.viewoffset[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
@@ -499,7 +499,7 @@ public class CLEntity {
 		Context.cl.frame.servertime = Context.cl.frame.serverframe * 100;
 
 		// BIG HACK to let old demos continue to work
-		if (Context.cls.serverProtocol != 26)
+		if (Context.cls.getServerProtocol() != 26)
 			Context.cl.surpressCount = TSizeBuffer.ReadByte(Context.net_message);
 
 		if (Context.cl_shownet.value == 3)
@@ -512,7 +512,7 @@ public class CLEntity {
 		if (Context.cl.frame.deltaframe <= 0) {
 			Context.cl.frame.valid = true; // uncompressed frame
 			old = null;
-			Context.cls.demowaiting = false; // we can start recording now
+			Context.cls.setDemowaiting(false); // we can start recording now
 		} else {
 			old = Context.cl.frames[Context.cl.frame.deltaframe & Defines.UPDATE_MASK];
 			if (!old.valid) { // should never happen
@@ -537,7 +537,7 @@ public class CLEntity {
 		else if (Context.cl.time < Context.cl.frame.servertime - 100)
 			Context.cl.time = Context.cl.frame.servertime - 100;
 
-		// read areabits
+		// read areaBits
 		len = TSizeBuffer.ReadByte(Context.net_message);
 		TSizeBuffer.ReadData(Context.net_message, Context.cl.frame.areabits, len);
 
@@ -561,8 +561,8 @@ public class CLEntity {
 
 		if (Context.cl.frame.valid) {
 			// getting a valid frame message ends the connection process
-			if (Context.cls.state != Defines.ca_active) {
-				Context.cls.state = Defines.ca_active;
+			if (Context.cls.getState() != Defines.ca_active) {
+				Context.cls.setState(Defines.ca_active);
 				Context.cl.force_refdef = true;
 
 				Context.cl.predicted_origin[0] = Context.cl.frame.playerstate.pmove.origin[0] * 0.125f;
@@ -570,7 +570,7 @@ public class CLEntity {
 				Context.cl.predicted_origin[2] = Context.cl.frame.playerstate.pmove.origin[2] * 0.125f;
 
 				Math3D.VectorCopy(Context.cl.frame.playerstate.viewangles, Context.cl.predicted_angles);
-				if (Context.cls.disable_servercount != Context.cl.servercount && Context.cl.refresh_prepped)
+				if (Context.cls.getDisableServerCount() != Context.cl.servercount && Context.cl.refresh_prepped)
 					SCR.EndLoadingPlaque(); // get rid of loading plaque
 			}
 			Context.cl.sound_prepped = true; // can start mixing ambient sounds
@@ -603,7 +603,7 @@ public class CLEntity {
 		int pnum;
 		TClEentity cent;
 		int autoanim;
-		clientinfo_t ci;
+		TClientInfo ci;
 		int effects, renderfx;
 
 		// bonus items rotate at a fixed rate
@@ -612,7 +612,7 @@ public class CLEntity {
 		// brush models can auto animate their frames
 		autoanim = 2 * Context.cl.time / 1000;
 
-		//memset( ent, 0, sizeof(ent));
+		//memset( entityDict, 0, sizeof(entityDict));
 		ent.clear();
 
 		for (pnum = 0; pnum < frame.num_entities; pnum++) {
@@ -689,7 +689,7 @@ public class CLEntity {
 				ent.model = null;
 			} else {
 				// set skin
-				if (s1.modelindex == 255) { // use custom player skin
+				if (s1.modelIndex == 255) { // use custom player skin
 					ent.skinnum = 0;
 					ci = Context.cl.clientinfo[s1.skinnum & 0xff];
 					ent.skin = ci.skin;
@@ -718,7 +718,7 @@ public class CLEntity {
 				} else {
 					ent.skinnum = s1.skinnum;
 					ent.skin = null;
-					ent.model = Context.cl.model_draw[s1.modelindex];
+					ent.model = Context.cl.model_draw[s1.modelIndex];
 				}
 			}
 
@@ -779,7 +779,7 @@ public class CLEntity {
 			}
 
 			// if set to invisible, skip
-			if (s1.modelindex == 0)
+			if (s1.modelIndex == 0)
 				continue;
 
 			if ((effects & Defines.EF_BFG) != 0) {
@@ -839,7 +839,7 @@ public class CLEntity {
 						// if we have a blue shell (and not a red shell), turn
 						// it to cyan by adding green
 						else if ((renderfx & Defines.RF_SHELL_BLUE) != 0)
-							// go to green if it's on already, otherwise do cyan
+							// go to green if it'entityState on already, otherwise do cyan
 							// (flash green)
 							if ((renderfx & Defines.RF_SHELL_GREEN) != 0)
 								renderfx &= ~Defines.RF_SHELL_BLUE;
@@ -921,7 +921,7 @@ public class CLEntity {
 				// EF_BLASTER | EF_TRACKER is a special case for EF_BLASTER2...
 				// Cheese!
 				else if ((effects & Defines.EF_BLASTER) != 0) {
-					//					CL_BlasterTrail (cent.lerp_origin, ent.origin);
+					//					CL_BlasterTrail (cent.lerp_origin, entityDict.origin);
 					//	  PGM
 					if ((effects & Defines.EF_TRACKER) != 0) // lame...
 															 // problematic?
@@ -1029,7 +1029,7 @@ public class CLEntity {
 	/*
 	 * ============== CL_AddViewWeapon ==============
 	 */
-	static void AddViewWeapon(player_state_t ps, player_state_t ops) {
+	static void AddViewWeapon(TPlayerState ps, TPlayerState ops) {
 		int i;
 
 		// allow the gun to be completely removed
@@ -1084,7 +1084,7 @@ public class CLEntity {
 		int i;
 		float lerp, backlerp;
 		TFrame oldframe;
-		player_state_t ps, ops;
+		TPlayerState ps, ops;
 
 		// find the previous frame to interpolate from
 		ps = Context.cl.frame.playerstate;
@@ -1118,7 +1118,7 @@ public class CLEntity {
 			}
 
 			// smooth out stair climbing
-			delta = Context.cls.realtime - Context.cl.predicted_step_time;
+			delta = Context.cls.getRealtime() - Context.cl.predicted_step_time;
 			if (delta < 100)
 				Context.cl.refdef.vieworg[2] -= Context.cl.predicted_step * (100 - delta) * 0.01;
 		} else { // just use interpolated values
@@ -1161,7 +1161,7 @@ public class CLEntity {
 	 * Emits all entities, particles, and lights to the refresh ===============
 	 */
 	static void AddEntities() {
-		if (Context.cls.state != Defines.ca_active)
+		if (Context.cls.getState() != Defines.ca_active)
 			return;
 
 		if (Context.cl.time > Context.cl.frame.servertime) {
@@ -1205,7 +1205,7 @@ public class CLEntity {
 		TClEentity old;
 
 		if (ent < 0 || ent >= Defines.MAX_EDICTS)
-			Command.Error(Defines.ERR_DROP, "CL_GetEntitySoundOrigin: bad ent");
+			Command.Error(Defines.ERR_DROP, "CL_GetEntitySoundOrigin: bad entityDict");
 		old = Context.cl_entities[ent];
 		Math3D.VectorCopy(old.lerp_origin, org);
 

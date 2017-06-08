@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 package jake2.client;
 
-import jake2.game.player_state_t;
+import jake2.game.TPlayerState;
 
 import java.util.Arrays;
 
@@ -36,7 +36,7 @@ public class TFrame {
 	public int servertime;		// server time the message is valid for (in msec)
 	int				deltaframe;
 	byte			areabits[] = new byte [MAX_MAP_AREAS/8];		// portalarea visibility bits
-	public 		player_state_t playerstate = new player_state_t(); // mem
+	public TPlayerState playerstate = new TPlayerState(); // mem
 	public int				num_entities;
 	public int				parse_entities;	// non-masked index into cl_parse_entities array
 		

@@ -39,9 +39,9 @@ import static jake2.client.Context.cl;
 import static jake2.client.Context.cls;
 
 /**
- * IN
+ * Input
  */
-public final class IN {
+public final class Input {
 
     static boolean mouse_avail = true;
 
@@ -59,7 +59,7 @@ public final class IN {
 
     static boolean mlooking;
 
-    public static void ActivateMouse() {
+    private static void ActivateMouse() {
         if (!mouse_avail)
             return;
         if (!mouse_active) {
@@ -69,7 +69,7 @@ public final class IN {
         }
     }
 
-    public static void DeactivateMouse() {
+    private static void DeactivateMouse() {
         // if (!mouse_avail || c == null) return;
         if (mouse_active) {
             uninstall_grabs();
@@ -117,69 +117,69 @@ public final class IN {
         Context.m_forward = ConsoleVar.Get("m_forward", "1", 0);
         Context.m_side = ConsoleVar.Get("m_side", "0.8", 0);
 
-        Cmd.AddCommand("+mlook", () -> MLookDown());
-        Cmd.AddCommand("-mlook", () -> MLookUp());
-        Cmd.AddCommand("force_centerview", () -> Force_CenterView_f());
-        Cmd.AddCommand("togglemouse", () -> toggleMouse());
+        Cmd.AddCommand("+mlook", Input::MLookDown);
+        Cmd.AddCommand("-mlook", Input::MLookUp);
+        Cmd.AddCommand("force_centerview", Input::Force_CenterView_f);
+        Cmd.AddCommand("togglemouse", Input::toggleMouse);
 
-        IN.mouse_avail = true;
+        Input.mouse_avail = true;
     }
 
     public static void Commands() {
-		int i;
-	
-		if (!IN.mouse_avail) 
-			return;
+
+		if (!Input.mouse_avail) {
+            return;
+        }
 	
 		Keyboard keyboard = Context.re.getKeyboardHandler();
-		for (i=0 ; i<3 ; i++) {
-			if ( (IN.mouse_buttonstate & (1<<i)) != 0 && (IN.mouse_oldbuttonstate & (1<<i)) == 0 )
+		for (int i=0 ; i<3 ; i++) {
+			if ( (Input.mouse_buttonstate & (1<<i)) != 0 && (Input.mouse_oldbuttonstate & (1<<i)) == 0 )
 				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, true);
 	
-			if ( (IN.mouse_buttonstate & (1<<i)) == 0 && (IN.mouse_oldbuttonstate & (1<<i)) != 0 )
+			if ( (Input.mouse_buttonstate & (1<<i)) == 0 && (Input.mouse_oldbuttonstate & (1<<i)) != 0 )
 				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, false);
 		}
-		IN.mouse_oldbuttonstate = IN.mouse_buttonstate;		
+		Input.mouse_oldbuttonstate = Input.mouse_buttonstate;
     }
 
     public static void Frame() {
 
-        if (!cl.cinematicpalette_active && (!cl.refresh_prepped || cls.key_dest == key_console
-                || cls.key_dest == key_menu))
+        if (!cl.cinematicpalette_active
+                && (!cl.refresh_prepped || cls.getKey_dest() == key_console || cls.getKey_dest() == key_menu)) {
             DeactivateMouse();
-        else
+        } else {
             ActivateMouse();
+        }
     }
 
     public static void CenterView() {
-        cl.viewangles[PITCH] = -Math3D
-                .SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[PITCH]);
+        cl.viewangles[PITCH] = -Math3D.SHORT2ANGLE(cl.frame.playerstate.pmove.delta_angles[PITCH]);
     }
 
     public static void Move(usercmd_t cmd) {
-        if (!IN.mouse_avail)
+        if (!Input.mouse_avail)
             return;
 
         if (Context.m_filter.value != 0.0f) {
-            Keyboard.mx = (Keyboard.mx + IN.old_mouse_x) / 2;
-            Keyboard.my = (Keyboard.my + IN.old_mouse_y) / 2;
+            Keyboard.mx = (Keyboard.mx + Input.old_mouse_x) / 2;
+            Keyboard.my = (Keyboard.my + Input.old_mouse_y) / 2;
         }
 
-        IN.old_mouse_x = Keyboard.mx;
-        IN.old_mouse_y = Keyboard.my;
+        Input.old_mouse_x = Keyboard.mx;
+        Input.old_mouse_y = Keyboard.my;
 
         Keyboard.mx = (int) (Keyboard.mx * Context.sensitivity.value);
         Keyboard.my = (int) (Keyboard.my * Context.sensitivity.value);
 
         // add mouse X/Y movement to cmd
         if ((CL_input.in_strafe.state & 1) != 0
-                || ((Context.lookstrafe.value != 0) && IN.mlooking)) {
+                || ((Context.lookstrafe.value != 0) && Input.mlooking)) {
             cmd.sidemove += Context.m_side.value * Keyboard.mx;
         } else {
             cl.viewangles[YAW] -= Context.m_yaw.value * Keyboard.mx;
         }
 
-        if ((IN.mlooking || Context.freelook.value != 0.0f)
+        if ((Input.mlooking || Context.freelook.value != 0.0f)
                 && (CL_input.in_strafe.state & 1) == 0) {
             cl.viewangles[PITCH] += Context.m_pitch.value * Keyboard.my;
         } else {
@@ -188,16 +188,16 @@ public final class IN {
         Keyboard.mx = Keyboard.my = 0;
     }
 
-    static void MLookDown() {
+    private static void MLookDown() {
         mlooking = true;
     }
 
-    static void MLookUp() {
+    private static void MLookUp() {
         mlooking = false;
         CenterView();
     }
 
-    static void Force_CenterView_f() {
+    private static void Force_CenterView_f() {
         cl.viewangles[PITCH] = 0;
     }
 

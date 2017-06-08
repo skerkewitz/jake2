@@ -23,7 +23,7 @@
 package jake2.game.monsters;
 
 import jake2.Defines;
-import jake2.client.M;
+import jake2.client.Monster;
 import jake2.game.*;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -639,7 +639,7 @@ public class M_Mutant {
     static EntThinkAdapter mutant_check_refire = new EntThinkAdapter() {
     	public String getID(){ return "mutant_check_refire"; }
         public boolean think(TEntityDict self) {
-            if (null == self.enemy || !self.enemy.inuse
+            if (null == self.enemy || !self.enemy.inUse
                     || self.enemy.health <= 0)
                 return true;
 
@@ -692,14 +692,14 @@ public class M_Mutant {
 
                     Math3D.VectorCopy(self.velocity, normal);
                     Math3D.VectorNormalize(normal);
-                    Math3D.VectorMA(self.s.origin, self.maxs[0], normal, point);
+                    Math3D.VectorMA(self.entityState.origin, self.maxs[0], normal, point);
                     damage = (int) (40 + 10 * Lib.random());
                     GameCombat.T_Damage(other, self, self, self.velocity, point,
                             normal, damage, damage, 0, Defines.MOD_UNKNOWN);
                 }
             }
 
-            if (!M.M_CheckBottom(self)) {
+            if (!Monster.M_CheckBottom(self)) {
                 if (self.groundentity != null) {
                     self.monsterinfo.nextframe = FRAME_attack02;
                     self.touch = null;
@@ -719,8 +719,8 @@ public class M_Mutant {
 
             GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_sight, 1,
                     Defines.ATTN_NORM, 0);
-            Math3D.AngleVectors(self.s.angles, forward, null, null);
-            self.s.origin[2] += 1;
+            Math3D.AngleVectors(self.entityState.angles, forward, null, null);
+            self.entityState.origin[2] += 1;
             Math3D.VectorScale(forward, 600, self.velocity);
             self.velocity[2] = 250;
             self.groundentity = null;
@@ -796,8 +796,8 @@ public class M_Mutant {
             if (self.absmax[2] < (self.enemy.absmin[2] + 0.25 * self.enemy.size[2]))
                 return false;
 
-            v[0] = self.s.origin[0] - self.enemy.s.origin[0];
-            v[1] = self.s.origin[1] - self.enemy.s.origin[1];
+            v[0] = self.entityState.origin[0] - self.enemy.entityState.origin[0];
+            v[1] = self.entityState.origin[1] - self.enemy.entityState.origin[1];
             v[2] = 0;
             distance = Math3D.VectorLength(v);
 
@@ -881,7 +881,7 @@ public class M_Mutant {
             float r;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -920,7 +920,7 @@ public class M_Mutant {
             self.svflags |= Defines.SVF_DEADMONSTER;
             GameBase.gi.linkentity(self);
 
-            M.M_FlyCheck.think(self);
+            Monster.M_FlyCheck.think(self);
             return true;
         }
     };
@@ -985,7 +985,7 @@ public class M_Mutant {
                     Defines.ATTN_NORM, 0);
             self.deadflag = Defines.DEAD_DEAD;
             self.takedamage = Defines.DAMAGE_YES;
-            self.s.skinnum = 1;
+            self.entityState.skinnum = 1;
 
             if (Lib.random() < 0.5)
                 self.monsterinfo.currentmove = mutant_move_death1;
@@ -1026,7 +1026,7 @@ public class M_Mutant {
 
             self.movetype = Defines.MOVETYPE_STEP;
             self.solid = Defines.SOLID_BBOX;
-            self.s.modelindex = GameBase.gi
+            self.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/mutant/tris.md2");
             Math3D.VectorSet(self.mins, -32, -32, -24);
             Math3D.VectorSet(self.maxs, 32, 32, 48);

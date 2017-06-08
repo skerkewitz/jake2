@@ -266,7 +266,7 @@ public final class V {
     static void RenderView(float stereo_separation) {
         //		extern int entitycmpfnc( const TEntity *, const TEntity * );
         //
-        if (cls.state != ca_active)
+        if (cls.getState() != ca_active)
             return;
 
         if (!cl.refresh_prepped)
@@ -356,7 +356,7 @@ public final class V {
 
         re.RenderFrame(cl.refdef);
         if (cl_stats.value != 0.0f)
-            Command.Printf("ent:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
+            Command.Printf("entityDict:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
         if (log_stats.value != 0.0f && (log_stats_file != null))
             try {
                 log_stats_file.write(r_numentities + "," + r_numdlights + ","

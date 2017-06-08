@@ -81,7 +81,7 @@ public class ServerUser {
 
         name = "demos/" + ServerInit.sv.name;
         try {
-            ServerInit.sv.demofile = FileSystem.FOpenFile(name);
+            ServerInit.sv.demofile = FileSystem.openfile(name);
         } catch (IOException e) {
             Command.Error(Defines.ERR_DROP, "Couldn't open " + name + "\n");
         }
@@ -143,8 +143,8 @@ public class ServerUser {
         // 
         if (ServerInit.sv.state == Defines.ss_game) {
             // set up the entity for the client
-            TEntityDict ent = GameBase.g_edicts[playernum + 1];
-            ent.s.number = playernum + 1;
+            TEntityDict ent = GameBase.entityDicts[playernum + 1];
+            ent.entityState.number = playernum + 1;
             ServerMain.sv_client.edict = ent;
             ServerMain.sv_client.lastcmd = new usercmd_t();
 
@@ -235,7 +235,7 @@ public class ServerUser {
         while (ServerMain.sv_client.netchan.message.cursize < Defines.MAX_MSGLEN / 2
                 && start < Defines.MAX_EDICTS) {
             base = ServerInit.sv.baselines[start];
-            if (base.modelindex != 0 || base.sound != 0 || base.effects != 0) {
+            if (base.modelIndex != 0 || base.sound != 0 || base.effects != 0) {
                 ServerMain.sv_client.netchan.message.writeByte(Defines.svc_spawnbaseline);
                 ServerMain.sv_client.netchan.message.writeDeltaEntity(nullstate, base, true, true);
             }
@@ -353,7 +353,7 @@ public class ServerUser {
         if (ServerMain.sv_client.download != null)
             FileSystem.FreeFile(ServerMain.sv_client.download);
 
-        ServerMain.sv_client.download = FileSystem.LoadFile(name);
+        ServerMain.sv_client.download = FileSystem.loadFile(name);
         
         // rst: this handles loading errors, no message yet visible 
         if (ServerMain.sv_client.download == null)
@@ -487,7 +487,7 @@ public class ServerUser {
      * ===========================================================================
      */
 
-    public static void SV_ClientThink(client_t cl, usercmd_t cmd) {
+    public static void SV_ClientThink(TClient cl, usercmd_t cmd) {
         cl.commandMsec -= cmd.msec & 0xFF;
 
         if (cl.commandMsec < 0 && ServerMain.sv_enforcetime.value != 0) {
@@ -504,7 +504,7 @@ public class ServerUser {
      * The current net_message is parsed for the given client
      * ===================
      */
-    public static void SV_ExecuteClientMessage(client_t cl) {
+    public static void SV_ExecuteClientMessage(TClient cl) {
         int c;
         String s;
 
@@ -564,7 +564,7 @@ public class ServerUser {
                     if (cl.lastframe > 0) {
                         cl.frame_latency[cl.lastframe
                                 & (Defines.LATENCY_COUNTS - 1)] = ServerInit.svs.realtime
-                                - cl.frames[cl.lastframe & Defines.UPDATE_MASK].senttime;
+                                - cl.frames[cl.lastframe & Defines.UPDATE_MASK].getSentTime();
                     }
                 }
 

@@ -326,7 +326,7 @@ public class Warp {
 
 	int c_sky;
 
-	// 1 = s, 2 = t, 3 = 2048
+	// 1 = entityState, 2 = t, 3 = 2048
 	int[][]	st_to_vec =
 	{
 		{3,-1,2},
@@ -692,10 +692,10 @@ public class Warp {
 				RenderAPIImpl.main.gl_picmip.value++;
 
 			if ( RenderAPIImpl.main.qglColorTableEXT && RenderAPIImpl.main.gl_ext_palettedtexture.value != 0) {
-				//	Com_sprintf (pathname, sizeof(pathname), "env/%s%s.pcx", skyname, suf[i]);
+				//	Com_sprintf (pathname, sizeof(pathname), "env/%entityState%entityState.pcx", skyname, suf[i]);
 				pathname = "env/" + skyname + suf[i] + ".pcx";
 			} else {
-				// Com_sprintf (pathname, sizeof(pathname), "env/%s%s.tga", skyname, suf[i]);
+				// Com_sprintf (pathname, sizeof(pathname), "env/%entityState%entityState.tga", skyname, suf[i]);
 				pathname = "env/" + skyname + suf[i] + ".tga";
 			}
 

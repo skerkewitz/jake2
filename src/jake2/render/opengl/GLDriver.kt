@@ -1,6 +1,6 @@
 package jake2.render.opengl
 
-import jake2.client.Dimension
+import jake2.common.Dimension
 import jake2.qcommon.TXCommand
 
 interface GLDriver {

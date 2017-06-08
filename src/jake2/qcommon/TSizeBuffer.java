@@ -371,7 +371,7 @@ public final class TSizeBuffer {
         if (to.event != 0)
             bits |= Defines.U_EVENT;
 
-        if (to.modelindex != from.modelindex)
+        if (to.modelIndex != from.modelIndex)
             bits |= Defines.U_MODEL;
         if (to.modelindex2 != from.modelindex2)
             bits |= Defines.U_MODEL2;
@@ -422,7 +422,7 @@ public final class TSizeBuffer {
             this.writeByte(to.number);
 
         if ((bits & Defines.U_MODEL) != 0)
-            this.writeByte(to.modelindex);
+            this.writeByte(to.modelIndex);
         if ((bits & Defines.U_MODEL2) != 0)
             this.writeByte(to.modelindex2);
         if ((bits & Defines.U_MODEL3) != 0)

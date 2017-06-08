@@ -129,7 +129,7 @@ public class Info {
 
     /**
      * Some characters are illegal in info strings because they can mess up the
-     * server's parsing.
+     * server'entityState parsing.
      */
     public static boolean Info_Validate(String s) {
         return !((s.indexOf('"') != -1) || (s.indexOf(';') != -1));

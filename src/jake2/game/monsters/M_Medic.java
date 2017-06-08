@@ -531,7 +531,7 @@ public class M_Medic {
         TEntityDict best = null;
         EdictIterator edit = null;
 
-        while ((edit = GameBase.findradius(edit, self.s.origin, 1024)) != null) {
+        while ((edit = GameBase.findradius(edit, self.entityState.origin, 1024)) != null) {
             ent = edit.o;
             if (ent == self)
                 continue;
@@ -811,7 +811,7 @@ public class M_Medic {
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -842,23 +842,23 @@ public class M_Medic {
             float[] dir = { 0, 0, 0 };
             int effect;
 
-            if ((self.s.frame == FRAME_attack9)
-                    || (self.s.frame == FRAME_attack12))
+            if ((self.entityState.frame == FRAME_attack9)
+                    || (self.entityState.frame == FRAME_attack12))
                 effect = Defines.EF_BLASTER;
-            else if ((self.s.frame == FRAME_attack19)
-                    || (self.s.frame == FRAME_attack22)
-                    || (self.s.frame == FRAME_attack25)
-                    || (self.s.frame == FRAME_attack28))
+            else if ((self.entityState.frame == FRAME_attack19)
+                    || (self.entityState.frame == FRAME_attack22)
+                    || (self.entityState.frame == FRAME_attack25)
+                    || (self.entityState.frame == FRAME_attack28))
                 effect = Defines.EF_HYPERBLASTER;
             else
                 effect = 0;
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_MEDIC_BLASTER_1],
                     forward, right, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             end[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(end, start, dir);
 
@@ -1104,20 +1104,20 @@ public class M_Medic {
         public boolean think(TEntityDict self) {
             float[] offset = { 0, 0, 0 }, start = { 0, 0, 0 }, end = { 0, 0, 0 }, f = {
                     0, 0, 0 }, r = { 0, 0, 0 };
-            trace_t tr;
+            TTrace tr;
             float[] dir = { 0, 0, 0 }, angles = { 0, 0, 0 };
             float distance;
 
-            if (!self.enemy.inuse)
+            if (!self.enemy.inUse)
                 return true;
 
-            Math3D.AngleVectors(self.s.angles, f, r, null);
+            Math3D.AngleVectors(self.entityState.angles, f, r, null);
             Math3D.VectorCopy(
-                    medic_cable_offsets[self.s.frame - FRAME_attack42], offset);
-            Math3D.G_ProjectSource(self.s.origin, offset, f, r, start);
+                    medic_cable_offsets[self.entityState.frame - FRAME_attack42], offset);
+            Math3D.G_ProjectSource(self.entityState.origin, offset, f, r, start);
 
             // check for max distance
-            Math3D.VectorSubtract(start, self.enemy.s.origin, dir);
+            Math3D.VectorSubtract(start, self.enemy.entityState.origin, dir);
             distance = Math3D.VectorLength(dir);
             if (distance > 256)
                 return true;
@@ -1129,16 +1129,16 @@ public class M_Medic {
             if (Math.abs(angles[0]) > 45)
                 return true;
 
-            tr = GameBase.gi.trace(start, null, null, self.enemy.s.origin,
+            tr = GameBase.gi.trace(start, null, null, self.enemy.entityState.origin,
                     self, Defines.MASK_SHOT);
-            if (tr.fraction != 1.0 && tr.ent != self.enemy)
+            if (tr.fraction != 1.0 && tr.entityDict != self.enemy)
                 return true;
 
-            if (self.s.frame == FRAME_attack43) {
+            if (self.entityState.frame == FRAME_attack43) {
                 GameBase.gi.sound(self.enemy, Defines.CHAN_AUTO,
                         sound_hook_hit, 1, Defines.ATTN_NORM, 0);
                 self.enemy.monsterinfo.aiflags |= Defines.AI_RESURRECTING;
-            } else if (self.s.frame == FRAME_attack50) {
+            } else if (self.entityState.frame == FRAME_attack50) {
                 self.enemy.spawnflags = 0;
                 self.enemy.monsterinfo.aiflags = 0;
                 self.enemy.target = null;
@@ -1158,7 +1158,7 @@ public class M_Medic {
                     GameUtil.FoundTarget(self.enemy);
                 }
             } else {
-                if (self.s.frame == FRAME_attack44)
+                if (self.entityState.frame == FRAME_attack44)
                     GameBase.gi.sound(self, Defines.CHAN_WEAPON,
                             sound_hook_heal, 1, Defines.ATTN_NORM, 0);
             }
@@ -1167,7 +1167,7 @@ public class M_Medic {
             Math3D.VectorMA(start, 8, f, start);
 
             // adjust end z for end spot since the monster is currently dead
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             end[2] = self.enemy.absmin[2] + self.enemy.size[2] / 2;
 
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
@@ -1175,7 +1175,7 @@ public class M_Medic {
             GameBase.gi.WriteShort(self.index);
             GameBase.gi.WritePosition(start);
             GameBase.gi.WritePosition(end);
-            GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(self.entityState.origin, Defines.MULTICAST_PVS);
             return true;
         }
     };
@@ -1272,7 +1272,7 @@ public class M_Medic {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/medic/tris.md2");
         Math3D.VectorSet(self.mins, -24, -24, -24);
         Math3D.VectorSet(self.maxs, 24, 24, 32);

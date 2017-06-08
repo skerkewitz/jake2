@@ -23,19 +23,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
  */
-package jake2.client;
+package jake2.client.ui;
 
+import jake2.client.*;
+import jake2.common.Dimension;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
 import jake2.io.QuakeFile;
 import jake2.network.TNetAddr;
-import jake2.qcommon.*;
+import jake2.qcommon.Cbuf;
+import jake2.qcommon.Command;
+import jake2.qcommon.ConsoleVar;
+import jake2.qcommon.TXCommand;
 import jake2.sound.Sound;
-import jake2.sys.*;
-import jake2.sys.NET;
-import jake2.sys.QSystem;
-import jake2.util.*;
+import jake2.sys.Network;
+import jake2.sys.Timer;
+import jake2.util.Lib;
+import jake2.util.Math3D;
 
 import java.io.RandomAccessFile;
 import java.util.Arrays;
@@ -44,138 +49,467 @@ import java.util.Comparator;
 import static jake2.Defines.*;
 import static jake2.client.Context.*;
 
-/**
- * Menu
- * 
- *  
- */
+public final class Menu {
 
-abstract class keyfunc_t {
-    abstract String execute(int key);
-}
+    private final static int MAX_SAVEGAMES = 15;
+    private static final int SLIDER_RANGE = 10;
+    private static final int MAIN_ITEMS = 5;
+    private static final int NUM_CURSOR_FRAMES = 15;
+    private final static int MAX_MENU_DEPTH = 8;
 
-public final class Menu extends Key {
 
-    static int m_main_cursor;
-
-    static final int NUM_CURSOR_FRAMES = 15;
-
-    static final String menu_in_sound = "misc/menu1.wav";
-
-    static final String menu_move_sound = "misc/menu2.wav";
-
-    static final String menu_out_sound = "misc/menu3.wav";
-
-    static boolean m_entersound; // play after drawing a frame, so caching
+    private static final String menu_in_sound = "misc/menu1.wav";
+    private static final String menu_move_sound = "misc/menu2.wav";
 
     // won't disrupt the sound
+    private static final String menu_out_sound = "misc/menu3.wav";
 
-    static TXCommand m_drawfunc;
-
-    static keyfunc_t m_keyfunc;
-
-    //	  =============================================================================
     /* Support Routines */
+    private static final TEntity entity = new TEntity();
 
-    public final static int MAX_MENU_DEPTH = 8;
+    /*
+     * ============= DrawCursor
+     *
+     * Draws an animating cursor with the point at x,y. The pic will extend to
+     * the left of x, and both above and below y. =============
+     */
+    static boolean cached;
 
-    public static class menulayer_t {
-        TXCommand draw;
+    private static TMenuFramework s_multiplayer_menu = new TMenuFramework();
+    private static TMenuAction s_join_network_server_action = new TMenuAction();
+    private static TMenuAction s_start_network_server_action = new TMenuAction();
+    private static TMenuAction s_player_setup_action = new TMenuAction();
 
-        keyfunc_t key;
+    static String bindnames[][] = {
+            {"+attack", "attack"},
+            {"weapnext", "next weapon"},
+            {"+forward", "walk forward"},
+            {"+back", "backpedal"},
+            {"+left", "turn left"},
+            {"+right", "turn right"},
+            {"+speed", "run"},
+            {"+moveleft", "step left"},
+            {"+moveright", "step right"},
+            {"+strafe", "sidestep"},
+            {"+lookup", "look up"},
+            {"+lookdown", "look down"},
+            {"centerview", "center view"},
+            {"+mlook", "mouse look"},
+            {"+klook", "keyboard look"},
+            {"+moveup", "up / jump"},
+            {"+movedown", "down / crouch"},
+            {"inven", "inventory"},
+            {"invuse", "use item"},
+            {"invdrop", "drop item"},
+            {"invprev", "prev item"},
+            {"invnext", "next item"},
+            {"cmd help", "help computer"}, {null, null}
+    };
+
+    static boolean bind_grab;
+    static TMenuFramework s_keys_menu = new TMenuFramework();
+    static TMenuAction s_keys_attack_action = new TMenuAction();
+    static TMenuAction s_keys_change_weapon_action = new TMenuAction();
+    static TMenuAction s_keys_walk_forward_action = new TMenuAction();
+    static TMenuAction s_keys_backpedal_action = new TMenuAction();
+    static TMenuAction s_keys_turn_left_action = new TMenuAction();
+    static TMenuAction s_keys_turn_right_action = new TMenuAction();
+    static TMenuAction s_keys_run_action = new TMenuAction();
+    static TMenuAction s_keys_step_left_action = new TMenuAction();
+    static TMenuAction s_keys_step_right_action = new TMenuAction();
+    static TMenuAction s_keys_sidestep_action = new TMenuAction();
+    static TMenuAction s_keys_look_up_action = new TMenuAction();
+    static TMenuAction s_keys_look_down_action = new TMenuAction();
+    static TMenuAction s_keys_center_view_action = new TMenuAction();
+    static TMenuAction s_keys_mouse_look_action = new TMenuAction();
+    static TMenuAction s_keys_keyboard_look_action = new TMenuAction();
+    static TMenuAction s_keys_move_up_action = new TMenuAction();
+    static TMenuAction s_keys_move_down_action = new TMenuAction();
+    static TMenuAction s_keys_inventory_action = new TMenuAction();
+    static TMenuAction s_keys_inv_use_action = new TMenuAction();
+    static TMenuAction s_keys_inv_drop_action = new TMenuAction();
+    static TMenuAction s_keys_inv_prev_action = new TMenuAction();
+    static TMenuAction s_keys_inv_next_action = new TMenuAction();
+    static TMenuAction s_keys_help_computer_action = new TMenuAction();
+    static TXCommand Keys_MenuDraw = () -> Keys_MenuDraw_f();
+    /*
+     * =======================================================================
+     *
+     * CONTROLS MENU
+     *
+     * =======================================================================
+     */
+    static TVar win_noalttab;
+    static TMenuFramework s_options_menu = new TMenuFramework();
+    static TMenuAction s_options_defaults_action = new TMenuAction();
+    static TMenuAction s_options_customize_options_action = new TMenuAction();
+    static TMenuSlider s_options_sensitivity_slider = new TMenuSlider();
+    static TMenuList s_options_freelook_box = new TMenuList();
+    static TMenuList s_options_noalttab_box = new TMenuList();
+    static TMenuList s_options_alwaysrun_box = new TMenuList();
+    static TMenuList s_options_invertmouse_box = new TMenuList();
+    static TMenuList s_options_lookspring_box = new TMenuList();
+    static TMenuList s_options_lookstrafe_box = new TMenuList();
+    static TMenuList s_options_crosshair_box = new TMenuList();
+    static TMenuSlider s_options_sfxvolume_slider = new TMenuSlider();
+    static TMenuList s_options_joystick_box = new TMenuList();
+    static TMenuList s_options_cdvolume_box = new TMenuList();
+    static TMenuList s_options_quality_list = new TMenuList();
+    //static TMenuList s_options_compatibility_list = new TMenuList();
+    static TMenuAction s_options_console_action = new TMenuAction();
+    static String cd_music_items[] = {"disabled", "enabled"};
+    static String compatibility_items[] = {"max compatibility",
+            "max performance"};
+    static String yesno_names[] = {"no", "yes"};
+    static String crosshair_names[] = {"none", "cross", "dot", "angle"};
+    static String[] s_labels;
+    static String[] s_drivers;
+    /*
+     * =============================================================================
+     *
+     * END GAME MENU
+     *
+     * =============================================================================
+     */
+    static int credits_start_time;
+    static String creditsIndex[] = new String[256];
+    static String creditsBuffer;
+    static String idcredits[] = {"+QUAKE II BY ID SOFTWARE", "",
+            "+PROGRAMMING", "John Carmack", "John Cash", "Brian Hook", "",
+            "+JAVA PORT BY BYTONIC", "Carsten Weisse", "Holger Zickner", "Rene Stoeckel", "", "+ART",
+            "Adrian Carmack", "Kevin Cloud", "Paul Steed", "", "+LEVEL DESIGN",
+            "Tim Willits", "American McGee", "Christian Antkow",
+            "Paul Jaquays", "Brandon James", "", "+BIZ", "Todd Hollenshead",
+            "Barrett (Bear) Alexander", "Donna Jackson", "", "",
+            "+SPECIAL THANKS", "Ben Donges for beta testing", "", "", "", "",
+            "", "", "+ADDITIONAL SUPPORT", "", "+LINUX PORT AND CTF",
+            "Dave \"Zoid\" Kirsch", "", "+CINEMATIC SEQUENCES",
+            "Ending Cinematic by Blur Studio - ", "Venice, CA", "",
+            "Environment models for Introduction",
+            "Cinematic by Karl Dolgener", "",
+            "Assistance with environment design", "by Cliff Iwai", "",
+            "+SOUND EFFECTS AND MUSIC",
+            "SoundDriver Design by Soundelux Media Labs.",
+            "Music Composed and Produced by",
+            "Soundelux Media Labs.  Special thanks",
+            "to Bill Brown, Tom Ozanich, Brian",
+            "Celano, Jeff Eisner, and The Soundelux", "Players.", "",
+            "\"Level Music\" by Sonic Mayhem", "www.sonicmayhem.com", "",
+            "\"Quake II Theme Song\"", "(C) 1997 Rob Zombie. All Rights",
+            "Reserved.", "", "Track 10 (\"Climb\") by Jer Sypult", "",
+            "Voice of computers by", "Carly Staehlin-Taylor", "",
+            "+THANKS TO ACTIVISION", "+Input PARTICULAR:", "", "John Tam",
+            "Steve Rosenthal", "Marty Stratton", "Henk Hartong", "",
+            "Quake II(tm) (C)1997 Id Software, Inc.",
+            "All Rights Reserved.  Distributed by",
+            "Activision, Inc. under license.",
+            "Quake II(tm), the Id Software name,",
+            "the \"Q II\"(tm) logo and id(tm)",
+            "logo are trademarks of Id Software,",
+            "Inc. Activision(R) is a registered",
+            "trademark of Activision, Inc. All",
+            "other trademarks and trade names are",
+            "properties of their respective owners.", null};
+    static String credits[] = idcredits;
+    static String xatcredits[] = {"+QUAKE II MISSION PACK: THE RECKONING",
+            "+BY", "+XATRIX ENTERTAINMENT, INC.", "", "+DESIGN AND DIRECTION",
+            "Drew Markham", "", "+PRODUCED BY", "Greg Goodrich", "",
+            "+PROGRAMMING", "Rafael Paiz", "",
+            "+LEVEL DESIGN / ADDITIONAL GAME DESIGN", "Alex Mayberry", "",
+            "+LEVEL DESIGN", "Mal Blackwell", "Dan Koppel", "",
+            "+ART DIRECTION", "Michael \"Maxx\" Kaufman", "",
+            "+COMPUTER GRAPHICS SUPERVISOR AND",
+            "+CHARACTER ANIMATION DIRECTION", "Barry Dempsey", "",
+            "+SENIOR ANIMATOR AND MODELER", "Jason Hoover", "",
+            "+CHARACTER ANIMATION AND", "+MOTION CAPTURE SPECIALIST",
+            "Amit Doron", "", "+ART", "Claire Praderie-Markham",
+            "Viktor Antonov", "Corky Lehmkuhl", "", "+INTRODUCTION ANIMATION",
+            "Dominique Drozdz", "", "+ADDITIONAL LEVEL DESIGN", "Aaron Barber",
+            "Rhett Baldwin", "", "+3D CHARACTER ANIMATION TOOLS",
+            "Gerry Tyra, SA Technology", "",
+            "+ADDITIONAL EDITOR TOOL PROGRAMMING", "Robert Duffy", "",
+            "+ADDITIONAL PROGRAMMING", "Ryan Feltrin", "",
+            "+PRODUCTION COORDINATOR", "Victoria Sylvester", "",
+            "+SOUND DESIGN", "Gary Bradfield", "", "+MUSIC BY", "Sonic Mayhem",
+            "", "", "", "+SPECIAL THANKS", "+TO",
+            "+OUR FRIENDS AT ID SOFTWARE", "", "John Carmack", "John Cash",
+            "Brian Hook", "Adrian Carmack", "Kevin Cloud", "Paul Steed",
+            "Tim Willits", "Christian Antkow", "Paul Jaquays", "Brandon James",
+            "Todd Hollenshead", "Barrett (Bear) Alexander",
+            "Dave \"Zoid\" Kirsch", "Donna Jackson", "", "", "",
+            "+THANKS TO ACTIVISION", "+Input PARTICULAR:", "", "Marty Stratton",
+            "Henk \"The Original Ripper\" Hartong", "Kevin Kraff",
+            "Jamey Gottlieb", "Chris Hepburn", "", "+AND THE GAME TESTERS", "",
+            "Tim Vanlaw", "Doug Jacobs", "Steven Rosenthal", "David Baker",
+            "Chris Campbell", "Aaron Casillas", "Steve Elwell",
+            "Derek Johnstone", "Igor Krinitskiy", "Samantha Lee",
+            "Michael Spann", "Chris Toft", "Juan Valdes", "",
+            "+THANKS TO INTERGRAPH COMPUTER SYTEMS", "+Input PARTICULAR:", "",
+            "Michael T. Nicolaou", "", "",
+            "Quake II Mission Pack: The Reckoning",
+            "(tm) (C)1998 Id Software, Inc. All",
+            "Rights Reserved. Developed by Xatrix",
+            "Entertainment, Inc. for Id Software,",
+            "Inc. Distributed by Activision Inc.",
+            "under license. Quake(R) is a",
+            "registered trademark of Id Software,",
+            "Inc. Quake II Mission Pack: The",
+            "Reckoning(tm), Quake II(tm), the Id",
+            "Software name, the \"Q II\"(tm) logo",
+            "and id(tm) logo are trademarks of Id",
+            "Software, Inc. Activision(R) is a",
+            "registered trademark of Activision,",
+            "Inc. Xatrix(R) is a registered",
+            "trademark of Xatrix Entertainment,",
+            "Inc. All other trademarks and trade",
+            "names are properties of their", "respective owners.", null};
+    static String roguecredits[] = {"+QUAKE II MISSION PACK 2: GROUND ZERO",
+            "+BY", "+ROGUE ENTERTAINMENT, INC.", "", "+PRODUCED BY",
+            "Jim Molinets", "", "+PROGRAMMING", "Peter Mack",
+            "Patrick Magruder", "", "+LEVEL DESIGN", "Jim Molinets",
+            "Cameron Lamprecht", "Berenger Fish", "Robert Selitto",
+            "Steve Tietze", "Steve Thoms", "", "+ART DIRECTION",
+            "Rich Fleider", "", "+ART", "Rich Fleider", "Steve Maines",
+            "Won Choi", "", "+ANIMATION SEQUENCES", "Creat Studios",
+            "Steve Maines", "", "+ADDITIONAL LEVEL DESIGN", "Rich Fleider",
+            "Steve Maines", "Peter Mack", "", "+SOUND", "James Grunke", "",
+            "+GROUND ZERO THEME", "+AND", "+MUSIC BY", "Sonic Mayhem", "",
+            "+VWEP MODELS", "Brent \"Hentai\" Dill", "", "", "",
+            "+SPECIAL THANKS", "+TO", "+OUR FRIENDS AT ID SOFTWARE", "",
+            "John Carmack", "John Cash", "Brian Hook", "Adrian Carmack",
+            "Kevin Cloud", "Paul Steed", "Tim Willits", "Christian Antkow",
+            "Paul Jaquays", "Brandon James", "Todd Hollenshead",
+            "Barrett (Bear) Alexander", "Katherine Anna Kang", "Donna Jackson",
+            "Dave \"Zoid\" Kirsch", "", "", "", "+THANKS TO ACTIVISION",
+            "+Input PARTICULAR:", "", "Marty Stratton", "Henk Hartong",
+            "Mitch Lasky", "Steve Rosenthal", "Steve Elwell", "",
+            "+AND THE GAME TESTERS", "", "The Ranger Clan",
+            "Dave \"Zoid\" Kirsch", "Nihilistic Software", "Robert Duffy", "",
+            "And Countless Others", "", "", "",
+            "Quake II Mission Pack 2: Ground Zero",
+            "(tm) (C)1998 Id Software, Inc. All",
+            "Rights Reserved. Developed by Rogue",
+            "Entertainment, Inc. for Id Software,",
+            "Inc. Distributed by Activision Inc.",
+            "under license. Quake(R) is a",
+            "registered trademark of Id Software,",
+            "Inc. Quake II Mission Pack 2: Ground",
+            "Zero(tm), Quake II(tm), the Id",
+            "Software name, the \"Q II\"(tm) logo",
+            "and id(tm) logo are trademarks of Id",
+            "Software, Inc. Activision(R) is a",
+            "registered trademark of Activision,",
+            "Inc. Rogue(R) is a registered",
+            "trademark of Rogue Entertainment,",
+            "Inc. All other trademarks and trade",
+            "names are properties of their", "respective owners.", null};
+    static int m_game_cursor;
+    static TMenuFramework s_game_menu = new TMenuFramework();
+    static TMenuAction s_easy_game_action = new TMenuAction();
+    static TMenuAction s_medium_game_action = new TMenuAction();
+    static TMenuAction s_hard_game_action = new TMenuAction();
+    static TMenuAction s_load_game_action = new TMenuAction();
+    static TMenuAction s_save_game_action = new TMenuAction();
+    static TMenuAction s_credits_action = new TMenuAction();
+    static TMenuSeparator s_blankline = new TMenuSeparator();
+    static String difficulty_names[] = {"easy", "medium",
+            "fuckin shitty hard"};
+    static TMenuFramework s_savegame_menu = new TMenuFramework();
+    static TMenuFramework s_loadgame_menu = new TMenuFramework();
+    static TMenuAction s_loadgame_actions[] = new TMenuAction[MAX_SAVEGAMES];
+    //String m_savestrings[] = new String [MAX_SAVEGAMES][32];
+    static String m_savestrings[] = new String[MAX_SAVEGAMES];
+    static boolean m_savevalid[] = new boolean[MAX_SAVEGAMES];
+    /*
+     * =============================================================================
+     *
+     * SAVEGAME MENU
+     *
+     * =============================================================================
+     */
+    //static TMenuFramework s_savegame_menu;
+    static TMenuAction s_savegame_actions[] = new TMenuAction[MAX_SAVEGAMES];
+    static TMenuFramework s_joinserver_menu = new TMenuFramework();
+    static TMenuSeparator s_joinserver_server_title = new TMenuSeparator();
+    static TMenuAction s_joinserver_search_action = new TMenuAction();
+    static TMenuAction s_joinserver_address_book_action = new TMenuAction();
+    static TNetAddr local_server_netadr[] = new TNetAddr[MAX_LOCAL_SERVERS];
+    static String local_server_names[] = new String[MAX_LOCAL_SERVERS]; //[80];
+    static TMenuAction s_joinserver_server_actions[] = new TMenuAction[MAX_LOCAL_SERVERS];
+    static int m_num_servers;
+    /*
+     * =============================================================================
+     *
+     * START SERVER MENU
+     *
+     * =============================================================================
+     */
+    static TMenuFramework s_startserver_menu = new TMenuFramework();
+    static String mapnames[];
+    static int nummaps;
+    static TMenuAction s_startserver_start_action = new TMenuAction();
+    static TMenuAction s_startserver_dmoptions_action = new TMenuAction();
+    static TMenuField s_timelimit_field = new TMenuField();
+    static TMenuField s_fraglimit_field = new TMenuField();
+    static TMenuField s_maxclients_field = new TMenuField();
+    static TMenuField s_hostname_field = new TMenuField();
+    static TMenuList s_startmap_list = new TMenuList();
+    static TMenuList s_rules_box = new TMenuList();
+    static String dm_coop_names[] = {"deathmatch", "cooperative"};
+    static String dm_coop_names_rogue[] = {"deathmatch", "cooperative", "tag"};
+    static TXCommand startServer_MenuDraw = () -> StartServer_MenuDraw();
+    /*
+     * =============================================================================
+     *
+     * DMOPTIONS BOOK MENU
+     *
+     * =============================================================================
+     */
+    static String dmoptions_statusbar; //[128];
+    static TMenuFramework s_dmoptions_menu = new TMenuFramework();
+    static TMenuList s_friendlyfire_box = new TMenuList();
+    static TMenuList s_falls_box = new TMenuList();
+    static TMenuList s_weapons_stay_box = new TMenuList();
+    static TMenuList s_instant_powerups_box = new TMenuList();
+    static TMenuList s_powerups_box = new TMenuList();
+    static TMenuList s_health_box = new TMenuList();
+    static TMenuList s_spawn_farthest_box = new TMenuList();
+    static TMenuList s_teamplay_box = new TMenuList();
+    static TMenuList s_samelevel_box = new TMenuList();
+    static TMenuList s_force_respawn_box = new TMenuList();
+    static TMenuList s_armor_box = new TMenuList();
+    static TMenuList s_allow_exit_box = new TMenuList();
+    static TMenuList s_infinite_ammo_box = new TMenuList();
+    static TMenuList s_fixed_fov_box = new TMenuList();
+    static TMenuList s_quad_drop_box = new TMenuList();
+    //	  ROGUE
+    static TMenuList s_no_mines_box = new TMenuList();
+
+    /*
+     * =======================================================================
+     * 
+     * VIDEO MENU
+     * 
+     * =======================================================================
+     */
+    static TMenuList s_no_nukes_box = new TMenuList();
+    static TMenuList s_stack_double_box = new TMenuList();
+    static TMenuList s_no_spheres_box = new TMenuList();
+    //static String yes_no_names[] = { "no", "yes", 0 };
+    static String teamplay_names[] = {"disabled", "by skin", "by model"};
+    /*
+     * =============================================================================
+     *
+     * DOWNLOADOPTIONS BOOK MENU
+     *
+     * =============================================================================
+     */
+    static TMenuFramework s_downloadoptions_menu = new TMenuFramework();
+    static TMenuSeparator s_download_title = new TMenuSeparator();
+    static TMenuList s_allow_download_box = new TMenuList();
+    static TMenuList s_allow_download_maps_box = new TMenuList();
+    static TMenuList s_allow_download_models_box = new TMenuList();
+    static TMenuList s_allow_download_players_box = new TMenuList();
+    static TMenuList s_allow_download_sounds_box = new TMenuList();
+    static String yes_no_names[] = {"no", "yes"};
+    static TMenuFramework s_addressbook_menu = new TMenuFramework();
+
+    /*
+     * =============================================================================
+     * 
+     * GAME MENU
+     * 
+     * =============================================================================
+     */
+    static TMenuField s_addressbook_fields[] = new TMenuField[NUM_ADDRESSBOOK_ENTRIES];
+    static TXCommand AddressBook_MenuDraw = () -> AddressBook_MenuDraw_f();
+    /*
+     * =============================================================================
+     *
+     * PLAYER CONFIG MENU
+     *
+     * =============================================================================
+     */
+    static TMenuFramework s_player_config_menu = new TMenuFramework();
+    static TMenuField s_player_name_field = new TMenuField();
+    static TMenuList s_player_model_box = new TMenuList();
+    static TMenuList s_player_skin_box = new TMenuList();
+    static TMenuList s_player_handedness_box = new TMenuList();
+    static TMenuList s_player_rate_box = new TMenuList();
+    static TMenuSeparator s_player_skin_title = new TMenuSeparator();
+    static TMenuSeparator s_player_model_title = new TMenuSeparator();
+    static TMenuSeparator s_player_hand_title = new TMenuSeparator();
+    static TMenuSeparator s_player_rate_title = new TMenuSeparator();
+    static TMenuAction s_player_download_action = new TMenuAction();
+    static TPlayerModelInfo s_pmi[] = new TPlayerModelInfo[MAX_PLAYERMODELS];
+    static String s_pmnames[] = new String[MAX_PLAYERMODELS];
+    static int s_numplayermodels;
+    static int rate_tbl[] = {2500, 3200, 5000, 10000, 25000, 0};
+    static String rate_names[] = {"28.8 Modem", "33.6 Modem", "Single ISDN",
+            "Dual ISDN/Cable", "T1/LAN", "User defined"};
+    static String handedness[] = {"right", "left", "center"};
+    static int yaw;
+    private static int m_main_cursor;
+    static TXCommand Main_Draw = () -> {
+        mainDraw();
+    };
+
+    /*
+     * =============================================================================
+     * 
+     * LOADGAME MENU
+     * 
+     * =============================================================================
+     */
+    private static boolean m_entersound; // play after drawing a frame, so caching
+    private static TXCommand m_drawfunc;
+    private static TKeyFunc m_keyfunc;
+    private static TMenuLayer m_layers[] = new TMenuLayer[MAX_MENU_DEPTH];
+    private static int m_menudepth;
+
+    static TKeyFunc Main_Key = Menu::mainKey;
+    static TKeyFunc Keys_MenuKey = Menu::Keys_MenuKey_f;
+    static TKeyFunc startServer_MenuKey = Menu::StartServer_MenuKey;
+    static TKeyFunc AddressBook_MenuKey = Menu::AddressBook_MenuKey_f;
+
+    static {
+        for (int n = 0; n < MAX_SAVEGAMES; n++)
+            s_loadgame_actions[n] = new TMenuAction();
     }
 
-    static class menuframework_s {
-        int x, y;
+    static {
+        for (int n = 0; n < MAX_SAVEGAMES; n++)
+            m_savestrings[n] = "";
+    }
 
-        int cursor;
-
-        int nitems;
-
-        int nslots;
-
-        menucommon_s items[] = new menucommon_s[64];
-
-        String statusbar;
-
-        //void (*cursordraw)( struct _tag_menuframework *m );
-        mcallback cursordraw;
+    static {
+        for (int n = 0; n < MAX_SAVEGAMES; n++)
+            s_savegame_actions[n] = new TMenuAction();
 
     }
 
-    abstract static class mcallback {
-        abstract public void execute(Object self);
+    //	   user readable information
+    //	   network address
+    static {
+        for (int n = 0; n < MAX_LOCAL_SERVERS; n++) {
+            local_server_netadr[n] = new TNetAddr();
+            local_server_names[n] = "";
+            s_joinserver_server_actions[n] = new TMenuAction();
+            s_joinserver_server_actions[n].n = n;
+        }
     }
 
-    static class menucommon_s {
-        int type;
-
-        String name = "";
-
-        int x, y;
-
-        menuframework_s parent;
-
-        int cursor_offset;
-
-        int localdata[] = { 0, 0, 0, 0 };
-
-        int flags;
-
-        int n = -1; //position in an array.
-
-        String statusbar;
-
-        mcallback callback;
-
-        mcallback statusbarfunc;
-
-        mcallback ownerdraw;
-
-        mcallback cursordraw;
+    static {
+        for (int n = 0; n < NUM_ADDRESSBOOK_ENTRIES; n++)
+            s_addressbook_fields[n] = new TMenuField();
     }
 
-    static class menufield_s extends menucommon_s {
-        //char buffer[80];
-        StringBuffer buffer; //allow deletion.
+    int keys_cursor;
 
-        int cursor;
-
-        int length;
-
-        int visible_length;
-
-        int visible_offset;
+    public static String GetClipboardData() {
+        // TODO: implement GetClipboardData
+        return null;
     }
-
-    static class menuslider_s extends menucommon_s {
-
-        float minvalue;
-
-        float maxvalue;
-
-        float curvalue;
-
-        float range;
-    }
-
-    static class menulist_s extends menucommon_s {
-        int curvalue;
-
-        String itemnames[];
-    }
-
-    static class menuaction_s extends menucommon_s {
-
-    }
-
-    static class menuseparator_s extends menucommon_s {
-
-    }
-
-    public static menulayer_t m_layers[] = new menulayer_t[MAX_MENU_DEPTH];
-
-    public static int m_menudepth;
 
     static void Banner(String name) {
         Dimension dim = new Dimension();
@@ -185,26 +519,28 @@ public final class Menu extends Key {
                 viddef.getHeight() / 2 - 110, name);
     }
 
-    static void PushMenu(TXCommand draw, keyfunc_t key) { //, String(*key)
-                                                           // (int k) ) {
-        int i;
-
-        if (ConsoleVar.VariableValue("maxclients") == 1 && Context.server_state != 0)
+    private static void pushMenu(TXCommand draw, TKeyFunc key) { //, String(*key)
+        // (int k) ) {
+        if (ConsoleVar.VariableValue("maxclients") == 1 && Context.server_state != 0) {
             ConsoleVar.Set("paused", "1");
+        }
 
         // if this menu is already present, drop back to that level
         // to avoid stacking menus by hotkeys
-        for (i = 0; i < m_menudepth; i++)
+        int i;
+        for (i = 0; i < m_menudepth; i++) {
             if (m_layers[i].draw == draw && m_layers[i].key == key) {
                 m_menudepth = i;
             }
+        }
 
         if (i == m_menudepth) {
-            if (m_menudepth >= MAX_MENU_DEPTH)
-                Command.Error(ERR_FATAL, "PushMenu: MAX_MENU_DEPTH");
+            if (m_menudepth >= MAX_MENU_DEPTH) {
+                Command.Error(ERR_FATAL, "pushMenu: MAX_MENU_DEPTH");
+            }
 
             m_layers[m_menudepth].draw = draw;//m_drawfunc;
-            m_layers[m_menudepth].key = key;//m_keyfunc;     
+            m_layers[m_menudepth].key = key;//m_keyfunc;
         }
         m_menudepth++;
         m_drawfunc = draw;
@@ -212,97 +548,98 @@ public final class Menu extends Key {
 
         m_entersound = true;
 
-        cls.key_dest = key_menu;
+        cls.setKey_dest(key_menu);
     }
 
-    static void ForceMenuOff() {
+    public static void forceMenuOff() {
         m_drawfunc = null;
         m_keyfunc = null;
-        cls.key_dest = key_game;
+        cls.setKey_dest(key_game);
         m_menudepth = 0;
         Key.ClearStates();
         ConsoleVar.Set("paused", "0");
     }
 
-    static void PopMenu() {
+    public static void popMenu() {
         Sound.StartLocalSound(menu_out_sound);
         m_menudepth--;
-        if (m_menudepth < 0)
-            Command.Error(ERR_FATAL, "PopMenu: depth < 1");
-
-        if (0 < m_menudepth){
-	        m_drawfunc = m_layers[m_menudepth-1].draw;
-	        m_keyfunc = m_layers[m_menudepth-1].key;
+        if (m_menudepth < 0) {
+            Command.Error(ERR_FATAL, "popMenu: depth < 1");
         }
 
-        if (0 == m_menudepth)
-            ForceMenuOff();
-        
-        
+        if (0 < m_menudepth) {
+            m_drawfunc = m_layers[m_menudepth - 1].draw;
+            m_keyfunc = m_layers[m_menudepth - 1].key;
+        }
+
+        if (0 == m_menudepth) {
+            forceMenuOff();
+        }
     }
 
-    static String Default_MenuKey(menuframework_s m, int key) {
+    private static String defaultMenuKey(TMenuFramework m, int key) {
         String sound = null;
-        menucommon_s item;
+        TMenuCommon item;
 
         if (m != null) {
             if ((item = Menu_ItemAtCursor(m)) != null) {
                 if (item.type == MTYPE_FIELD) {
-                    if (Field_Key((menufield_s) item, key))
+                    if (Field_Key((TMenuField) item, key)) {
                         return null;
+                    }
                 }
             }
         }
 
         switch (key) {
-        case K_ESCAPE:
-            PopMenu();
-            return menu_out_sound;
-        case K_KP_UPARROW:
-        case K_UPARROW:
-            if (m != null) {
-                m.cursor--;
-                Menu_AdjustCursor(m, -1);
-                sound = menu_move_sound;
-            }
-            break;
-        case K_TAB:
-            if (m != null) {
-                m.cursor++;
-                Menu_AdjustCursor(m, 1);
-                sound = menu_move_sound;
-            }
-            break;
-        case K_KP_DOWNARROW:
-        case K_DOWNARROW:
-            if (m != null) {
-                m.cursor++;
-                Menu_AdjustCursor(m, 1);
-                sound = menu_move_sound;
-            }
-            break;
-        case K_KP_LEFTARROW:
-        case K_LEFTARROW:
-            if (m != null) {
-                Menu_SlideItem(m, -1);
-                sound = menu_move_sound;
-            }
-            break;
-        case K_KP_RIGHTARROW:
-        case K_RIGHTARROW:
-            if (m != null) {
-                Menu_SlideItem(m, 1);
-                sound = menu_move_sound;
-            }
-            break;
+            case K_ESCAPE:
+                popMenu();
+                return menu_out_sound;
+            case Key.K_KP_UPARROW:
+            case K_UPARROW:
+                if (m != null) {
+                    m.cursor--;
+                    Menu_AdjustCursor(m, -1);
+                    sound = menu_move_sound;
+                }
+                break;
+            case K_TAB:
+                if (m != null) {
+                    m.cursor++;
+                    Menu_AdjustCursor(m, 1);
+                    sound = menu_move_sound;
+                }
+                break;
+            case Key.K_KP_DOWNARROW:
+            case K_DOWNARROW:
+                if (m != null) {
+                    m.cursor++;
+                    Menu_AdjustCursor(m, 1);
+                    sound = menu_move_sound;
+                }
+                break;
+            case Key.K_KP_LEFTARROW:
+            case K_LEFTARROW:
+                if (m != null) {
+                    Menu_SlideItem(m, -1);
+                    sound = menu_move_sound;
+                }
+                break;
+            case Key.K_KP_RIGHTARROW:
+            case K_RIGHTARROW:
+                if (m != null) {
+                    Menu_SlideItem(m, 1);
+                    sound = menu_move_sound;
+                }
+                break;
 
-        case K_MOUSE1:
-        case K_MOUSE2:
-        case K_MOUSE3:
-        case K_JOY1:
-        case K_JOY2:
-        case K_JOY3:
-        case K_JOY4:
+            case Key.K_MOUSE1:
+            case Key.K_MOUSE2:
+            case Key.K_MOUSE3:
+            case Key.K_JOY1:
+            case Key.K_JOY2:
+            case Key.K_JOY3:
+            case Key.K_JOY4:
         /*
          * case K_AUX1 : case K_AUX2 : case K_AUX3 : case K_AUX4 : case K_AUX5 :
          * case K_AUX6 : case K_AUX7 : case K_AUX8 : case K_AUX9 : case K_AUX10 :
@@ -312,32 +649,29 @@ public final class Menu extends Key {
          * K_AUX24 : case K_AUX25 : case K_AUX26 : case K_AUX27 : case K_AUX28 :
          * case K_AUX29 : case K_AUX30 : case K_AUX31 : case K_AUX32 :
          */
-        case K_KP_ENTER:
-        case K_ENTER:
-            if (m != null)
-                Menu_SelectItem(m);
-            sound = menu_move_sound;
-            break;
+            case Key.K_KP_ENTER:
+            case K_ENTER:
+                if (m != null)
+                    Menu_SelectItem(m);
+                sound = menu_move_sound;
+                break;
         }
 
         return sound;
     }
 
-    /*
-     * ================ DrawCharacter
-     * 
+    /**
      * Draws one solid graphics character cx and cy are in 320*240 coordinates,
-     * and will be centered on higher res screens. ================
+     * and will be centered on higher res screens.
      */
-    public static void DrawCharacter(int cx, int cy, int num) {
-        re.DrawChar(cx + ((viddef.getWidth() - 320) >> 1), cy
-                + ((viddef.getHeight() - 240) >> 1), num);
+    private static void drawCharacter(int cx, int cy, int num) {
+        re.DrawChar(cx + ((viddef.getWidth() - 320) >> 1), cy + ((viddef.getHeight() - 240) >> 1), num);
     }
 
-    public static void Print(int cx, int cy, String str) {
+    private static void drawString(int cx, int cy, String str) {
         //while (*str)
         for (int n = 0; n < str.length(); n++) {
-            DrawCharacter(cx, cy, str.charAt(n) + 128);
+            drawCharacter(cx, cy, str.charAt(n) + 128);
             //str++;
             cx += 8;
         }
@@ -345,7 +679,7 @@ public final class Menu extends Key {
 
     public static void PrintWhite(int cx, int cy, String str) {
         for (int n = 0; n < str.length(); n++) {
-            DrawCharacter(cx, cy, str.charAt(n));
+            drawCharacter(cx, cy, str.charAt(n));
             //str++;
             cx += 8;
         }
@@ -356,15 +690,7 @@ public final class Menu extends Key {
                 + ((viddef.getHeight() - 240) >> 1), pic);
     }
 
-    /*
-     * ============= DrawCursor
-     * 
-     * Draws an animating cursor with the point at x,y. The pic will extend to
-     * the left of x, and both above and below y. =============
-     */
-    static boolean cached;
-
-    static void DrawCursor(int x, int y, int f) {
+    private static void drawCursor(int x, int y, int f) {
         assert (f >= 0) : "negative time and cursor bug";
 
         f = Math.abs(f);
@@ -378,32 +704,32 @@ public final class Menu extends Key {
         re.DrawPic(x, y, "m_cursor" + f);
     }
 
-    public static void DrawTextBox(int x, int y, int width, int lines) {
+    private static void drawTextBox(int x, int y, int width, int lines) {
         int cx, cy;
         int n;
 
         // draw left side
         cx = x;
         cy = y;
-        DrawCharacter(cx, cy, 1);
+        drawCharacter(cx, cy, 1);
 
         for (n = 0; n < lines; n++) {
             cy += 8;
-            DrawCharacter(cx, cy, 4);
+            drawCharacter(cx, cy, 4);
         }
-        DrawCharacter(cx, cy + 8, 7);
+        drawCharacter(cx, cy + 8, 7);
 
         // draw middle
         cx += 8;
         while (width > 0) {
             cy = y;
-            DrawCharacter(cx, cy, 2);
+            drawCharacter(cx, cy, 2);
 
             for (n = 0; n < lines; n++) {
                 cy += 8;
-                DrawCharacter(cx, cy, 5);
+                drawCharacter(cx, cy, 5);
             }
-            DrawCharacter(cx, cy + 8, 8);
+            drawCharacter(cx, cy + 8, 8);
 
             width -= 1;
             cx += 8;
@@ -411,30 +737,17 @@ public final class Menu extends Key {
 
         // draw right side
         cy = y;
-        DrawCharacter(cx, cy, 3);
+        drawCharacter(cx, cy, 3);
         for (n = 0; n < lines; n++) {
             cy += 8;
-            DrawCharacter(cx, cy, 6);
+            drawCharacter(cx, cy, 6);
 
         }
-        DrawCharacter(cx, cy + 8, 9);
+        drawCharacter(cx, cy + 8, 9);
 
     }
 
-    /*
-     * =======================================================================
-     * 
-     * MAIN MENU
-     * 
-     * =======================================================================
-     */
-    static final int MAIN_ITEMS = 5;
-
-    static TXCommand Main_Draw = () -> {
-        Main_Draw();
-    };
-
-    static void Main_Draw() {
+    private static void mainDraw() {
         int i;
         int w, h;
         int ystart;
@@ -442,8 +755,8 @@ public final class Menu extends Key {
         int widest = -1;
         int totalheight = 0;
         String litname;
-        String[] names = { "m_main_game", "m_main_multiplayer",
-                "m_main_options", "m_main_video", "m_main_quit" };
+        String[] names = {"m_main_game", "m_main_multiplayer",
+                "m_main_options", "m_main_video", "m_main_quit"};
         Dimension dim = new Dimension();
 
         for (i = 0; i < names.length; i++) {
@@ -468,8 +781,8 @@ public final class Menu extends Key {
         litname = names[m_main_cursor] + "_sel";
         re.DrawPic(xoffset, ystart + m_main_cursor * 40 + 13, litname);
 
-        DrawCursor(xoffset - 25, ystart + m_main_cursor * 40 + 11,
-                (cls.realtime / 100) % NUM_CURSOR_FRAMES);
+        drawCursor(xoffset - 25, ystart + m_main_cursor * 40 + 11,
+                (cls.getRealtime() / 100) % NUM_CURSOR_FRAMES);
 
         re.DrawGetPicSize(dim, "m_main_plaque");
         w = dim.width;
@@ -479,86 +792,59 @@ public final class Menu extends Key {
         re.DrawPic(xoffset - 30 - w, ystart + h + 5, "m_main_logo");
     }
 
-    static keyfunc_t Main_Key = new keyfunc_t() {
-        public String execute(int key) {
-            return Main_Key(key);
-        }
-    };
-
-    static String Main_Key(int key) {
+    private static String mainKey(int key) {
         String sound = menu_move_sound;
 
         switch (key) {
-        case Key.K_ESCAPE:
-            PopMenu();
-            break;
-
-        case Key.K_KP_DOWNARROW:
-        case Key.K_DOWNARROW:
-            if (++m_main_cursor >= MAIN_ITEMS)
-                m_main_cursor = 0;
-            return sound;
-
-        case Key.K_KP_UPARROW:
-        case Key.K_UPARROW:
-            if (--m_main_cursor < 0)
-                m_main_cursor = MAIN_ITEMS - 1;
-            return sound;
-
-        case Key.K_KP_ENTER:
-        case Key.K_ENTER:
-            m_entersound = true;
-
-            switch (m_main_cursor) {
-            case 0:
-                Menu_Game_f();
+            case Key.K_ESCAPE:
+                popMenu();
                 break;
 
-            case 1:
-                Menu_Multiplayer_f();
-                break;
+            case Key.K_KP_DOWNARROW:
+            case Key.K_DOWNARROW:
+                if (++m_main_cursor >= MAIN_ITEMS)
+                    m_main_cursor = 0;
+                return sound;
 
-            case 2:
-                Menu_Options_f();
-                break;
+            case Key.K_KP_UPARROW:
+            case Key.K_UPARROW:
+                if (--m_main_cursor < 0)
+                    m_main_cursor = MAIN_ITEMS - 1;
+                return sound;
 
-            case 3:
-                Menu_Video_f();
-                break;
+            case Key.K_KP_ENTER:
+            case Key.K_ENTER:
+                m_entersound = true;
 
-            case 4:
-                Menu_Quit_f();
-                break;
-            }
+                switch (m_main_cursor) {
+                    case 0:
+                        Menu_Game_f();
+                        break;
+
+                    case 1:
+                        Menu_Multiplayer_f();
+                        break;
+
+                    case 2:
+                        Menu_Options_f();
+                        break;
+
+                    case 3:
+                        Menu_Video_f();
+                        break;
+
+                    case 4:
+                        Menu_Quit_f();
+                        break;
+                }
         }
 
         return null;
     }
 
-    static TXCommand Menu_Main = () -> Menu_Main_f();
-
-    static void Menu_Main_f() {
-        PushMenu(() -> Main_Draw(), new keyfunc_t() {
-            public String execute(int key) {
-                return Main_Key(key);
-            }
-        });
+    public static void Menu_Main_f() {
+        pushMenu(() -> mainDraw(), key -> mainKey(key));
     }
-
-    /*
-     * =======================================================================
-     * 
-     * MULTIPLAYER MENU
-     * 
-     * =======================================================================
-     */
-    static menuframework_s s_multiplayer_menu = new menuframework_s();
-
-    static menuaction_s s_join_network_server_action = new menuaction_s();
-
-    static menuaction_s s_start_network_server_action = new menuaction_s();
-
-    static menuaction_s s_player_setup_action = new menuaction_s();
 
     static void Multiplayer_MenuDraw() {
         Banner("m_banner_multiplayer");
@@ -588,7 +874,7 @@ public final class Menu extends Key {
         s_join_network_server_action.x = 0;
         s_join_network_server_action.y = 0;
         s_join_network_server_action.name = " join network server";
-        s_join_network_server_action.callback = new mcallback() {
+        s_join_network_server_action.callback = new TMCallback() {
             public void execute(Object o) {
                 JoinNetworkServerFunc(o);
             }
@@ -599,7 +885,7 @@ public final class Menu extends Key {
         s_start_network_server_action.x = 0;
         s_start_network_server_action.y = 10;
         s_start_network_server_action.name = " start network server";
-        s_start_network_server_action.callback = new mcallback() {
+        s_start_network_server_action.callback = new TMCallback() {
             public void execute(Object o) {
                 StartNetworkServerFunc(o);
             }
@@ -610,7 +896,7 @@ public final class Menu extends Key {
         s_player_setup_action.x = 0;
         s_player_setup_action.y = 20;
         s_player_setup_action.name = " player setup";
-        s_player_setup_action.callback = new mcallback() {
+        s_player_setup_action.callback = new TMCallback() {
             public void execute(Object o) {
                 PlayerSetupFunc(o);
             }
@@ -626,101 +912,24 @@ public final class Menu extends Key {
     }
 
     static String Multiplayer_MenuKey(int key) {
-        return Default_MenuKey(s_multiplayer_menu, key);
+        return defaultMenuKey(s_multiplayer_menu, key);
     }
-
-    static TXCommand Menu_Multiplayer = () -> Menu_Multiplayer_f();
 
     static void Menu_Multiplayer_f() {
         Multiplayer_MenuInit();
-        PushMenu(() -> Multiplayer_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> Multiplayer_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return Multiplayer_MenuKey(key);
             }
         });
     }
 
-    /*
-     * =======================================================================
-     * 
-     * KEYS MENU
-     * 
-     * =======================================================================
-     */
-    static String bindnames[][] = { { "+attack", "attack" },
-            { "weapnext", "next weapon" }, { "+forward", "walk forward" },
-            { "+back", "backpedal" }, { "+left", "turn left" },
-            { "+right", "turn right" }, { "+speed", "run" },
-            { "+moveleft", "step left" }, { "+moveright", "step right" },
-            { "+strafe", "sidestep" }, { "+lookup", "look up" },
-            { "+lookdown", "look down" }, { "centerview", "center view" },
-            { "+mlook", "mouse look" }, { "+klook", "keyboard look" },
-            { "+moveup", "up / jump" }, { "+movedown", "down / crouch" }, {
-
-            "inven", "inventory" }, { "invuse", "use item" },
-            { "invdrop", "drop item" }, { "invprev", "prev item" },
-            { "invnext", "next item" }, {
-
-            "cmd help", "help computer" }, { null, null } };
-
-    int keys_cursor;
-
-    static boolean bind_grab;
-
-    static menuframework_s s_keys_menu = new menuframework_s();
-
-    static menuaction_s s_keys_attack_action = new menuaction_s();
-
-    static menuaction_s s_keys_change_weapon_action = new menuaction_s();
-
-    static menuaction_s s_keys_walk_forward_action = new menuaction_s();
-
-    static menuaction_s s_keys_backpedal_action = new menuaction_s();
-
-    static menuaction_s s_keys_turn_left_action = new menuaction_s();
-
-    static menuaction_s s_keys_turn_right_action = new menuaction_s();
-
-    static menuaction_s s_keys_run_action = new menuaction_s();
-
-    static menuaction_s s_keys_step_left_action = new menuaction_s();
-
-    static menuaction_s s_keys_step_right_action = new menuaction_s();
-
-    static menuaction_s s_keys_sidestep_action = new menuaction_s();
-
-    static menuaction_s s_keys_look_up_action = new menuaction_s();
-
-    static menuaction_s s_keys_look_down_action = new menuaction_s();
-
-    static menuaction_s s_keys_center_view_action = new menuaction_s();
-
-    static menuaction_s s_keys_mouse_look_action = new menuaction_s();
-
-    static menuaction_s s_keys_keyboard_look_action = new menuaction_s();
-
-    static menuaction_s s_keys_move_up_action = new menuaction_s();
-
-    static menuaction_s s_keys_move_down_action = new menuaction_s();
-
-    static menuaction_s s_keys_inventory_action = new menuaction_s();
-
-    static menuaction_s s_keys_inv_use_action = new menuaction_s();
-
-    static menuaction_s s_keys_inv_drop_action = new menuaction_s();
-
-    static menuaction_s s_keys_inv_prev_action = new menuaction_s();
-
-    static menuaction_s s_keys_inv_next_action = new menuaction_s();
-
-    static menuaction_s s_keys_help_computer_action = new menuaction_s();
-
     static void UnbindCommand(String command) {
         int j;
         String b;
 
         for (j = 0; j < 256; j++) {
-            b = keybindings[j];
+            b = Key.keybindings[j];
             if (b == null)
                 continue;
             if (b.equals(command))
@@ -737,7 +946,7 @@ public final class Menu extends Key {
         count = 0;
 
         for (j = 0; j < 256; j++) {
-            b = keybindings[j];
+            b = Key.keybindings[j];
             if (b == null)
                 continue;
 
@@ -750,7 +959,7 @@ public final class Menu extends Key {
         }
     }
 
-    static void KeyCursorDrawFunc(menuframework_s menu) {
+    static void KeyCursorDrawFunc(TMenuFramework menu) {
         if (bind_grab)
             re.DrawChar(menu.x, menu.y + menu.cursor * 9, '=');
         else
@@ -759,8 +968,8 @@ public final class Menu extends Key {
     }
 
     static void DrawKeyBindingFunc(Object self) {
-        int keys[] = { 0, 0 };
-        menuaction_s a = (menuaction_s) self;
+        int keys[] = {0, 0};
+        TMenuAction a = (TMenuAction) self;
 
         FindKeysForCommand(bindnames[a.localdata[0]][0], keys);
 
@@ -786,8 +995,8 @@ public final class Menu extends Key {
     }
 
     static void KeyBindingFunc(Object self) {
-        menuaction_s a = (menuaction_s) self;
-        int keys[] = { 0, 0 };
+        TMenuAction a = (TMenuAction) self;
+        int keys[] = {0, 0};
 
         FindKeysForCommand(bindnames[a.localdata[0]][0], keys);
 
@@ -805,9 +1014,9 @@ public final class Menu extends Key {
 
         s_keys_menu.x = (int) (viddef.getWidth() * 0.50);
         s_keys_menu.nitems = 0;
-        s_keys_menu.cursordraw = new mcallback() {
+        s_keys_menu.cursordraw = new TMCallback() {
             public void execute(Object o) {
-                KeyCursorDrawFunc((menuframework_s) o);
+                KeyCursorDrawFunc((TMenuFramework) o);
             }
         };
 
@@ -815,7 +1024,7 @@ public final class Menu extends Key {
         s_keys_attack_action.flags = QMF_GRAYED;
         s_keys_attack_action.x = 0;
         s_keys_attack_action.y = y;
-        s_keys_attack_action.ownerdraw = new mcallback() {
+        s_keys_attack_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -827,7 +1036,7 @@ public final class Menu extends Key {
         s_keys_change_weapon_action.flags = QMF_GRAYED;
         s_keys_change_weapon_action.x = 0;
         s_keys_change_weapon_action.y = y += 9;
-        s_keys_change_weapon_action.ownerdraw = new mcallback() {
+        s_keys_change_weapon_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -840,7 +1049,7 @@ public final class Menu extends Key {
         s_keys_walk_forward_action.flags = QMF_GRAYED;
         s_keys_walk_forward_action.x = 0;
         s_keys_walk_forward_action.y = y += 9;
-        s_keys_walk_forward_action.ownerdraw = new mcallback() {
+        s_keys_walk_forward_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -852,7 +1061,7 @@ public final class Menu extends Key {
         s_keys_backpedal_action.flags = QMF_GRAYED;
         s_keys_backpedal_action.x = 0;
         s_keys_backpedal_action.y = y += 9;
-        s_keys_backpedal_action.ownerdraw = new mcallback() {
+        s_keys_backpedal_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -864,7 +1073,7 @@ public final class Menu extends Key {
         s_keys_turn_left_action.flags = QMF_GRAYED;
         s_keys_turn_left_action.x = 0;
         s_keys_turn_left_action.y = y += 9;
-        s_keys_turn_left_action.ownerdraw = new mcallback() {
+        s_keys_turn_left_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -876,7 +1085,7 @@ public final class Menu extends Key {
         s_keys_turn_right_action.flags = QMF_GRAYED;
         s_keys_turn_right_action.x = 0;
         s_keys_turn_right_action.y = y += 9;
-        s_keys_turn_right_action.ownerdraw = new mcallback() {
+        s_keys_turn_right_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -888,7 +1097,7 @@ public final class Menu extends Key {
         s_keys_run_action.flags = QMF_GRAYED;
         s_keys_run_action.x = 0;
         s_keys_run_action.y = y += 9;
-        s_keys_run_action.ownerdraw = new mcallback() {
+        s_keys_run_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -900,7 +1109,7 @@ public final class Menu extends Key {
         s_keys_step_left_action.flags = QMF_GRAYED;
         s_keys_step_left_action.x = 0;
         s_keys_step_left_action.y = y += 9;
-        s_keys_step_left_action.ownerdraw = new mcallback() {
+        s_keys_step_left_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -912,7 +1121,7 @@ public final class Menu extends Key {
         s_keys_step_right_action.flags = QMF_GRAYED;
         s_keys_step_right_action.x = 0;
         s_keys_step_right_action.y = y += 9;
-        s_keys_step_right_action.ownerdraw = new mcallback() {
+        s_keys_step_right_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -925,7 +1134,7 @@ public final class Menu extends Key {
         s_keys_sidestep_action.flags = QMF_GRAYED;
         s_keys_sidestep_action.x = 0;
         s_keys_sidestep_action.y = y += 9;
-        s_keys_sidestep_action.ownerdraw = new mcallback() {
+        s_keys_sidestep_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -938,7 +1147,7 @@ public final class Menu extends Key {
         s_keys_look_up_action.flags = QMF_GRAYED;
         s_keys_look_up_action.x = 0;
         s_keys_look_up_action.y = y += 9;
-        s_keys_look_up_action.ownerdraw = new mcallback() {
+        s_keys_look_up_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -951,7 +1160,7 @@ public final class Menu extends Key {
         s_keys_look_down_action.flags = QMF_GRAYED;
         s_keys_look_down_action.x = 0;
         s_keys_look_down_action.y = y += 9;
-        s_keys_look_down_action.ownerdraw = new mcallback() {
+        s_keys_look_down_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -964,7 +1173,7 @@ public final class Menu extends Key {
         s_keys_center_view_action.flags = QMF_GRAYED;
         s_keys_center_view_action.x = 0;
         s_keys_center_view_action.y = y += 9;
-        s_keys_center_view_action.ownerdraw = new mcallback() {
+        s_keys_center_view_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -977,7 +1186,7 @@ public final class Menu extends Key {
         s_keys_mouse_look_action.flags = QMF_GRAYED;
         s_keys_mouse_look_action.x = 0;
         s_keys_mouse_look_action.y = y += 9;
-        s_keys_mouse_look_action.ownerdraw = new mcallback() {
+        s_keys_mouse_look_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -990,7 +1199,7 @@ public final class Menu extends Key {
         s_keys_keyboard_look_action.flags = QMF_GRAYED;
         s_keys_keyboard_look_action.x = 0;
         s_keys_keyboard_look_action.y = y += 9;
-        s_keys_keyboard_look_action.ownerdraw = new mcallback() {
+        s_keys_keyboard_look_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1003,7 +1212,7 @@ public final class Menu extends Key {
         s_keys_move_up_action.flags = QMF_GRAYED;
         s_keys_move_up_action.x = 0;
         s_keys_move_up_action.y = y += 9;
-        s_keys_move_up_action.ownerdraw = new mcallback() {
+        s_keys_move_up_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1016,7 +1225,7 @@ public final class Menu extends Key {
         s_keys_move_down_action.flags = QMF_GRAYED;
         s_keys_move_down_action.x = 0;
         s_keys_move_down_action.y = y += 9;
-        s_keys_move_down_action.ownerdraw = new mcallback() {
+        s_keys_move_down_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1029,7 +1238,7 @@ public final class Menu extends Key {
         s_keys_inventory_action.flags = QMF_GRAYED;
         s_keys_inventory_action.x = 0;
         s_keys_inventory_action.y = y += 9;
-        s_keys_inventory_action.ownerdraw = new mcallback() {
+        s_keys_inventory_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1042,7 +1251,7 @@ public final class Menu extends Key {
         s_keys_inv_use_action.flags = QMF_GRAYED;
         s_keys_inv_use_action.x = 0;
         s_keys_inv_use_action.y = y += 9;
-        s_keys_inv_use_action.ownerdraw = new mcallback() {
+        s_keys_inv_use_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1055,7 +1264,7 @@ public final class Menu extends Key {
         s_keys_inv_drop_action.flags = QMF_GRAYED;
         s_keys_inv_drop_action.x = 0;
         s_keys_inv_drop_action.y = y += 9;
-        s_keys_inv_drop_action.ownerdraw = new mcallback() {
+        s_keys_inv_drop_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1068,7 +1277,7 @@ public final class Menu extends Key {
         s_keys_inv_prev_action.flags = QMF_GRAYED;
         s_keys_inv_prev_action.x = 0;
         s_keys_inv_prev_action.y = y += 9;
-        s_keys_inv_prev_action.ownerdraw = new mcallback() {
+        s_keys_inv_prev_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1081,7 +1290,7 @@ public final class Menu extends Key {
         s_keys_inv_next_action.flags = QMF_GRAYED;
         s_keys_inv_next_action.x = 0;
         s_keys_inv_next_action.y = y += 9;
-        s_keys_inv_next_action.ownerdraw = new mcallback() {
+        s_keys_inv_next_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1094,7 +1303,7 @@ public final class Menu extends Key {
         s_keys_help_computer_action.flags = QMF_GRAYED;
         s_keys_help_computer_action.x = 0;
         s_keys_help_computer_action.y = y += 9;
-        s_keys_help_computer_action.ownerdraw = new mcallback() {
+        s_keys_help_computer_action.ownerdraw = new TMCallback() {
             public void execute(Object o) {
                 DrawKeyBindingFunc(o);
             }
@@ -1133,28 +1342,20 @@ public final class Menu extends Key {
         Menu_Center(s_keys_menu);
     }
 
-    static TXCommand Keys_MenuDraw = () -> Keys_MenuDraw_f();
-
     static void Keys_MenuDraw_f() {
         Menu_AdjustCursor(s_keys_menu, 1);
         Menu_Draw(s_keys_menu);
     }
 
-    static keyfunc_t Keys_MenuKey = new keyfunc_t() {
-        public String execute(int key) {
-            return Keys_MenuKey_f(key);
-        }
-    };
-
     static String Keys_MenuKey_f(int key) {
-        menuaction_s item = (menuaction_s) Menu_ItemAtCursor(s_keys_menu);
+        TMenuAction item = (TMenuAction) Menu_ItemAtCursor(s_keys_menu);
 
         if (bind_grab) {
             if (key != K_ESCAPE && key != '`') {
                 //char cmd[1024];
                 String cmd;
 
-                //Com_sprintf(cmd, sizeof(cmd), "bind \"%s\" \"%s\"\n",
+                //Com_sprintf(cmd, sizeof(cmd), "bind \"%entityState\" \"%entityState\"\n",
                 // Key_KeynumToString(key), bindnames[item.localdata[0]][0]);
                 cmd = "bind \"" + Key.KeynumToString(key) + "\" \""
                         + bindnames[item.localdata[0]][0] + "\"";
@@ -1168,73 +1369,28 @@ public final class Menu extends Key {
         }
 
         switch (key) {
-        case K_KP_ENTER:
-        case K_ENTER:
-            KeyBindingFunc(item);
-            return menu_in_sound;
-        case K_BACKSPACE: // delete bindings
-        case K_DEL: // delete bindings
-        case K_KP_DEL:
-            UnbindCommand(bindnames[item.localdata[0]][0]);
-            return menu_out_sound;
-        default:
-            return Default_MenuKey(s_keys_menu, key);
+            case Key.K_KP_ENTER:
+            case K_ENTER:
+                KeyBindingFunc(item);
+                return menu_in_sound;
+            case K_BACKSPACE: // delete bindings
+            case Key.K_DEL: // delete bindings
+            case Key.K_KP_DEL:
+                UnbindCommand(bindnames[item.localdata[0]][0]);
+                return menu_out_sound;
+            default:
+                return defaultMenuKey(s_keys_menu, key);
         }
     }
 
-    static TXCommand Menu_Keys = () -> Menu_Keys_f();
-
-
     static void Menu_Keys_f() {
         Keys_MenuInit();
-        PushMenu(() -> Keys_MenuDraw_f(), new keyfunc_t() {
+        pushMenu(() -> Keys_MenuDraw_f(), new TKeyFunc() {
             public String execute(int key) {
                 return Keys_MenuKey_f(key);
             }
         });
     }
-
-    /*
-     * =======================================================================
-     * 
-     * CONTROLS MENU
-     * 
-     * =======================================================================
-     */
-    static TVar win_noalttab;
-
-    static menuframework_s s_options_menu = new menuframework_s();
-
-    static menuaction_s s_options_defaults_action = new menuaction_s();
-
-    static menuaction_s s_options_customize_options_action = new menuaction_s();
-
-    static menuslider_s s_options_sensitivity_slider = new menuslider_s();
-
-    static menulist_s s_options_freelook_box = new menulist_s();
-
-    static menulist_s s_options_noalttab_box = new menulist_s();
-
-    static menulist_s s_options_alwaysrun_box = new menulist_s();
-
-    static menulist_s s_options_invertmouse_box = new menulist_s();
-
-    static menulist_s s_options_lookspring_box = new menulist_s();
-
-    static menulist_s s_options_lookstrafe_box = new menulist_s();
-
-    static menulist_s s_options_crosshair_box = new menulist_s();
-
-    static menuslider_s s_options_sfxvolume_slider = new menuslider_s();
-
-    static menulist_s s_options_joystick_box = new menulist_s();
-
-    static menulist_s s_options_cdvolume_box = new menulist_s();
-
-    static menulist_s s_options_quality_list = new menulist_s();
-
-    //static menulist_s s_options_compatibility_list = new menulist_s();
-    static menuaction_s s_options_console_action = new menuaction_s();
 
     static void CrosshairFunc(Object unused) {
         ConsoleVar.SetValue("crosshair", s_options_crosshair_box.curvalue);
@@ -1281,9 +1437,9 @@ public final class Menu extends Key {
         // ConsoleVar.VariableValue("s_loadas8bit"));
         String s = ConsoleVar.VariableString("s_impl");
         for (int i = 0; i < s_drivers.length; i++) {
-        	if (s.equals(s_drivers[i])) {
-        		s_options_quality_list.curvalue = i;
-        	}
+            if (s.equals(s_drivers[i])) {
+                s_options_quality_list.curvalue = i;
+            }
         }
 
         s_options_sensitivity_slider.curvalue = (sensitivity.value) * 2;
@@ -1352,8 +1508,8 @@ public final class Menu extends Key {
         Key.ClearTyping();
         Console.ClearNotify();
 
-        ForceMenuOff();
-        cls.key_dest = key_console;
+        forceMenuOff();
+        cls.setKey_dest(key_console);
     }
 
     static void UpdateSoundQualityFunc(Object unused) {
@@ -1378,12 +1534,12 @@ public final class Menu extends Key {
             re.EndFrame();
             return;
         } else {
-        	ConsoleVar.Set("s_impl", current);
-        	
-            DrawTextBox(8, 120 - 48, 36, 3);
-            Print(16 + 16, 120 - 48 + 8, "Restarting the sound system. This");
-            Print(16 + 16, 120 - 48 + 16, "could take up to a minute, so");
-            Print(16 + 16, 120 - 48 + 24, "please be patient.");
+            ConsoleVar.Set("s_impl", current);
+
+            drawTextBox(8, 120 - 48, 36, 3);
+            drawString(16 + 16, 120 - 48 + 8, "Restarting the sound system. This");
+            drawString(16 + 16, 120 - 48 + 16, "could take up to a minute, so");
+            drawString(16 + 16, 120 - 48 + 24, "please be patient.");
 
             // the text box won't show up unless we do a buffer swap
             re.EndFrame();
@@ -1392,30 +1548,18 @@ public final class Menu extends Key {
         }
     }
 
-    static String cd_music_items[] = { "disabled", "enabled" };
-
-    static String compatibility_items[] = { "max compatibility",
-            "max performance" };
-
-    static String yesno_names[] = { "no", "yes" };
-
-    static String crosshair_names[] = { "none", "cross", "dot", "angle" };
-
-    static String[] s_labels;
-    static String[] s_drivers;
-    
     static void Options_MenuInit() {
 
-    	s_drivers = Sound.getDriverNames();
-    	s_labels = new String[s_drivers.length];
-    	for (int i = 0; i < s_drivers.length; i++) {
-    		if ("dummy".equals(s_drivers[i])) {
-    			s_labels[i] = "off";
-    		} else {
-    			s_labels[i] = s_drivers[i];
-    		}
-    	}
-    	
+        s_drivers = Sound.getDriverNames();
+        s_labels = new String[s_drivers.length];
+        for (int i = 0; i < s_drivers.length; i++) {
+            if ("dummy".equals(s_drivers[i])) {
+                s_labels[i] = "off";
+            } else {
+                s_labels[i] = s_drivers[i];
+            }
+        }
+
         win_noalttab = ConsoleVar.Get("win_noalttab", "0", TVar.CVAR_FLAG_ARCHIVE);
 
         /*
@@ -1429,7 +1573,7 @@ public final class Menu extends Key {
         s_options_sfxvolume_slider.x = 0;
         s_options_sfxvolume_slider.y = 0;
         s_options_sfxvolume_slider.name = "effects volume";
-        s_options_sfxvolume_slider.callback = new mcallback() {
+        s_options_sfxvolume_slider.callback = new TMCallback() {
             public void execute(Object o) {
                 UpdateVolumeFunc(o);
             }
@@ -1442,7 +1586,7 @@ public final class Menu extends Key {
         s_options_cdvolume_box.x = 0;
         s_options_cdvolume_box.y = 10;
         s_options_cdvolume_box.name = "CD music";
-        s_options_cdvolume_box.callback = new mcallback() {
+        s_options_cdvolume_box.callback = new TMCallback() {
             public void execute(Object o) {
                 UpdateCDVolumeFunc(o);
             }
@@ -1455,7 +1599,7 @@ public final class Menu extends Key {
         s_options_quality_list.x = 0;
         s_options_quality_list.y = 20;
         s_options_quality_list.name = "sound";
-        s_options_quality_list.callback = new mcallback() {
+        s_options_quality_list.callback = new TMCallback() {
             public void execute(Object o) {
                 UpdateSoundQualityFunc(o);
             }
@@ -1466,7 +1610,7 @@ public final class Menu extends Key {
         s_options_sensitivity_slider.x = 0;
         s_options_sensitivity_slider.y = 50;
         s_options_sensitivity_slider.name = "mouse speed";
-        s_options_sensitivity_slider.callback = new mcallback() {
+        s_options_sensitivity_slider.callback = new TMCallback() {
             public void execute(Object o) {
                 MouseSpeedFunc(o);
             }
@@ -1478,7 +1622,7 @@ public final class Menu extends Key {
         s_options_alwaysrun_box.x = 0;
         s_options_alwaysrun_box.y = 60;
         s_options_alwaysrun_box.name = "always run";
-        s_options_alwaysrun_box.callback = new mcallback() {
+        s_options_alwaysrun_box.callback = new TMCallback() {
             public void execute(Object o) {
                 AlwaysRunFunc(o);
             }
@@ -1489,7 +1633,7 @@ public final class Menu extends Key {
         s_options_invertmouse_box.x = 0;
         s_options_invertmouse_box.y = 70;
         s_options_invertmouse_box.name = "invert mouse";
-        s_options_invertmouse_box.callback = new mcallback() {
+        s_options_invertmouse_box.callback = new TMCallback() {
             public void execute(Object o) {
                 InvertMouseFunc(o);
             }
@@ -1500,7 +1644,7 @@ public final class Menu extends Key {
         s_options_lookspring_box.x = 0;
         s_options_lookspring_box.y = 80;
         s_options_lookspring_box.name = "lookspring";
-        s_options_lookspring_box.callback = new mcallback() {
+        s_options_lookspring_box.callback = new TMCallback() {
             public void execute(Object o) {
                 LookspringFunc(o);
             }
@@ -1511,7 +1655,7 @@ public final class Menu extends Key {
         s_options_lookstrafe_box.x = 0;
         s_options_lookstrafe_box.y = 90;
         s_options_lookstrafe_box.name = "lookstrafe";
-        s_options_lookstrafe_box.callback = new mcallback() {
+        s_options_lookstrafe_box.callback = new TMCallback() {
             public void execute(Object o) {
                 LookstrafeFunc(o);
             }
@@ -1522,7 +1666,7 @@ public final class Menu extends Key {
         s_options_freelook_box.x = 0;
         s_options_freelook_box.y = 100;
         s_options_freelook_box.name = "free look";
-        s_options_freelook_box.callback = new mcallback() {
+        s_options_freelook_box.callback = new TMCallback() {
             public void execute(Object o) {
                 FreeLookFunc(o);
             }
@@ -1533,7 +1677,7 @@ public final class Menu extends Key {
         s_options_crosshair_box.x = 0;
         s_options_crosshair_box.y = 110;
         s_options_crosshair_box.name = "crosshair";
-        s_options_crosshair_box.callback = new mcallback() {
+        s_options_crosshair_box.callback = new TMCallback() {
             public void execute(Object o) {
                 CrosshairFunc(o);
             }
@@ -1550,7 +1694,7 @@ public final class Menu extends Key {
         s_options_joystick_box.x = 0;
         s_options_joystick_box.y = 120;
         s_options_joystick_box.name = "use joystick";
-        s_options_joystick_box.callback = new mcallback() {
+        s_options_joystick_box.callback = new TMCallback() {
             public void execute(Object o) {
                 JoystickFunc(o);
             }
@@ -1561,7 +1705,7 @@ public final class Menu extends Key {
         s_options_customize_options_action.x = 0;
         s_options_customize_options_action.y = 140;
         s_options_customize_options_action.name = "customize controls";
-        s_options_customize_options_action.callback = new mcallback() {
+        s_options_customize_options_action.callback = new TMCallback() {
             public void execute(Object o) {
                 CustomizeControlsFunc(o);
             }
@@ -1571,7 +1715,7 @@ public final class Menu extends Key {
         s_options_defaults_action.x = 0;
         s_options_defaults_action.y = 150;
         s_options_defaults_action.name = "reset defaults";
-        s_options_defaults_action.callback = new mcallback() {
+        s_options_defaults_action.callback = new TMCallback() {
             public void execute(Object o) {
                 ControlsResetDefaultsFunc(o);
             }
@@ -1581,7 +1725,7 @@ public final class Menu extends Key {
         s_options_console_action.x = 0;
         s_options_console_action.y = 160;
         s_options_console_action.name = "go to console";
-        s_options_console_action.callback = new mcallback() {
+        s_options_console_action.callback = new TMCallback() {
             public void execute(Object o) {
                 ConsoleFunc(o);
             }
@@ -1614,184 +1758,26 @@ public final class Menu extends Key {
     }
 
     static String Options_MenuKey(int key) {
-        return Default_MenuKey(s_options_menu, key);
+        return defaultMenuKey(s_options_menu, key);
     }
-
-    static TXCommand Menu_Options = () -> Menu_Options_f();
 
     static void Menu_Options_f() {
         Options_MenuInit();
-        PushMenu(() -> Options_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> Options_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return Options_MenuKey(key);
             }
         });
     }
 
-    /*
-     * =======================================================================
-     * 
-     * VIDEO MENU
-     * 
-     * =======================================================================
-     */
-
-    static TXCommand Menu_Video = () -> Menu_Video_f();
-
     static void Menu_Video_f() {
         VID.MenuInit();
-        PushMenu(() -> VID.MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> VID.MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return VID.MenuKey(key);
             }
         });
     }
-
-    /*
-     * =============================================================================
-     * 
-     * END GAME MENU
-     * 
-     * =============================================================================
-     */
-    static int credits_start_time;
-
-    static String creditsIndex[] = new String[256];
-
-    static String creditsBuffer;
-
-    static String idcredits[] = { "+QUAKE II BY ID SOFTWARE", "",
-            "+PROGRAMMING", "John Carmack", "John Cash", "Brian Hook", "",
-            "+JAVA PORT BY BYTONIC", "Carsten Weisse", "Holger Zickner", "Rene Stoeckel", "", "+ART",
-            "Adrian Carmack", "Kevin Cloud", "Paul Steed", "", "+LEVEL DESIGN",
-            "Tim Willits", "American McGee", "Christian Antkow",
-            "Paul Jaquays", "Brandon James", "", "+BIZ", "Todd Hollenshead",
-            "Barrett (Bear) Alexander", "Donna Jackson", "", "",
-            "+SPECIAL THANKS", "Ben Donges for beta testing", "", "", "", "",
-            "", "", "+ADDITIONAL SUPPORT", "", "+LINUX PORT AND CTF",
-            "Dave \"Zoid\" Kirsch", "", "+CINEMATIC SEQUENCES",
-            "Ending Cinematic by Blur Studio - ", "Venice, CA", "",
-            "Environment models for Introduction",
-            "Cinematic by Karl Dolgener", "",
-            "Assistance with environment design", "by Cliff Iwai", "",
-            "+SOUND EFFECTS AND MUSIC",
-            "SoundDriver Design by Soundelux Media Labs.",
-            "Music Composed and Produced by",
-            "Soundelux Media Labs.  Special thanks",
-            "to Bill Brown, Tom Ozanich, Brian",
-            "Celano, Jeff Eisner, and The Soundelux", "Players.", "",
-            "\"Level Music\" by Sonic Mayhem", "www.sonicmayhem.com", "",
-            "\"Quake II Theme Song\"", "(C) 1997 Rob Zombie. All Rights",
-            "Reserved.", "", "Track 10 (\"Climb\") by Jer Sypult", "",
-            "Voice of computers by", "Carly Staehlin-Taylor", "",
-            "+THANKS TO ACTIVISION", "+IN PARTICULAR:", "", "John Tam",
-            "Steve Rosenthal", "Marty Stratton", "Henk Hartong", "",
-            "Quake II(tm) (C)1997 Id Software, Inc.",
-            "All Rights Reserved.  Distributed by",
-            "Activision, Inc. under license.",
-            "Quake II(tm), the Id Software name,",
-            "the \"Q II\"(tm) logo and id(tm)",
-            "logo are trademarks of Id Software,",
-            "Inc. Activision(R) is a registered",
-            "trademark of Activision, Inc. All",
-            "other trademarks and trade names are",
-            "properties of their respective owners.", null };
-
-    static String credits[] = idcredits;
-
-    static String xatcredits[] = { "+QUAKE II MISSION PACK: THE RECKONING",
-            "+BY", "+XATRIX ENTERTAINMENT, INC.", "", "+DESIGN AND DIRECTION",
-            "Drew Markham", "", "+PRODUCED BY", "Greg Goodrich", "",
-            "+PROGRAMMING", "Rafael Paiz", "",
-            "+LEVEL DESIGN / ADDITIONAL GAME DESIGN", "Alex Mayberry", "",
-            "+LEVEL DESIGN", "Mal Blackwell", "Dan Koppel", "",
-            "+ART DIRECTION", "Michael \"Maxx\" Kaufman", "",
-            "+COMPUTER GRAPHICS SUPERVISOR AND",
-            "+CHARACTER ANIMATION DIRECTION", "Barry Dempsey", "",
-            "+SENIOR ANIMATOR AND MODELER", "Jason Hoover", "",
-            "+CHARACTER ANIMATION AND", "+MOTION CAPTURE SPECIALIST",
-            "Amit Doron", "", "+ART", "Claire Praderie-Markham",
-            "Viktor Antonov", "Corky Lehmkuhl", "", "+INTRODUCTION ANIMATION",
-            "Dominique Drozdz", "", "+ADDITIONAL LEVEL DESIGN", "Aaron Barber",
-            "Rhett Baldwin", "", "+3D CHARACTER ANIMATION TOOLS",
-            "Gerry Tyra, SA Technology", "",
-            "+ADDITIONAL EDITOR TOOL PROGRAMMING", "Robert Duffy", "",
-            "+ADDITIONAL PROGRAMMING", "Ryan Feltrin", "",
-            "+PRODUCTION COORDINATOR", "Victoria Sylvester", "",
-            "+SOUND DESIGN", "Gary Bradfield", "", "+MUSIC BY", "Sonic Mayhem",
-            "", "", "", "+SPECIAL THANKS", "+TO",
-            "+OUR FRIENDS AT ID SOFTWARE", "", "John Carmack", "John Cash",
-            "Brian Hook", "Adrian Carmack", "Kevin Cloud", "Paul Steed",
-            "Tim Willits", "Christian Antkow", "Paul Jaquays", "Brandon James",
-            "Todd Hollenshead", "Barrett (Bear) Alexander",
-            "Dave \"Zoid\" Kirsch", "Donna Jackson", "", "", "",
-            "+THANKS TO ACTIVISION", "+IN PARTICULAR:", "", "Marty Stratton",
-            "Henk \"The Original Ripper\" Hartong", "Kevin Kraff",
-            "Jamey Gottlieb", "Chris Hepburn", "", "+AND THE GAME TESTERS", "",
-            "Tim Vanlaw", "Doug Jacobs", "Steven Rosenthal", "David Baker",
-            "Chris Campbell", "Aaron Casillas", "Steve Elwell",
-            "Derek Johnstone", "Igor Krinitskiy", "Samantha Lee",
-            "Michael Spann", "Chris Toft", "Juan Valdes", "",
-            "+THANKS TO INTERGRAPH COMPUTER SYTEMS", "+IN PARTICULAR:", "",
-            "Michael T. Nicolaou", "", "",
-            "Quake II Mission Pack: The Reckoning",
-            "(tm) (C)1998 Id Software, Inc. All",
-            "Rights Reserved. Developed by Xatrix",
-            "Entertainment, Inc. for Id Software,",
-            "Inc. Distributed by Activision Inc.",
-            "under license. Quake(R) is a",
-            "registered trademark of Id Software,",
-            "Inc. Quake II Mission Pack: The",
-            "Reckoning(tm), Quake II(tm), the Id",
-            "Software name, the \"Q II\"(tm) logo",
-            "and id(tm) logo are trademarks of Id",
-            "Software, Inc. Activision(R) is a",
-            "registered trademark of Activision,",
-            "Inc. Xatrix(R) is a registered",
-            "trademark of Xatrix Entertainment,",
-            "Inc. All other trademarks and trade",
-            "names are properties of their", "respective owners.", null };
-
-    static String roguecredits[] = { "+QUAKE II MISSION PACK 2: GROUND ZERO",
-            "+BY", "+ROGUE ENTERTAINMENT, INC.", "", "+PRODUCED BY",
-            "Jim Molinets", "", "+PROGRAMMING", "Peter Mack",
-            "Patrick Magruder", "", "+LEVEL DESIGN", "Jim Molinets",
-            "Cameron Lamprecht", "Berenger Fish", "Robert Selitto",
-            "Steve Tietze", "Steve Thoms", "", "+ART DIRECTION",
-            "Rich Fleider", "", "+ART", "Rich Fleider", "Steve Maines",
-            "Won Choi", "", "+ANIMATION SEQUENCES", "Creat Studios",
-            "Steve Maines", "", "+ADDITIONAL LEVEL DESIGN", "Rich Fleider",
-            "Steve Maines", "Peter Mack", "", "+SOUND", "James Grunke", "",
-            "+GROUND ZERO THEME", "+AND", "+MUSIC BY", "Sonic Mayhem", "",
-            "+VWEP MODELS", "Brent \"Hentai\" Dill", "", "", "",
-            "+SPECIAL THANKS", "+TO", "+OUR FRIENDS AT ID SOFTWARE", "",
-            "John Carmack", "John Cash", "Brian Hook", "Adrian Carmack",
-            "Kevin Cloud", "Paul Steed", "Tim Willits", "Christian Antkow",
-            "Paul Jaquays", "Brandon James", "Todd Hollenshead",
-            "Barrett (Bear) Alexander", "Katherine Anna Kang", "Donna Jackson",
-            "Dave \"Zoid\" Kirsch", "", "", "", "+THANKS TO ACTIVISION",
-            "+IN PARTICULAR:", "", "Marty Stratton", "Henk Hartong",
-            "Mitch Lasky", "Steve Rosenthal", "Steve Elwell", "",
-            "+AND THE GAME TESTERS", "", "The Ranger Clan",
-            "Dave \"Zoid\" Kirsch", "Nihilistic Software", "Robert Duffy", "",
-            "And Countless Others", "", "", "",
-            "Quake II Mission Pack 2: Ground Zero",
-            "(tm) (C)1998 Id Software, Inc. All",
-            "Rights Reserved. Developed by Rogue",
-            "Entertainment, Inc. for Id Software,",
-            "Inc. Distributed by Activision Inc.",
-            "under license. Quake(R) is a",
-            "registered trademark of Id Software,",
-            "Inc. Quake II Mission Pack 2: Ground",
-            "Zero(tm), Quake II(tm), the Id",
-            "Software name, the \"Q II\"(tm) logo",
-            "and id(tm) logo are trademarks of Id",
-            "Software, Inc. Activision(R) is a",
-            "registered trademark of Activision,",
-            "Inc. Rogue(R) is a registered",
-            "trademark of Rogue Entertainment,",
-            "Inc. All other trademarks and trade",
-            "names are properties of their", "respective owners.", null };
 
     public static void Credits_MenuDraw() {
         int i, y;
@@ -1799,7 +1785,7 @@ public final class Menu extends Key {
         /*
          * * draw the credits
          */
-        for (i = 0, y = (int) (viddef.getHeight() - ((cls.realtime - credits_start_time) / 40.0F)); credits[i] != null
+        for (i = 0, y = (int) (viddef.getHeight() - ((cls.getRealtime() - credits_start_time) / 40.0F)); credits[i] != null
                 && y < viddef.getHeight(); y += 10, i++) {
             int j, stringoffset = 0;
             boolean bold = false;
@@ -1831,30 +1817,28 @@ public final class Menu extends Key {
         }
 
         if (y < 0)
-            credits_start_time = cls.realtime;
+            credits_start_time = cls.getRealtime();
     }
 
     public static String Credits_Key(int key) {
         switch (key) {
-        case K_ESCAPE:
-            if (creditsBuffer != null)
-                //FileSystem.FreeFile(creditsBuffer);
-                ;
-            PopMenu();
-            break;
+            case K_ESCAPE:
+                if (creditsBuffer != null)
+                    //FileSystem.FreeFile(creditsBuffer);
+                    ;
+                popMenu();
+                break;
         }
 
         return menu_out_sound;
 
     }
 
-    static TXCommand Menu_Credits = () -> Menu_Credits_f();
-
     static void Menu_Credits_f() {
         int n;
         int isdeveloper = 0;
 
-        byte b[] = FileSystem.LoadFile("credits");
+        byte b[] = FileSystem.loadFile("credits");
 
         if (b != null) {
             creditsBuffer = new String(b);
@@ -1879,51 +1863,27 @@ public final class Menu extends Key {
 
         }
 
-        credits_start_time = cls.realtime;
-        PushMenu(() -> Credits_MenuDraw(), new keyfunc_t() {
+        credits_start_time = cls.getRealtime();
+        pushMenu(() -> Credits_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return Credits_Key(key);
             }
         });
     }
 
-    /*
-     * =============================================================================
-     * 
-     * GAME MENU
-     * 
-     * =============================================================================
-     */
-
-    static int m_game_cursor;
-
-    static menuframework_s s_game_menu = new menuframework_s();
-
-    static menuaction_s s_easy_game_action = new menuaction_s();
-
-    static menuaction_s s_medium_game_action = new menuaction_s();
-
-    static menuaction_s s_hard_game_action = new menuaction_s();
-
-    static menuaction_s s_load_game_action = new menuaction_s();
-
-    static menuaction_s s_save_game_action = new menuaction_s();
-
-    static menuaction_s s_credits_action = new menuaction_s();
-
-    static menuseparator_s s_blankline = new menuseparator_s();
+    //	  ROGUE
 
     static void StartGame() {
         // disable updates and start the cinematic going
         cl.servercount = -1;
-        ForceMenuOff();
+        forceMenuOff();
         ConsoleVar.SetValue("deathmatch", 0);
         ConsoleVar.SetValue("coop", 0);
 
         ConsoleVar.SetValue("gamerules", 0); //PGM
 
         Cbuf.AddText("loading ; killserver ; wait ; newgame\n");
-        cls.key_dest = key_game;
+        cls.setKey_dest(key_game);
     }
 
     static void EasyGameFunc(Object data) {
@@ -1953,9 +1913,6 @@ public final class Menu extends Key {
         Menu_Credits_f();
     }
 
-    static String difficulty_names[] = { "easy", "medium",
-            "fuckin shitty hard" };
-
     static void Game_MenuInit() {
 
         s_game_menu.x = (int) (viddef.getWidth() * 0.50);
@@ -1966,7 +1923,7 @@ public final class Menu extends Key {
         s_easy_game_action.x = 0;
         s_easy_game_action.y = 0;
         s_easy_game_action.name = "easy";
-        s_easy_game_action.callback = new mcallback() {
+        s_easy_game_action.callback = new TMCallback() {
             public void execute(Object o) {
                 EasyGameFunc(o);
             }
@@ -1977,7 +1934,7 @@ public final class Menu extends Key {
         s_medium_game_action.x = 0;
         s_medium_game_action.y = 10;
         s_medium_game_action.name = "medium";
-        s_medium_game_action.callback = new mcallback() {
+        s_medium_game_action.callback = new TMCallback() {
             public void execute(Object o) {
                 MediumGameFunc(o);
             }
@@ -1988,7 +1945,7 @@ public final class Menu extends Key {
         s_hard_game_action.x = 0;
         s_hard_game_action.y = 20;
         s_hard_game_action.name = "hard";
-        s_hard_game_action.callback = new mcallback() {
+        s_hard_game_action.callback = new TMCallback() {
             public void execute(Object o) {
                 HardGameFunc(o);
             }
@@ -2001,7 +1958,7 @@ public final class Menu extends Key {
         s_load_game_action.x = 0;
         s_load_game_action.y = 40;
         s_load_game_action.name = "load game";
-        s_load_game_action.callback = new mcallback() {
+        s_load_game_action.callback = new TMCallback() {
             public void execute(Object o) {
                 LoadGameFunc(o);
             }
@@ -2012,7 +1969,7 @@ public final class Menu extends Key {
         s_save_game_action.x = 0;
         s_save_game_action.y = 50;
         s_save_game_action.name = "save game";
-        s_save_game_action.callback = new mcallback() {
+        s_save_game_action.callback = new TMCallback() {
             public void execute(Object o) {
                 SaveGameFunc(o);
             }
@@ -2023,7 +1980,7 @@ public final class Menu extends Key {
         s_credits_action.x = 0;
         s_credits_action.y = 60;
         s_credits_action.name = "credits";
-        s_credits_action.callback = new mcallback() {
+        s_credits_action.callback = new TMCallback() {
             public void execute(Object o) {
                 CreditsFunc(o);
             }
@@ -2048,14 +2005,12 @@ public final class Menu extends Key {
     }
 
     static String Game_MenuKey(int key) {
-        return Default_MenuKey(s_game_menu, key);
+        return defaultMenuKey(s_game_menu, key);
     }
-
-    static TXCommand Menu_Game = () -> Menu_Game_f();
 
     static void Menu_Game_f() {
         Game_MenuInit();
-        PushMenu(() -> Game_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> Game_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return Game_MenuKey(key);
             }
@@ -2063,38 +2018,9 @@ public final class Menu extends Key {
         m_game_cursor = 1;
     }
 
-    /*
-     * =============================================================================
-     * 
-     * LOADGAME MENU
-     * 
-     * =============================================================================
+    /**
+     * Search the save dir for saved games and their names.
      */
-
-    public final static int MAX_SAVEGAMES = 15;
-
-    static menuframework_s s_savegame_menu = new menuframework_s();
-
-    static menuframework_s s_loadgame_menu = new menuframework_s();
-
-    static menuaction_s s_loadgame_actions[] = new menuaction_s[MAX_SAVEGAMES];
-
-    static {
-        for (int n = 0; n < MAX_SAVEGAMES; n++)
-            s_loadgame_actions[n] = new menuaction_s();
-    }
-
-    //String m_savestrings[] = new String [MAX_SAVEGAMES][32];
-    static String m_savestrings[] = new String[MAX_SAVEGAMES];
-
-    static {
-        for (int n = 0; n < MAX_SAVEGAMES; n++)
-            m_savestrings[n] = "";
-    }
-
-    static boolean m_savevalid[] = new boolean[MAX_SAVEGAMES];
-
-    /** Search the save dir for saved games and their names. */
     static void Create_Savestrings() {
         int i;
         QuakeFile f;
@@ -2103,7 +2029,7 @@ public final class Menu extends Key {
         for (i = 0; i < MAX_SAVEGAMES; i++) {
 
             m_savestrings[i] = "<EMPTY>";
-            name = FileSystem.Gamedir() + "/save/save" + i + "/server.ssv";
+            name = FileSystem.gamedir() + "/save/save" + i + "/server.ssv";
 
             try {
                 f = new QuakeFile(name, "r");
@@ -2125,11 +2051,11 @@ public final class Menu extends Key {
     }
 
     static void LoadGameCallback(Object self) {
-        menuaction_s a = (menuaction_s) self;
+        TMenuAction a = (TMenuAction) self;
 
         if (m_savevalid[a.localdata[0]])
             Cbuf.AddText("load save" + a.localdata[0] + "\n");
-        ForceMenuOff();
+        forceMenuOff();
     }
 
     static void LoadGame_MenuInit() {
@@ -2145,7 +2071,7 @@ public final class Menu extends Key {
             s_loadgame_actions[i].name = m_savestrings[i];
             s_loadgame_actions[i].flags = QMF_LEFT_JUSTIFY;
             s_loadgame_actions[i].localdata[0] = i;
-            s_loadgame_actions[i].callback = new mcallback() {
+            s_loadgame_actions[i].callback = new TMCallback() {
                 public void execute(Object o) {
                     LoadGameCallback(o);
                 }
@@ -2174,41 +2100,23 @@ public final class Menu extends Key {
             if (s_savegame_menu.cursor < 0)
                 s_savegame_menu.cursor = 0;
         }
-        return Default_MenuKey(s_loadgame_menu, key);
+        return defaultMenuKey(s_loadgame_menu, key);
     }
-
-    static TXCommand Menu_LoadGame = () -> Menu_LoadGame_f();
 
     static void Menu_LoadGame_f() {
         LoadGame_MenuInit();
-        PushMenu(() -> LoadGame_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> LoadGame_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return LoadGame_MenuKey(key);
             }
         });
     }
 
-    /*
-     * =============================================================================
-     * 
-     * SAVEGAME MENU
-     * 
-     * =============================================================================
-     */
-    //static menuframework_s s_savegame_menu;
-    static menuaction_s s_savegame_actions[] = new menuaction_s[MAX_SAVEGAMES];
-
-    static {
-        for (int n = 0; n < MAX_SAVEGAMES; n++)
-            s_savegame_actions[n] = new menuaction_s();
-
-    }
-
     static void SaveGameCallback(Object self) {
-        menuaction_s a = (menuaction_s) self;
+        TMenuAction a = (TMenuAction) self;
 
         Cbuf.AddText("save save" + a.localdata[0] + "\n");
-        ForceMenuOff();
+        forceMenuOff();
     }
 
     static void SaveGame_MenuDraw() {
@@ -2231,7 +2139,7 @@ public final class Menu extends Key {
             s_savegame_actions[i].name = m_savestrings[i + 1];
             s_savegame_actions[i].localdata[0] = i + 1;
             s_savegame_actions[i].flags = QMF_LEFT_JUSTIFY;
-            s_savegame_actions[i].callback = new mcallback() {
+            s_savegame_actions[i].callback = new TMCallback() {
                 public void execute(Object o) {
                     SaveGameCallback(o);
                 }
@@ -2252,17 +2160,15 @@ public final class Menu extends Key {
             if (s_loadgame_menu.cursor < 0)
                 s_loadgame_menu.cursor = 0;
         }
-        return Default_MenuKey(s_savegame_menu, key);
+        return defaultMenuKey(s_savegame_menu, key);
     }
-
-    static TXCommand Menu_SaveGame = () -> Menu_SaveGame_f();
 
     static void Menu_SaveGame_f() {
         if (0 == Context.server_state)
             return; // not playing a game
 
         SaveGame_MenuInit();
-        PushMenu(() -> SaveGame_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> SaveGame_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return SaveGame_MenuKey(key);
             }
@@ -2273,39 +2179,12 @@ public final class Menu extends Key {
     /*
      * =============================================================================
      * 
-     * JOIN SERVER MENU
+     * ADDRESS BOOK MENU
      * 
      * =============================================================================
      */
 
-    static menuframework_s s_joinserver_menu = new menuframework_s();
-
-    static menuseparator_s s_joinserver_server_title = new menuseparator_s();
-
-    static menuaction_s s_joinserver_search_action = new menuaction_s();
-
-    static menuaction_s s_joinserver_address_book_action = new menuaction_s();
-
-    static TNetAddr local_server_netadr[] = new TNetAddr[MAX_LOCAL_SERVERS];
-
-    static String local_server_names[] = new String[MAX_LOCAL_SERVERS]; //[80];
-
-    static menuaction_s s_joinserver_server_actions[] = new menuaction_s[MAX_LOCAL_SERVERS];
-
-    //	   user readable information
-    //	   network address
-    static {
-        for (int n = 0; n < MAX_LOCAL_SERVERS; n++) {
-            local_server_netadr[n] = new TNetAddr();
-            local_server_names[n] = "";
-            s_joinserver_server_actions[n] = new menuaction_s();
-            s_joinserver_server_actions[n].n = n;
-        }
-    }
-
-    static int m_num_servers;
-
-    static void AddToServerList(TNetAddr adr, String info) {
+    public static void AddToServerList(TNetAddr adr, String info) {
         int i;
 
         if (m_num_servers == MAX_LOCAL_SERVERS)
@@ -2329,7 +2208,7 @@ public final class Menu extends Key {
         String buffer;
         int index;
 
-        index = ((menucommon_s) self).n;
+        index = ((TMenuCommon) self).n;
 
         if (Lib.Q_stricmp(local_server_names[index], NO_SERVER_STRING) == 0)
             return;
@@ -2337,10 +2216,10 @@ public final class Menu extends Key {
         if (index >= m_num_servers)
             return;
 
-        buffer = "connect " + NET.AdrToString(local_server_netadr[index])
+        buffer = "connect " + Network.AdrToString(local_server_netadr[index])
                 + "\n";
         Cbuf.AddText(buffer);
-        ForceMenuOff();
+        forceMenuOff();
     }
 
     static void AddressBookFunc(Object self) {
@@ -2357,10 +2236,10 @@ public final class Menu extends Key {
         for (i = 0; i < MAX_LOCAL_SERVERS; i++)
             local_server_names[i] = NO_SERVER_STRING;
 
-        DrawTextBox(8, 120 - 48, 36, 3);
-        Print(16 + 16, 120 - 48 + 8, "Searching for local servers, this");
-        Print(16 + 16, 120 - 48 + 16, "could take up to a minute, so");
-        Print(16 + 16, 120 - 48 + 24, "please be patient.");
+        drawTextBox(8, 120 - 48, 36, 3);
+        drawString(16 + 16, 120 - 48 + 8, "Searching for local servers, this");
+        drawString(16 + 16, 120 - 48 + 16, "could take up to a minute, so");
+        drawString(16 + 16, 120 - 48 + 24, "please be patient.");
 
         // the text box won't show up unless we do a buffer swap
         re.EndFrame();
@@ -2384,7 +2263,7 @@ public final class Menu extends Key {
         s_joinserver_address_book_action.flags = QMF_LEFT_JUSTIFY;
         s_joinserver_address_book_action.x = 0;
         s_joinserver_address_book_action.y = 0;
-        s_joinserver_address_book_action.callback = new mcallback() {
+        s_joinserver_address_book_action.callback = new TMCallback() {
             public void execute(Object o) {
                 AddressBookFunc(o);
             }
@@ -2395,7 +2274,7 @@ public final class Menu extends Key {
         s_joinserver_search_action.flags = QMF_LEFT_JUSTIFY;
         s_joinserver_search_action.x = 0;
         s_joinserver_search_action.y = 10;
-        s_joinserver_search_action.callback = new mcallback() {
+        s_joinserver_search_action.callback = new TMCallback() {
             public void execute(Object o) {
                 SearchLocalGamesFunc(o);
             }
@@ -2414,7 +2293,7 @@ public final class Menu extends Key {
             s_joinserver_server_actions[i].flags = QMF_LEFT_JUSTIFY;
             s_joinserver_server_actions[i].x = 0;
             s_joinserver_server_actions[i].y = 40 + i * 10;
-            s_joinserver_server_actions[i].callback = new mcallback() {
+            s_joinserver_server_actions[i].callback = new TMCallback() {
                 public void execute(Object o) {
                     JoinServerFunc(o);
                 }
@@ -2440,48 +2319,17 @@ public final class Menu extends Key {
     }
 
     static String JoinServer_MenuKey(int key) {
-        return Default_MenuKey(s_joinserver_menu, key);
+        return defaultMenuKey(s_joinserver_menu, key);
     }
-
-    static TXCommand Menu_JoinServer = () -> Menu_JoinServer_f();
 
     static void Menu_JoinServer_f() {
         JoinServer_MenuInit();
-        PushMenu(() -> JoinServer_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> JoinServer_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return JoinServer_MenuKey(key);
             }
         });
     }
-
-    /*
-     * =============================================================================
-     * 
-     * START SERVER MENU
-     * 
-     * =============================================================================
-     */
-    static menuframework_s s_startserver_menu = new menuframework_s();
-
-    static String mapnames[];
-
-    static int nummaps;
-
-    static menuaction_s s_startserver_start_action = new menuaction_s();
-
-    static menuaction_s s_startserver_dmoptions_action = new menuaction_s();
-
-    static menufield_s s_timelimit_field = new menufield_s();
-
-    static menufield_s s_fraglimit_field = new menufield_s();
-
-    static menufield_s s_maxclients_field = new menufield_s();
-
-    static menufield_s s_hostname_field = new menufield_s();
-
-    static menulist_s s_startmap_list = new menulist_s();
-
-    static menulist_s s_rules_box = new menulist_s();
 
     static void DMOptionsFunc(Object self) {
         if (s_rules_box.curvalue == 1)
@@ -2593,12 +2441,8 @@ public final class Menu extends Key {
             Cbuf.AddText("map " + startmap + "\n");
         }
 
-        ForceMenuOff();
+        forceMenuOff();
     }
-
-    static String dm_coop_names[] = { "deathmatch", "cooperative" };
-
-    static String dm_coop_names_rogue[] = { "deathmatch", "cooperative", "tag" };
 
     static void StartServer_MenuInit() {
 
@@ -2615,10 +2459,10 @@ public final class Menu extends Key {
         /*
          * * load the list of map names
          */
-        mapsname = FileSystem.Gamedir() + "/maps.lst";
+        mapsname = FileSystem.gamedir() + "/maps.lst";
 
         if ((fp = Lib.fopen(mapsname, "r")) == null) {
-            buffer = FileSystem.LoadFile("maps.lst");
+            buffer = FileSystem.loadFile("maps.lst");
             if (buffer == null)
                 //if ((length = FS_LoadFile("maps.lst", (Object *) & buffer))
                 // == -1)
@@ -2690,7 +2534,7 @@ public final class Menu extends Key {
             s_rules_box.curvalue = 1;
         else
             s_rules_box.curvalue = 0;
-        s_rules_box.callback = new mcallback() {
+        s_rules_box.callback = new TMCallback() {
             public void execute(Object o) {
                 RulesChangeFunc(o);
             }
@@ -2756,7 +2600,7 @@ public final class Menu extends Key {
         s_startserver_dmoptions_action.x = 24;
         s_startserver_dmoptions_action.y = 108;
         s_startserver_dmoptions_action.statusbar = null;
-        s_startserver_dmoptions_action.callback = new mcallback() {
+        s_startserver_dmoptions_action.callback = new TMCallback() {
             public void execute(Object o) {
                 DMOptionsFunc(o);
             }
@@ -2767,7 +2611,7 @@ public final class Menu extends Key {
         s_startserver_start_action.flags = QMF_LEFT_JUSTIFY;
         s_startserver_start_action.x = 24;
         s_startserver_start_action.y = 128;
-        s_startserver_start_action.callback = new mcallback() {
+        s_startserver_start_action.callback = new TMCallback() {
             public void execute(Object o) {
                 StartServerActionFunc(o);
             }
@@ -2805,74 +2649,13 @@ public final class Menu extends Key {
             nummaps = 0;
         }
 
-        return Default_MenuKey(s_startserver_menu, key);
+        return defaultMenuKey(s_startserver_menu, key);
     }
 
-    static TXCommand Menu_StartServer = () -> Menu_StartServer_f();
-
-    static TXCommand startServer_MenuDraw = () -> StartServer_MenuDraw();
-    
-    static keyfunc_t startServer_MenuKey = new keyfunc_t() {
-        public String execute(int key) {
-            return StartServer_MenuKey(key);
-        }        
-    };
     static void Menu_StartServer_f() {
         StartServer_MenuInit();
-        PushMenu(startServer_MenuDraw, startServer_MenuKey);
+        pushMenu(startServer_MenuDraw, startServer_MenuKey);
     }
-
-    /*
-     * =============================================================================
-     * 
-     * DMOPTIONS BOOK MENU
-     * 
-     * =============================================================================
-     */
-    static String dmoptions_statusbar; //[128];
-
-    static menuframework_s s_dmoptions_menu = new menuframework_s();
-
-    static menulist_s s_friendlyfire_box = new menulist_s();
-
-    static menulist_s s_falls_box = new menulist_s();
-
-    static menulist_s s_weapons_stay_box = new menulist_s();
-
-    static menulist_s s_instant_powerups_box = new menulist_s();
-
-    static menulist_s s_powerups_box = new menulist_s();
-
-    static menulist_s s_health_box = new menulist_s();
-
-    static menulist_s s_spawn_farthest_box = new menulist_s();
-
-    static menulist_s s_teamplay_box = new menulist_s();
-
-    static menulist_s s_samelevel_box = new menulist_s();
-
-    static menulist_s s_force_respawn_box = new menulist_s();
-
-    static menulist_s s_armor_box = new menulist_s();
-
-    static menulist_s s_allow_exit_box = new menulist_s();
-
-    static menulist_s s_infinite_ammo_box = new menulist_s();
-
-    static menulist_s s_fixed_fov_box = new menulist_s();
-
-    static menulist_s s_quad_drop_box = new menulist_s();
-
-    //	  ROGUE
-    static menulist_s s_no_mines_box = new menulist_s();
-
-    static menulist_s s_no_nukes_box = new menulist_s();
-
-    static menulist_s s_stack_double_box = new menulist_s();
-
-    static menulist_s s_no_spheres_box = new menulist_s();
-
-    //	  ROGUE
 
     static void setvalue(int flags) {
         ConsoleVar.SetValue("dmflags", flags);
@@ -2880,7 +2663,7 @@ public final class Menu extends Key {
     }
 
     static void DMFlagCallback(Object self) {
-        menulist_s f = (menulist_s) self;
+        TMenuList f = (TMenuList) self;
         int flags;
         int bit = 0;
 
@@ -2983,9 +2766,6 @@ public final class Menu extends Key {
 
     }
 
-    //static String yes_no_names[] = { "no", "yes", 0 };
-    static String teamplay_names[] = { "disabled", "by skin", "by model" };
-
     static void DMOptions_MenuInit() {
 
         int dmflags = (int) ConsoleVar.VariableValue("dmflags");
@@ -2998,7 +2778,7 @@ public final class Menu extends Key {
         s_falls_box.x = 0;
         s_falls_box.y = y;
         s_falls_box.name = "falling damage";
-        s_falls_box.callback = new mcallback() {
+        s_falls_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3010,7 +2790,7 @@ public final class Menu extends Key {
         s_weapons_stay_box.x = 0;
         s_weapons_stay_box.y = y += 10;
         s_weapons_stay_box.name = "weapons stay";
-        s_weapons_stay_box.callback = new mcallback() {
+        s_weapons_stay_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3022,7 +2802,7 @@ public final class Menu extends Key {
         s_instant_powerups_box.x = 0;
         s_instant_powerups_box.y = y += 10;
         s_instant_powerups_box.name = "instant powerups";
-        s_instant_powerups_box.callback = new mcallback() {
+        s_instant_powerups_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3035,7 +2815,7 @@ public final class Menu extends Key {
         s_powerups_box.x = 0;
         s_powerups_box.y = y += 10;
         s_powerups_box.name = "allow powerups";
-        s_powerups_box.callback = new mcallback() {
+        s_powerups_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3046,7 +2826,7 @@ public final class Menu extends Key {
         s_health_box.type = MTYPE_SPINCONTROL;
         s_health_box.x = 0;
         s_health_box.y = y += 10;
-        s_health_box.callback = new mcallback() {
+        s_health_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3059,7 +2839,7 @@ public final class Menu extends Key {
         s_armor_box.x = 0;
         s_armor_box.y = y += 10;
         s_armor_box.name = "allow armor";
-        s_armor_box.callback = new mcallback() {
+        s_armor_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3071,7 +2851,7 @@ public final class Menu extends Key {
         s_spawn_farthest_box.x = 0;
         s_spawn_farthest_box.y = y += 10;
         s_spawn_farthest_box.name = "spawn farthest";
-        s_spawn_farthest_box.callback = new mcallback() {
+        s_spawn_farthest_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3084,7 +2864,7 @@ public final class Menu extends Key {
         s_samelevel_box.x = 0;
         s_samelevel_box.y = y += 10;
         s_samelevel_box.name = "same map";
-        s_samelevel_box.callback = new mcallback() {
+        s_samelevel_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3096,7 +2876,7 @@ public final class Menu extends Key {
         s_force_respawn_box.x = 0;
         s_force_respawn_box.y = y += 10;
         s_force_respawn_box.name = "force respawn";
-        s_force_respawn_box.callback = new mcallback() {
+        s_force_respawn_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3109,7 +2889,7 @@ public final class Menu extends Key {
         s_teamplay_box.x = 0;
         s_teamplay_box.y = y += 10;
         s_teamplay_box.name = "teamplay";
-        s_teamplay_box.callback = new mcallback() {
+        s_teamplay_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3120,7 +2900,7 @@ public final class Menu extends Key {
         s_allow_exit_box.x = 0;
         s_allow_exit_box.y = y += 10;
         s_allow_exit_box.name = "allow exit";
-        s_allow_exit_box.callback = new mcallback() {
+        s_allow_exit_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3132,7 +2912,7 @@ public final class Menu extends Key {
         s_infinite_ammo_box.x = 0;
         s_infinite_ammo_box.y = y += 10;
         s_infinite_ammo_box.name = "infinite ammo";
-        s_infinite_ammo_box.callback = new mcallback() {
+        s_infinite_ammo_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3145,7 +2925,7 @@ public final class Menu extends Key {
         s_fixed_fov_box.x = 0;
         s_fixed_fov_box.y = y += 10;
         s_fixed_fov_box.name = "fixed FOV";
-        s_fixed_fov_box.callback = new mcallback() {
+        s_fixed_fov_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3157,7 +2937,7 @@ public final class Menu extends Key {
         s_quad_drop_box.x = 0;
         s_quad_drop_box.y = y += 10;
         s_quad_drop_box.name = "quad drop";
-        s_quad_drop_box.callback = new mcallback() {
+        s_quad_drop_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3169,7 +2949,7 @@ public final class Menu extends Key {
         s_friendlyfire_box.x = 0;
         s_friendlyfire_box.y = y += 10;
         s_friendlyfire_box.name = "friendly fire";
-        s_friendlyfire_box.callback = new mcallback() {
+        s_friendlyfire_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DMFlagCallback(o);
             }
@@ -3185,7 +2965,7 @@ public final class Menu extends Key {
             s_no_mines_box.x = 0;
             s_no_mines_box.y = y += 10;
             s_no_mines_box.name = "remove mines";
-            s_no_mines_box.callback = new mcallback() {
+            s_no_mines_box.callback = new TMCallback() {
                 public void execute(Object o) {
                     DMFlagCallback(o);
                 }
@@ -3197,7 +2977,7 @@ public final class Menu extends Key {
             s_no_nukes_box.x = 0;
             s_no_nukes_box.y = y += 10;
             s_no_nukes_box.name = "remove nukes";
-            s_no_nukes_box.callback = new mcallback() {
+            s_no_nukes_box.callback = new TMCallback() {
                 public void execute(Object o) {
                     DMFlagCallback(o);
                 }
@@ -3209,7 +2989,7 @@ public final class Menu extends Key {
             s_stack_double_box.x = 0;
             s_stack_double_box.y = y += 10;
             s_stack_double_box.name = "2x/4x stacking off";
-            s_stack_double_box.callback = new mcallback() {
+            s_stack_double_box.callback = new TMCallback() {
                 public void execute(Object o) {
                     DMFlagCallback(o);
                 }
@@ -3221,7 +3001,7 @@ public final class Menu extends Key {
             s_no_spheres_box.x = 0;
             s_no_spheres_box.y = y += 10;
             s_no_spheres_box.name = "remove spheres";
-            s_no_spheres_box.callback = new mcallback() {
+            s_no_spheres_box.callback = new TMCallback() {
                 public void execute(Object o) {
                     DMFlagCallback(o);
                 }
@@ -3272,66 +3052,33 @@ public final class Menu extends Key {
     }
 
     static String DMOptions_MenuKey(int key) {
-        return Default_MenuKey(s_dmoptions_menu, key);
+        return defaultMenuKey(s_dmoptions_menu, key);
     }
-
-    static TXCommand Menu_DMOptions = () -> Menu_DMOptions_f();
 
     static void Menu_DMOptions_f() {
         DMOptions_MenuInit();
-        PushMenu(() -> DMOptions_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> DMOptions_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return DMOptions_MenuKey(key);
             }
         });
     }
 
-    /*
-     * =============================================================================
-     * 
-     * DOWNLOADOPTIONS BOOK MENU
-     * 
-     * =============================================================================
-     */
-    static menuframework_s s_downloadoptions_menu = new menuframework_s();
-
-    static menuseparator_s s_download_title = new menuseparator_s();
-
-    static menulist_s s_allow_download_box = new menulist_s();
-
-    static menulist_s s_allow_download_maps_box = new menulist_s();
-
-    static menulist_s s_allow_download_models_box = new menulist_s();
-
-    static menulist_s s_allow_download_players_box = new menulist_s();
-
-    static menulist_s s_allow_download_sounds_box = new menulist_s();
-
     static void DownloadCallback(Object self) {
-        menulist_s f = (menulist_s) self;
+        TMenuList f = (TMenuList) self;
 
         if (f == s_allow_download_box) {
             ConsoleVar.SetValue("allow_download", f.curvalue);
-        }
-
-        else if (f == s_allow_download_maps_box) {
+        } else if (f == s_allow_download_maps_box) {
             ConsoleVar.SetValue("allow_download_maps", f.curvalue);
-        }
-
-        else if (f == s_allow_download_models_box) {
+        } else if (f == s_allow_download_models_box) {
             ConsoleVar.SetValue("allow_download_models", f.curvalue);
-        }
-
-        else if (f == s_allow_download_players_box) {
+        } else if (f == s_allow_download_players_box) {
             ConsoleVar.SetValue("allow_download_players", f.curvalue);
-        }
-
-        else if (f == s_allow_download_sounds_box) {
+        } else if (f == s_allow_download_sounds_box) {
             ConsoleVar.SetValue("allow_download_sounds", f.curvalue);
         }
     }
-
-    static String yes_no_names[] = { "no", "yes" };
 
     static void DownloadOptions_MenuInit() {
 
@@ -3349,7 +3096,7 @@ public final class Menu extends Key {
         s_allow_download_box.x = 0;
         s_allow_download_box.y = y += 20;
         s_allow_download_box.name = "allow downloading";
-        s_allow_download_box.callback = new mcallback() {
+        s_allow_download_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadCallback(o);
             }
@@ -3362,7 +3109,7 @@ public final class Menu extends Key {
         s_allow_download_maps_box.x = 0;
         s_allow_download_maps_box.y = y += 20;
         s_allow_download_maps_box.name = "maps";
-        s_allow_download_maps_box.callback = new mcallback() {
+        s_allow_download_maps_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadCallback(o);
             }
@@ -3375,7 +3122,7 @@ public final class Menu extends Key {
         s_allow_download_players_box.x = 0;
         s_allow_download_players_box.y = y += 10;
         s_allow_download_players_box.name = "player models/skins";
-        s_allow_download_players_box.callback = new mcallback() {
+        s_allow_download_players_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadCallback(o);
             }
@@ -3388,7 +3135,7 @@ public final class Menu extends Key {
         s_allow_download_models_box.x = 0;
         s_allow_download_models_box.y = y += 10;
         s_allow_download_models_box.name = "models";
-        s_allow_download_models_box.callback = new mcallback() {
+        s_allow_download_models_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadCallback(o);
             }
@@ -3401,7 +3148,7 @@ public final class Menu extends Key {
         s_allow_download_sounds_box.x = 0;
         s_allow_download_sounds_box.y = y += 10;
         s_allow_download_sounds_box.name = "sounds";
-        s_allow_download_sounds_box.callback = new mcallback() {
+        s_allow_download_sounds_box.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadCallback(o);
             }
@@ -3429,34 +3176,16 @@ public final class Menu extends Key {
     }
 
     static String DownloadOptions_MenuKey(int key) {
-        return Default_MenuKey(s_downloadoptions_menu, key);
+        return defaultMenuKey(s_downloadoptions_menu, key);
     }
-
-    static TXCommand Menu_DownloadOptions = () -> Menu_DownloadOptions_f();
 
     static void Menu_DownloadOptions_f() {
         DownloadOptions_MenuInit();
-        PushMenu(() -> DownloadOptions_MenuDraw(), new keyfunc_t() {
+        pushMenu(() -> DownloadOptions_MenuDraw(), new TKeyFunc() {
             public String execute(int key) {
                 return DownloadOptions_MenuKey(key);
             }
         });
-    }
-
-    /*
-     * =============================================================================
-     * 
-     * ADDRESS BOOK MENU
-     * 
-     * =============================================================================
-     */
-
-    static menuframework_s s_addressbook_menu = new menuframework_s();
-
-    static menufield_s s_addressbook_fields[] = new menufield_s[NUM_ADDRESSBOOK_ENTRIES];
-    static {
-        for (int n = 0; n < NUM_ADDRESSBOOK_ENTRIES; n++)
-            s_addressbook_fields[n] = new menufield_s();
     }
 
     static void AddressBook_MenuInit() {
@@ -3484,90 +3213,28 @@ public final class Menu extends Key {
         }
     }
 
-    static keyfunc_t AddressBook_MenuKey = new keyfunc_t() {
-        public String execute(int key) {
-            return AddressBook_MenuKey_f(key);
-        }
-    };
-
     static String AddressBook_MenuKey_f(int key) {
         if (key == K_ESCAPE) {
             for (int index = 0; index < NUM_ADDRESSBOOK_ENTRIES; index++) {
                 ConsoleVar.Set("adr" + index, s_addressbook_fields[index].buffer.toString());
             }
         }
-        return Default_MenuKey(s_addressbook_menu, key);
+        return defaultMenuKey(s_addressbook_menu, key);
     }
-
-    static TXCommand AddressBook_MenuDraw = () -> AddressBook_MenuDraw_f();
 
     static void AddressBook_MenuDraw_f() {
         Banner("m_banner_addressbook");
         Menu_Draw(s_addressbook_menu);
     }
 
-    static TXCommand Menu_AddressBook = () -> Menu_AddressBook_f();
-
     static void Menu_AddressBook_f() {
         AddressBook_MenuInit();
-        PushMenu(() -> AddressBook_MenuDraw_f(), new keyfunc_t() {
+        pushMenu(() -> AddressBook_MenuDraw_f(), new TKeyFunc() {
             public String execute(int key) {
                 return AddressBook_MenuKey_f(key);
             }
         });
     }
-
-    /*
-     * =============================================================================
-     * 
-     * PLAYER CONFIG MENU
-     * 
-     * =============================================================================
-     */
-    static menuframework_s s_player_config_menu = new menuframework_s();
-
-    static menufield_s s_player_name_field = new menufield_s();
-
-    static menulist_s s_player_model_box = new menulist_s();
-
-    static menulist_s s_player_skin_box = new menulist_s();
-
-    static menulist_s s_player_handedness_box = new menulist_s();
-
-    static menulist_s s_player_rate_box = new menulist_s();
-
-    static menuseparator_s s_player_skin_title = new menuseparator_s();
-
-    static menuseparator_s s_player_model_title = new menuseparator_s();
-
-    static menuseparator_s s_player_hand_title = new menuseparator_s();
-
-    static menuseparator_s s_player_rate_title = new menuseparator_s();
-
-    static menuaction_s s_player_download_action = new menuaction_s();
-
-    static class playermodelinfo_s {
-        int nskins;
-
-        String skindisplaynames[];
-
-        //char displayname[MAX_DISPLAYNAME];
-        String displayname;
-
-        //char directory[MAX_QPATH];
-        String directory;
-    }
-
-    static playermodelinfo_s s_pmi[] = new playermodelinfo_s[MAX_PLAYERMODELS];
-
-    static String s_pmnames[] = new String[MAX_PLAYERMODELS];
-
-    static int s_numplayermodels;
-
-    static int rate_tbl[] = { 2500, 3200, 5000, 10000, 25000, 0 };
-
-    static String rate_names[] = { "28.8 Modem", "33.6 Modem", "Single ISDN",
-            "Dual ISDN/Cable", "T1/LAN", "User defined" };
 
     static void DownloadOptionsFunc(Object self) {
         Menu_DownloadOptions_f();
@@ -3579,8 +3246,8 @@ public final class Menu extends Key {
 
     static void RateCallback(Object unused) {
         if (s_player_rate_box.curvalue != rate_tbl.length - 1) //sizeof(rate_tbl)
-                                                               // / sizeof(*
-                                                               // rate_tbl) - 1)
+            // / sizeof(*
+            // rate_tbl) - 1)
             ConsoleVar.SetValue("rate", rate_tbl[s_player_rate_box.curvalue]);
     }
 
@@ -3590,8 +3257,8 @@ public final class Menu extends Key {
     }
 
     static boolean IconOfSkinExists(String skin, String pcxfiles[],
-            int npcxfiles) {
- 
+                                    int npcxfiles) {
+
         String scratch;
 
         //strcpy(scratch, skin);
@@ -3666,13 +3333,13 @@ public final class Menu extends Key {
             // verify the existence of tris.md2
             scratch = dirnames[i];
             scratch += "/tris.md2";
-            if (QSystem.FindFirst(scratch, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM) == null) {
+            if (FileSystem.FindFirst(scratch, 0, SFF_SUBDIR | SFF_HIDDEN | SFF_SYSTEM) == null) {
                 //free(dirnames[i]);
                 dirnames[i] = null;
-                QSystem.FindClose();
+                FileSystem.findClose();
                 continue;
             }
-            QSystem.FindClose();
+            FileSystem.findClose();
 
             // verify the existence of at least one pcx skin
             scratch = dirnames[i] + "/*.pcx";
@@ -3699,7 +3366,7 @@ public final class Menu extends Key {
                 continue;
 
             skinnames = new String[nskins + 1]; //malloc(sizeof(String) *
-                                                // (nskins + 1));
+            // (nskins + 1));
             //memset(skinnames, 0, sizeof(String) * (nskins + 1));
 
             // copy the valid skins
@@ -3729,7 +3396,7 @@ public final class Menu extends Key {
 
             // at this point we have a valid player model
             if (s_pmi[s_numplayermodels] == null)
-                s_pmi[s_numplayermodels] = new playermodelinfo_s();
+                s_pmi[s_numplayermodels] = new TPlayerModelInfo();
 
             s_pmi[s_numplayermodels].nskins = nskins;
             s_pmi[s_numplayermodels].skindisplaynames = skinnames;
@@ -3754,8 +3421,8 @@ public final class Menu extends Key {
     }
 
     static int pmicmpfnc(Object _a, Object _b) {
-        playermodelinfo_s a = (playermodelinfo_s) _a;
-        playermodelinfo_s b = (playermodelinfo_s) _b;
+        TPlayerModelInfo a = (TPlayerModelInfo) _a;
+        TPlayerModelInfo b = (TPlayerModelInfo) _b;
 
         /*
          * * sort by male, female, then alphabetical
@@ -3772,8 +3439,6 @@ public final class Menu extends Key {
 
         return a.directory.compareTo(b.directory);
     }
-
-    static String handedness[] = { "right", "left", "center" };
 
     static boolean PlayerConfig_MenuInit() {
         /*
@@ -3862,7 +3527,7 @@ public final class Menu extends Key {
         s_player_model_box.type = MTYPE_SPINCONTROL;
         s_player_model_box.x = -56;
         s_player_model_box.y = 70;
-        s_player_model_box.callback = new mcallback() {
+        s_player_model_box.callback = new TMCallback() {
             public void execute(Object o) {
                 ModelCallback(o);
             }
@@ -3895,7 +3560,7 @@ public final class Menu extends Key {
         s_player_handedness_box.y = 118;
         s_player_handedness_box.name = null;
         s_player_handedness_box.cursor_offset = -48;
-        s_player_handedness_box.callback = new mcallback() {
+        s_player_handedness_box.callback = new TMCallback() {
             public void execute(Object o) {
                 HandednessCallback(o);
             }
@@ -3917,7 +3582,7 @@ public final class Menu extends Key {
         s_player_rate_box.y = 166;
         s_player_rate_box.name = null;
         s_player_rate_box.cursor_offset = -48;
-        s_player_rate_box.callback = new mcallback() {
+        s_player_rate_box.callback = new TMCallback() {
             public void execute(Object o) {
                 RateCallback(o);
             }
@@ -3931,7 +3596,7 @@ public final class Menu extends Key {
         s_player_download_action.x = -24;
         s_player_download_action.y = 186;
         s_player_download_action.statusbar = null;
-        s_player_download_action.callback = new mcallback() {
+        s_player_download_action.callback = new TMCallback() {
             public void execute(Object o) {
                 DownloadOptionsFunc(o);
             }
@@ -3953,10 +3618,6 @@ public final class Menu extends Key {
         return true;
     }
 
-    static int yaw;
-    
-    private static final TEntity entity = new TEntity();
-
     static void PlayerConfig_MenuDraw() {
 
         TRefDef refdef = new TRefDef();
@@ -3972,7 +3633,7 @@ public final class Menu extends Key {
         refdef.fov_x = 40;
         refdef.fov_y = Math3D
                 .CalcFov(refdef.fov_x, refdef.width, refdef.height);
-        refdef.time = cls.realtime * 0.001f;
+        refdef.time = cls.getRealtime() * 0.001f;
 
         if (s_pmi[s_player_model_box.curvalue].skindisplaynames != null) {
 
@@ -4004,13 +3665,13 @@ public final class Menu extends Key {
 
             refdef.areabits = null;
             refdef.num_entities = 1;
-            refdef.entities = new TEntity[] { entity };
+            refdef.entities = new TEntity[]{entity};
             refdef.lightstyles = null;
             refdef.renderFlags = RDF_NOWORLDMODEL;
 
             Menu_Draw(s_player_config_menu);
 
-            DrawTextBox(
+            drawTextBox(
                     (int) ((refdef.x) * (320.0F / viddef.getWidth()) - 8),
                     (int) ((viddef.getHeight() / 2) * (240.0F / viddef.getHeight()) - 77),
                     refdef.width / 8, refdef.height / 8);
@@ -4053,23 +3714,7 @@ public final class Menu extends Key {
                 s_pmi[i].nskins = 0;
             }
         }
-        return Default_MenuKey(s_player_config_menu, key);
-    }
-
-    static TXCommand Menu_PlayerConfig = () -> Menu_PlayerConfig_f();
-
-    static void Menu_PlayerConfig_f() {
-        if (!PlayerConfig_MenuInit()) {
-            Menu_SetStatusBar(s_multiplayer_menu,
-                    "No valid player models found");
-            return;
-        }
-        Menu_SetStatusBar(s_multiplayer_menu, null);
-        PushMenu(() -> PlayerConfig_MenuDraw(), new keyfunc_t() {
-            public String execute(int key) {
-                return PlayerConfig_MenuKey(key);
-            }
-        });
+        return defaultMenuKey(s_player_config_menu, key);
     }
 
     /*
@@ -4080,22 +3725,36 @@ public final class Menu extends Key {
      * =======================================================================
      */
 
+    static void Menu_PlayerConfig_f() {
+        if (!PlayerConfig_MenuInit()) {
+            Menu_SetStatusBar(s_multiplayer_menu,
+                    "No valid player models found");
+            return;
+        }
+        Menu_SetStatusBar(s_multiplayer_menu, null);
+        pushMenu(() -> PlayerConfig_MenuDraw(), new TKeyFunc() {
+            public String execute(int key) {
+                return PlayerConfig_MenuKey(key);
+            }
+        });
+    }
+
     static String Quit_Key(int key) {
         switch (key) {
-        case K_ESCAPE:
-        case 'n':
-        case 'N':
-            PopMenu();
-            break;
+            case K_ESCAPE:
+            case 'n':
+            case 'N':
+                popMenu();
+                break;
 
-        case 'Y':
-        case 'y':
-            cls.key_dest = key_console;
-            CL.Quit_f.execute();
-            break;
+            case 'Y':
+            case 'y':
+                cls.setKey_dest(key_console);
+                CL.Quit_f.execute();
+                break;
 
-        default:
-            break;
+            default:
+                break;
         }
 
         return null;
@@ -4111,10 +3770,8 @@ public final class Menu extends Key {
         re.DrawPic((viddef.getWidth() - w) / 2, (viddef.getHeight() - h) / 2, "quit");
     }
 
-    static TXCommand Menu_Quit = () -> Menu_Quit_f();
-
     static void Menu_Quit_f() {
-        PushMenu(() -> Quit_Draw(), new keyfunc_t() {
+        pushMenu(() -> Quit_Draw(), new TKeyFunc() {
             public String execute(int key) {
                 return Quit_Key(key);
             }
@@ -4128,33 +3785,33 @@ public final class Menu extends Key {
      * init
      */
     public static void Init() {
-        Cmd.AddCommand("menu_main", Menu_Main);
-        Cmd.AddCommand("menu_game", Menu_Game);
-        Cmd.AddCommand("menu_loadgame", Menu_LoadGame);
-        Cmd.AddCommand("menu_savegame", Menu_SaveGame);
-        Cmd.AddCommand("menu_joinserver", Menu_JoinServer);
-        Cmd.AddCommand("menu_addressbook", Menu_AddressBook);
-        Cmd.AddCommand("menu_startserver", Menu_StartServer);
-        Cmd.AddCommand("menu_dmoptions", Menu_DMOptions);
-        Cmd.AddCommand("menu_playerconfig", Menu_PlayerConfig);
-        Cmd.AddCommand("menu_downloadoptions", Menu_DownloadOptions);
-        Cmd.AddCommand("menu_credits", Menu_Credits);
-        Cmd.AddCommand("menu_multiplayer", Menu_Multiplayer);
-        Cmd.AddCommand("menu_video", Menu_Video);
-        Cmd.AddCommand("menu_options", Menu_Options);
-        Cmd.AddCommand("menu_keys", Menu_Keys);
-        Cmd.AddCommand("menu_quit", Menu_Quit);
+        Cmd.AddCommand("menu_main", Menu::Menu_Main_f);
+        Cmd.AddCommand("menu_game", Menu::Menu_Game_f);
+        Cmd.AddCommand("menu_loadgame", Menu::Menu_LoadGame_f);
+        Cmd.AddCommand("menu_savegame", Menu::Menu_SaveGame_f);
+        Cmd.AddCommand("menu_joinserver", Menu::Menu_JoinServer_f);
+        Cmd.AddCommand("menu_addressbook", Menu::Menu_AddressBook_f);
+        Cmd.AddCommand("menu_startserver", Menu::Menu_StartServer_f);
+        Cmd.AddCommand("menu_dmoptions", Menu::Menu_DMOptions_f);
+        Cmd.AddCommand("menu_playerconfig", Menu::Menu_PlayerConfig_f);
+        Cmd.AddCommand("menu_downloadoptions", Menu::Menu_DownloadOptions_f);
+        Cmd.AddCommand("menu_credits", Menu::Menu_Credits_f);
+        Cmd.AddCommand("menu_multiplayer", Menu::Menu_Multiplayer_f);
+        Cmd.AddCommand("menu_video", Menu::Menu_Video_f);
+        Cmd.AddCommand("menu_options", Menu::Menu_Options_f);
+        Cmd.AddCommand("menu_keys", Menu::Menu_Keys_f);
+        Cmd.AddCommand("menu_quit", Menu::Menu_Quit_f);
 
         for (int i = 0; i < m_layers.length; i++) {
-            m_layers[i] = new menulayer_t();
+            m_layers[i] = new TMenuLayer();
         }
     }
 
     /*
      * ================= Draw =================
      */
-    static void Draw() {
-        if (cls.key_dest != key_menu)
+    public static void Draw() {
+        if (cls.getKey_dest() != key_menu)
             return;
 
         // repaint everything next frame
@@ -4180,7 +3837,7 @@ public final class Menu extends Key {
     /*
      * ================= Keydown =================
      */
-    static void Keydown(int key) {
+    public static void Keydown(int key) {
         String s;
 
         if (m_keyfunc != null)
@@ -4188,15 +3845,15 @@ public final class Menu extends Key {
                 Sound.StartLocalSound(s);
     }
 
-    public static void Action_DoEnter(menuaction_s a) {
+    public static void Action_DoEnter(TMenuAction a) {
         if (a.callback != null)
             a.callback.execute(a);
     }
 
-    public static void Action_Draw(menuaction_s a) {
+    public static void Action_Draw(TMenuAction a) {
         if ((a.flags & QMF_LEFT_JUSTIFY) != 0) {
             if ((a.flags & QMF_GRAYED) != 0)
-                Menu_DrawStringDark(a.x + a.parent.x + LCOLUMN_OFFSET, a.y
+                drawStringDark(a.x + a.parent.x + LCOLUMN_OFFSET, a.y
                         + a.parent.y, a.name);
             else
                 Menu_DrawString(a.x + a.parent.x + LCOLUMN_OFFSET, a.y
@@ -4213,7 +3870,7 @@ public final class Menu extends Key {
             a.ownerdraw.execute(a);
     }
 
-    public static boolean Field_DoEnter(menufield_s f) {
+    public static boolean Field_DoEnter(TMenuField f) {
         if (f.callback != null) {
             f.callback.execute(f);
             return true;
@@ -4221,7 +3878,7 @@ public final class Menu extends Key {
         return false;
     }
 
-    public static void Field_Draw(menufield_s f) {
+    public static void Field_Draw(TMenuField f) {
         int i;
         String tempbuffer;
         //[128] = "";
@@ -4270,70 +3927,70 @@ public final class Menu extends Key {
         }
     }
 
-    public static boolean Field_Key(menufield_s f, int k) {
+    public static boolean Field_Key(TMenuField f, int k) {
         char key = (char) k;
 
         switch (key) {
-        case K_KP_SLASH:
-            key = '/';
-            break;
-        case K_KP_MINUS:
-            key = '-';
-            break;
-        case K_KP_PLUS:
-            key = '+';
-            break;
-        case K_KP_HOME:
-            key = '7';
-            break;
-        case K_KP_UPARROW:
-            key = '8';
-            break;
-        case K_KP_PGUP:
-            key = '9';
-            break;
-        case K_KP_LEFTARROW:
-            key = '4';
-            break;
-        case K_KP_5:
-            key = '5';
-            break;
-        case K_KP_RIGHTARROW:
-            key = '6';
-            break;
-        case K_KP_END:
-            key = '1';
-            break;
-        case K_KP_DOWNARROW:
-            key = '2';
-            break;
-        case K_KP_PGDN:
-            key = '3';
-            break;
-        case K_KP_INS:
-            key = '0';
-            break;
-        case K_KP_DEL:
-            key = '.';
-            break;
+            case Key.K_KP_SLASH:
+                key = '/';
+                break;
+            case Key.K_KP_MINUS:
+                key = '-';
+                break;
+            case Key.K_KP_PLUS:
+                key = '+';
+                break;
+            case Key.K_KP_HOME:
+                key = '7';
+                break;
+            case Key.K_KP_UPARROW:
+                key = '8';
+                break;
+            case Key.K_KP_PGUP:
+                key = '9';
+                break;
+            case Key.K_KP_LEFTARROW:
+                key = '4';
+                break;
+            case Key.K_KP_5:
+                key = '5';
+                break;
+            case Key.K_KP_RIGHTARROW:
+                key = '6';
+                break;
+            case Key.K_KP_END:
+                key = '1';
+                break;
+            case Key.K_KP_DOWNARROW:
+                key = '2';
+                break;
+            case Key.K_KP_PGDN:
+                key = '3';
+                break;
+            case Key.K_KP_INS:
+                key = '0';
+                break;
+            case Key.K_KP_DEL:
+                key = '.';
+                break;
         }
 
         if (key > 127) {
             switch (key) {
-            case K_DEL:
-            default:
-                return false;
+                case Key.K_DEL:
+                default:
+                    return false;
             }
         }
 
         /*
          * * support pasting from the clipboard
          */
-        if ((Character.toUpperCase(key) == 'V' && keydown[K_CTRL])
-                || (((key == K_INS) || (key == K_KP_INS)) && keydown[K_SHIFT])) {
+        if ((Character.toUpperCase(key) == 'V' && keydown[Key.K_CTRL])
+                || (((key == Key.K_INS) || (key == Key.K_KP_INS)) && keydown[Key.K_SHIFT])) {
             String cbd;
 
-            if ((cbd = QSystem.GetClipboardData()) != null) {
+            if ((cbd = GetClipboardData()) != null) {
                 //strtok(cbd, "\n\r\b");
                 String lines[] = cbd.split("\r\n");
                 if (lines.length > 0 && lines[0].length() != 0) {
@@ -4351,53 +4008,53 @@ public final class Menu extends Key {
         }
 
         switch (key) {
-        case K_KP_LEFTARROW:
-        case K_LEFTARROW:
-        case K_BACKSPACE:
-            if (f.cursor > 0) {
-                f.buffer.deleteCharAt(f.cursor - 1);
-                //memmove(f.buffer[f.cursor - 1], f.buffer[f.cursor], strlen(&
-                // f.buffer[f.cursor]) + 1);
-                f.cursor--;
+            case Key.K_KP_LEFTARROW:
+            case K_LEFTARROW:
+            case K_BACKSPACE:
+                if (f.cursor > 0) {
+                    f.buffer.deleteCharAt(f.cursor - 1);
+                    //memmove(f.buffer[f.cursor - 1], f.buffer[f.cursor], strlen(&
+                    // f.buffer[f.cursor]) + 1);
+                    f.cursor--;
 
-                if (f.visible_offset != 0) {
-                    f.visible_offset--;
+                    if (f.visible_offset != 0) {
+                        f.visible_offset--;
+                    }
                 }
-            }
-            break;
+                break;
 
-        case K_KP_DEL:
-        case K_DEL:
-            //memmove(& f.buffer[f.cursor], & f.buffer[f.cursor + 1], strlen(&
-            // f.buffer[f.cursor + 1]) + 1);
-            f.buffer.deleteCharAt(f.cursor);
-            break;
+            case Key.K_KP_DEL:
+            case Key.K_DEL:
+                //memmove(& f.buffer[f.cursor], & f.buffer[f.cursor + 1], strlen(&
+                // f.buffer[f.cursor + 1]) + 1);
+                f.buffer.deleteCharAt(f.cursor);
+                break;
 
-        case K_KP_ENTER:
-        case K_ENTER:
-        case K_ESCAPE:
-        case K_TAB:
-            return false;
-
-        case K_SPACE:
-        default:
-            if (!Character.isDigit(key) && (f.flags & QMF_NUMBERSONLY) != 0)
+            case Key.K_KP_ENTER:
+            case K_ENTER:
+            case K_ESCAPE:
+            case K_TAB:
                 return false;
 
-            if (f.cursor < f.length) {
-                f.buffer.append(key);
-                f.cursor++;
+            case K_SPACE:
+            default:
+                if (!Character.isDigit(key) && (f.flags & QMF_NUMBERSONLY) != 0)
+                    return false;
 
-                if (f.cursor > f.visible_length) {
-                    f.visible_offset++;
+                if (f.cursor < f.length) {
+                    f.buffer.append(key);
+                    f.cursor++;
+
+                    if (f.cursor > f.visible_length) {
+                        f.visible_offset++;
+                    }
                 }
-            }
         }
 
         return true;
     }
 
-    public static void Menu_AddItem(menuframework_s menu, menucommon_s item) {
+    public static void Menu_AddItem(TMenuFramework menu, TMenuCommon item) {
         if (menu.nitems == 0)
             menu.nslots = 0;
 
@@ -4412,14 +4069,14 @@ public final class Menu extends Key {
 
     /*
      * * Menu_AdjustCursor * * This function takes the given menu, the
-     * direction, and attempts * to adjust the menu's cursor so that it's at the
+     * direction, and attempts * to adjust the menu'entityState cursor so that it'entityState at the
      * next available * slot.
      */
-    public static void Menu_AdjustCursor(menuframework_s m, int dir) {
-        menucommon_s citem;
+    public static void Menu_AdjustCursor(TMenuFramework m, int dir) {
+        TMenuCommon citem;
 
         /*
-         * * see if it's in a valid spot
+         * * see if it'entityState in a valid spot
          */
         if (m.cursor >= 0 && m.cursor < m.nitems) {
             if ((citem = Menu_ItemAtCursor(m)) != null) {
@@ -4429,7 +4086,7 @@ public final class Menu extends Key {
         }
 
         /*
-         * * it's not in a valid spot, so crawl in the direction indicated until
+         * * it'entityState not in a valid spot, so crawl in the direction indicated until
          * we * find a valid spot
          */
         if (dir == 1) {
@@ -4455,7 +4112,7 @@ public final class Menu extends Key {
         }
     }
 
-    public static void Menu_Center(menuframework_s menu) {
+    public static void Menu_Center(TMenuFramework menu) {
         int height;
 
         height = menu.items[menu.nitems - 1].y;
@@ -4464,33 +4121,33 @@ public final class Menu extends Key {
         menu.y = (viddef.getHeight() - height) / 2;
     }
 
-    public static void Menu_Draw(menuframework_s menu) {
+    public static void Menu_Draw(TMenuFramework menu) {
         int i;
-        menucommon_s item;
+        TMenuCommon item;
 
         /*
          * * draw contents
          */
         for (i = 0; i < menu.nitems; i++) {
             switch (menu.items[i].type) {
-            case MTYPE_FIELD:
-                Field_Draw((menufield_s) menu.items[i]);
-                break;
-            case MTYPE_SLIDER:
-                Slider_Draw((menuslider_s) menu.items[i]);
-                break;
-            case MTYPE_LIST:
-                MenuList_Draw((menulist_s) menu.items[i]);
-                break;
-            case MTYPE_SPINCONTROL:
-                SpinControl_Draw((menulist_s) menu.items[i]);
-                break;
-            case MTYPE_ACTION:
-                Action_Draw((menuaction_s) menu.items[i]);
-                break;
-            case MTYPE_SEPARATOR:
-                Separator_Draw((menuseparator_s) menu.items[i]);
-                break;
+                case MTYPE_FIELD:
+                    Field_Draw((TMenuField) menu.items[i]);
+                    break;
+                case MTYPE_SLIDER:
+                    Slider_Draw((TMenuSlider) menu.items[i]);
+                    break;
+                case MTYPE_LIST:
+                    MenuList_Draw((TMenuList) menu.items[i]);
+                    break;
+                case MTYPE_SPINCONTROL:
+                    SpinControl_Draw((TMenuList) menu.items[i]);
+                    break;
+                case MTYPE_ACTION:
+                    Action_Draw((TMenuAction) menu.items[i]);
+                    break;
+                case MTYPE_SEPARATOR:
+                    Separator_Draw((TMenuSeparator) menu.items[i]);
+                    break;
             }
         }
 
@@ -4537,18 +4194,14 @@ public final class Menu extends Key {
         }
     }
 
-    public static void Menu_DrawString(int x, int y, String string) {
-        int i;
-
-        for (i = 0; i < string.length(); i++) {
+    private static void Menu_DrawString(int x, int y, String string) {
+        for (int i = 0; i < string.length(); i++) {
             re.DrawChar((x + i * 8), y, string.charAt(i));
         }
     }
 
-    public static void Menu_DrawStringDark(int x, int y, String string) {
-        int i;
-
-        for (i = 0; i < string.length(); i++) {
+    private static void drawStringDark(int x, int y, String string) {
+        for (int i = 0; i < string.length(); i++) {
             re.DrawChar((x + i * 8), y, string.charAt(i) + 128);
         }
     }
@@ -4571,61 +4224,60 @@ public final class Menu extends Key {
         }
     }
 
-    public static menucommon_s Menu_ItemAtCursor(menuframework_s m) {
+    private static TMenuCommon Menu_ItemAtCursor(TMenuFramework m) {
         if (m.cursor < 0 || m.cursor >= m.nitems)
             return null;
 
         return m.items[m.cursor];
     }
 
-    static boolean Menu_SelectItem(menuframework_s s) {
-        menucommon_s item = Menu_ItemAtCursor(s);
+    public static boolean Menu_SelectItem(TMenuFramework s) {
+        TMenuCommon item = Menu_ItemAtCursor(s);
 
         if (item != null) {
             switch (item.type) {
-            case MTYPE_FIELD:
-                return Field_DoEnter((menufield_s) item);
-            case MTYPE_ACTION:
-                Action_DoEnter((menuaction_s) item);
-                return true;
-            case MTYPE_LIST:
-                //			Menulist_DoEnter( ( menulist_s ) item );
-                return false;
-            case MTYPE_SPINCONTROL:
-                //			SpinControl_DoEnter( ( menulist_s ) item );
-                return false;
+                case MTYPE_FIELD:
+                    return Field_DoEnter((TMenuField) item);
+                case MTYPE_ACTION:
+                    Action_DoEnter((TMenuAction) item);
+                    return true;
+                case MTYPE_LIST:
+                    //			Menulist_DoEnter( ( TMenuList ) item );
+                    return false;
+                case MTYPE_SPINCONTROL:
+                    //			SpinControl_DoEnter( ( TMenuList ) item );
+                    return false;
             }
         }
         return false;
     }
 
-    public static void Menu_SetStatusBar(menuframework_s m, String string) {
+    private static void Menu_SetStatusBar(TMenuFramework m, String string) {
         m.statusbar = string;
     }
 
-    public static void Menu_SlideItem(menuframework_s s, int dir) {
-        menucommon_s item = Menu_ItemAtCursor(s);
-
+    public static void Menu_SlideItem(TMenuFramework s, int dir) {
+        final TMenuCommon item = Menu_ItemAtCursor(s);
         if (item != null) {
             switch (item.type) {
-            case MTYPE_SLIDER:
-                Slider_DoSlide((menuslider_s) item, dir);
-                break;
-            case MTYPE_SPINCONTROL:
-                SpinControl_DoSlide((menulist_s) item, dir);
-                break;
+                case MTYPE_SLIDER:
+                    Slider_DoSlide((TMenuSlider) item, dir);
+                    break;
+                case MTYPE_SPINCONTROL:
+                    SpinControl_DoSlide((TMenuList) item, dir);
+                    break;
             }
         }
     }
 
-    public static int Menu_TallySlots(menuframework_s menu) {
+    public static int Menu_TallySlots(TMenuFramework menu) {
         int i;
         int total = 0;
 
         for (i = 0; i < menu.nitems; i++) {
             if (menu.items[i].type == MTYPE_LIST) {
                 int nitems = 0;
-                String n[] = ((menulist_s) menu.items[i]).itemnames;
+                String n[] = ((TMenuList) menu.items[i]).itemnames;
 
                 while (n[nitems] != null)
                     nitems++;
@@ -4639,7 +4291,7 @@ public final class Menu extends Key {
         return total;
     }
 
-    public static void Menulist_DoEnter(menulist_s l) {
+    public static void Menulist_DoEnter(TMenuList l) {
         int start;
 
         start = l.y / 10 + 1;
@@ -4650,7 +4302,7 @@ public final class Menu extends Key {
             l.callback.execute(l);
     }
 
-    public static void MenuList_Draw(menulist_s l) {
+    public static void MenuList_Draw(TMenuList l) {
         String n[];
         int y = 0;
 
@@ -4672,12 +4324,12 @@ public final class Menu extends Key {
         }
     }
 
-    public static void Separator_Draw(menuseparator_s s) {
+    private static void Separator_Draw(TMenuSeparator s) {
         if (s.name != null)
             Menu_DrawStringR2LDark(s.x + s.parent.x, s.y + s.parent.y, s.name);
     }
 
-    public static void Slider_DoSlide(menuslider_s s, int dir) {
+    private static void Slider_DoSlide(TMenuSlider s, int dir) {
         s.curvalue += dir;
 
         if (s.curvalue > s.maxvalue)
@@ -4689,10 +4341,8 @@ public final class Menu extends Key {
             s.callback.execute(s);
     }
 
-    public static final int SLIDER_RANGE = 10;
+    private static void Slider_Draw(TMenuSlider s) {
 
-    public static void Slider_Draw(menuslider_s s) {
-        int i;
 
         Menu_DrawStringR2LDark(s.x + s.parent.x + LCOLUMN_OFFSET, s.y
                 + s.parent.y, s.name);
@@ -4704,9 +4354,10 @@ public final class Menu extends Key {
         if (s.range > 1)
             s.range = 1;
         re.DrawChar(s.x + s.parent.x + RCOLUMN_OFFSET, s.y + s.parent.y, 128);
-        for (i = 0; i < SLIDER_RANGE; i++)
-            re.DrawChar(RCOLUMN_OFFSET + s.x + i * 8 + s.parent.x + 8, s.y
-                    + s.parent.y, 129);
+        int i;
+        for (i = 0; i < SLIDER_RANGE; i++) {
+            re.DrawChar(RCOLUMN_OFFSET + s.x + i * 8 + s.parent.x + 8, s.y + s.parent.y, 129);
+        }
         re.DrawChar(RCOLUMN_OFFSET + s.x + i * 8 + s.parent.x + 8, s.y
                 + s.parent.y, 130);
         re
@@ -4715,7 +4366,7 @@ public final class Menu extends Key {
                                 * 8 * s.range), s.y + s.parent.y, 131);
     }
 
-    public static void SpinControl_DoEnter(menulist_s s) {
+    public static void SpinControl_DoEnter(TMenuList s) {
         s.curvalue++;
         if (s.itemnames[s.curvalue] == null)
             s.curvalue = 0;
@@ -4724,7 +4375,7 @@ public final class Menu extends Key {
             s.callback.execute(s);
     }
 
-    public static void SpinControl_DoSlide(menulist_s s, int dir) {
+    private static void SpinControl_DoSlide(TMenuList s, int dir) {
         s.curvalue += dir;
 
         if (s.curvalue < 0)
@@ -4736,7 +4387,7 @@ public final class Menu extends Key {
             s.callback.execute(s);
     }
 
-    public static void SpinControl_Draw(menulist_s s) {
+    private static void SpinControl_Draw(TMenuList s) {
 
         if (s.name != null) {
             Menu_DrawStringR2LDark(s.x + s.parent.x + LCOLUMN_OFFSET, s.y
@@ -4761,5 +4412,17 @@ public final class Menu extends Key {
             Menu_DrawString(RCOLUMN_OFFSET + s.x + s.parent.x, s.y + s.parent.y
                     + 10, line2);
         }
+    }
+
+    private static class TPlayerModelInfo {
+        int nskins;
+
+        String skindisplaynames[];
+
+        //char displayname[MAX_DISPLAYNAME];
+        String displayname;
+
+        //char directory[MAX_QPATH];
+        String directory;
     }
 }

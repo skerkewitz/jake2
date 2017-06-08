@@ -23,7 +23,7 @@
  */
 package jake2.render;
 
-import jake2.client.viddef_t;
+import jake2.client.TVideoDef;
 import jake2.game.TVar;
 import jake2.render.opengl.GLDriver;
 import org.lwjgl.opengl.GL11;
@@ -165,7 +165,7 @@ public abstract class Base {
     /*
      * base members
      */
-    public final static viddef_t vid = new viddef_t();
+    public final static TVideoDef vid = new TVideoDef();
 
     protected TVar vid_fullscreen;
 

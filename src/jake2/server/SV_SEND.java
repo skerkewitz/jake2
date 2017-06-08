@@ -70,7 +70,7 @@ public class SV_SEND {
 	Sends text across to be displayed if the level passes
 	=================
 	*/
-	public static void SV_ClientPrintf(client_t cl, int level, String s) {
+	public static void SV_ClientPrintf(TClient cl, int level, String s) {
 
 		if (level < cl.messagelevel)
 			return;
@@ -88,7 +88,7 @@ public class SV_SEND {
 	*/
 	public static void SV_BroadcastPrintf(int level, String s) {
 
-		client_t cl;
+		TClient cl;
 
 		// echo to console
 		if (Context.dedicated.value != 0) {
@@ -136,7 +136,7 @@ public class SV_SEND {
 	=================
 	*/
 	public static void SV_Multicast(float[] origin, int to) {
-		client_t client;
+		TClient client;
 		byte mask[];
 		int leafnum, cluster;
 		int j;
@@ -197,7 +197,7 @@ public class SV_SEND {
 				continue;
 
 			if (mask != null) {
-				leafnum = CM.CM_PointLeafnum(client.edict.s.origin);
+				leafnum = CM.CM_PointLeafnum(client.edict.entityState.origin);
 				cluster = CM.CM_LeafCluster(leafnum);
 				area2 = CM.CM_LeafArea(leafnum);
 				if (!CM.CM_AreasConnected(area1, area2))
@@ -307,10 +307,10 @@ public class SV_SEND {
 			origin = origin_v;
 			if (entity.solid == Defines.SOLID_BSP) {
 				for (i = 0; i < 3; i++)
-					origin_v[i] = entity.s.origin[i] + 0.5f * (entity.mins[i] + entity.maxs[i]);
+					origin_v[i] = entity.entityState.origin[i] + 0.5f * (entity.mins[i] + entity.maxs[i]);
 			}
 			else {
-				Math3D.VectorCopy(entity.s.origin, origin_v);
+				Math3D.VectorCopy(entity.entityState.origin, origin_v);
 			}
 		}
 
@@ -363,7 +363,7 @@ public class SV_SEND {
 	SV_SendClientDatagram
 	=======================
 	*/
-	public static boolean SV_SendClientDatagram(client_t client) {
+	public static boolean SV_SendClientDatagram(TClient client) {
 		//byte msg_buf[] = new byte[Defines.MAX_MSGLEN];
 
 		SV_ENTS.SV_BuildClientFrame(client);
@@ -372,7 +372,7 @@ public class SV_SEND {
 		msg.allowoverflow = true;
 
 		// send over all the relevant TEntityState
-		// and the player_state_t
+		// and the TPlayerState
 		SV_ENTS.SV_WriteFrameToClient(client, msg);
 
 		// copy the accumulated multicast datagram
@@ -423,7 +423,7 @@ public class SV_SEND {
 	bandwidth estimation and should not be sent another packet
 	=======================
 	*/
-	public static boolean SV_RateDrop(client_t c) {
+	public static boolean SV_RateDrop(TClient c) {
 		int total;
 		int i;
 
@@ -455,7 +455,7 @@ public class SV_SEND {
 	*/
 	public static void SV_SendClientMessages() {
 		int i;
-		client_t c;
+		TClient c;
 		int msglen;
 		int r;
 

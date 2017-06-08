@@ -26,6 +26,7 @@
 package jake2.client;
 
 import jake2.Defines;
+import jake2.client.ui.Menu;
 import jake2.game.Cmd;
 import jake2.io.FileSystem;
 import jake2.qcommon.Cbuf;
@@ -54,7 +55,7 @@ public final class Console {
             return;
         }
 
-        if (cls.state == Defines.ca_disconnected) {
+        if (cls.getState() == Defines.ca_disconnected) {
             // start the demo loop again
             Cbuf.AddText("d1\n");
             return;
@@ -63,12 +64,12 @@ public final class Console {
         Key.ClearTyping();
         Console.ClearNotify();
 
-        if (cls.key_dest == key_console) {
-            Menu.ForceMenuOff();
+        if (cls.getKey_dest() == key_console) {
+            Menu.forceMenuOff();
             ConsoleVar.Set("paused", "0");
         } else {
-            Menu.ForceMenuOff();
-            cls.key_dest = key_console;
+            Menu.forceMenuOff();
+            cls.setKey_dest(key_console);
 
             if (ConsoleVar.VariableValue("maxclients") == 1
                     && Context.server_state != 0)
@@ -91,9 +92,9 @@ public final class Console {
             return;
         }
 
-        // Com_sprintf (name, sizeof(name), "%s/%s.txt", FS_Gamedir(),
+        // Com_sprintf (name, sizeof(name), "%entityState/%entityState.txt", FS_Gamedir(),
         // Cmd_Argv(1));
-        name = FileSystem.Gamedir() + "/" + Cmd.Argv(1) + ".txt";
+        name = FileSystem.gamedir() + "/" + Cmd.Argv(1) + ".txt";
 
         Command.Printf("Dumped console text to " + name + ".\n");
         FileSystem.CreatePath(name);
@@ -129,7 +130,7 @@ public final class Console {
                 buffer[x] &= 0x7f;
 
             buffer[x] = '\n';
-            // fprintf (f, "%s\n", buffer);
+            // fprintf (f, "%entityState\n", buffer);
             try {
                 f.write(buffer, 0, x + 1);
             } catch (IOException e) {
@@ -247,13 +248,13 @@ public final class Console {
         public void execute() {
             Key.ClearTyping();
 
-            if (cls.key_dest == key_console) {
-                if (cls.state == ca_active) {
-                    Menu.ForceMenuOff();
-                    cls.key_dest = key_game;
+            if (cls.getKey_dest() == key_console) {
+                if (cls.getState() == ca_active) {
+                    Menu.forceMenuOff();
+                    cls.setKey_dest(key_game);
                 }
             } else
-                cls.key_dest = key_console;
+                cls.setKey_dest(key_console);
 
             ClearNotify();
         }
@@ -265,7 +266,7 @@ public final class Console {
     static TXCommand MessageMode_f = new TXCommand() {
         public void execute() {
             Context.chat_team = false;
-            cls.key_dest = key_message;
+            cls.setKey_dest(key_message);
         }
     };
 
@@ -275,7 +276,7 @@ public final class Console {
     static TXCommand MessageMode2_f = new TXCommand() {
         public void execute() {
             Context.chat_team = true;
-            cls.key_dest = key_message;
+            cls.setKey_dest(key_message);
         }
     };
 
@@ -340,7 +341,7 @@ public final class Console {
                 Console.Linefeed();
                 // mark time for transparent overlay
                 if (console.current >= 0)
-                    console.times[console.current % NUM_CON_TIMES] = cls.realtime;
+                    console.times[console.current % NUM_CON_TIMES] = cls.getRealtime();
             }
 
             switch (c) {
@@ -403,15 +404,15 @@ public final class Console {
         byte[] text;
         int start = 0;
 
-        if (cls.key_dest == key_menu)
+        if (cls.getKey_dest() == key_menu)
             return;
-        if (cls.key_dest != key_console && cls.state == ca_active)
+        if (cls.getKey_dest() != key_console && cls.getState() == ca_active)
             return; // don't draw anything (always draw if not active)
 
         text = key_lines[edit_line];
 
         // add the cursor frame
-        text[Key.key_linepos] = (byte) (10 + (cls.realtime >> 8 & 1));
+        text[Key.key_linepos] = (byte) (10 + (cls.getRealtime() >> 8 & 1));
 
         // fill out remainder with spaces
         for (i = Key.key_linepos + 1; i < console.linewidth; i++)
@@ -454,7 +455,7 @@ public final class Console {
             if (time == 0)
                 continue;
 
-            time = cls.realtime - time;
+            time = cls.getRealtime() - time;
             if (time > con_notifytime.value * 1000)
                 continue;
 
@@ -466,7 +467,7 @@ public final class Console {
             v += 8;
         }
 
-        if (cls.key_dest == key_message) {
+        if (cls.getKey_dest() == key_message) {
             if (chat_team) {
                 DrawString(8, v, "say_team:");
                 skip = 11;
@@ -484,7 +485,7 @@ public final class Console {
                 re.DrawChar((x + skip) << 3, v, s.charAt(x));
             }
             re.DrawChar((x + skip) << 3, v,
-                    10 + ((cls.realtime >> 8) & 1));
+                    10 + ((cls.getRealtime() >> 8) & 1));
             v += 8;
         }
 
@@ -556,33 +557,33 @@ public final class Console {
         // ZOID
         // draw the download bar
         // figure out width
-        if (cls.download != null) {
+        if (cls.getDownload() != null) {
             int text;
-            if ((text = cls.downloadname.lastIndexOf('/')) != 0)
+            if ((text = cls.getDownloadname().lastIndexOf('/')) != 0)
                 text++;
             else
                 text = 0;
 
             x = console.linewidth - ((console.linewidth * 7) / 40);
-            y = x - (cls.downloadname.length() - text) - 8;
+            y = x - (cls.getDownloadname().length() - text) - 8;
             i = console.linewidth / 3;
             StringBuffer dlbar = new StringBuffer(512);
-            if (cls.downloadname.length() - text > i) {
+            if (cls.getDownloadname().length() - text > i) {
                 y = x - i - 11;
                 int end = text + i - 1;
-                dlbar.append(cls.downloadname.substring(text, end));
+                dlbar.append(cls.getDownloadname().substring(text, end));
                 dlbar.append("...");
             } else {
-                dlbar.append(cls.downloadname.substring(text));
+                dlbar.append(cls.getDownloadname().substring(text));
             }
             dlbar.append(": ");
             dlbar.append((char) 0x80);
 
-            // where's the dot go?
-            if (cls.downloadpercent == 0)
+            // where'entityState the dot go?
+            if (cls.getDownloadpercent() == 0)
                 n = 0;
             else
-                n = y * cls.downloadpercent / 100;
+                n = y * cls.getDownloadpercent() / 100;
 
             for (j = 0; j < y; j++) {
                 if (j == n)
@@ -591,8 +592,8 @@ public final class Console {
                     dlbar.append((char) 0x81);
             }
             dlbar.append((char) 0x82);
-            dlbar.append((cls.downloadpercent < 10) ? " 0" : " ");
-            dlbar.append(cls.downloadpercent).append('%');
+            dlbar.append((cls.getDownloadpercent() < 10) ? " 0" : " ");
+            dlbar.append(cls.getDownloadpercent()).append('%');
             // draw it
             y = console.vislines - 12;
             for (i = 0; i < dlbar.length(); i++)

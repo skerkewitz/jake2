@@ -36,7 +36,7 @@ import jake2.game.Monster;
 import jake2.game.TEntityDict;
 import jake2.game.mframe_t;
 import jake2.game.mmove_t;
-import jake2.game.trace_t;
+import jake2.game.TTrace;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -1494,12 +1494,12 @@ public class M_Boss32 {
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_MAKRON_BFG],
                     forward, right, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -1514,7 +1514,7 @@ public class M_Boss32 {
     static EntThinkAdapter MakronSaveloc = new EntThinkAdapter() {
     	public String getID() { return "MakronSaveloc"; }
         public boolean think(TEntityDict self) {
-            Math3D.VectorCopy(self.enemy.s.origin, self.pos1); //save for
+            Math3D.VectorCopy(self.enemy.entityState.origin, self.pos1); //save for
                                                                // aiming the
                                                                // shot
             self.pos1[2] += self.enemy.viewheight;
@@ -1522,7 +1522,7 @@ public class M_Boss32 {
         }
     };
 
-    //	   FIXME: He's not firing from the proper Z
+    //	   FIXME: He'entityState not firing from the proper Z
 
     static EntThinkAdapter MakronRailgun = new EntThinkAdapter() {
     	public String getID() { return "MakronRailgun"; }
@@ -1531,8 +1531,8 @@ public class M_Boss32 {
             float[] dir = { 0, 0, 0 };
             float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_MAKRON_RAILGUN_1],
                     forward, right, start);
 
@@ -1547,7 +1547,7 @@ public class M_Boss32 {
         }
     };
 
-    //	   FIXME: This is all wrong. He's not firing at the proper angles.
+    //	   FIXME: This is all wrong. He'entityState not firing at the proper angles.
 
     static EntThinkAdapter MakronHyperblaster = new EntThinkAdapter() {
     	public String getID() { return "MakronHyperblaster"; }
@@ -1559,15 +1559,15 @@ public class M_Boss32 {
             int flash_number;
 
             flash_number = Defines.MZ2_MAKRON_BLASTER_1
-                    + (self.s.frame - FRAME_attak405);
+                    + (self.entityState.frame - FRAME_attak405);
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
             if (self.enemy != null) {
-                Math3D.VectorCopy(self.enemy.s.origin, vec);
+                Math3D.VectorCopy(self.enemy.entityState.origin, vec);
                 vec[2] += self.enemy.viewheight;
                 Math3D.VectorSubtract(vec, start, vec);
                 Math3D.vectoangles(vec, vec);
@@ -1575,12 +1575,12 @@ public class M_Boss32 {
             } else {
                 dir[0] = 0;
             }
-            if (self.s.frame <= FRAME_attak413)
-                dir[1] = self.s.angles[1] - 10
-                        * (self.s.frame - FRAME_attak413);
+            if (self.entityState.frame <= FRAME_attak413)
+                dir[1] = self.entityState.angles[1] - 10
+                        * (self.entityState.frame - FRAME_attak413);
             else
-                dir[1] = self.s.angles[1] + 10
-                        * (self.s.frame - FRAME_attak421);
+                dir[1] = self.entityState.angles[1] + 10
+                        * (self.entityState.frame - FRAME_attak421);
             dir[2] = 0;
 
             Math3D.AngleVectors(dir, forward, null, null);
@@ -1597,7 +1597,7 @@ public class M_Boss32 {
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1652,7 +1652,7 @@ public class M_Boss32 {
 
             r = Lib.random();
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, vec);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, vec);
             range = Math3D.VectorLength(vec);
 
             if (r <= 0.3)
@@ -1673,10 +1673,10 @@ public class M_Boss32 {
     static EntThinkAdapter makron_torso_think = new EntThinkAdapter() {
     	public String getID() { return "makron_torso_think"; }
         public boolean think(TEntityDict self) {
-            if (++self.s.frame < 365)
+            if (++self.entityState.frame < 365)
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             else {
-                self.s.frame = 346;
+                self.entityState.frame = 346;
                 self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             }
             return true;
@@ -1690,12 +1690,12 @@ public class M_Boss32 {
             ent.solid = Defines.SOLID_NOT;
             Math3D.VectorSet(ent.mins, -8, -8, 0);
             Math3D.VectorSet(ent.maxs, 8, 8, 8);
-            ent.s.frame = 346;
-            ent.s.modelindex = GameBase.gi
+            ent.entityState.frame = 346;
+            ent.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/boss3/rider/tris.md2");
             ent.think = makron_torso_think;
             ent.nextthink = GameBase.level.time + 2 * Defines.FRAMETIME;
-            ent.s.sound = GameBase.gi.soundindex("makron/spine.wav");
+            ent.entityState.sound = GameBase.gi.soundindex("makron/spine.wav");
             GameBase.gi.linkentity(ent);
             return true;
         }
@@ -1709,7 +1709,7 @@ public class M_Boss32 {
 
             int n;
 
-            self.s.sound = 0;
+            self.entityState.sound = 0;
             // check for gib
             if (self.health <= self.gib_health) {
                 GameBase.gi
@@ -1740,9 +1740,9 @@ public class M_Boss32 {
             self.takedamage = Defines.DAMAGE_YES;
 
             tempent = GameUtil.G_Spawn();
-            Math3D.VectorCopy(self.s.origin, tempent.s.origin);
-            Math3D.VectorCopy(self.s.angles, tempent.s.angles);
-            tempent.s.origin[1] -= 84;
+            Math3D.VectorCopy(self.entityState.origin, tempent.entityState.origin);
+            Math3D.VectorCopy(self.entityState.angles, tempent.entityState.angles);
+            tempent.entityState.origin[1] -= 84;
             makron_torso.think(tempent);
 
             self.monsterinfo.currentmove = makron_move_death2;
@@ -1755,16 +1755,16 @@ public class M_Boss32 {
             float[] spot1 = { 0, 0, 0 }, spot2 = { 0, 0, 0 };
             float[] temp = { 0, 0, 0 };
             float chance;
-            trace_t tr;
+            TTrace tr;
 
             int enemy_range;
             float enemy_yaw;
 
             if (self.enemy.health > 0) {
                 // see if any entities are in the way of the shot
-                Math3D.VectorCopy(self.s.origin, spot1);
+                Math3D.VectorCopy(self.entityState.origin, spot1);
                 spot1[2] += self.viewheight;
-                Math3D.VectorCopy(self.enemy.s.origin, spot2);
+                Math3D.VectorCopy(self.enemy.entityState.origin, spot2);
                 spot2[2] += self.enemy.viewheight;
 
                 tr = GameBase.gi.trace(spot1, null, null, spot2, self,
@@ -1773,12 +1773,12 @@ public class M_Boss32 {
                                 | Defines.CONTENTS_LAVA);
 
                 // do we have a clear shot?
-                if (tr.ent != self.enemy)
+                if (tr.entityDict != self.enemy)
                     return false;
             }
 
             enemy_range = GameUtil.range(self, self.enemy);
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, temp);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, temp);
             enemy_yaw = Math3D.vectoyaw(temp);
 
             self.ideal_yaw = enemy_yaw;
@@ -1919,8 +1919,8 @@ public class M_Boss32 {
             if (player == null)
                 return true;
 
-            Math3D.VectorSubtract(player.s.origin, self.s.origin, vec);
-            self.s.angles[Defines.YAW] = Math3D.vectoyaw(vec);
+            Math3D.VectorSubtract(player.entityState.origin, self.entityState.origin, vec);
+            self.entityState.angles[Defines.YAW] = Math3D.vectoyaw(vec);
             Math3D.VectorNormalize(vec);
             Math3D.VectorMA(Context.vec3_origin, 400, vec, self.velocity);
             self.velocity[2] = 200;
@@ -1939,7 +1939,7 @@ public class M_Boss32 {
             ent.nextthink = GameBase.level.time + 0.8f;
             ent.think = MakronSpawn;
             ent.target = self.target;
-            Math3D.VectorCopy(self.s.origin, ent.s.origin);
+            Math3D.VectorCopy(self.entityState.origin, ent.entityState.origin);
             return true;
         }
     };
@@ -1981,7 +1981,7 @@ public class M_Boss32 {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/boss3/rider/tris.md2");
         Math3D.VectorSet(self.mins, -30, -30, 0);
         Math3D.VectorSet(self.maxs, 30, 30, 90);

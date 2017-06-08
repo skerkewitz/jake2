@@ -19,7 +19,7 @@
  */
 
 // Created on 31.10.2003 by RST.
-// $Id: game_import_t.java,v 1.7 2006-01-21 21:53:31 salomo Exp $
+// $Id: TGameImport.java,v 1.7 2006-01-21 21:53:31 salomo Exp $
 package jake2.game;
 
 import jake2.Defines;
@@ -29,27 +29,27 @@ import jake2.server.*;
 //
 //	collection of functions provided by the main engine
 //
-public class game_import_t {
+public class TGameImport {
     // special messages
     public void bprintf(int printlevel, String s) {
         SV_SEND.SV_BroadcastPrintf(printlevel, s);
     }
 
     public void dprintf(String s) {
-        SV_GAME.PF_dprintf(s);
+        Command.Printf(s);
     }
 
     public void cprintf(TEntityDict ent, int printlevel, String s) {
-        SV_GAME.PF_cprintf(ent, printlevel, s);
+        ServerGame.PF_cprintf(ent, printlevel, s);
     }
 
     public void centerprintf(TEntityDict ent, String s) {
-        SV_GAME.PF_centerprintf(ent, s);
+        ServerGame.PF_centerprintf(ent, s);
     }
 
     public void sound(TEntityDict ent, int channel, int soundindex, float volume,
                       float attenuation, float timeofs) {
-        SV_GAME.PF_StartSound(ent, channel, soundindex, volume, attenuation,
+        ServerGame.PF_StartSound(ent, channel, soundindex, volume, attenuation,
                 timeofs);
     }
 
@@ -65,7 +65,7 @@ public class game_import_t {
     // All of the current configstrings are sent to clients when
     // they connect, and changes are sent to all connected clients.
     public void configstring(int num, String string) {
-        SV_GAME.PF_Configstring(num, string);
+        ServerGame.PF_Configstring(num, string);
     }
 
     public void error(String err) {
@@ -73,7 +73,7 @@ public class game_import_t {
     }
 
     public void error(int level, String err) {
-        SV_GAME.PF_error(level, err);
+        Command.Error(level, err);
     }
 
     // the *index functions create configstrings and some internal server state
@@ -90,13 +90,13 @@ public class game_import_t {
     }
 
     public void setmodel(TEntityDict ent, String name) {
-        SV_GAME.PF_setmodel(ent, name);
+        ServerGame.pfSetModel(ent, name);
     }
 
     // collision detection
-    public trace_t trace(float[] start, float[] mins, float[] maxs,
-                         float[] end, TEntityDict passent, int contentmask) {
-        return ServerWorld.SV_Trace(start, mins, maxs, end, passent, contentmask);
+    public TTrace trace(float[] start, float[] mins, float[] maxs,
+                        float[] end, TEntityDict passent, int contentmask) {
+        return ServerWorld.trace(start, mins, maxs, end, passent, contentmask);
     }
 
     public pmove_t.PointContentsAdapter pointcontents = new pmove_t.PointContentsAdapter() {
@@ -106,7 +106,7 @@ public class game_import_t {
     };
 
     public boolean inPHS(float[] p1, float[] p2) {
-        return SV_GAME.PF_inPHS(p1, p2);
+        return ServerGame.PF_inPHS(p1, p2);
     }
 
     public void SetAreaPortalState(int portalnum, boolean open) {
@@ -121,17 +121,17 @@ public class game_import_t {
     // if it is not passed to linkentity. If the size, position, or
     // solidity changes, it must be relinked.
     public void linkentity(TEntityDict ent) {
-        ServerWorld.SV_LinkEdict(ent);
+        ServerWorld.linkEdict(ent);
     }
 
     public void unlinkentity(TEntityDict ent) {
-        ServerWorld.SV_UnlinkEdict(ent);
+        ServerWorld.unlinkEdict(ent);
     }
 
     // call before removing an interactive edict
     public int BoxEdicts(float[] mins, float[] maxs, TEntityDict list[],
             int maxcount, int areatype) {
-        return ServerWorld.SV_AreaEdicts(mins, maxs, list, maxcount, areatype);
+        return ServerWorld.areaEdicts(mins, maxs, list, maxcount, areatype);
     }
 
     public void Pmove(pmove_t pmove) {
@@ -145,29 +145,29 @@ public class game_import_t {
     }
 
     public void unicast(TEntityDict ent, boolean reliable) {
-        SV_GAME.PF_Unicast(ent, reliable);
+        ServerGame.pfUnicast(ent, reliable);
     }
 
 
     public void WriteByte(int c) {
-        SV_GAME.PF_WriteByte(c);
+        ServerGame.PF_WriteByte(c);
     }
 
     public void WriteShort(int c) {
-        SV_GAME.PF_WriteShort(c);
+        ServerGame.PF_WriteShort(c);
     }
 
     public void WriteString(String s) {
-        SV_GAME.PF_WriteString(s);
+        ServerGame.PF_WriteString(s);
     }
 
     public void WritePosition(float[] pos) {
-        SV_GAME.PF_WritePos(pos);
+        ServerGame.PF_WritePos(pos);
     }
 
     // some fractional bits
     public void WriteDir(float[] pos) {
-        SV_GAME.PF_WriteDir(pos);
+        ServerGame.PF_WriteDir(pos);
     }
 
     // console variable interaction

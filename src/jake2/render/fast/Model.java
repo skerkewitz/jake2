@@ -178,7 +178,7 @@ public class Model {
 			if (mod.name.length() == 0)
 				continue;
 
-			VID.Printf (VID.PRINT_ALL, "%8i : %s\n", mod.extradatasize, mod.name);
+			VID.Printf (VID.PRINT_ALL, "%8i : %entityState\n", mod.extradatasize, mod.name);
 			total += mod.extradatasize;
 		}
 		VID.Printf (VID.PRINT_ALL, "Total resident: " + total +'\n');
@@ -262,7 +262,7 @@ public class Model {
 		//
 		// load the file
 		//
-		fileBuffer = FileSystem.LoadFile(name);
+		fileBuffer = FileSystem.loadFile(name);
 
 		if (fileBuffer == null)
 		{
@@ -549,7 +549,7 @@ public class Model {
 	================
 	CalcSurfaceExtents
 
-	Fills in s.texturemins[] and s.extents[]
+	Fills in entityState.texturemins[] and entityState.extents[]
 	================
 	*/
 	void CalcSurfaceExtents(TMapSurface s)
@@ -1014,7 +1014,7 @@ public class Model {
 		pheader = new qfiles.dmdl_t(buffer);
 
 		if (pheader.version != qfiles.ALIAS_VERSION)
-			Command.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, pheader.version, qfiles.ALIAS_VERSION);
+			Command.Error(Defines.ERR_DROP, "%entityState has wrong version number (%i should be %i)", mod.name, pheader.version, qfiles.ALIAS_VERSION);
 
 		if (pheader.skinheight > MAX_LBM_HEIGHT)
 			Command.Error(Defines.ERR_DROP, "model "+ mod.name +" has a skin taller than " + MAX_LBM_HEIGHT);
@@ -1035,7 +1035,7 @@ public class Model {
 			Command.Error(Defines.ERR_DROP, "model " + mod.name + " has no frames");
 
 		//
-		// load base s and t vertices (not used in gl version)
+		// load base entityState and t vertices (not used in gl version)
 		//
 		poutst = new qfiles.dstvert_t[pheader.num_st]; 
 		buffer.position(pheader.ofs_st);
@@ -1131,10 +1131,10 @@ public class Model {
 		qfiles.dsprite_t sprout = new qfiles.dsprite_t(buffer);
 		
 		if (sprout.version != qfiles.SPRITE_VERSION)
-			Command.Error(Defines.ERR_DROP, "%s has wrong version number (%i should be %i)", mod.name, sprout.version, qfiles.SPRITE_VERSION);
+			Command.Error(Defines.ERR_DROP, "%entityState has wrong version number (%i should be %i)", mod.name, sprout.version, qfiles.SPRITE_VERSION);
 
 		if (sprout.numframes > qfiles.MAX_MD2SKINS)
-			Command.Error(Defines.ERR_DROP, "%s has too many frames (%i > %i)", mod.name, sprout.numframes, qfiles.MAX_MD2SKINS);
+			Command.Error(Defines.ERR_DROP, "%entityState has too many frames (%i > %i)", mod.name, sprout.numframes, qfiles.MAX_MD2SKINS);
 
 		for (int i=0 ; i<sprout.numframes ; i++)
 		{

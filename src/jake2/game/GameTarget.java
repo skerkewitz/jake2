@@ -39,7 +39,7 @@ public class GameTarget {
 
         if (GameBase.st.noise == null) {
             GameBase.gi.dprintf("target_speaker with no noise set at "
-                    + Lib.vtos(ent.s.origin) + "\n");
+                    + Lib.vtos(ent.entityState.origin) + "\n");
             return;
         }
         if (GameBase.st.noise.indexOf(".wav") < 0)
@@ -59,7 +59,7 @@ public class GameTarget {
 
         // check for prestarted looping sound
         if ((ent.spawnflags & 1) != 0)
-            ent.s.sound = ent.noise_index;
+            ent.entityState.sound = ent.noise_index;
 
         ent.use = Use_Target_Speaker;
 
@@ -81,7 +81,7 @@ public class GameTarget {
 
         if (ent.message == null) {
             GameBase.gi.dprintf(ent.classname + " with no message at "
-                    + Lib.vtos(ent.s.origin) + "\n");
+                    + Lib.vtos(ent.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(ent);
             return;
         }
@@ -102,8 +102,8 @@ public class GameTarget {
         GameBase.level.total_secrets++;
         // map bug hack
         if (0 == Lib.Q_stricmp(GameBase.level.mapname, "mine3")
-                && ent.s.origin[0] == 280 && ent.s.origin[1] == -2048
-                && ent.s.origin[2] == -624)
+                && ent.entityState.origin[0] == 280 && ent.entityState.origin[1] == -2048
+                && ent.entityState.origin[2] == -624)
             ent.message = "You have found a secret area.";
     }
 
@@ -129,7 +129,7 @@ public class GameTarget {
     public static void SP_target_changelevel(TEntityDict ent) {
         if (ent.map == null) {
             GameBase.gi.dprintf("target_changelevel with no map at "
-                    + Lib.vtos(ent.s.origin) + "\n");
+                    + Lib.vtos(ent.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(ent);
             return;
         }
@@ -145,7 +145,7 @@ public class GameTarget {
 
     public static void SP_target_splash(TEntityDict self) {
         self.use = use_target_splash;
-        GameBase.G_SetMovedir(self.s.angles, self.movedir);
+        GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
 
         if (0 == self.count)
             self.count = 32;
@@ -157,14 +157,14 @@ public class GameTarget {
         self.use = use_target_spawner;
         self.svflags = Defines.SVF_NOCLIENT;
         if (self.speed != 0) {
-            GameBase.G_SetMovedir(self.s.angles, self.movedir);
+            GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
             Math3D.VectorScale(self.movedir, self.speed, self.movedir);
         }
     }
 
     public static void SP_target_blaster(TEntityDict self) {
         self.use = use_target_blaster;
-        GameBase.G_SetMovedir(self.s.angles, self.movedir);
+        GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
         self.noise_index = GameBase.gi.soundindex("weapons/laser2.wav");
 
         if (0 == self.dmg)
@@ -215,7 +215,7 @@ public class GameTarget {
                 || self.message.charAt(1) < 'a' || self.message.charAt(1) > 'z'
                 || self.message.charAt(0) == self.message.charAt(1)) {
             GameBase.gi.dprintf("target_lightramp has bad ramp ("
-                    + self.message + ") at " + Lib.vtos(self.s.origin) + "\n");
+                    + self.message + ") at " + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
         }
@@ -227,7 +227,7 @@ public class GameTarget {
 
         if (self.target == null) {
             GameBase.gi.dprintf(self.classname + " with no target at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
         }
@@ -245,7 +245,7 @@ public class GameTarget {
     public static void SP_target_earthquake(TEntityDict self) {
         if (null == self.targetname)
             GameBase.gi.dprintf("untargeted " + self.classname + " at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
 
         if (0 == self.count)
             self.count = 5;
@@ -269,8 +269,8 @@ public class GameTarget {
         public void use(TEntityDict ent, TEntityDict other, TEntityDict activator) {
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(ent.style);
-            GameBase.gi.WritePosition(ent.s.origin);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.WritePosition(ent.entityState.origin);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
         }
     };
 
@@ -293,10 +293,10 @@ public class GameTarget {
             int chan;
 
             if ((ent.spawnflags & 3) != 0) { // looping sound toggles
-                if (ent.s.sound != 0)
-                    ent.s.sound = 0; // turn it off
+                if (ent.entityState.sound != 0)
+                    ent.entityState.sound = 0; // turn it off
                 else
-                    ent.s.sound = ent.noise_index; // start it
+                    ent.entityState.sound = ent.noise_index; // start it
             } else { // normal sound
                 if ((ent.spawnflags & 4) != 0)
                     chan = Defines.CHAN_VOICE | Defines.CHAN_RELIABLE;
@@ -304,7 +304,7 @@ public class GameTarget {
                     chan = Defines.CHAN_VOICE;
                 // use a positioned_sound, because this entity won't normally be
                 // sent to any clients because it is invisible
-                GameBase.gi.positioned_sound(ent.s.origin, ent, chan,
+                GameBase.gi.positioned_sound(ent.entityState.origin, ent, chan,
                         ent.noise_index, ent.volume, ent.attenuation, 0);
             }
 
@@ -378,8 +378,8 @@ public class GameTarget {
 
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(Defines.TE_EXPLOSION1);
-            GameBase.gi.WritePosition(self.s.origin);
-            GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PHS);
+            GameBase.gi.WritePosition(self.entityState.origin);
+            GameBase.gi.multicast(self.entityState.origin, Defines.MULTICAST_PHS);
 
             GameCombat.T_RadiusDamage(self, self.activator, self.dmg, null,
                     self.dmg + 40, Defines.MOD_EXPLOSIVE);
@@ -418,17 +418,17 @@ public class GameTarget {
                 return; // already activated
 
             if (0 == GameBase.deathmatch.value && 0 == GameBase.coop.value) {
-                if (GameBase.g_edicts[1].health <= 0)
+                if (GameBase.entityDicts[1].health <= 0)
                     return;
             }
 
             // if noexit, do a ton of damage to other
             if (GameBase.deathmatch.value != 0
                     && 0 == ((int) GameBase.dmflags.value & Defines.DF_ALLOW_EXIT)
-                    && other != GameBase.g_edicts[0] /* world */
+                    && other != GameBase.entityDicts[0] /* world */
             ) {
                 GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin,
+                        other.entityState.origin, Context.vec3_origin,
                         10 * other.max_health, 1000, 0, Defines.MOD_EXIT);
                 return;
             }
@@ -465,10 +465,10 @@ public class GameTarget {
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(Defines.TE_SPLASH);
             GameBase.gi.WriteByte(self.count);
-            GameBase.gi.WritePosition(self.s.origin);
+            GameBase.gi.WritePosition(self.entityState.origin);
             GameBase.gi.WriteDir(self.movedir);
             GameBase.gi.WriteByte(self.sounds);
-            GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(self.entityState.origin, Defines.MULTICAST_PVS);
 
             if (self.dmg != 0)
                 GameCombat.T_RadiusDamage(self, activator, self.dmg, null,
@@ -494,8 +494,8 @@ public class GameTarget {
 
             ent = GameUtil.G_Spawn();
             ent.classname = self.target;
-            Math3D.VectorCopy(self.s.origin, ent.s.origin);
-            Math3D.VectorCopy(self.s.angles, ent.s.angles);
+            Math3D.VectorCopy(self.entityState.origin, ent.entityState.origin);
+            Math3D.VectorCopy(self.entityState.angles, ent.entityState.angles);
             GameSpawn.ED_CallSpawn(ent);
             GameBase.gi.unlinkentity(ent);
             GameUtil.KillBox(ent);
@@ -523,7 +523,7 @@ public class GameTarget {
             else
                 effect = Defines.EF_BLASTER;
 
-            GameWeapon.fire_blaster(self, self.s.origin, self.movedir, self.dmg,
+            GameWeapon.fire_blaster(self, self.entityState.origin, self.movedir, self.dmg,
                     (int) self.speed, Defines.EF_BLASTER,
                     Defines.MOD_TARGET_BLASTER != 0
             /* true */
@@ -582,7 +582,7 @@ public class GameTarget {
             TEntityDict ignore;
             float[] start = { 0, 0, 0 };
             float[] end = { 0, 0, 0 };
-            trace_t tr;
+            TTrace tr;
             float[] point = { 0, 0, 0 };
             float[] last_movedir = { 0, 0, 0 };
             int count;
@@ -595,35 +595,35 @@ public class GameTarget {
             if (self.enemy != null) {
                 Math3D.VectorCopy(self.movedir, last_movedir);
                 Math3D.VectorMA(self.enemy.absmin, 0.5f, self.enemy.size, point);
-                Math3D.VectorSubtract(point, self.s.origin, self.movedir);
+                Math3D.VectorSubtract(point, self.entityState.origin, self.movedir);
                 Math3D.VectorNormalize(self.movedir);
                 if (!Math3D.VectorEquals(self.movedir, last_movedir))
                     self.spawnflags |= 0x80000000;
             }
 
             ignore = self;
-            Math3D.VectorCopy(self.s.origin, start);
+            Math3D.VectorCopy(self.entityState.origin, start);
             Math3D.VectorMA(start, 2048, self.movedir, end);
             while (true) {
                 tr = GameBase.gi.trace(start, null, null, end, ignore,
                         Defines.CONTENTS_SOLID | Defines.CONTENTS_MONSTER
                                 | Defines.CONTENTS_DEADMONSTER);
 
-                if (tr.ent == null)
+                if (tr.entityDict == null)
                     break;
 
                 // hurt it if we can
-                if ((tr.ent.takedamage != 0)
-                        && 0 == (tr.ent.flags & Defines.FL_IMMUNE_LASER))
-                    GameCombat.T_Damage(tr.ent, self, self.activator,
+                if ((tr.entityDict.takedamage != 0)
+                        && 0 == (tr.entityDict.flags & Defines.FL_IMMUNE_LASER))
+                    GameCombat.T_Damage(tr.entityDict, self, self.activator,
                             self.movedir, tr.endpos, Context.vec3_origin,
                             self.dmg, 1, Defines.DAMAGE_ENERGY,
                             Defines.MOD_TARGET_LASER);
 
-                // if we hit something that's not a monster or player or is
+                // if we hit something that'entityState not a monster or player or is
                 // immune to lasers, we're done
-                if (0 == (tr.ent.svflags & Defines.SVF_MONSTER)
-                        && (null == tr.ent.client)) {
+                if (0 == (tr.entityDict.svflags & Defines.SVF_MONSTER)
+                        && (null == tr.entityDict.client)) {
                     if ((self.spawnflags & 0x80000000) != 0) {
                         self.spawnflags &= ~0x80000000;
                         GameBase.gi.WriteByte(Defines.svc_temp_entity);
@@ -631,17 +631,17 @@ public class GameTarget {
                         GameBase.gi.WriteByte(count);
                         GameBase.gi.WritePosition(tr.endpos);
                         GameBase.gi.WriteDir(tr.plane.normal);
-                        GameBase.gi.WriteByte(self.s.skinnum);
+                        GameBase.gi.WriteByte(self.entityState.skinnum);
                         GameBase.gi.multicast(tr.endpos, Defines.MULTICAST_PVS);
                     }
                     break;
                 }
 
-                ignore = tr.ent;
+                ignore = tr.entityDict;
                 Math3D.VectorCopy(tr.endpos, start);
             }
 
-            Math3D.VectorCopy(tr.endpos, self.s.old_origin);
+            Math3D.VectorCopy(tr.endpos, self.entityState.old_origin);
 
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;
             return true;
@@ -666,26 +666,26 @@ public class GameTarget {
 
             self.movetype = Defines.MOVETYPE_NONE;
             self.solid = Defines.SOLID_NOT;
-            self.s.renderfx |= Defines.RF_BEAM | Defines.RF_TRANSLUCENT;
-            self.s.modelindex = 1; // must be non-zero
+            self.entityState.renderfx |= Defines.RF_BEAM | Defines.RF_TRANSLUCENT;
+            self.entityState.modelIndex = 1; // must be non-zero
 
             // set the beam diameter
             if ((self.spawnflags & 64) != 0)
-                self.s.frame = 16;
+                self.entityState.frame = 16;
             else
-                self.s.frame = 4;
+                self.entityState.frame = 4;
 
             // set the color
             if ((self.spawnflags & 2) != 0)
-                self.s.skinnum = 0xf2f2f0f0;
+                self.entityState.skinnum = 0xf2f2f0f0;
             else if ((self.spawnflags & 4) != 0)
-                self.s.skinnum = 0xd0d1d2d3;
+                self.entityState.skinnum = 0xd0d1d2d3;
             else if ((self.spawnflags & 8) != 0)
-                self.s.skinnum = 0xf3f3f1f1;
+                self.entityState.skinnum = 0xf3f3f1f1;
             else if ((self.spawnflags & 16) != 0)
-                self.s.skinnum = 0xdcdddedf;
+                self.entityState.skinnum = 0xdcdddedf;
             else if ((self.spawnflags & 32) != 0)
-                self.s.skinnum = 0xe0e1e2e3;
+                self.entityState.skinnum = 0xe0e1e2e3;
 
             if (null == self.enemy) {
                 if (self.target != null) {
@@ -693,11 +693,11 @@ public class GameTarget {
                             self.target);
                     if (edit == null)
                         GameBase.gi.dprintf(self.classname + " at "
-                                + Lib.vtos(self.s.origin) + ": " + self.target
+                                + Lib.vtos(self.entityState.origin) + ": " + self.target
                                 + " is a bad target\n");
                     self.enemy = edit.o;
                 } else {
-                    GameBase.G_SetMovedir(self.s.angles, self.movedir);
+                    GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
                 }
             }
             self.use = target_laser_use;
@@ -770,9 +770,9 @@ public class GameTarget {
 
                     if (Lib.strcmp(e.classname, "light") != 0) {
                         GameBase.gi.dprintf(self.classname + " at "
-                                + Lib.vtos(self.s.origin));
+                                + Lib.vtos(self.entityState.origin));
                         GameBase.gi.dprintf("target " + self.target + " ("
-                                + e.classname + " at " + Lib.vtos(e.s.origin)
+                                + e.classname + " at " + Lib.vtos(e.entityState.origin)
                                 + ") is not a light\n");
                     } else {
                         self.enemy = e;
@@ -782,7 +782,7 @@ public class GameTarget {
                 if (null == self.enemy) {
                     GameBase.gi.dprintf(self.classname + " target "
                             + self.target + " not found at "
-                            + Lib.vtos(self.s.origin) + "\n");
+                            + Lib.vtos(self.entityState.origin) + "\n");
                     GameUtil.G_FreeEdict(self);
                     return;
                 }
@@ -808,16 +808,16 @@ public class GameTarget {
             TEntityDict e;
 
             if (self.last_move_time < GameBase.level.time) {
-                GameBase.gi.positioned_sound(self.s.origin, self,
+                GameBase.gi.positioned_sound(self.entityState.origin, self,
                         Defines.CHAN_AUTO, self.noise_index, 1.0f,
                         Defines.ATTN_NONE, 0);
                 self.last_move_time = GameBase.level.time + 0.5f;
             }
 
             for (i = 1; i < GameBase.num_edicts; i++) {
-                e = GameBase.g_edicts[i];
+                e = GameBase.entityDicts[i];
 
-                if (!e.inuse)
+                if (!e.inUse)
                     continue;
                 if (null == e.client)
                     continue;

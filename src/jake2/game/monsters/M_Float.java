@@ -582,17 +582,17 @@ public class M_Float {
             float[] dir = { 0, 0, 0 };
             int effect;
 
-            if ((self.s.frame == FRAME_attak104)
-                    || (self.s.frame == FRAME_attak107))
+            if ((self.entityState.frame == FRAME_attak104)
+                    || (self.entityState.frame == FRAME_attak107))
                 effect = Defines.EF_HYPERBLASTER;
             else
                 effect = 0;
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_FLOAT_BLASTER_1],
                     forward, right, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             end[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(end, start, dir);
 
@@ -851,15 +851,15 @@ public class M_Float {
             float[] dir = { 0, 0, 0 };
             float[] offset = { 0, 0, 0 };
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, dir);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, dir);
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             //FIXME use a flash and replace these two lines with the commented
             // one
             Math3D.VectorSet(offset, 18.5f, -0.9f, 10f);
-            Math3D.G_ProjectSource(self.s.origin, offset, forward, right,
+            Math3D.G_ProjectSource(self.entityState.origin, offset, forward, right,
                     origin);
-            //		G_ProjectSource (self.s.origin,
+            //		G_ProjectSource (self.entityState.origin,
             // monster_flash_offset[flash_number], forward, right, origin);
 
             GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_attack2, 1,
@@ -874,7 +874,7 @@ public class M_Float {
             GameBase.gi.WriteByte(1); //sparks
             GameBase.gi.multicast(origin, Defines.MULTICAST_PVS);
 
-            GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.s.origin,
+            GameCombat.T_Damage(self.enemy, self, self, dir, self.enemy.entityState.origin,
                     Context.vec3_origin, 5 + Lib.rand() % 6, -10,
                     Defines.DAMAGE_ENERGY, Defines.MOD_UNKNOWN);
             return true;
@@ -1143,7 +1143,7 @@ public class M_Float {
             int n;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1198,11 +1198,11 @@ public class M_Float {
 
         GameBase.gi.soundindex("floater/fltatck1.wav");
 
-        self.s.sound = GameBase.gi.soundindex("floater/fltsrch1.wav");
+        self.entityState.sound = GameBase.gi.soundindex("floater/fltsrch1.wav");
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/float/tris.md2");
         Math3D.VectorSet(self.mins, -24, -24, -24);
         Math3D.VectorSet(self.maxs, 24, 24, 32);

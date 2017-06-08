@@ -70,7 +70,7 @@ public class WaveLoader {
 		else
 			namebuffer = "sound/" + name;
 
-		byte[] data = FileSystem.LoadFile(namebuffer);
+		byte[] data = FileSystem.loadFile(namebuffer);
 
 		if (data == null) {
 			Command.DPrintf("Couldn't load " + namebuffer + "\n");

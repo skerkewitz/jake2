@@ -80,7 +80,7 @@ public class game_locals_t {
         num_items = f.readInt();
         autosaved = f.readInt() != 0;
 
-        // rst's checker :-)
+        // rst'entityState checker :-)
         if (f.readInt() != 1928)
             Command.DPrintf("error in loading game_locals, 1928\n");
 
@@ -102,7 +102,7 @@ public class game_locals_t {
         f.writeInt(serverflags);
         f.writeInt(num_items);
         f.writeInt(autosaved ? 1 : 0);
-        // rst's checker :-)
+        // rst'entityState checker :-)
         f.writeInt(1928);
     }
 }

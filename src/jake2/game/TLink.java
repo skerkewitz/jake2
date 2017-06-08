@@ -38,15 +38,18 @@ public class TLink<T> {
         l.prev = l.next = l;
     }
 
-	public static void RemoveLink(TLink l) {
-        l.next.prev = l.prev;
-        l.prev.next = l.next;
+    public void remove() {
+        next.prev = prev;
+        prev.next = next;
     }
 
-	public static void InsertLinkBefore(TLink l, TLink before) {
-        l.next = before;
-        l.prev = before.prev;
-        l.prev.next = l;
-        l.next.prev = l;
+    public void insertBefore(TLink before) {
+        next = before;
+        prev = before.prev;
+        prev.next = this;
+        next.prev = this;
     }
+
+
+
 }

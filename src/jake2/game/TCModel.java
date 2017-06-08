@@ -18,20 +18,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-// Created on 09.12.2003 by RST.
+// Created on 28.11.2003 by RST.
+// $Id: TCModel.java,v 1.2 2004-07-08 15:58:44 hzi Exp $
 
-package jake2.server;
+package jake2.game;
 
-import jake2.game.TLink;
-
-public class areanode_t {
-	int axis; // -1 = leaf node
-	float dist;
-	areanode_t children[] = new areanode_t[2];
-	TLink trigger_edicts = new TLink(this);
-	TLink solid_edicts = new TLink(this);
-	
-	// used for debugging
-//	float mins_rst[] = {0,0,0};
-//	float maxs_rst[] = {0,0,0};
+public class TCModel {
+	public float[] mins = { 0, 0, 0 };
+	public float[] maxs = { 0, 0, 0 };
+	public float[] origin = { 0, 0, 0 }; // for sounds or lights
+	public int headnode;
 }

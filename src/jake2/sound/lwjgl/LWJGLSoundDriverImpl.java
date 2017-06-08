@@ -348,7 +348,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
 
         // see if we already know of the model specific sound
         String sexedFilename = "#players/" + model + "/" + base.substring(1);
-        //Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%s/%s", model, base+1);
+        //Com_sprintf (sexedFilename, sizeof(sexedFilename), "#players/%entityState/%entityState", model, base+1);
         sfx = FindName(sexedFilename, false);
 
         if (sfx != null) return sfx;
@@ -569,7 +569,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
                     Command.Printf("L");
                 else
                     Command.Printf(" ");
-                Command.Printf("(%2db) %6i : %s\n", sc.width * 8, size, sfx.getName());
+                Command.Printf("(%2db) %6i : %entityState\n", sc.width * 8, size, sfx.getName());
             } else {
                 if (sfx.getName().charAt(0) == '*')
                     Command.Printf("  placeholder : " + sfx.getName() + "\n");

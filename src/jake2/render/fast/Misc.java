@@ -114,7 +114,7 @@ public final class Misc {
      * GL_ScreenShot_f
      */
     public void GL_ScreenShot_f() {
-        StringBuffer sb = new StringBuffer(FileSystem.Gamedir() + "/scrshot/jake00.tga");
+        StringBuffer sb = new StringBuffer(FileSystem.gamedir() + "/scrshot/jake00.tga");
         FileSystem.CreatePath(sb.toString());
         File file = new File(sb.toString());
         // find a valid file name

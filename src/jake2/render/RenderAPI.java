@@ -1,6 +1,6 @@
 package jake2.render;
 
-import jake2.client.Dimension;
+import jake2.common.Dimension;
 import jake2.client.TRefDef;
 import jake2.render.opengl.GLDriver;
 

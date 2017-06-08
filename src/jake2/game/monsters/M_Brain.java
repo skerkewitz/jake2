@@ -1038,7 +1038,7 @@ public class M_Brain {
             float r;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1071,7 +1071,7 @@ public class M_Brain {
                         int damage, float[] point) {
             int n;
 
-            self.s.effects = 0;
+            self.entityState.effects = 0;
             self.monsterinfo.power_armor_type = Defines.POWER_ARMOR_NONE;
 
             //	   check for gib
@@ -1141,7 +1141,7 @@ public class M_Brain {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/brain/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);

@@ -31,7 +31,7 @@ import jake2.game.TVar;
 import jake2.game.usercmd_t;
 import jake2.network.Netchan;
 import jake2.qcommon.*;
-import jake2.sys.IN;
+import jake2.sys.Input;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -72,39 +72,39 @@ public class CL_input {
 	 * ===============================================================================
 	 */
 
-	static kbutton_t in_klook = new kbutton_t();
+	static TKButton in_klook = new TKButton();
 
-	static kbutton_t in_left = new kbutton_t();
+	static TKButton in_left = new TKButton();
 
-	static kbutton_t in_right = new kbutton_t();
+	static TKButton in_right = new TKButton();
 
-	static kbutton_t in_forward = new kbutton_t();
+	static TKButton in_forward = new TKButton();
 
-	static kbutton_t in_back = new kbutton_t();
+	static TKButton in_back = new TKButton();
 
-	static kbutton_t in_lookup = new kbutton_t();
+	static TKButton in_lookup = new TKButton();
 
-	static kbutton_t in_lookdown = new kbutton_t();
+	static TKButton in_lookdown = new TKButton();
 
-	static kbutton_t in_moveleft = new kbutton_t();
+	static TKButton in_moveleft = new TKButton();
 
-	static kbutton_t in_moveright = new kbutton_t();
+	static TKButton in_moveright = new TKButton();
 
-	public static kbutton_t in_strafe = new kbutton_t();
+	public static TKButton in_strafe = new TKButton();
 
-	static kbutton_t in_speed = new kbutton_t();
+	static TKButton in_speed = new TKButton();
 
-	static kbutton_t in_use = new kbutton_t();
+	static TKButton in_use = new TKButton();
 
-	static kbutton_t in_attack = new kbutton_t();
+	static TKButton in_attack = new TKButton();
 
-	static kbutton_t in_up = new kbutton_t();
+	static TKButton in_up = new TKButton();
 
-	static kbutton_t in_down = new kbutton_t();
+	static TKButton in_down = new TKButton();
 
 	static int in_impulse;
 
-	static void KeyDown(kbutton_t b) {
+	static void KeyDown(TKButton b) {
 		int k;
 		String c;
 
@@ -138,7 +138,7 @@ public class CL_input {
 		b.state |= 3; // down + impulse down
 	}
 
-	static void KeyUp(kbutton_t b) {
+	static void KeyUp(TKButton b) {
 		int k;
 		String c;
 		int uptime;
@@ -307,7 +307,7 @@ public class CL_input {
 	 * 
 	 * Returns the fraction of the frame that the key was down ===============
 	 */
-	static float KeyState(kbutton_t key) {
+	static float KeyState(TKButton key) {
 		float val;
 		long msec;
 
@@ -343,9 +343,9 @@ public class CL_input {
 		float up, down;
 
 		if ((in_speed.state & 1) != 0)
-			speed = Context.cls.frametime * Context.cl_anglespeedkey.value;
+			speed = Context.cls.getFrametime() * Context.cl_anglespeedkey.value;
 		else
-			speed = Context.cls.frametime;
+			speed = Context.cls.getFrametime();
 
 		if ((in_strafe.state & 1) == 0) {
 			Context.cl.viewangles[Defines.YAW] -= speed * Context.cl_yawspeed.value * KeyState(in_right);
@@ -439,11 +439,11 @@ public class CL_input {
 			cmd.buttons |= Defines.BUTTON_USE;
 		in_use.state &= ~2;
 
-		if (Key.anykeydown != 0 && Context.cls.key_dest == Defines.key_game)
+		if (Key.anykeydown != 0 && Context.cls.getKey_dest() == Defines.key_game)
 			cmd.buttons |= Defines.BUTTON_ANY;
 
 		// send milliseconds of time to apply the move
-		ms = (int) (Context.cls.frametime * 1000);
+		ms = (int) (Context.cls.getFrametime() * 1000);
 		if (ms > 250)
 			ms = 100; // time was unreasonable
 		cmd.msec = (byte) ms;
@@ -475,7 +475,7 @@ public class CL_input {
 		BaseMove(cmd);
 
 		// allow mice or other external controllers to add to the move
-		IN.Move(cmd);
+		Input.Move(cmd);
 
 		FinishMove(cmd);
 
@@ -488,11 +488,11 @@ public class CL_input {
 	 * ============ CL_InitInput ============
 	 */
 	static void InitInput() {
-		Cmd.AddCommand("centerview", () -> IN.CenterView());
+		Cmd.AddCommand("centerview", () -> Input.CenterView());
 
-		Cmd.AddCommand("+moveup", () -> IN_UpDown());
-		Cmd.AddCommand("-moveup", () -> IN_UpUp());
-		Cmd.AddCommand("+movedown", () -> IN_DownDown());
+		Cmd.AddCommand("+moveup", CL_input::IN_UpDown);
+		Cmd.AddCommand("-moveup", CL_input::IN_UpUp);
+		Cmd.AddCommand("+movedown", CL_input::IN_DownDown);
 		Cmd.AddCommand("-movedown", () -> IN_DownUp());
 		Cmd.AddCommand("+left", () -> IN_LeftDown());
 		Cmd.AddCommand("-left", () -> IN_LeftUp());
@@ -539,9 +539,9 @@ public class CL_input {
 		// build a command even if not connected
 
 		// save this command off for prediction
-		i = Context.cls.netchan.outgoing_sequence & (Defines.CMD_BACKUP - 1);
+		i = Context.cls.getNetchan().outgoing_sequence & (Defines.CMD_BACKUP - 1);
 		cmd = Context.cl.cmds[i];
-		Context.cl.cmd_time[i] = Context.cls.realtime; // for netgraph
+		Context.cl.cmd_time[i] = Context.cls.getRealtime(); // for netgraph
 															 // ping calculation
 
 		// fill the cmd
@@ -549,12 +549,12 @@ public class CL_input {
 
 		Context.cl.cmd.set(cmd);
 
-		if (Context.cls.state == Defines.ca_disconnected || Context.cls.state == Defines.ca_connecting)
+		if (Context.cls.getState() == Defines.ca_disconnected || Context.cls.getState() == Defines.ca_connecting)
 			return;
 
-		if (Context.cls.state == Defines.ca_connected) {
-			if (Context.cls.netchan.message.cursize != 0 || Context.curtime - Context.cls.netchan.last_sent > 1000)
-				Netchan.Transmit(Context.cls.netchan, 0, new byte[0]);
+		if (Context.cls.getState() == Defines.ca_connected) {
+			if (Context.cls.getNetchan().message.cursize != 0 || Context.curtime - Context.cls.getNetchan().last_sent > 1000)
+				Netchan.Transmit(Context.cls.getNetchan(), 0, new byte[0]);
 			return;
 		}
 
@@ -562,14 +562,14 @@ public class CL_input {
 		if (Context.userinfo_modified) {
 			CL.FixUpGender();
 			Context.userinfo_modified = false;
-			Context.cls.netchan.message.writeByte(Defines.clc_userinfo);
-			Context.cls.netchan.message.writeString(ConsoleVar.Userinfo());
+			Context.cls.getNetchan().message.writeByte(Defines.clc_userinfo);
+			Context.cls.getNetchan().message.writeString(ConsoleVar.Userinfo());
 		}
 
 		buf.init(data, data.length);
 
 		if (cmd.buttons != 0 && Context.cl.cinematictime > 0 && !Context.cl.attractloop
-				&& Context.cls.realtime - Context.cl.cinematictime > 1000) { // skip
+				&& Context.cls.getRealtime() - Context.cl.cinematictime > 1000) { // skip
 																			 // the
 																			 // rest
 																			 // of
@@ -587,14 +587,14 @@ public class CL_input {
 
 		// let the server know what the last frame we
 		// got was, so the next message can be delta compressed
-		if (cl_nodelta.value != 0.0f || !Context.cl.frame.valid || Context.cls.demowaiting)
+		if (cl_nodelta.value != 0.0f || !Context.cl.frame.valid || Context.cls.getDemowaiting())
 			buf.writeLong(-1);
 		else
 			buf.writeLong(Context.cl.frame.serverframe);
 
 		// send this and the previous cmds in the message, so
 		// if the last packet was dropped, it can be recovered
-		i = (Context.cls.netchan.outgoing_sequence - 2) & (Defines.CMD_BACKUP - 1);
+		i = (Context.cls.getNetchan().outgoing_sequence - 2) & (Defines.CMD_BACKUP - 1);
 		cmd = Context.cl.cmds[i];
 		//memset (nullcmd, 0, sizeof(nullcmd));
 		nullcmd.clear();
@@ -602,24 +602,24 @@ public class CL_input {
 		buf.writeDeltaUsercmd(nullcmd, cmd);
 		oldcmd = cmd;
 
-		i = (Context.cls.netchan.outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
+		i = (Context.cls.getNetchan().outgoing_sequence - 1) & (Defines.CMD_BACKUP - 1);
 		cmd = Context.cl.cmds[i];
 
 		buf.writeDeltaUsercmd(oldcmd, cmd);
 		oldcmd = cmd;
 
-		i = (Context.cls.netchan.outgoing_sequence) & (Defines.CMD_BACKUP - 1);
+		i = (Context.cls.getNetchan().outgoing_sequence) & (Defines.CMD_BACKUP - 1);
 		cmd = Context.cl.cmds[i];
 
 		buf.writeDeltaUsercmd(oldcmd, cmd);
 
 		// calculate a checksum over the move commands
 		buf.data[checksumIndex] = Command.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,
-				Context.cls.netchan.outgoing_sequence);
+				Context.cls.getNetchan().outgoing_sequence);
 
 		//
 		// deliver the message
 		//
-		Netchan.Transmit(Context.cls.netchan, buf.cursize, buf.data);
+		Netchan.Transmit(Context.cls.getNetchan(), buf.cursize, buf.data);
 	}
 }

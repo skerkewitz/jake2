@@ -69,8 +69,8 @@ public class GameTurret {
         int damage;
         int speed;
 
-        Math3D.AngleVectors(self.s.angles, f, r, u);
-        Math3D.VectorMA(self.s.origin, self.move_origin[0], f, start);
+        Math3D.AngleVectors(self.entityState.angles, f, r, u);
+        Math3D.VectorMA(self.entityState.origin, self.move_origin[0], f, start);
         Math3D.VectorMA(start, self.move_origin[1], r, start);
         Math3D.VectorMA(start, self.move_origin[2], u, start);
 
@@ -105,7 +105,7 @@ public class GameTurret {
         self.pos2[Defines.PITCH] = -1 * GameBase.st.maxpitch;
         self.pos2[Defines.YAW] = GameBase.st.maxyaw;
 
-        self.ideal_yaw = self.s.angles[Defines.YAW];
+        self.ideal_yaw = self.entityState.angles[Defines.YAW];
         self.move_angles[Defines.YAW] = self.ideal_yaw;
 
         self.blocked = turret_blocked;
@@ -136,7 +136,7 @@ public class GameTurret {
 
         self.movetype = Defines.MOVETYPE_PUSH;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/infantry/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);
@@ -154,18 +154,18 @@ public class GameTurret {
         GameBase.level.total_monsters++;
 
         self.svflags |= Defines.SVF_MONSTER;
-        self.s.renderfx |= Defines.RF_FRAMELERP;
+        self.entityState.renderfx |= Defines.RF_FRAMELERP;
         self.takedamage = Defines.DAMAGE_AIM;
         self.use = GameUtil.monster_use;
         self.clipmask = Defines.MASK_MONSTERSOLID;
-        Math3D.VectorCopy(self.s.origin, self.s.old_origin);
+        Math3D.VectorCopy(self.entityState.origin, self.entityState.old_origin);
         self.monsterinfo.aiflags |= Defines.AI_STAND_GROUND | Defines.AI_DUCKED;
 
         if (GameBase.st.item != null) {
             self.item = GameItems.FindItemByClassname(GameBase.st.item);
             if (self.item == null)
                 GameBase.gi.dprintf(self.classname + " at "
-                        + Lib.vtos(self.s.origin) + " has bad item: "
+                        + Lib.vtos(self.entityState.origin) + " has bad item: "
                         + GameBase.st.item + "\n");
         }
 
@@ -186,7 +186,7 @@ public class GameTurret {
                 else
                     attacker = self.teammaster;
                 GameCombat.T_Damage(other, self, attacker, Context.vec3_origin,
-                        other.s.origin, Context.vec3_origin,
+                        other.entityState.origin, Context.vec3_origin,
                         self.teammaster.dmg, 10, 0, Defines.MOD_CRUSH);
             }
         }
@@ -200,7 +200,7 @@ public class GameTurret {
             float[] current_angles = { 0, 0, 0 };
             float[] delta = { 0, 0, 0 };
 
-            Math3D.VectorCopy(self.s.angles, current_angles);
+            Math3D.VectorCopy(self.entityState.angles, current_angles);
             AnglesNormalize(current_angles);
 
             AnglesNormalize(self.move_angles);
@@ -275,24 +275,24 @@ public class GameTurret {
                 self.owner.avelocity[1] = self.avelocity[1];
 
                 // x & y
-                angle = self.s.angles[1] + self.owner.move_origin[1];
+                angle = self.entityState.angles[1] + self.owner.move_origin[1];
                 angle *= (Math.PI * 2 / 360);
-                target[0] = GameTurret.SnapToEights((float) (self.s.origin[0] + 
+                target[0] = GameTurret.SnapToEights((float) (self.entityState.origin[0] +
                 			Math.cos(angle) * self.owner.move_origin[0]));
-                target[1] = GameTurret.SnapToEights((float) (self.s.origin[1] + 
+                target[1] = GameTurret.SnapToEights((float) (self.entityState.origin[1] +
                 			Math.sin(angle) * self.owner.move_origin[0]));
-                target[2] = self.owner.s.origin[2];
+                target[2] = self.owner.entityState.origin[2];
 
-                Math3D.VectorSubtract(target, self.owner.s.origin, dir);
+                Math3D.VectorSubtract(target, self.owner.entityState.origin, dir);
                 self.owner.velocity[0] = dir[0] * 1.0f / Defines.FRAMETIME;
                 self.owner.velocity[1] = dir[1] * 1.0f / Defines.FRAMETIME;
 
                 // z
-                angle = self.s.angles[Defines.PITCH] * (float) (Math.PI * 2f / 360f);
-                target_z = GameTurret.SnapToEights((float) (self.s.origin[2]
+                angle = self.entityState.angles[Defines.PITCH] * (float) (Math.PI * 2f / 360f);
+                target_z = GameTurret.SnapToEights((float) (self.entityState.origin[2]
                                 + self.owner.move_origin[0] * Math.tan(angle) + self.owner.move_origin[2]));
 
-                diff = target_z - self.owner.s.origin[2];
+                diff = target_z - self.owner.entityState.origin[2];
                 self.owner.velocity[2] = diff * 1.0f / Defines.FRAMETIME;
 
                 if ((self.spawnflags & 65536) != 0) {
@@ -311,10 +311,10 @@ public class GameTurret {
             // get and save info for muzzle location
             if (self.target == null) {
                 GameBase.gi.dprintf(self.classname + " at "
-                        + Lib.vtos(self.s.origin) + " needs a target\n");
+                        + Lib.vtos(self.entityState.origin) + " needs a target\n");
             } else {
                 self.target_ent = GameBase.G_PickTarget(self.target);
-                Math3D.VectorSubtract(self.target_ent.s.origin, self.s.origin,
+                Math3D.VectorSubtract(self.target_ent.entityState.origin, self.entityState.origin,
                         self.move_origin);
                 GameUtil.G_FreeEdict(self.target_ent);
             }
@@ -366,7 +366,7 @@ public class GameTurret {
             self.nextthink = GameBase.level.time + Defines.FRAMETIME;
 
             if (self.enemy != null
-                    && (!self.enemy.inuse || self.enemy.health <= 0))
+                    && (!self.enemy.inUse || self.enemy.health <= 0))
                 self.enemy = null;
 
             if (null == self.enemy) {
@@ -387,9 +387,9 @@ public class GameTurret {
             }
 
             // let the turret know where we want it to aim
-            Math3D.VectorCopy(self.enemy.s.origin, target);
+            Math3D.VectorCopy(self.enemy.entityState.origin, target);
             target[2] += self.enemy.viewheight;
-            Math3D.VectorSubtract(target, self.target_ent.s.origin, dir);
+            Math3D.VectorSubtract(target, self.target_ent.entityState.origin, dir);
             Math3D.vectoangles(dir, self.target_ent.move_angles);
 
             // decide if we should shoot
@@ -421,19 +421,19 @@ public class GameTurret {
             self.target_ent = GameBase.G_PickTarget(self.target);
             self.target_ent.owner = self;
             self.target_ent.teammaster.owner = self;
-            Math3D.VectorCopy(self.target_ent.s.angles, self.s.angles);
+            Math3D.VectorCopy(self.target_ent.entityState.angles, self.entityState.angles);
 
-            vec[0] = self.target_ent.s.origin[0] - self.s.origin[0];
-            vec[1] = self.target_ent.s.origin[1] - self.s.origin[1];
+            vec[0] = self.target_ent.entityState.origin[0] - self.entityState.origin[0];
+            vec[1] = self.target_ent.entityState.origin[1] - self.entityState.origin[1];
             vec[2] = 0;
             self.move_origin[0] = Math3D.VectorLength(vec);
 
-            Math3D.VectorSubtract(self.s.origin, self.target_ent.s.origin, vec);
+            Math3D.VectorSubtract(self.entityState.origin, self.target_ent.entityState.origin, vec);
             Math3D.vectoangles(vec, vec);
             AnglesNormalize(vec);
             
             self.move_origin[1] = vec[1];
-            self.move_origin[2] = self.s.origin[2] - self.target_ent.s.origin[2];
+            self.move_origin[2] = self.entityState.origin[2] - self.target_ent.entityState.origin[2];
 
             // add the driver to the end of them team chain
             for (ent = self.target_ent.teammaster; ent.teamchain != null; ent = ent.teamchain)

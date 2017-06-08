@@ -28,7 +28,7 @@ import jake2.client.Context;
 import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.server.ServerMain;
-import jake2.sys.NET;
+import jake2.sys.Network;
 import jake2.sys.Timer;
 import jake2.util.Lib;
 
@@ -77,7 +77,7 @@ public final class Netchan extends ServerMain {
      * 
      * 
      * The qport field is a workaround for bad address translating routers that
-     * sometimes remap the client's source port on a packet during gameplay.
+     * sometimes remap the client'entityState source port on a packet during gameplay.
      * 
      * If the base part of the net address matches and the qport matches, then
      * the channel matches even if the IP port differs. The IP port should be
@@ -132,7 +132,7 @@ public final class Netchan extends ServerMain {
         send.write(data, length);
 
         // send the datagram
-        NET.SendPacket(net_socket, send.cursize, send.data, adr);
+        Network.SendPacket(net_socket, send.cursize, send.data, adr);
     }
 
     public static void OutOfBandPrint(int net_socket, TNetAddr adr, String s) {
@@ -194,7 +194,7 @@ public final class Netchan extends ServerMain {
         // check for message overflow
         if (chan.message.overflowed) {
             chan.fatal_error = true;
-            Command.Printf(NET.AdrToString(chan.remote_address)
+            Command.Printf(Network.AdrToString(chan.remote_address)
                     + ":Outgoing message overflow\n");
             return;
         }
@@ -239,19 +239,19 @@ public final class Netchan extends ServerMain {
             Command.Printf("Netchan_Transmit: dumped unreliable\n");
 
         // send the datagram
-        NET.SendPacket(chan.sock, send.cursize, send.data, chan.remote_address);
+        Network.SendPacket(chan.sock, send.cursize, send.data, chan.remote_address);
 
         if (showpackets.value != 0) {
             if (send_reliable != 0)
                 Command.Printf(
-                        "send " + send.cursize + " : s="
+                        "send " + send.cursize + " : entityState="
                                 + (chan.outgoing_sequence - 1) + " reliable="
                                 + chan.reliable_sequence + " ack="
                                 + chan.incoming_sequence + " rack="
                                 + chan.incoming_reliable_sequence + "\n");
             else
                 Command.Printf(
-                        "send " + send.cursize + " : s="
+                        "send " + send.cursize + " : entityState="
                                 + (chan.outgoing_sequence - 1) + " ack="
                                 + chan.incoming_sequence + " rack="
                                 + chan.incoming_reliable_sequence + "\n");
@@ -282,14 +282,14 @@ public final class Netchan extends ServerMain {
         if (showpackets.value != 0) {
             if (reliable_message != 0)
                 Command.Printf(
-                        "recv " + msg.cursize + " : s=" + sequence
+                        "recv " + msg.cursize + " : entityState=" + sequence
                                 + " reliable="
                                 + (chan.incoming_reliable_sequence ^ 1)
                                 + " ack=" + sequence_ack + " rack="
                                 + reliable_ack + "\n");
             else
                 Command.Printf(
-                        "recv " + msg.cursize + " : s=" + sequence + " ack="
+                        "recv " + msg.cursize + " : entityState=" + sequence + " ack="
                                 + sequence_ack + " rack=" + reliable_ack + "\n");
         }
 
@@ -298,7 +298,7 @@ public final class Netchan extends ServerMain {
         //
         if (sequence <= chan.incoming_sequence) {
             if (showdrop.value != 0)
-                Command.Printf(NET.AdrToString(chan.remote_address)
+                Command.Printf(Network.AdrToString(chan.remote_address)
                         + ":Out of order packet " + sequence + " at "
                         + chan.incoming_sequence + "\n");
             return false;
@@ -310,7 +310,7 @@ public final class Netchan extends ServerMain {
         chan.dropped = sequence - (chan.incoming_sequence + 1);
         if (chan.dropped > 0) {
             if (showdrop.value != 0)
-                Command.Printf(NET.AdrToString(chan.remote_address) + ":Dropped "
+                Command.Printf(Network.AdrToString(chan.remote_address) + ":Dropped "
                         + chan.dropped + " packets at " + sequence + "\n");
         }
 

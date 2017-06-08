@@ -25,7 +25,7 @@ package jake2.qcommon;
 import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.*;
-import jake2.server.SV;
+import jake2.server.Server;
 import jake2.util.Math3D;
 
 public class PMove {
@@ -101,7 +101,7 @@ public class PMove {
         }
     }
 
-    static float[] planes[] = new float[SV.MAX_CLIP_PLANES][3];
+    static float[] planes[] = new float[Server.MAX_CLIP_PLANES][3];
     
     public static void PM_StepSlideMove_() {
         int bumpcount, numbumps;
@@ -111,7 +111,7 @@ public class PMove {
         
         float[] primal_velocity = { 0, 0, 0 };
         int i, j;
-        trace_t trace;
+        TTrace trace;
         float[] end = { 0, 0, 0 };
         float time_left;
 
@@ -130,7 +130,7 @@ public class PMove {
             trace = pm.trace.trace(pml.origin, pm.mins,
                     pm.maxs, end);
 
-            if (trace.allsolid) { // entity is trapped in another solid
+            if (trace.allSolid) { // entity is trapped in another solid
                 pml.velocity[2] = 0; // don't build up falling damage
                 return;
             }
@@ -144,15 +144,15 @@ public class PMove {
                 break; // moved the entire distance
 
             // save entity for contact
-            if (pm.numtouch < Defines.MAXTOUCH && trace.ent != null) {
-                pm.touchents[pm.numtouch] = trace.ent;
+            if (pm.numtouch < Defines.MAXTOUCH && trace.entityDict != null) {
+                pm.touchents[pm.numtouch] = trace.entityDict;
                 pm.numtouch++;
             }
 
             time_left -= time_left * trace.fraction;
 
             // slide along this plane
-            if (numplanes >= SV.MAX_CLIP_PLANES) { 
+            if (numplanes >= Server.MAX_CLIP_PLANES) {
             	// this shouldn't really happen
                 Math3D.VectorCopy(Context.vec3_origin, pml.velocity);
                 break;
@@ -212,7 +212,7 @@ public class PMove {
     public static void PM_StepSlideMove() {
         float[] start_o = { 0, 0, 0 }, start_v = { 0, 0, 0 };
         float[] down_o = { 0, 0, 0 }, down_v = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
         float down_dist, up_dist;
         //	float [] delta;
         float[] up = { 0, 0, 0 }, down = { 0, 0, 0 };
@@ -229,7 +229,7 @@ public class PMove {
         up[2] += Defines.STEPSIZE;
 
         trace = pm.trace.trace(up, pm.mins, pm.maxs, up);
-        if (trace.allsolid)
+        if (trace.allSolid)
             return; // can't step up
 
         // try sliding above
@@ -243,7 +243,7 @@ public class PMove {
         down[2] -= Defines.STEPSIZE;
         trace = pm.trace.trace(pml.origin, pm.mins,
                 pm.maxs, down);
-        if (!trace.allsolid) {
+        if (!trace.allSolid) {
             Math3D.VectorCopy(trace.endpos, pml.origin);
         }
 
@@ -548,7 +548,7 @@ public class PMove {
     public static void PM_CatagorizePosition() {
         float[] point = { 0, 0, 0 };
         int cont;
-        trace_t trace;
+        TTrace trace;
         int sample1;
         int sample2;
 
@@ -570,12 +570,12 @@ public class PMove {
             pml.groundsurface = trace.surface;
             pml.groundcontents = trace.contents;
 
-            if (null == trace.ent
-                    || (trace.plane.normal[2] < 0.7 && !trace.startsolid)) {
+            if (null == trace.entityDict
+                    || (trace.plane.normal[2] < 0.7 && !trace.startSolid)) {
                 pm.groundentity = null;
                 pm.s.pm_flags &= ~pmove_t.PMF_ON_GROUND;
             } else {
-                pm.groundentity = trace.ent;
+                pm.groundentity = trace.entityDict;
                 // hitting solid ground will end a waterjump
                 if ((pm.s.pm_flags & pmove_t.PMF_TIME_WATERJUMP) != 0) {
                     pm.s.pm_flags &= ~(pmove_t.PMF_TIME_WATERJUMP
@@ -599,8 +599,8 @@ public class PMove {
                 }
             }
 
-            if (pm.numtouch < Defines.MAXTOUCH && trace.ent != null) {
-                pm.touchents[pm.numtouch] = trace.ent;
+            if (pm.numtouch < Defines.MAXTOUCH && trace.entityDict != null) {
+                pm.touchents[pm.numtouch] = trace.entityDict;
                 pm.numtouch++;
             }
         }
@@ -687,7 +687,7 @@ public class PMove {
         float[] spot = { 0, 0, 0 };
         int cont;
         float[] flatforward = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
 
         if (pm.s.pm_time != 0)
             return;
@@ -741,7 +741,7 @@ public class PMove {
         float[] wishdir = { 0, 0, 0 };
         float wishspeed;
         float[] end = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
 
         pm.viewheight = 22;
 
@@ -815,7 +815,7 @@ public class PMove {
      * Sets mins, maxs, and pm.viewheight.
      */
     public static void PM_CheckDuck() {
-        trace_t trace;
+        TTrace trace;
 
         pm.mins[0] = -16;
         pm.mins[1] = -16;
@@ -841,7 +841,7 @@ public class PMove {
                 // try to stand up
                 pm.maxs[2] = 32;
                 trace = pm.trace.trace(pml.origin, pm.mins, pm.maxs, pml.origin);
-                if (!trace.allsolid)
+                if (!trace.allSolid)
                     pm.s.pm_flags &= ~pmove_t.PMF_DUCKED;
             }
         }
@@ -876,7 +876,7 @@ public class PMove {
     }
 
     public static boolean PM_GoodPosition() {
-        trace_t trace;
+        TTrace trace;
         float[] origin = { 0, 0, 0 }, end = { 0, 0, 0 };
         int i;
 
@@ -887,7 +887,7 @@ public class PMove {
             origin[i] = end[i] = pm.s.origin[i] * 0.125f;
         trace = pm.trace.trace(origin, pm.mins, pm.maxs, end);
 
-        return !trace.allsolid;
+        return !trace.allSolid;
     }
 
     /**

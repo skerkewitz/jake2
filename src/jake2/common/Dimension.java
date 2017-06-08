@@ -1,4 +1,4 @@
-package jake2.client;
+package jake2.common;
 
 /**
  * Created by tropper on 19.05.17.

@@ -664,7 +664,7 @@ public class M_Insane {
     	public String getID() { return "insane_walk"; }
         public boolean think(TEntityDict self) {
             if ((self.spawnflags & 16) != 0) // Hold Ground?
-                if (self.s.frame == FRAME_cr_pain10) {
+                if (self.entityState.frame == FRAME_cr_pain10) {
                     self.monsterinfo.currentmove = insane_move_down;
                     return true;
                 }
@@ -682,7 +682,7 @@ public class M_Insane {
     	public String getID() { return "insane_run"; }
         public boolean think(TEntityDict self) {
             if ((self.spawnflags & 16) != 0) // Hold Ground?
-                if (self.s.frame == FRAME_cr_pain10) {
+                if (self.entityState.frame == FRAME_cr_pain10) {
                     self.monsterinfo.currentmove = insane_move_down;
                     return true;
                 }
@@ -702,7 +702,7 @@ public class M_Insane {
             int l, r;
 
             //	 if (self.health < (self.max_health / 2))
-            //		 self.s.skinnum = 1;
+            //		 self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -731,8 +731,8 @@ public class M_Insane {
                 return;
             }
 
-            if (((self.s.frame >= FRAME_crawl1) && (self.s.frame <= FRAME_crawl9))
-                    || ((self.s.frame >= FRAME_stand99) && (self.s.frame <= FRAME_stand160))) {
+            if (((self.entityState.frame >= FRAME_crawl1) && (self.entityState.frame <= FRAME_crawl9))
+                    || ((self.entityState.frame >= FRAME_stand99) && (self.entityState.frame <= FRAME_stand160))) {
                 self.monsterinfo.currentmove = insane_move_crawl_pain;
             } else
                 self.monsterinfo.currentmove = insane_move_stand_pain;
@@ -750,7 +750,7 @@ public class M_Insane {
     static EntThinkAdapter insane_checkdown = new EntThinkAdapter() {
     	public String getID() { return "insane_checkdown"; }
         public boolean think(TEntityDict self) {
-            //			if ( (self.s.frame == FRAME_stand94) || (self.s.frame ==
+            //			if ( (self.entityState.frame == FRAME_stand94) || (self.entityState.frame ==
             // FRAME_stand65) )
             if ((self.spawnflags & 32) != 0) // Always stand
                 return true;
@@ -848,8 +848,8 @@ public class M_Insane {
             if ((self.spawnflags & 8) != 0) {
                 insane_dead.think(self);
             } else {
-                if (((self.s.frame >= FRAME_crawl1) && (self.s.frame <= FRAME_crawl9))
-                        || ((self.s.frame >= FRAME_stand99) && (self.s.frame <= FRAME_stand160)))
+                if (((self.entityState.frame >= FRAME_crawl1) && (self.entityState.frame <= FRAME_crawl9))
+                        || ((self.entityState.frame >= FRAME_stand99) && (self.entityState.frame <= FRAME_stand160)))
                     self.monsterinfo.currentmove = insane_move_crawl_death;
                 else
                     self.monsterinfo.currentmove = insane_move_stand_death;
@@ -1259,7 +1259,7 @@ public class M_Insane {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/insane/tris.md2");
 
         Math3D.VectorSet(self.mins, -16, -16, -24);
@@ -1282,7 +1282,7 @@ public class M_Insane {
         self.monsterinfo.aiflags |= Defines.AI_GOOD_GUY;
 
         // @@
-        //	 self.s.skinnum = skin;
+        //	 self.entityState.skinnum = skin;
         //	 skin++;
         //	 if (skin > 12)
         //		 skin = 0;
@@ -1303,7 +1303,7 @@ public class M_Insane {
             GameAI.flymonster_start.think(self);
         } else {
             GameAI.walkmonster_start.think(self);
-            self.s.skinnum = Lib.rand() % 3;
+            self.entityState.skinnum = Lib.rand() % 3;
         }
     }
 }

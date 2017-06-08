@@ -1020,7 +1020,7 @@ public class M_Actor {
 
             // randomize on startup
             if (GameBase.level.time < 1.0)
-                self.s.frame = self.monsterinfo.currentmove.firstframe
+                self.entityState.frame = self.monsterinfo.currentmove.firstframe
                         + (Lib.rand() % (self.monsterinfo.currentmove.lastframe
                                 - self.monsterinfo.currentmove.firstframe + 1));
             return true;
@@ -1211,7 +1211,7 @@ public class M_Actor {
             int n;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1225,14 +1225,14 @@ public class M_Actor {
 
                 String name;
 
-                Math3D.VectorSubtract(other.s.origin, self.s.origin, v);
+                Math3D.VectorSubtract(other.entityState.origin, self.entityState.origin, v);
                 self.ideal_yaw = Math3D.vectoyaw(v);
                 if (Lib.random() < 0.5f)
                     self.monsterinfo.currentmove = actor_move_flipoff;
                 else
                     self.monsterinfo.currentmove = actor_move_taunt;
 
-                // FIXME: does the ent-id work out ?
+                // FIXME: does the entityDict-id work out ?
                 name = actor_names[(self.index) % MAX_ACTOR_NAMES];
 
                 GameBase.gi.cprintf(other, Defines.PRINT_CHAT, name + ": "
@@ -1381,15 +1381,15 @@ public class M_Actor {
                 GameBase.gi
                         .dprintf(self.classname + " has bad target "
                                 + self.target + " at "
-                                + Lib.vtos(self.s.origin) + "\n");
+                                + Lib.vtos(self.entityState.origin) + "\n");
                 self.target = null;
                 self.monsterinfo.pausetime = 100000000;
                 self.monsterinfo.stand.think(self);
                 return;
             }
 
-            Math3D.VectorSubtract(self.goalentity.s.origin, self.s.origin, v);
-            self.ideal_yaw = self.s.angles[Defines.YAW] = Math3D.vectoyaw(v);
+            Math3D.VectorSubtract(self.goalentity.entityState.origin, self.entityState.origin, v);
+            self.ideal_yaw = self.entityState.angles[Defines.YAW] = Math3D.vectoyaw(v);
             self.monsterinfo.walk.think(self);
             self.target = null;
         }
@@ -1428,8 +1428,8 @@ public class M_Actor {
                 TEntityDict ent;
 
                 for (n = 1; n <= GameBase.game.maxclients; n++) {
-                    ent = GameBase.g_edicts[n];
-                    if (!ent.inuse)
+                    ent = GameBase.entityDicts[n];
+                    if (!ent.inUse)
                         continue;
                     GameBase.gi.cprintf(ent, Defines.PRINT_CHAT,
                             actor_names[(other.index) % MAX_ACTOR_NAMES] + ": "
@@ -1487,8 +1487,8 @@ public class M_Actor {
                 other.monsterinfo.pausetime = GameBase.level.time + 100000000;
                 other.monsterinfo.stand.think(other);
             } else if (other.movetarget == other.goalentity) {
-                Math3D.VectorSubtract(other.movetarget.s.origin,
-                        other.s.origin, v);
+                Math3D.VectorSubtract(other.movetarget.entityState.origin,
+                        other.entityState.origin, v);
                 other.ideal_yaw = Math3D.vectoyaw(v);
             }
         }
@@ -1499,15 +1499,15 @@ public class M_Actor {
 
         float forward[] = { 0, 0, 0 }, right[] = { 0, 0, 0 };
 
-        Math3D.AngleVectors(self.s.angles, forward, right, null);
+        Math3D.AngleVectors(self.entityState.angles, forward, right, null);
 
-        Math3D.G_ProjectSource(self.s.origin,
+        Math3D.G_ProjectSource(self.entityState.origin,
                 M_Flash.monster_flash_offset[Defines.MZ2_ACTOR_MACHINEGUN_1],
                 forward, right, start);
 
         if (self.enemy != null) {
             if (self.enemy.health > 0) {
-                Math3D.VectorMA(self.enemy.s.origin, -0.2f,
+                Math3D.VectorMA(self.enemy.entityState.origin, -0.2f,
                         self.enemy.velocity, target);
                 target[2] += self.enemy.viewheight;
             } else {
@@ -1517,7 +1517,7 @@ public class M_Actor {
             Math3D.VectorSubtract(target, start, forward);
             Math3D.VectorNormalize(forward);
         } else {
-            Math3D.AngleVectors(self.s.angles, forward, null, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, null, null);
         }
         Monster.monster_fire_bullet(self, start, forward, 3, 4,
                 Defines.DEFAULT_BULLET_HSPREAD, Defines.DEFAULT_BULLET_VSPREAD,
@@ -1536,21 +1536,21 @@ public class M_Actor {
 
         if (self.targetname != null) {
             GameBase.gi.dprintf("untargeted " + self.classname + " at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
         }
 
         if (self.target != null) {
             GameBase.gi.dprintf(self.classname + " with no target at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
         }
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi.modelindex("players/male/tris.md2");
+        self.entityState.modelIndex = GameBase.gi.modelindex("players/male/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);
 
@@ -1585,7 +1585,7 @@ public class M_Actor {
     public static void SP_target_actor(TEntityDict self) {
         if (self.targetname != null)
             GameBase.gi.dprintf(self.classname + " with no targetname at "
-                    + Lib.vtos(self.s.origin) + " \n");
+                    + Lib.vtos(self.entityState.origin) + " \n");
 
         self.solid = Defines.SOLID_TRIGGER;
         self.touch = target_actor_touch;
@@ -1598,9 +1598,9 @@ public class M_Actor {
                 self.speed = 200;
             if (0 == GameBase.st.height)
                 GameBase.st.height = 200;
-            if (self.s.angles[Defines.YAW] == 0)
-                self.s.angles[Defines.YAW] = 360;
-            GameBase.G_SetMovedir(self.s.angles, self.movedir);
+            if (self.entityState.angles[Defines.YAW] == 0)
+                self.entityState.angles[Defines.YAW] = 360;
+            GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
             self.movedir[2] = GameBase.st.height;
         }
 

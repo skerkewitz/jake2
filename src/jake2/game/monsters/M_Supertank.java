@@ -766,20 +766,20 @@ public class M_Supertank {
             float[] vec = { 0, 0, 0 };
             int flash_number;
 
-            if (self.s.frame == FRAME_attak2_8)
+            if (self.entityState.frame == FRAME_attak2_8)
                 flash_number = Defines.MZ2_SUPERTANK_ROCKET_1;
-            else if (self.s.frame == FRAME_attak2_11)
+            else if (self.entityState.frame == FRAME_attak2_11)
                 flash_number = Defines.MZ2_SUPERTANK_ROCKET_2;
             else
-                // (self.s.frame == FRAME_attak2_14)
+                // (self.entityState.frame == FRAME_attak2_14)
                 flash_number = Defines.MZ2_SUPERTANK_ROCKET_3;
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -801,20 +801,20 @@ public class M_Supertank {
             int flash_number;
 
             flash_number = Defines.MZ2_SUPERTANK_MACHINEGUN_1
-                    + (self.s.frame - FRAME_attak1_1);
+                    + (self.entityState.frame - FRAME_attak1_1);
 
             //FIXME!!!
             dir[0] = 0;
-            dir[1] = self.s.angles[1];
+            dir[1] = self.entityState.angles[1];
             dir[2] = 0;
 
             Math3D.AngleVectors(dir, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
             if (self.enemy != null) {
-                Math3D.VectorCopy(self.enemy.s.origin, vec);
+                Math3D.VectorCopy(self.enemy.entityState.origin, vec);
                 Math3D.VectorMA(vec, 0, self.enemy.velocity, vec);
                 vec[2] += self.enemy.viewheight;
                 Math3D.VectorSubtract(vec, start, forward);
@@ -835,7 +835,7 @@ public class M_Supertank {
             float range;
             //float r;
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, vec);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, vec);
             range = Math3D.VectorLength(vec);
 
             //r = random();
@@ -1103,7 +1103,7 @@ public class M_Supertank {
     	public String getID(){ return "supertank_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1113,10 +1113,10 @@ public class M_Supertank {
                 if (Lib.random() < 0.2)
                     return;
 
-            // Don't go into pain if he's firing his rockets
+            // Don't go into pain if he'entityState firing his rockets
             if (GameBase.skill.value >= 2)
-                if ((self.s.frame >= FRAME_attak2_1)
-                        && (self.s.frame <= FRAME_attak2_14))
+                if ((self.entityState.frame >= FRAME_attak2_1)
+                        && (self.entityState.frame <= FRAME_attak2_14))
                     return;
 
             self.pain_debounce_time = GameBase.level.time + 3;
@@ -1176,12 +1176,12 @@ public class M_Supertank {
             sound_search1 = GameBase.gi.soundindex("bosstank/btkunqv1.wav");
             sound_search2 = GameBase.gi.soundindex("bosstank/btkunqv2.wav");
 
-            //	self.s.sound = gi.soundindex ("bosstank/btkengn1.wav");
+            //	self.entityState.sound = gi.soundindex ("bosstank/btkengn1.wav");
             tread_sound = GameBase.gi.soundindex("bosstank/btkengn1.wav");
 
             self.movetype = Defines.MOVETYPE_STEP;
             self.solid = Defines.SOLID_BBOX;
-            self.s.modelindex = GameBase.gi
+            self.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/boss1/tris.md2");
             Math3D.VectorSet(self.mins, -64, -64, 0);
             Math3D.VectorSet(self.maxs, 64, 64, 112);
@@ -1221,7 +1221,7 @@ public class M_Supertank {
             int n;
     
             self.think = BossExplode;
-            Math3D.VectorCopy(self.s.origin, org);
+            Math3D.VectorCopy(self.entityState.origin, org);
             org[2] += 24 + (Lib.rand() & 15);
             switch (self.count++) {
             case 0:
@@ -1257,7 +1257,7 @@ public class M_Supertank {
                 org[1] -= 48;
                 break;
             case 8:
-                self.s.sound = 0;
+                self.entityState.sound = 0;
                 for (n = 0; n < 4; n++)
                     GameMisc.ThrowGib(self, "models/objects/gibs/sm_meat/tris.md2", 500,
                             Defines.GIB_ORGANIC);
@@ -1275,7 +1275,7 @@ public class M_Supertank {
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(Defines.TE_EXPLOSION1);
             GameBase.gi.WritePosition(org);
-            GameBase.gi.multicast(self.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(self.entityState.origin, Defines.MULTICAST_PVS);
     
             self.nextthink = GameBase.level.time + 0.1f;
             return true;

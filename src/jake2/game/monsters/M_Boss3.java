@@ -34,8 +34,8 @@ public class M_Boss3 {
         public void use(TEntityDict ent, TEntityDict other, TEntityDict activator) {
             GameBase.gi.WriteByte(Defines.svc_temp_entity);
             GameBase.gi.WriteByte(Defines.TE_BOSSTPORT);
-            GameBase.gi.WritePosition(ent.s.origin);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.WritePosition(ent.entityState.origin);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
             GameUtil.G_FreeEdict(ent);
         }
     };
@@ -43,10 +43,10 @@ public class M_Boss3 {
     static EntThinkAdapter Think_Boss3Stand = new EntThinkAdapter() {
     	public String getID() { return "Think_Boss3Stand"; }
         public boolean think(TEntityDict ent) {
-            if (ent.s.frame == M_Boss32.FRAME_stand260)
-                ent.s.frame = M_Boss32.FRAME_stand201;
+            if (ent.entityState.frame == M_Boss32.FRAME_stand260)
+                ent.entityState.frame = M_Boss32.FRAME_stand201;
             else
-                ent.s.frame++;
+                ent.entityState.frame++;
             ent.nextthink = GameBase.level.time + Defines.FRAMETIME;
             return true;
         }
@@ -67,8 +67,8 @@ public class M_Boss3 {
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
         self.model = "models/monsters/boss3/rider/tris.md2";
-        self.s.modelindex = GameBase.gi.modelindex(self.model);
-        self.s.frame = M_Boss32.FRAME_stand201;
+        self.entityState.modelIndex = GameBase.gi.modelindex(self.model);
+        self.entityState.frame = M_Boss32.FRAME_stand201;
 
         GameBase.gi.soundindex("misc/bigtele.wav");
 

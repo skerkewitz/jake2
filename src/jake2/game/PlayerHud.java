@@ -40,7 +40,7 @@ public class PlayerHud {
     public static void MoveClientToIntermission(TEntityDict ent) {
         if (GameBase.deathmatch.value != 0 || GameBase.coop.value != 0)
             ent.client.showscores = true;
-        Math3D.VectorCopy(GameBase.level.intermission_origin, ent.s.origin);
+        Math3D.VectorCopy(GameBase.level.intermission_origin, ent.entityState.origin);
         ent.client.ps.pmove.origin[0] = (short) (GameBase.level.intermission_origin[0] * 8);
         ent.client.ps.pmove.origin[1] = (short) (GameBase.level.intermission_origin[1] * 8);
         ent.client.ps.pmove.origin[2] = (short) (GameBase.level.intermission_origin[2] * 8);
@@ -60,12 +60,12 @@ public class PlayerHud {
         ent.client.grenade_time = 0;
 
         ent.viewheight = 0;
-        ent.s.modelindex = 0;
-        ent.s.modelindex2 = 0;
-        ent.s.modelindex3 = 0;
-        ent.s.modelindex = 0;
-        ent.s.effects = 0;
-        ent.s.sound = 0;
+        ent.entityState.modelIndex = 0;
+        ent.entityState.modelindex2 = 0;
+        ent.entityState.modelindex3 = 0;
+        ent.entityState.modelIndex = 0;
+        ent.entityState.effects = 0;
+        ent.entityState.sound = 0;
         ent.solid = Defines.SOLID_NOT;
 
         // add the layout
@@ -88,8 +88,8 @@ public class PlayerHud {
 
         // respawn any dead clients
         for (i = 0; i < GameBase.maxclients.value; i++) {
-            client = GameBase.g_edicts[1 + i];
-            if (!client.inuse)
+            client = GameBase.entityDicts[1 + i];
+            if (!client.inUse)
                 continue;
             if (client.health <= 0)
                 PlayerClient.respawn(client);
@@ -101,8 +101,8 @@ public class PlayerHud {
         if (GameBase.level.changemap.indexOf('*') > -1) {
             if (GameBase.coop.value != 0) {
                 for (i = 0; i < GameBase.maxclients.value; i++) {
-                    client = GameBase.g_edicts[1 + i];
-                    if (!client.inuse)
+                    client = GameBase.entityDicts[1 + i];
+                    if (!client.inUse)
                         continue;
                     // strip players of all keys between units
                     for (n = 1; n < GameItemList.itemlist.length; n++) {
@@ -147,13 +147,13 @@ public class PlayerHud {
             }
         }
 
-        Math3D.VectorCopy(ent.s.origin, GameBase.level.intermission_origin);
-        Math3D.VectorCopy(ent.s.angles, GameBase.level.intermission_angle);
+        Math3D.VectorCopy(ent.entityState.origin, GameBase.level.intermission_origin);
+        Math3D.VectorCopy(ent.entityState.angles, GameBase.level.intermission_angle);
 
         // move all clients to the intermission point
         for (i = 0; i < GameBase.maxclients.value; i++) {
-            client = GameBase.g_edicts[1 + i];
-            if (!client.inuse)
+            client = GameBase.entityDicts[1 + i];
+            if (!client.inUse)
                 continue;
             MoveClientToIntermission(client);
         }
@@ -181,8 +181,8 @@ public class PlayerHud {
         // sort the clients by score
         total = 0;
         for (i = 0; i < GameBase.game.maxclients; i++) {
-            cl_ent = GameBase.g_edicts[1 + i];
-            if (!cl_ent.inuse || GameBase.game.clients[i].resp.spectator)
+            cl_ent = GameBase.entityDicts[1 + i];
+            if (!cl_ent.inUse || GameBase.game.clients[i].resp.spectator)
                 continue;
             score = GameBase.game.clients[i].resp.score;
             for (j = 0; j < total; j++) {
@@ -206,7 +206,7 @@ public class PlayerHud {
         
         for (i = 0; i < total; i++) {
             cl = GameBase.game.clients[sorted[i]];
-            cl_ent = GameBase.g_edicts[1 + sorted[i]];
+            cl_ent = GameBase.entityDicts[1 + sorted[i]];
 
             picnum = GameBase.gi.imageindex("i_fixme");
             x = (i >= 6) ? 160 : 0;
@@ -305,7 +305,7 @@ public class PlayerHud {
         //
         if (0 == ent.client.ammo_index /*
                                         * ||
-                                        * !ent.client.pers.inventory[ent.client.ammo_index]
+                                        * !entityDict.client.pers.inventory[entityDict.client.ammo_index]
                                         */
         ) {
             ent.client.ps.stats[Defines.STAT_AMMO_ICON] = 0;
@@ -452,14 +452,14 @@ public class PlayerHud {
         gclient_t cl;
 
         for (i = 1; i <= GameBase.maxclients.value; i++) {
-            cl = GameBase.g_edicts[i].client;
-            if (!GameBase.g_edicts[i].inuse || cl.chase_target != ent)
+            cl = GameBase.entityDicts[i].client;
+            if (!GameBase.entityDicts[i].inUse || cl.chase_target != ent)
                 continue;
-            //memcpy(cl.ps.stats, ent.client.ps.stats, sizeof(cl.ps.stats));
+            //memcpy(cl.playerState.stats, entityDict.client.playerState.stats, sizeof(cl.playerState.stats));
             System.arraycopy(ent.client.ps.stats, 0, cl.ps.stats, 0,
                     Defines.MAX_STATS);
 
-            G_SetSpectatorStats(GameBase.g_edicts[i]);
+            G_SetSpectatorStats(GameBase.entityDicts[i]);
         }
     }
 
@@ -484,9 +484,9 @@ public class PlayerHud {
         if (cl.showinventory && cl.pers.health > 0)
             cl.ps.stats[Defines.STAT_LAYOUTS] |= 2;
 
-        if (cl.chase_target != null && cl.chase_target.inuse)
-            //cl.ps.stats[STAT_CHASE] = (short) (CS_PLAYERSKINS +
-            // (cl.chase_target - g_edicts) - 1);
+        if (cl.chase_target != null && cl.chase_target.inUse)
+            //cl.playerState.stats[STAT_CHASE] = (short) (CS_PLAYERSKINS +
+            // (cl.chase_target - entityDicts) - 1);
             cl.ps.stats[Defines.STAT_CHASE] = (short) (Defines.CS_PLAYERSKINS
                     + cl.chase_target.index - 1);
         else

@@ -50,7 +50,7 @@ public class CL_pred {
             return;
 
         // calculate the last usercmd_t we sent that the server has processed
-        frame = Context.cls.netchan.incoming_acknowledged;
+        frame = Context.cls.getNetchan().incoming_acknowledged;
         frame &= (Defines.CMD_BACKUP - 1);
 
         // compare what the server returned with what we had predicted it to be
@@ -83,14 +83,14 @@ public class CL_pred {
      * ====================
      */
     static void ClipMoveToEntities(float[] start, float[] mins, float[] maxs,
-            float[] end, trace_t tr) {
+            float[] end, TTrace tr) {
         int i, x, zd, zu;
-        trace_t trace;
+        TTrace trace;
         int headnode;
         float[] angles;
         TEntityState ent;
         int num;
-        cmodel_t cmodel;
+        TCModel cmodel;
         float[] bmins = new float[3];
         float[] bmaxs = new float[3];
 
@@ -106,7 +106,7 @@ public class CL_pred {
                 continue;
 
             if (ent.solid == 31) { // special value for bmodel
-                cmodel = Context.cl.model_clip[ent.modelindex];
+                cmodel = Context.cl.model_clip[ent.modelIndex];
                 if (cmodel == null)
                     continue;
                 headnode = cmodel.headnode;
@@ -125,24 +125,24 @@ public class CL_pred {
                 angles = Context.vec3_origin; // boxes don't rotate
             }
 
-            if (tr.allsolid)
+            if (tr.allSolid)
                 return;
 
             trace = CM.TransformedBoxTrace(start, end, mins, maxs, headnode,
                     Defines.MASK_PLAYERSOLID, ent.origin, angles);
 
-            if (trace.allsolid || trace.startsolid
+            if (trace.allSolid || trace.startSolid
                     || trace.fraction < tr.fraction) {
-                trace.ent = ent.surrounding_ent;
-                if (tr.startsolid) {
+                trace.entityDict = ent.surrounding_ent;
+                if (tr.startSolid) {
                     tr.set(trace); // rst: solved the Z U P P E L - P R O B L E
-                                   // M
-                    tr.startsolid = true;
+                                   // Monster
+                    tr.startSolid = true;
                 } else
                     tr.set(trace); // rst: solved the Z U P P E L - P R O B L E
-                                   // M
-            } else if (trace.startsolid)
-                tr.startsolid = true;
+                                   // Monster
+            } else if (trace.startSolid)
+                tr.startSolid = true;
         }
     }
 
@@ -152,15 +152,15 @@ public class CL_pred {
 
     public static TEntityDict DUMMY_ENT = new TEntityDict(-1);
 
-    static trace_t PMTrace(float[] start, float[] mins, float[] maxs,
-            float[] end) {
-        trace_t t;
+    static TTrace PMTrace(float[] start, float[] mins, float[] maxs,
+                          float[] end) {
+        TTrace t;
 
         // check against world
         t = CM.BoxTrace(start, end, mins, maxs, 0, Defines.MASK_PLAYERSOLID);
 
         if (t.fraction < 1.0f) {
-            t.ent = DUMMY_ENT;
+            t.entityDict = DUMMY_ENT;
         }
 
         // check all other solid models
@@ -178,7 +178,7 @@ public class CL_pred {
         int i;
         TEntityState ent;
         int num;
-        cmodel_t cmodel;
+        TCModel cmodel;
         int contents;
 
         contents = CM.PointContents(point, 0);
@@ -191,7 +191,7 @@ public class CL_pred {
             if (ent.solid != 31) // special value for bmodel
                 continue;
 
-            cmodel = Context.cl.model_clip[ent.modelindex];
+            cmodel = Context.cl.model_clip[ent.modelIndex];
             if (cmodel == null)
                 continue;
 
@@ -208,7 +208,7 @@ public class CL_pred {
      */
     static void PredictMovement() {
 
-        if (Context.cls.state != Defines.ca_active)
+        if (Context.cls.getState() != Defines.ca_active)
             return;
 
         if (Context.cl_paused.value != 0.0f)
@@ -225,8 +225,8 @@ public class CL_pred {
             return;
         }
 
-        int ack = Context.cls.netchan.incoming_acknowledged;
-        int current = Context.cls.netchan.outgoing_sequence;
+        int ack = Context.cls.getNetchan().incoming_acknowledged;
+        int current = Context.cls.getNetchan().outgoing_sequence;
 
         // if we are too far out of date, just freeze
         if (current - ack >= Defines.CMD_BACKUP) {
@@ -240,8 +240,8 @@ public class CL_pred {
         pmove_t pm = new pmove_t();
 
         pm.trace = new pmove_t.TraceAdapter() {
-            public trace_t trace(float[] start, float[] mins, float[] maxs,
-                    float[] end) {
+            public TTrace trace(float[] start, float[] mins, float[] maxs,
+                                float[] end) {
                 return PMTrace(start, mins, maxs, end);
             }
         };
@@ -254,7 +254,7 @@ public class CL_pred {
         PMove.pm_airaccelerate = Lib.atof(Context.cl.configstrings[Defines.CS_AIRACCEL]);
 
         // bugfix (rst) yeah !!!!!!!! found the solution to the B E W E G U N G
-        // Sound P R O B L E M.
+        // Sound P R O B L E Monster.
         pm.s.set(Context.cl.frame.playerstate.pmove);
 
         // SCR_DebugGraph (current - ack - 1, 0);
@@ -280,7 +280,7 @@ public class CL_pred {
         if (step > 63 && step < 160
                 && (pm.s.pm_flags & pmove_t.PMF_ON_GROUND) != 0) {
             Context.cl.predicted_step = step * 0.125f;
-            Context.cl.predicted_step_time = (int) (Context.cls.realtime - Context.cls.frametime * 500);
+            Context.cl.predicted_step_time = (int) (Context.cls.getRealtime() - Context.cls.getFrametime() * 500);
         }
 
         // copy results out for rendering

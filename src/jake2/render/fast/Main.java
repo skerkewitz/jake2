@@ -27,6 +27,7 @@ package jake2.render.fast;
 
 import jake2.Defines;
 import jake2.client.*;
+import jake2.common.Dimension;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.game.cplane_t;
@@ -132,7 +133,7 @@ public class Main {
     TVar r_lefthand;
 
     TVar r_lightlevel;
-    // FIXME: This is a HACK to get the client's light level
+    // FIXME: This is a HACK to get the client'entityState light level
 
     TVar gl_nosubimage;
     TVar gl_allow_software;
@@ -238,7 +239,7 @@ public class Main {
         qfiles.dsprframe_t frame;
         qfiles.dsprite_t psprite;
 
-        // don't even bother culling, because it's just a single
+        // don't even bother culling, because it'entityState just a single
         // polygon without a surface data
 
         psprite = (qfiles.dsprite_t) currentmodel.extradata;
@@ -1216,7 +1217,7 @@ public class Main {
         if (err != GL11.GL_NO_ERROR)
             VID.Printf(
                     VID.PRINT_ALL,
-                    "GL11.glGetError() = 0x%x\n\t%s\n",
+                    "GL11.glGetError() = 0x%x\n\t%entityState\n",
                     2, err, "" + GL11.glGetString(err));
 
         RenderAPIImpl.glImpl.endFrame();

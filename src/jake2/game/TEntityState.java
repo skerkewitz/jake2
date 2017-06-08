@@ -48,7 +48,7 @@ public class TEntityState implements Cloneable
 	
 	/** for lerping. */
 	public float[] old_origin = { 0, 0, 0 }; 
-	public int modelindex;
+	public int modelIndex;
 	/** weapons, CTF flags, etc. */
 	public int modelindex2, modelindex3, modelindex4; 
 	public int frame;
@@ -73,7 +73,7 @@ public class TEntityState implements Cloneable
 		f.writeVector(angles);
 		f.writeVector(old_origin);
 	
-		f.writeInt(modelindex); 
+		f.writeInt(modelIndex);
 		
 		f.writeInt(modelindex2);
 		f.writeInt(modelindex3);
@@ -99,7 +99,7 @@ public class TEntityState implements Cloneable
 		angles = f.readVector();
 		old_origin = f.readVector();
 	
-		modelindex = f.readInt(); 
+		modelIndex = f.readInt();
 		
 		modelindex2= f.readInt();
 		modelindex3= f.readInt();
@@ -133,7 +133,7 @@ public class TEntityState implements Cloneable
 		Math3D.VectorCopy(from.angles, angles);
 		Math3D.VectorCopy(from.old_origin, old_origin);
 
-		modelindex = from.modelindex;
+		modelIndex = from.modelIndex;
 		modelindex2 = from.modelindex2;
 		modelindex3 = from.modelindex3;
 		modelindex4 = from.modelindex4;
@@ -155,7 +155,7 @@ public class TEntityState implements Cloneable
 		Math3D.VectorClear(origin);
 		Math3D.VectorClear(angles);
 		Math3D.VectorClear(old_origin);
-		modelindex = 0;
+		modelIndex = 0;
 		modelindex2 = modelindex3 = modelindex4 = 0; 
 		frame = 0;
 		skinnum = 0;

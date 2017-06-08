@@ -70,7 +70,7 @@ public class GlfwKeyboardImpl extends Keyboard {
 
         glfwGetCursorPos(LwjglDriver.Companion.getWindow(), l_mx, l_my);
 
-        if (IN.mouse_active) {
+        if (Input.mouse_active) {
             mx = (int) ((l_mx[0] - 640 / 2) * 2);
             my = (int) ((l_my[0] - 480 / 2) * 2);
         } else {
@@ -93,11 +93,11 @@ public class GlfwKeyboardImpl extends Keyboard {
 //                    break;
 //
 //                case Jake2InputEvent.MotionNotify:
-////					if (IN.ignorefirst) {
-////						IN.ignorefirst = false;
+////					if (Input.ignorefirst) {
+////						Input.ignorefirst = false;
 ////						break;
 ////					}
-//                    if (IN.mouse_active) {
+//                    if (Input.mouse_active) {
 //                        mx = (((MouseEvent)event.ev).getX() - win_w2) * 2;
 //                        my = (((MouseEvent)event.ev).getY() - win_h2) * 2;
 //                    } else {
@@ -288,11 +288,11 @@ public class GlfwKeyboardImpl extends Keyboard {
 //                    break;
 //
 //                case Jake2InputEvent.MotionNotify:
-////					if (IN.ignorefirst) {
-////						IN.ignorefirst = false;
+////					if (Input.ignorefirst) {
+////						Input.ignorefirst = false;
 ////						break;
 ////					}
-//                    if (IN.mouse_active) {
+//                    if (Input.mouse_active) {
 //                        mx = (((MouseEvent)event.ev).getX() - win_w2) * 2;
 //                        my = (((MouseEvent)event.ev).getY() - win_h2) * 2;
 //                    } else {

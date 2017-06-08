@@ -29,7 +29,7 @@ import jake2.client.SCR;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
-import jake2.sys.NET;
+import jake2.sys.Network;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -98,19 +98,19 @@ public class ServerInit {
     private static void createBaseline() {
 
         for (int entnum = 1; entnum < GameBase.num_edicts; entnum++) {
-            TEntityDict svent = GameBase.g_edicts[entnum];
+            TEntityDict svent = GameBase.entityDicts[entnum];
 
-            if (!svent.inuse)
+            if (!svent.inUse)
                 continue;
-            if (0 == svent.s.modelindex && 0 == svent.s.sound
-                    && 0 == svent.s.effects)
+            if (0 == svent.entityState.modelIndex && 0 == svent.entityState.sound
+                    && 0 == svent.entityState.effects)
                 continue;
 
-            svent.s.number = entnum;
+            svent.entityState.number = entnum;
 
             // take current state as baseline
-            Math3D.VectorCopy(svent.s.origin, svent.s.old_origin);
-            sv.baselines[entnum].set(svent.s);
+            Math3D.VectorCopy(svent.entityState.origin, svent.entityState.old_origin);
+            sv.baselines[entnum].set(svent.entityState);
         }
     }
 
@@ -125,7 +125,7 @@ public class ServerInit {
         if (ConsoleVar.VariableValue("deathmatch") != 0)
             return;
 
-        String name = FileSystem.Gamedir() + "/save/current/" + sv.name + ".sav";
+        String name = FileSystem.gamedir() + "/save/current/" + sv.name + ".sav";
 
         RandomAccessFile f;
         try {
@@ -144,7 +144,7 @@ public class ServerInit {
         ServerWorld.SV_ClearWorld();
 
         // get configstrings and areaportals
-        SV_CCMDS.SV_ReadLevelFile();
+        ServerCommands.SV_ReadLevelFile();
 
         if (!sv.loadgame) {
             // coming back to a level after being in a different
@@ -158,7 +158,7 @@ public class ServerInit {
             previousState = sv.state; // PGM
             sv.state = Defines.ss_loading; // PGM
             for (int i = 0; i < 100; i++)
-                GameBase.G_RunFrame();
+                GameBase.runFrame();
 
             sv.state = previousState; // PGM
         }
@@ -268,8 +268,8 @@ public class ServerInit {
         GameSpawn.SpawnEntities(sv.name, CM.CM_EntityString(), spawnpoint);
 
         // run two frames to allow everything to settle
-        GameBase.G_RunFrame();
-        GameBase.G_RunFrame();
+        GameBase.runFrame();
+        GameBase.runFrame();
 
         // all precaches are complete
         sv.state = serverstate;
@@ -345,9 +345,9 @@ public class ServerInit {
         }
 
         svs.spawncount = Lib.rand();
-        svs.clients = new client_t[(int) ServerMain.maxclients.value];
+        svs.clients = new TClient[(int) ServerMain.maxclients.value];
         for (int n = 0; n < svs.clients.length; n++) {
-            svs.clients[n] = new client_t();
+            svs.clients[n] = new TClient();
             svs.clients[n].serverindex = n;
         }
         svs.num_client_entities = ((int) ServerMain.maxclients.value)
@@ -358,18 +358,18 @@ public class ServerInit {
             svs.client_entities[n] = new TEntityState(null);
 
         // init network stuff
-        NET.Config((ServerMain.maxclients.value > 1));
+        Network.Config((ServerMain.maxclients.value > 1));
 
         // heartbeats will always be sent to the id master
         svs.last_heartbeat = -99999; // send immediately
         idmaster = "192.246.40.37:" + Defines.PORT_MASTER;
-        NET.StringToAdr(idmaster, ServerMain.master_adr[0]);
+        Network.StringToAdr(idmaster, ServerMain.master_adr[0]);
 
         // init game
-        SV_GAME.SV_InitGameProgs();
+        ServerGame.SV_InitGameProgs();
 
         for (i = 0; i < ServerMain.maxclients.value; i++) {
-            ent = GameBase.g_edicts[i + 1];
+            ent = GameBase.entityDicts[i + 1];
             svs.clients[i].edict = ent;
             svs.clients[i].lastcmd = new usercmd_t();
         }

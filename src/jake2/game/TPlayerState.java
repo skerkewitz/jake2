@@ -32,12 +32,12 @@ import java.io.RandomAccessFile;
 
 /** 
  	Player_state_t is the information needed in addition to pmove_state_t
-	to rendered a view.  There will only be 10 player_state_t sent each second,
+	to rendered a view.  There will only be 10 TPlayerState sent each second,
 	but the number of pmove_state_t changes will be relative to client
 	frame rates.
 */
 
-public class player_state_t {
+public class TPlayerState {
 
 	public pmove_state_t pmove= new pmove_state_t(); // for prediction
 
@@ -61,7 +61,7 @@ public class player_state_t {
 	public short stats[]= new short[Defines.MAX_STATS];
 
 	/** Lets cleverly reset the structure. */
-	private static player_state_t prototype= new player_state_t();
+	private static TPlayerState prototype= new TPlayerState();
 
 	/** Clears the player_state.*/
 	public void clear() {
@@ -69,12 +69,12 @@ public class player_state_t {
 	}
 
 	/** Clones the object.*/
-	public player_state_t getClone() {
-		return new player_state_t().set(this);
+	public TPlayerState getClone() {
+		return new TPlayerState().set(this);
 	}
 
 	/** Copies the player state data. */
-	public player_state_t set(player_state_t from) {
+	public TPlayerState set(TPlayerState from) {
 		pmove.set(from.pmove);
 		Math3D.VectorCopy(from.viewangles, viewangles);
 		Math3D.VectorCopy(from.viewoffset, viewoffset);

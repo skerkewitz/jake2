@@ -28,36 +28,31 @@ import jake2.qcommon.CM;
 import jake2.qcommon.Command;
 import jake2.util.Math3D;
 
+/**
+ * world.c -- world query functions
+ */
 public class ServerWorld {
-    // world.c -- world query functions
-    //
-    //
-    //===============================================================================
+
+    private static final int MAX_TOTAL_ENT_LEAFS = 128;
+
     //
     //ENTITY AREA CHECKING
     //
     //FIXME: this use of "area" is different from the bsp file use
     //===============================================================================
-    public static areanode_t sv_areanodes[] = new areanode_t[Defines.AREA_NODES];
-    static {
-        ServerWorld.initNodes();
-    }
+    private static TAreaNode sv_areanodes[] = new TAreaNode[Defines.AREA_NODES];
+    private static int sv_numareanodes;
 
-    public static int sv_numareanodes;
+    private static float area_mins[], area_maxs[];
 
-    public static float area_mins[], area_maxs[];
+    private static TEntityDict area_list[];
 
-    public static TEntityDict area_list[];
+    private static int area_count, area_maxcount;
 
-    public static int area_count, area_maxcount;
+    private static int area_type;
 
-    public static int area_type;
-
-    public static final int MAX_TOTAL_ENT_LEAFS = 128;
-
-    static int leafs[] = new int[MAX_TOTAL_ENT_LEAFS];
-
-    static int clusters[] = new int[MAX_TOTAL_ENT_LEAFS];
+    private static int leafs[] = new int[MAX_TOTAL_ENT_LEAFS];
+    private static int clusters[] = new int[MAX_TOTAL_ENT_LEAFS];
 
     //===========================================================================
     static TEntityDict touch[] = new TEntityDict[Defines.MAX_EDICTS];
@@ -65,27 +60,28 @@ public class ServerWorld {
     //===========================================================================
     static TEntityDict touchlist[] = new TEntityDict[Defines.MAX_EDICTS];
 
-    public static void initNodes() {
-        for (int n = 0; n < Defines.AREA_NODES; n++)
-            ServerWorld.sv_areanodes[n] = new areanode_t();
+    static {
+        ServerWorld.initNodes();
     }
 
-    /*
-     * =============== SV_CreateAreaNode
-     * 
-     * Builds a uniformly subdivided tree for the given world size
-     * ===============
+    private static void initNodes() {
+        for (int n = 0; n < Defines.AREA_NODES; n++)
+            ServerWorld.sv_areanodes[n] = new TAreaNode();
+    }
+
+    /**
+     * Builds a uniformly subdivided tree for the given world size.
      */
-    public static areanode_t SV_CreateAreaNode(int depth, float[] mins,
-            float[] maxs) {
-        areanode_t anode;
+    private static TAreaNode createAreaNode(int depth, float[] mins, float[] maxs) {
+
         float[] size = { 0, 0, 0 };
-        float[] mins1 = { 0, 0, 0 }, maxs1 = { 0, 0, 0 }, mins2 = { 0, 0, 0 }, maxs2 = {
-                0, 0, 0 };
-        anode = ServerWorld.sv_areanodes[ServerWorld.sv_numareanodes];
+        float[] mins1 = { 0, 0, 0 }, maxs1 = { 0, 0, 0 }, mins2 = { 0, 0, 0 }, maxs2 = { 0, 0, 0 };
+
+        TAreaNode anode = ServerWorld.sv_areanodes[ServerWorld.sv_numareanodes];
         // just for debugging (rst)
 //        Math3D.VectorCopy(mins, anode.mins_rst);
 //        Math3D.VectorCopy(maxs, anode.maxs_rst);
+
         ServerWorld.sv_numareanodes++;
         TLink.ClearLink(anode.trigger_edicts);
         TLink.ClearLink(anode.solid_edicts);
@@ -95,18 +91,15 @@ public class ServerWorld {
             return anode;
         }
         Math3D.VectorSubtract(maxs, mins, size);
-        if (size[0] > size[1])
-            anode.axis = 0;
-        else
-            anode.axis = 1;
+        anode.axis = size[0] > size[1] ? 0 : 1;
         anode.dist = 0.5f * (maxs[anode.axis] + mins[anode.axis]);
         Math3D.VectorCopy(mins, mins1);
         Math3D.VectorCopy(mins, mins2);
         Math3D.VectorCopy(maxs, maxs1);
         Math3D.VectorCopy(maxs, maxs2);
         maxs1[anode.axis] = mins2[anode.axis] = anode.dist;
-        anode.children[0] = SV_CreateAreaNode(depth + 1, mins2, maxs2);
-        anode.children[1] = SV_CreateAreaNode(depth + 1, mins1, maxs1);
+        anode.children[0] = createAreaNode(depth + 1, mins2, maxs2);
+        anode.children[1] = createAreaNode(depth + 1, mins1, maxs1);
         return anode;
     }
 
@@ -118,7 +111,7 @@ public class ServerWorld {
     public static void SV_ClearWorld() {
         initNodes();
         ServerWorld.sv_numareanodes = 0;
-        SV_CreateAreaNode(0, ServerInit.sv.models[1].mins,
+        createAreaNode(0, ServerInit.sv.models[1].mins,
                 ServerInit.sv.models[1].maxs);
         /*
          * Command.p("areanodes:" + sv_numareanodes + " (sollten 32 sein)."); for
@@ -132,32 +125,39 @@ public class ServerWorld {
     }
 
     /*
-     * =============== SV_UnlinkEdict ===============
+     * =============== unlinkEdict ===============
      */
-    public static void SV_UnlinkEdict(TEntityDict ent) {
-        if (null == ent.area.prev)
+    public static void unlinkEdict(TEntityDict ent) {
+        if (ent.area.prev == null) {
             return; // not linked in anywhere
-        TLink.RemoveLink(ent.area);
+        }
+
+        ent.area.remove();
         ent.area.prev = ent.area.next = null;
     }
 
-    public static void SV_LinkEdict(TEntityDict ent) {
-        areanode_t node;
+    public static void linkEdict(TEntityDict ent) {
+
         int num_leafs;
         int j, k;
         int area;
         int topnode = 0;
-        if (ent.area.prev != null)
-            SV_UnlinkEdict(ent); // unlink from old position
-        if (ent == GameBase.g_edicts[0])
+
+        if (ent.area.prev != null) {
+            unlinkEdict(ent); // unlink from old position
+        }
+
+        if (ent == GameBase.entityDicts[0]) {
             return; // don't add the world
-        if (!ent.inuse)
+        }
+
+        if (!ent.inUse) {
             return;
+        }
         // set the size
         Math3D.VectorSubtract(ent.maxs, ent.mins, ent.size);
         // encode the size into the entity_state for client prediction
-        if (ent.solid == Defines.SOLID_BBOX
-                && 0 == (ent.svflags & Defines.SVF_DEADMONSTER)) {
+        if (ent.solid == Defines.SOLID_BBOX && 0 == (ent.svflags & Defines.SVF_DEADMONSTER)) {
             // assume that x/y are equal and symetric
             int i = (int) (ent.maxs[0] / 8);
             if (i < 1)
@@ -176,14 +176,14 @@ public class ServerWorld {
                 k = 1;
             if (k > 63)
                 k = 63;
-            ent.s.solid = (k << 10) | (j << 5) | i;
+            ent.entityState.solid = (k << 10) | (j << 5) | i;
         } else if (ent.solid == Defines.SOLID_BSP) {
-            ent.s.solid = 31; // a solid_bbox will never create this value
+            ent.entityState.solid = 31; // a solid_bbox will never create this value
         } else
-            ent.s.solid = 0;
+            ent.entityState.solid = 0;
         // set the abs box
         if (ent.solid == Defines.SOLID_BSP
-                && (ent.s.angles[0] != 0 || ent.s.angles[1] != 0 || ent.s.angles[2] != 0)) {
+                && (ent.entityState.angles[0] != 0 || ent.entityState.angles[1] != 0 || ent.entityState.angles[2] != 0)) {
             // expand for rotation
             float max, v;
             max = 0;
@@ -196,13 +196,13 @@ public class ServerWorld {
                     max = v;
             }
             for (int i = 0; i < 3; i++) {
-                ent.absmin[i] = ent.s.origin[i] - max;
-                ent.absmax[i] = ent.s.origin[i] + max;
+                ent.absmin[i] = ent.entityState.origin[i] - max;
+                ent.absmax[i] = ent.entityState.origin[i] + max;
             }
         } else {
             // normal
-            Math3D.VectorAdd(ent.s.origin, ent.mins, ent.absmin);
-            Math3D.VectorAdd(ent.s.origin, ent.maxs, ent.absmax);
+            Math3D.VectorAdd(ent.entityState.origin, ent.mins, ent.absmin);
+            Math3D.VectorAdd(ent.entityState.origin, ent.maxs, ent.absmax);
         }
         // because movement is clipped an epsilon away from an actual edge,
         // we must fully check even when bounding boxes don't quite touch
@@ -263,14 +263,15 @@ public class ServerWorld {
             }
         }
         // if first time, make sure old_origin is valid
-        if (0 == ent.linkcount) {
-            Math3D.VectorCopy(ent.s.origin, ent.s.old_origin);
+        if (0 == ent.linkCount) {
+            Math3D.VectorCopy(ent.entityState.origin, ent.entityState.old_origin);
         }
-        ent.linkcount++;
+        ent.linkCount++;
         if (ent.solid == Defines.SOLID_NOT)
             return;
-        // find the first node that the ent's box crosses
-        node = ServerWorld.sv_areanodes[0];
+
+        // find the first node that the entityDict'entityState box crosses
+        TAreaNode node = ServerWorld.sv_areanodes[0];
         while (true) {
             if (node.axis == -1)
                 break;
@@ -283,27 +284,29 @@ public class ServerWorld {
         }
         // link it in
         if (ent.solid == Defines.SOLID_TRIGGER)
-            TLink.InsertLinkBefore(ent.area, node.trigger_edicts);
+            ent.area.insertBefore(node.trigger_edicts);
         else
-            TLink.InsertLinkBefore(ent.area, node.solid_edicts);
+            ent.area.insertBefore(node.solid_edicts);
     }
 
     /*
-     * ==================== SV_AreaEdicts_r
+     * ==================== areaEdictsRecursive
      * 
      * ====================
      */
-    public static void SV_AreaEdicts_r(areanode_t node) {
+    private static void areaEdictsRecursive(TAreaNode node) {
         TLink l, next, start;
-        TEntityDict check;
+
         // touch linked edicts
-        if (ServerWorld.area_type == Defines.AREA_SOLID)
+        if (ServerWorld.area_type == Defines.AREA_SOLID) {
             start = node.solid_edicts;
-        else
+        } else {
             start = node.trigger_edicts;
+        }
+
         for (l = start.next; l != start; l = next) {
             next = l.next;
-            check = (TEntityDict) l.o;
+            TEntityDict check = (TEntityDict) l.o;
             if (check.solid == Defines.SOLID_NOT)
                 continue; // deactivated
             if (check.absmin[0] > ServerWorld.area_maxs[0]
@@ -314,102 +317,96 @@ public class ServerWorld {
                     || check.absmax[2] < ServerWorld.area_mins[2])
                 continue; // not touching
             if (ServerWorld.area_count == ServerWorld.area_maxcount) {
-                Command.Printf("SV_AreaEdicts: MAXCOUNT\n");
+                Command.Printf("areaEdicts: MAXCOUNT\n");
                 return;
             }
             ServerWorld.area_list[ServerWorld.area_count] = check;
             ServerWorld.area_count++;
         }
-        if (node.axis == -1)
+
+        if (node.axis == -1) {
             return; // terminal node
+        }
+
         // recurse down both sides
-        if (ServerWorld.area_maxs[node.axis] > node.dist)
-            SV_AreaEdicts_r(node.children[0]);
-        if (ServerWorld.area_mins[node.axis] < node.dist)
-            SV_AreaEdicts_r(node.children[1]);
+        if (ServerWorld.area_maxs[node.axis] > node.dist) {
+            areaEdictsRecursive(node.children[0]);
+        }
+        if (ServerWorld.area_mins[node.axis] < node.dist) {
+            areaEdictsRecursive(node.children[1]);
+        }
     }
 
     /*
-     * ================ SV_AreaEdicts ================
+     * ================ areaEdicts ================
      */
-    public static int SV_AreaEdicts(float[] mins, float[] maxs, TEntityDict list[],
-            int maxcount, int areatype) {
+    public static int areaEdicts(float[] mins, float[] maxs, TEntityDict list[], int maxcount, int areatype) {
         ServerWorld.area_mins = mins;
         ServerWorld.area_maxs = maxs;
         ServerWorld.area_list = list;
         ServerWorld.area_count = 0;
         ServerWorld.area_maxcount = maxcount;
         ServerWorld.area_type = areatype;
-        SV_AreaEdicts_r(ServerWorld.sv_areanodes[0]);
+        areaEdictsRecursive(ServerWorld.sv_areanodes[0]);
         return ServerWorld.area_count;
     }
 
     /*
-     * ============= SV_PointContents =============
+     * ============= pointContents =============
      */
-    public static int SV_PointContents(float[] p) {
-        TEntityDict hit;
-        int i, num;
-        int contents, c2;
-        int headnode;
+    public static int pointContents(float[] p) {
+
         // get base contents from world
-        contents = CM.PointContents(p, ServerInit.sv.models[1].headnode);
+        int contents = CM.PointContents(p, ServerInit.sv.models[1].headnode);
         // or in contents from all the other entities
-        num = SV_AreaEdicts(p, p, ServerWorld.touch, Defines.MAX_EDICTS,
-                Defines.AREA_SOLID);
-        for (i = 0; i < num; i++) {
-            hit = ServerWorld.touch[i];
+        int num = areaEdicts(p, p, ServerWorld.touch, Defines.MAX_EDICTS, Defines.AREA_SOLID);
+        for (int i = 0; i < num; i++) {
+            TEntityDict hit = ServerWorld.touch[i];
             // might intersect, so do an exact clip
-            headnode = SV_HullForEntity(hit);
+            int headnode = hullForEntity(hit);
             if (hit.solid != Defines.SOLID_BSP) {
-	    }
-            c2 = CM.TransformedPointContents(p, headnode, hit.s.origin,
-                    hit.s.angles);
+	        }
+            int c2 = CM.TransformedPointContents(p, headnode, hit.entityState.origin, hit.entityState.angles);
             contents |= c2;
         }
         return contents;
     }
 
     /*
-     * ================ SV_HullForEntity
+     * ================ hullForEntity
      * 
      * Returns a headnode that can be used for testing or clipping an object of
      * mins/maxs size. Offset is filled in to contain the adjustment that must
-     * be added to the testing object's origin to get a point to use with the
+     * be added to the testing object'entityState origin to get a point to use with the
      * returned hull. ================
      */
-    public static int SV_HullForEntity(TEntityDict ent) {
-        cmodel_t model;
+    private static int hullForEntity(TEntityDict ent) {
+
         // decide which clipping hull to use, based on the size
         if (ent.solid == Defines.SOLID_BSP) {
             // explicit hulls in the BSP model
-            model = ServerInit.sv.models[ent.s.modelindex];
-            if (null == model)
-                Command.Error(Defines.ERR_FATAL,
-                        "MOVETYPE_PUSH with a non bsp model");
+            TCModel model = ServerInit.sv.models[ent.entityState.modelIndex];
+            if (model == null) {
+                Command.Error(Defines.ERR_FATAL, "MOVETYPE_PUSH with a non bsp model");
+            }
             return model.headnode;
         }
         // create a temp hull from bounding box sizes
         return CM.HeadnodeForBox(ent.mins, ent.maxs);
     }
 
-    public static void SV_ClipMoveToEntities(moveclip_t clip) {
-        int i, num;
-        TEntityDict touch;
-        trace_t trace;
-        int headnode;
-        float angles[];
-        num = SV_AreaEdicts(clip.boxmins, clip.boxmaxs, ServerWorld.touchlist,
-                Defines.MAX_EDICTS, Defines.AREA_SOLID);
+    private static void clipMoveToEntities(TMoveClip clip) {
+
+        int num = areaEdicts(clip.boxmins, clip.boxmaxs, ServerWorld.touchlist, Defines.MAX_EDICTS, Defines.AREA_SOLID);
         // be careful, it is possible to have an entity in this
         // list removed before we get to it (killtriggered)
-        for (i = 0; i < num; i++) {
-            touch = ServerWorld.touchlist[i];
+        for (int i = 0; i < num; i++) {
+            TEntityDict touch = ServerWorld.touchlist[i];
             if (touch.solid == Defines.SOLID_NOT)
                 continue;
             if (touch == clip.passedict)
                 continue;
-            if (clip.trace.allsolid)
+            if (clip.trace.allSolid)
                 return;
             if (clip.passedict != null) {
                 if (touch.owner == clip.passedict)
@@ -421,38 +418,41 @@ public class ServerWorld {
                     && 0 != (touch.svflags & Defines.SVF_DEADMONSTER))
                 continue;
             // might intersect, so do an exact clip
-            headnode = SV_HullForEntity(touch);
-            angles = touch.s.angles;
-            if (touch.solid != Defines.SOLID_BSP)
+            int headnode = hullForEntity(touch);
+            float[] angles = touch.entityState.angles;
+            if (touch.solid != Defines.SOLID_BSP) {
                 angles = Context.vec3_origin; // boxes don't rotate
+            }
+
+            TTrace trace;
             if ((touch.svflags & Defines.SVF_MONSTER) != 0)
                 trace = CM.TransformedBoxTrace(clip.start, clip.end,
                         clip.mins2, clip.maxs2, headnode, clip.contentmask,
-                        touch.s.origin, angles);
+                        touch.entityState.origin, angles);
             else
                 trace = CM.TransformedBoxTrace(clip.start, clip.end, clip.mins,
-                        clip.maxs, headnode, clip.contentmask, touch.s.origin,
+                        clip.maxs, headnode, clip.contentmask, touch.entityState.origin,
                         angles);
-            if (trace.allsolid || trace.startsolid
-                    || trace.fraction < clip.trace.fraction) {
-                trace.ent = touch;
-                if (clip.trace.startsolid) {
+
+            if (trace.allSolid || trace.startSolid || trace.fraction < clip.trace.fraction) {
+                trace.entityDict = touch;
+                if (clip.trace.startSolid) {
                     clip.trace = trace;
-                    clip.trace.startsolid = true;
-                } else
+                    clip.trace.startSolid = true;
+                } else {
                     clip.trace.set(trace);
-            } else if (trace.startsolid)
-                clip.trace.startsolid = true;
+                }
+            } else if (trace.startSolid) {
+                    clip.trace.startSolid = true;
+            }
         }
     }
 
     /*
-     * ================== SV_TraceBounds ==================
+     * ================== traceBounds ==================
      */
-    public static void SV_TraceBounds(float[] start, float[] mins,
-            float[] maxs, float[] end, float[] boxmins, float[] boxmaxs) {
-        int i;
-        for (i = 0; i < 3; i++) {
+    private static void traceBounds(float[] start, float[] mins, float[] maxs, float[] end, float[] boxmins, float[] boxmaxs) {
+        for (int i = 0; i < 3; i++) {
             if (end[i] > start[i]) {
                 boxmins[i] = start[i] + mins[i] - 1;
                 boxmaxs[i] = end[i] + maxs[i] + 1;
@@ -464,7 +464,7 @@ public class ServerWorld {
     }
 
     /*
-     * ================== SV_Trace
+     * ================== trace
      * 
      * Moves the given mins/maxs volume through the world from start to end.
      * 
@@ -472,19 +472,24 @@ public class ServerWorld {
      * 
      * ==================
      */
-    public static trace_t SV_Trace(float[] start, float[] mins, float[] maxs,
-                                   float[] end, TEntityDict passedict, int contentmask) {
-        moveclip_t clip = new moveclip_t();
-        if (mins == null)
+    public static TTrace trace(float[] start, float[] mins, float[] maxs,
+                               float[] end, TEntityDict passedict, int contentmask) {
+
+        if (mins == null) {
             mins = Context.vec3_origin;
-        if (maxs == null)
+        }
+
+        if (maxs == null) {
             maxs = Context.vec3_origin;
+        }
 
         // clip to world
+        TMoveClip clip = new TMoveClip();
         clip.trace = CM.BoxTrace(start, end, mins, maxs, 0, contentmask);
-        clip.trace.ent = GameBase.g_edicts[0];
-        if (clip.trace.fraction == 0)
+        clip.trace.entityDict = GameBase.entityDicts[0];
+        if (clip.trace.fraction == 0) {
             return clip.trace; // blocked by the world
+        }
         clip.contentmask = contentmask;
         clip.start = start;
         clip.end = end;
@@ -494,10 +499,9 @@ public class ServerWorld {
         Math3D.VectorCopy(mins, clip.mins2);
         Math3D.VectorCopy(maxs, clip.maxs2);
         // create the bounding box of the entire move
-        SV_TraceBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins,
-                clip.boxmaxs);
+        traceBounds(start, clip.mins2, clip.maxs2, end, clip.boxmins, clip.boxmaxs);
         // clip to other solid entities
-        SV_ClipMoveToEntities(clip);
+        clipMoveToEntities(clip);
         return clip.trace;
     }
 }

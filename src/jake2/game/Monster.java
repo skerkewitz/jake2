@@ -23,7 +23,6 @@
 package jake2.game;
 
 import jake2.Defines;
-import jake2.client.M;
 import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -33,7 +32,7 @@ public class Monster {
     // FIXME monsters should call these with a totally accurate direction
     //	and we can mess it up based on skill. Spread should be for normal
     //	and we can tighten or loosen based on skill. We could muck with
-    //	the damages too, but I'm not sure that's such a good idea.
+    //	the damages too, but I'm not sure that'entityState such a good idea.
     public static void monster_fire_bullet(TEntityDict self, float[] start,
                                            float[] dir, int damage, int kick, int hspread, int vspread,
                                            int flashtype) {
@@ -152,8 +151,8 @@ public class Monster {
                 && 0 == (self.monsterinfo.aiflags & Defines.AI_GOOD_GUY)) {
             self.spawnflags &= ~4;
             self.spawnflags |= 1;
-            //		 gi.dprintf("fixed spawnflags on %s at %s\n", self.classname,
-            // vtos(self.s.origin));
+            //		 gi.dprintf("fixed spawnflags on %entityState at %entityState\n", self.classname,
+            // vtos(self.entityState.origin));
         }
 
         if (0 == (self.monsterinfo.aiflags & Defines.AI_GOOD_GUY))
@@ -161,32 +160,32 @@ public class Monster {
 
         self.nextthink = GameBase.level.time + Defines.FRAMETIME;
         self.svflags |= Defines.SVF_MONSTER;
-        self.s.renderfx |= Defines.RF_FRAMELERP;
+        self.entityState.renderfx |= Defines.RF_FRAMELERP;
         self.takedamage = Defines.DAMAGE_AIM;
         self.air_finished = GameBase.level.time + 12;
         self.use = GameUtil.monster_use;
         self.max_health = self.health;
         self.clipmask = Defines.MASK_MONSTERSOLID;
 
-        self.s.skinnum = 0;
+        self.entityState.skinnum = 0;
         self.deadflag = Defines.DEAD_NO;
         self.svflags &= ~Defines.SVF_DEADMONSTER;
 
         if (null == self.monsterinfo.checkattack)
             self.monsterinfo.checkattack = GameUtil.M_CheckAttack;
-        Math3D.VectorCopy(self.s.origin, self.s.old_origin);
+        Math3D.VectorCopy(self.entityState.origin, self.entityState.old_origin);
 
         if (GameBase.st.item != null && GameBase.st.item.length() > 0) {
             self.item = GameItems.FindItemByClassname(GameBase.st.item);
             if (self.item == null)
                 GameBase.gi.dprintf("monster_start:" + self.classname + " at "
-                        + Lib.vtos(self.s.origin) + " has bad item: "
+                        + Lib.vtos(self.entityState.origin) + " has bad item: "
                         + GameBase.st.item + "\n");
         }
 
         // randomize what frame they start on
         if (self.monsterinfo.currentmove != null)
-            self.s.frame = self.monsterinfo.currentmove.firstframe
+            self.entityState.frame = self.monsterinfo.currentmove.firstframe
                     + (Lib.rand() % (self.monsterinfo.currentmove.lastframe
                             - self.monsterinfo.currentmove.firstframe + 1));
 
@@ -210,13 +209,13 @@ public class Monster {
             /*
              * if (true) { Command.Printf("all entities:\n");
              * 
-             * for (int n = 0; n < Game.globals.num_edicts; n++) { TEntityDict ent =
-             * GameBase.g_edicts[n]; Command.Printf( "|%4i | %25s
+             * for (int n = 0; n < Game.globals.num_edicts; n++) { TEntityDict entityDict =
+             * GameBase.entityDicts[n]; Command.Printf( "|%4i | %25s
              * |%8.2f|%8.2f|%8.2f||%8.2f|%8.2f|%8.2f||%8.2f|%8.2f|%8.2f|\n", new
-             * Vargs().add(n).add(ent.classname).
-             * add(ent.s.origin[0]).add(ent.s.origin[1]).add(ent.s.origin[2])
-             * .add(ent.mins[0]).add(ent.mins[1]).add(ent.mins[2])
-             * .add(ent.maxs[0]).add(ent.maxs[1]).add(ent.maxs[2])); }
+             * Vargs().add(n).add(entityDict.classname).
+             * add(entityDict.entityState.origin[0]).add(entityDict.entityState.origin[1]).add(entityDict.entityState.origin[2])
+             * .add(entityDict.mins[0]).add(entityDict.mins[1]).add(entityDict.mins[2])
+             * .add(entityDict.maxs[0]).add(entityDict.maxs[1]).add(entityDict.maxs[2])); }
              * sleep(10); }
              */
 
@@ -234,7 +233,7 @@ public class Monster {
             }
             if (notcombat && self.combattarget != null)
                 GameBase.gi.dprintf(self.classname + " at "
-                        + Lib.vtos(self.s.origin)
+                        + Lib.vtos(self.entityState.origin)
                         + " has target with mixed types\n");
             if (fixup)
                 self.target = null;
@@ -251,10 +250,10 @@ public class Monster {
 
                 if (Lib.strcmp(target.classname, "point_combat") != 0) {
                     GameBase.gi.dprintf(self.classname + " at "
-                            + Lib.vtos(self.s.origin)
+                            + Lib.vtos(self.entityState.origin)
                             + " has bad combattarget " + self.combattarget
                             + " : " + target.classname + " at "
-                            + Lib.vtos(target.s.origin));
+                            + Lib.vtos(target.entityState.origin));
                 }
             }
         }
@@ -266,14 +265,14 @@ public class Monster {
                 GameBase.gi
                         .dprintf(self.classname + " can't find target "
                                 + self.target + " at "
-                                + Lib.vtos(self.s.origin) + "\n");
+                                + Lib.vtos(self.entityState.origin) + "\n");
                 self.target = null;
                 self.monsterinfo.pausetime = 100000000;
                 self.monsterinfo.stand.think(self);
             } else if (Lib.strcmp(self.movetarget.classname, "path_corner") == 0) {
-                Math3D.VectorSubtract(self.goalentity.s.origin, self.s.origin,
+                Math3D.VectorSubtract(self.goalentity.entityState.origin, self.entityState.origin,
                         v);
-                self.ideal_yaw = self.s.angles[Defines.YAW] = Math3D
+                self.ideal_yaw = self.entityState.angles[Defines.YAW] = Math3D
                         .vectoyaw(v);
                 self.monsterinfo.walk.think(self);
                 self.target = null;
@@ -287,7 +286,7 @@ public class Monster {
             self.monsterinfo.stand.think(self);
         }
 
-        self.think = Monster.monster_think;
+        self.think = jake2.game.Monster.monster_think;
         self.nextthink = GameBase.level.time + Defines.FRAMETIME;
     }
 
@@ -295,14 +294,14 @@ public class Monster {
         public String getID() { return "monster_think";}
         public boolean think(TEntityDict self) {
 
-            M.M_MoveFrame(self);
-            if (self.linkcount != self.monsterinfo.linkcount) {
-                self.monsterinfo.linkcount = self.linkcount;
-                M.M_CheckGround(self);
+            jake2.client.Monster.M_MoveFrame(self);
+            if (self.linkCount != self.monsterinfo.linkcount) {
+                self.monsterinfo.linkcount = self.linkCount;
+                jake2.client.Monster.M_CheckGround(self);
             }
-            M.M_CatagorizePosition(self);
-            M.M_WorldEffects(self);
-            M.M_SetEffects(self);
+            jake2.client.Monster.M_CatagorizePosition(self);
+            jake2.client.Monster.M_WorldEffects(self);
+            jake2.client.Monster.M_SetEffects(self);
             return true;
         }
     };
@@ -311,7 +310,7 @@ public class Monster {
         public String getID() { return "monster_trigger_spawn";}
         public boolean think(TEntityDict self) {
 
-            self.s.origin[2] += 1;
+            self.entityState.origin[2] += 1;
             GameUtil.KillBox(self);
 
             self.solid = Defines.SOLID_BBOX;
@@ -320,7 +319,7 @@ public class Monster {
             self.air_finished = GameBase.level.time + 12;
             GameBase.gi.linkentity(self);
 
-            Monster.monster_start_go(self);
+            jake2.game.Monster.monster_start_go(self);
 
             if (self.enemy != null && 0 == (self.spawnflags & 1)
                     && 0 == (self.enemy.flags & Defines.FL_NOTARGET)) {

@@ -85,7 +85,7 @@ public class CLNewEffects {
         TCParticle p;
         float dec;
         //		int i;
-        //		float d, c, s;
+        //		float d, c, entityState;
         //		float[] dir;
 
         Math3D.VectorCopy(start, move);
@@ -279,13 +279,13 @@ public class CLNewEffects {
                 Math3D.VectorClear(p.accel);
                 //				rot+= fmod(ltime, 12.0)*M_PI;
                 //				c = cos(rot)/2.0;
-                //				s = sin(rot)/2.0;
+                //				entityState = sin(rot)/2.0;
                 //				variance = 0.4 + ((float)rand()/(float)RAND_MAX) *0.2;
                 variance = 0.5f;
                 c = (float) (Math.cos(rot) * variance);
                 s = (float) (Math.sin(rot) * variance);
 
-                // trim it so it looks like it's starting at the origin
+                // trim it so it looks like it'entityState starting at the origin
                 if (i < 10) {
                     Math3D.VectorScale(right, c * (i / 10.0f), dir);
                     Math3D.VectorMA(dir, s * (i / 10.0f), up, dir);

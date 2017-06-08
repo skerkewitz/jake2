@@ -27,7 +27,6 @@ package jake2.client;
 import jake2.Defines;
 import jake2.qcommon.CM;
 import jake2.qcommon.Command;
-import jake2.sys.QSystem;
 
 import java.util.StringTokenizer;
 
@@ -90,7 +89,7 @@ public class ClientView {
                 Command.Printf(name + "\r");
 
             SCR.UpdateScreen();
-            QSystem.SendKeyEvents(); // pump message loop
+            Key.SendKeyEvents(); // pump message loop
             if (name.charAt(0) == '#') {
                 // special player weapon model
                 if (num_cl_weaponmodels < Defines.MAX_CLIENTWEAPONMODELS) {
@@ -119,7 +118,7 @@ public class ClientView {
                 && Context.cl.configstrings[Defines.CS_IMAGES + i].length() > 0; i++) {
             Context.cl.image_precache[i] = Context.re
                     .RegisterPic(Context.cl.configstrings[Defines.CS_IMAGES + i]);
-            QSystem.SendKeyEvents(); // pump message loop
+            Key.SendKeyEvents(); // pump message loop
         }
 
         Command.Printf("                                     \r");
@@ -128,7 +127,7 @@ public class ClientView {
                 continue;
             Command.Printf("client " + i + '\r');
             SCR.UpdateScreen();
-            QSystem.SendKeyEvents(); // pump message loop
+            Key.SendKeyEvents(); // pump message loop
             CL_parse.ParseClientinfo(i);
             Command.Printf("                                     \r");
         }
@@ -171,16 +170,16 @@ public class ClientView {
         if (SCR.scr_debuggraph.value == 0.0f || SCR.scr_timegraph.value == 0.0f)
             return;
 
-        for (i = 0; i < Context.cls.netchan.dropped; i++)
+        for (i = 0; i < Context.cls.getNetchan().dropped; i++)
             SCR.DebugGraph(30, 0x40);
 
         for (i = 0; i < Context.cl.surpressCount; i++)
             SCR.DebugGraph(30, 0xdf);
 
         // see what the latency was on this packet
-        in = Context.cls.netchan.incoming_acknowledged
+        in = Context.cls.getNetchan().incoming_acknowledged
                 & (Defines.CMD_BACKUP - 1);
-        ping = Context.cls.realtime - Context.cl.cmd_time[in];
+        ping = Context.cls.getRealtime() - Context.cl.cmd_time[in];
         ping /= 30;
         if (ping > 30)
             ping = 30;

@@ -227,7 +227,7 @@ public class ConsoleVar {
 
         int c = Cmd.Argc();
         if (c != 3 && c != 4) {
-            Command.Printf("usage: set <variable> <value> [u / s]\n");
+            Command.Printf("usage: set <variable> <value> [u / entityState]\n");
             return;
         }
 
@@ -235,10 +235,10 @@ public class ConsoleVar {
             int flags;
             if (Cmd.Argv(3).equals("u"))
                 flags = TVar.CVAR_FLAG_USERINFO;
-            else if (Cmd.Argv(3).equals("s"))
+            else if (Cmd.Argv(3).equals("entityState"))
                 flags = TVar.CVAR_FLAG_SERVERINFO;
             else {
-                Command.Printf("flags can only be 'u' or 's'\n");
+                Command.Printf("flags can only be 'u' or 'entityState'\n");
                 return;
             }
             ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);

@@ -158,7 +158,7 @@ public class PlayerWeapon {
 
             Math3D.VectorSet(offset, 8, 8, ent.viewheight - 8);
             Math3D.AngleVectors(ent.client.v_angle, forward, right, null);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
 
             Math3D.VectorScale(forward, -2, ent.client.kick_origin);
@@ -169,7 +169,7 @@ public class PlayerWeapon {
             GameBase.gi.WriteByte(Defines.svc_muzzleflash);
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_GRENADE | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             ent.client.ps.gunframe++;
 
@@ -229,7 +229,7 @@ public class PlayerWeapon {
             ent.client.kick_angles[0] = -1;
 
             Math3D.VectorSet(offset, 8, 8, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
             GameWeapon.fire_rocket(ent, start, forward, damage, 650, damage_radius,
                     radius_damage);
@@ -239,7 +239,7 @@ public class PlayerWeapon {
 
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_ROCKET | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             ent.client.ps.gunframe++;
 
@@ -343,10 +343,10 @@ public class PlayerWeapon {
 
                     ent.client.anim_priority = Defines.ANIM_ATTACK;
                     if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                        ent.s.frame = M_Player.FRAME_crattak1 - 1;
+                        ent.entityState.frame = M_Player.FRAME_crattak1 - 1;
                         ent.client.anim_end = M_Player.FRAME_crattak9;
                     } else {
-                        ent.s.frame = M_Player.FRAME_attack1 - 1;
+                        ent.entityState.frame = M_Player.FRAME_attack1 - 1;
                         ent.client.anim_end = M_Player.FRAME_attack8;
                     }
                 }
@@ -439,7 +439,7 @@ public class PlayerWeapon {
             ent.client.kick_angles[0] = -2;
 
             Math3D.VectorSet(offset, 0, 8, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
 
             if (is_quad) {
@@ -460,7 +460,7 @@ public class PlayerWeapon {
 
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_SHOTGUN | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             ent.client.ps.gunframe++;
             PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
@@ -502,7 +502,7 @@ public class PlayerWeapon {
             ent.client.kick_angles[0] = -2;
 
             Math3D.VectorSet(offset, 0, 8, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
 
             if (is_quad) {
@@ -530,7 +530,7 @@ public class PlayerWeapon {
 
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_SSHOTGUN | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             ent.client.ps.gunframe++;
             PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
@@ -593,7 +593,7 @@ public class PlayerWeapon {
             ent.client.kick_angles[0] = -3;
 
             Math3D.VectorSet(offset, 0, 7, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
             GameWeapon.fire_rail(ent, start, forward, damage, kick);
 
@@ -602,7 +602,7 @@ public class PlayerWeapon {
 
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_RAILGUN | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             ent.client.ps.gunframe++;
             PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
@@ -656,7 +656,7 @@ public class PlayerWeapon {
 
                 GameBase.gi.WriteShort(ent.index);
                 GameBase.gi.WriteByte(Defines.MZ_BFG | is_silenced);
-                GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+                GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
                 ent.client.ps.gunframe++;
 
@@ -684,7 +684,7 @@ public class PlayerWeapon {
             ent.client.v_dmg_time = GameBase.level.time + Defines.DAMAGE_TIME;
 
             Math3D.VectorSet(offset, 8, 8, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
             GameWeapon.fire_bfg(ent, start, forward, damage, 400, damage_radius);
 
@@ -855,7 +855,7 @@ public class PlayerWeapon {
                             angles);
             Math3D.AngleVectors(angles, forward, right, null);
             Math3D.VectorSet(offset, 0, 8, ent.viewheight - 8);
-            P_ProjectSource(ent.client, ent.s.origin, offset, forward, right,
+            P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right,
                     start);
             GameWeapon.fire_bullet(ent, start, forward, damage, kick,
                     Defines.DEFAULT_BULLET_HSPREAD,
@@ -865,7 +865,7 @@ public class PlayerWeapon {
 
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte(Defines.MZ_MACHINEGUN | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
 
@@ -874,11 +874,11 @@ public class PlayerWeapon {
 
             ent.client.anim_priority = Defines.ANIM_ATTACK;
             if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                ent.s.frame = M_Player.FRAME_crattak1
+                ent.entityState.frame = M_Player.FRAME_crattak1
                         - (int) (Lib.random() + 0.25);
                 ent.client.anim_end = M_Player.FRAME_crattak9;
             } else {
-                ent.s.frame = M_Player.FRAME_attack1
+                ent.entityState.frame = M_Player.FRAME_attack1
                         - (int) (Lib.random() + 0.25);
                 ent.client.anim_end = M_Player.FRAME_attack8;
             }
@@ -935,11 +935,11 @@ public class PlayerWeapon {
 
             ent.client.anim_priority = Defines.ANIM_ATTACK;
             if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                ent.s.frame = M_Player.FRAME_crattak1
+                ent.entityState.frame = M_Player.FRAME_crattak1
                         - (ent.client.ps.gunframe & 1);
                 ent.client.anim_end = M_Player.FRAME_crattak9;
             } else {
-                ent.s.frame = M_Player.FRAME_attack1
+                ent.entityState.frame = M_Player.FRAME_attack1
                         - (ent.client.ps.gunframe & 1);
                 ent.client.anim_end = M_Player.FRAME_attack8;
             }
@@ -984,7 +984,7 @@ public class PlayerWeapon {
                 r = 7 + Lib.crandom() * 4;
                 u = Lib.crandom() * 4;
                 Math3D.VectorSet(offset, 0, r, u + ent.viewheight - 8);
-                P_ProjectSource(ent.client, ent.s.origin, offset, forward,
+                P_ProjectSource(ent.client, ent.entityState.origin, offset, forward,
                         right, start);
 
                 GameWeapon.fire_bullet(ent, start, forward, damage, kick,
@@ -998,7 +998,7 @@ public class PlayerWeapon {
             GameBase.gi.WriteShort(ent.index);
             GameBase.gi.WriteByte((Defines.MZ_CHAINGUN1 + shots - 1)
                     | is_silenced);
-            GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+            GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
             PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
 
@@ -1094,12 +1094,12 @@ public class PlayerWeapon {
         ent.client.machinegun_shots = 0;
 
         // set visible model
-        if (ent.s.modelindex == 255) {
+        if (ent.entityState.modelIndex == 255) {
             if (ent.client.pers.weapon != null)
                 i = ((ent.client.pers.weapon.weapmodel & 0xff) << 8);
             else
                 i = 0;
-            ent.s.skinnum = (ent.index - 1) | i;
+            ent.entityState.skinnum = (ent.index - 1) | i;
         }
 
         if (ent.client.pers.weapon != null
@@ -1122,10 +1122,10 @@ public class PlayerWeapon {
 
         ent.client.anim_priority = Defines.ANIM_PAIN;
         if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-            ent.s.frame = M_Player.FRAME_crpain1;
+            ent.entityState.frame = M_Player.FRAME_crpain1;
             ent.client.anim_end = M_Player.FRAME_crpain4;
         } else {
-            ent.s.frame = M_Player.FRAME_pain301;
+            ent.entityState.frame = M_Player.FRAME_pain301;
             ent.client.anim_end = M_Player.FRAME_pain304;
 
         }
@@ -1226,7 +1226,7 @@ public class PlayerWeapon {
 
         int n;
 
-        if (ent.deadflag != 0 || ent.s.modelindex != 255) // VWep animations
+        if (ent.deadflag != 0 || ent.entityState.modelIndex != 255) // VWep animations
         // screw up corpses
         {
             return;
@@ -1239,10 +1239,10 @@ public class PlayerWeapon {
             } else if ((FRAME_DEACTIVATE_LAST - ent.client.ps.gunframe) == 4) {
                 ent.client.anim_priority = Defines.ANIM_REVERSE;
                 if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                    ent.s.frame = M_Player.FRAME_crpain4 + 1;
+                    ent.entityState.frame = M_Player.FRAME_crpain4 + 1;
                     ent.client.anim_end = M_Player.FRAME_crpain1;
                 } else {
-                    ent.s.frame = M_Player.FRAME_pain304 + 1;
+                    ent.entityState.frame = M_Player.FRAME_pain304 + 1;
                     ent.client.anim_end = M_Player.FRAME_pain301;
                 }
             }
@@ -1270,10 +1270,10 @@ public class PlayerWeapon {
             if ((FRAME_DEACTIVATE_LAST - FRAME_DEACTIVATE_FIRST) < 4) {
                 ent.client.anim_priority = Defines.ANIM_REVERSE;
                 if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                    ent.s.frame = M_Player.FRAME_crpain4 + 1;
+                    ent.entityState.frame = M_Player.FRAME_crpain4 + 1;
                     ent.client.anim_end = M_Player.FRAME_crpain1;
                 } else {
-                    ent.s.frame = M_Player.FRAME_pain304 + 1;
+                    ent.entityState.frame = M_Player.FRAME_pain304 + 1;
                     ent.client.anim_end = M_Player.FRAME_pain301;
 
                 }
@@ -1292,10 +1292,10 @@ public class PlayerWeapon {
                     // start the animation
                     ent.client.anim_priority = Defines.ANIM_ATTACK;
                     if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
-                        ent.s.frame = M_Player.FRAME_crattak1 - 1;
+                        ent.entityState.frame = M_Player.FRAME_crattak1 - 1;
                         ent.client.anim_end = M_Player.FRAME_crattak9;
                     } else {
-                        ent.s.frame = M_Player.FRAME_attack1 - 1;
+                        ent.entityState.frame = M_Player.FRAME_attack1 - 1;
                         ent.client.anim_end = M_Player.FRAME_attack8;
                     }
                 } else {
@@ -1371,7 +1371,7 @@ public class PlayerWeapon {
 
         Math3D.VectorSet(offset, 8, 8, ent.viewheight - 8);
         Math3D.AngleVectors(ent.client.v_angle, forward, right, null);
-        P_ProjectSource(ent.client, ent.s.origin, offset, forward, right, start);
+        P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right, start);
 
         timer = ent.client.grenade_time - GameBase.level.time;
         speed = (int) (Defines.GRENADE_MINSPEED + (Defines.GRENADE_TIMER - timer)
@@ -1384,7 +1384,7 @@ public class PlayerWeapon {
 
         ent.client.grenade_time = GameBase.level.time + 1.0f;
 
-        if (ent.deadflag != 0 || ent.s.modelindex != 255) // VWep animations
+        if (ent.deadflag != 0 || ent.entityState.modelIndex != 255) // VWep animations
         // screw up corpses
         {
             return;
@@ -1395,11 +1395,11 @@ public class PlayerWeapon {
 
         if ((ent.client.ps.pmove.pm_flags & pmove_t.PMF_DUCKED) != 0) {
             ent.client.anim_priority = Defines.ANIM_ATTACK;
-            ent.s.frame = M_Player.FRAME_crattak1 - 1;
+            ent.entityState.frame = M_Player.FRAME_crattak1 - 1;
             ent.client.anim_end = M_Player.FRAME_crattak3;
         } else {
             ent.client.anim_priority = Defines.ANIM_REVERSE;
-            ent.s.frame = M_Player.FRAME_wave08;
+            ent.entityState.frame = M_Player.FRAME_wave08;
             ent.client.anim_end = M_Player.FRAME_wave01;
         }
     }
@@ -1423,7 +1423,7 @@ public class PlayerWeapon {
         Math3D.AngleVectors(ent.client.v_angle, forward, right, null);
         Math3D.VectorSet(offset, 24, 8, ent.viewheight - 8);
         Math3D.VectorAdd(offset, g_offset, offset);
-        P_ProjectSource(ent.client, ent.s.origin, offset, forward, right, start);
+        P_ProjectSource(ent.client, ent.entityState.origin, offset, forward, right, start);
 
         Math3D.VectorScale(forward, -2, ent.client.kick_origin);
         ent.client.kick_angles[0] = -1;
@@ -1437,7 +1437,7 @@ public class PlayerWeapon {
             GameBase.gi.WriteByte(Defines.MZ_HYPERBLASTER | is_silenced);
         else
             GameBase.gi.WriteByte(Defines.MZ_BLASTER | is_silenced);
-        GameBase.gi.multicast(ent.s.origin, Defines.MULTICAST_PVS);
+        GameBase.gi.multicast(ent.entityState.origin, Defines.MULTICAST_PVS);
 
         PlayerWeapon.PlayerNoise(ent, start, Defines.PNOISE_WEAPON);
     }
@@ -1500,7 +1500,7 @@ public class PlayerWeapon {
             GameBase.level.sound2_entity_framenum = GameBase.level.framenum;
         }
     
-        Math3D.VectorCopy(where, noise.s.origin);
+        Math3D.VectorCopy(where, noise.entityState.origin);
         Math3D.VectorSubtract(where, noise.maxs, noise.absmin);
         Math3D.VectorAdd(where, noise.maxs, noise.absmax);
         noise.teleport_time = GameBase.level.time;

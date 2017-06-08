@@ -730,7 +730,7 @@ public class M_Gunner {
     	public String getID() { return "gunner_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -909,15 +909,15 @@ public class M_Gunner {
             int flash_number;
 
             flash_number = Defines.MZ2_GUNNER_MACHINEGUN_1
-                    + (self.s.frame - FRAME_attak216);
+                    + (self.entityState.frame - FRAME_attak216);
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
             // project enemy back a bit and target there
-            Math3D.VectorCopy(self.enemy.s.origin, target);
+            Math3D.VectorCopy(self.enemy.entityState.origin, target);
             Math3D.VectorMA(target, -0.2f, self.enemy.velocity, target);
             target[2] += self.enemy.viewheight;
 
@@ -939,18 +939,18 @@ public class M_Gunner {
             float[] aim = { 0, 0, 0 };
             int flash_number;
 
-            if (self.s.frame == FRAME_attak105)
+            if (self.entityState.frame == FRAME_attak105)
                 flash_number = Defines.MZ2_GUNNER_GRENADE_1;
-            else if (self.s.frame == FRAME_attak108)
+            else if (self.entityState.frame == FRAME_attak108)
                 flash_number = Defines.MZ2_GUNNER_GRENADE_2;
-            else if (self.s.frame == FRAME_attak111)
+            else if (self.entityState.frame == FRAME_attak111)
                 flash_number = Defines.MZ2_GUNNER_GRENADE_3;
             else
-                // (self.s.frame == FRAME_attak114)
+                // (self.entityState.frame == FRAME_attak114)
                 flash_number = Defines.MZ2_GUNNER_GRENADE_4;
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
@@ -1086,7 +1086,7 @@ public class M_Gunner {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/gunner/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);

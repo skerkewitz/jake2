@@ -24,6 +24,8 @@
 
 package jake2.client;
 
+import jake2.client.ui.Menu;
+import jake2.common.Dimension;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.io.FileSystem;
@@ -45,7 +47,7 @@ public final class SCR {
 
     //	cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
-    static String[][] sb_nums = {
+    private static String[][] sb_nums = {
             { "num_0", "num_1", "num_2", "num_3", "num_4", "num_5", "num_6",
                     "num_7", "num_8", "num_9", "num_minus" },
             { "anum_0", "anum_1", "anum_2", "anum_3", "anum_4", "anum_5",
@@ -59,13 +61,13 @@ public final class SCR {
      * end of unit intermissions
      */
 
-    static float scr_con_current; // aproaches scr_conlines at scr_conspeed
+    private static float scr_con_current; // aproaches scr_conlines at scr_conspeed
 
-    static float scr_conlines; // 0.0 to 1.0 lines of console to display
+    private static float scr_conlines; // 0.0 to 1.0 lines of console to display
 
-    static boolean scr_initialized; // ready to draw
+    private static boolean scr_initialized; // ready to draw
 
-    static int scr_draw_loading;
+    private static int scr_draw_loading;
 
     // scr_vrect ist in Context definiert
     // position of render window on screen
@@ -98,24 +100,21 @@ public final class SCR {
 
     public static TVar fps = new TVar();
 
-    static dirty_t scr_dirty = new dirty_t();
+    private static TDirty scr_dirty = new TDirty();
 
-    static dirty_t[] scr_old_dirty = { new dirty_t(), new dirty_t() };
+    private static TDirty[] scr_old_dirty = { new TDirty(), new TDirty() };
 
-    static String crosshair_pic;
+    private static String crosshair_pic;
 
-    static int crosshair_width, crosshair_height;
+    private static int crosshair_width, crosshair_height;
 
-    static class dirty_t {
+    private static class TDirty {
         int x1;
-
         int x2;
-
         int y1;
-
         int y2;
 
-        void set(dirty_t src) {
+        void set(TDirty src) {
             x1 = src.x1;
             x2 = src.x2;
             y1 = src.y1;
@@ -204,15 +203,15 @@ public final class SCR {
      */
 
     // char scr_centerstring[1024];
-    static String scr_centerstring;
+    private static String scr_centerstring;
 
-    static float scr_centertime_start; // for slow victory printing
+    private static float scr_centertime_start; // for slow victory printing
 
-    static float scr_centertime_off;
+    private static float scr_centertime_off;
 
-    static int scr_center_lines;
+    private static int scr_center_lines;
 
-    static int scr_erase_center;
+    private static int scr_erase_center;
 
     /*
      * ============== SCR_CenterPrint
@@ -221,7 +220,7 @@ public final class SCR {
      * screen for a few moments ==============
      */
     static void CenterPrint(String str) {
-        //char *s;
+        //char *entityState;
         int s;
         StringBuffer line = new StringBuffer(64);
         int i, j, l;
@@ -329,7 +328,7 @@ public final class SCR {
     }
 
     static void CheckDrawCenterString() {
-        scr_centertime_off -= cls.frametime;
+        scr_centertime_off -= cls.getFrametime();
 
         if (scr_centertime_off <= 0)
             return;
@@ -470,7 +469,7 @@ public final class SCR {
      * ============== SCR_DrawNet ==============
      */
     static void DrawNet() {
-        if (cls.netchan.outgoing_sequence - cls.netchan.incoming_acknowledged < CMD_BACKUP - 1)
+        if (cls.getNetchan().outgoing_sequence - cls.getNetchan().incoming_acknowledged < CMD_BACKUP - 1)
             return;
 
         re.DrawPic(scr_vrect.getX() + 64, scr_vrect.getY(), "net");
@@ -517,18 +516,18 @@ public final class SCR {
      */
     static void RunConsole() {
         // decide on the height of the console
-        if (cls.key_dest == key_console)
+        if (cls.getKey_dest() == key_console)
             scr_conlines = 0.5f; // half screen
         else
             scr_conlines = 0; // none visible
 
         if (scr_conlines < scr_con_current) {
-            scr_con_current -= scr_conspeed.value * cls.frametime;
+            scr_con_current -= scr_conspeed.value * cls.getFrametime();
             if (scr_conlines > scr_con_current)
                 scr_con_current = scr_conlines;
 
         } else if (scr_conlines > scr_con_current) {
-            scr_con_current += scr_conspeed.value * cls.frametime;
+            scr_con_current += scr_conspeed.value * cls.getFrametime();
             if (scr_conlines < scr_con_current)
                 scr_con_current = scr_conlines;
         }
@@ -540,7 +539,7 @@ public final class SCR {
     static void DrawConsole() {
         Console.CheckResize();
 
-        if (cls.state == ca_disconnected || cls.state == ca_connecting) { // forced
+        if (cls.getState() == ca_disconnected || cls.getState() == ca_connecting) { // forced
                                                                           // full
                                                                           // screen
                                                                           // console
@@ -548,7 +547,7 @@ public final class SCR {
             return;
         }
 
-        if (cls.state != ca_active || !cl.refresh_prepped) { // connected, but
+        if (cls.getState() != ca_active || !cl.refresh_prepped) { // connected, but
                                                              // can't render
             Console.DrawConsole(0.5f);
             re.DrawFill(0, viddef.getHeight() / 2, viddef.getWidth(), viddef.getHeight() / 2,
@@ -559,7 +558,7 @@ public final class SCR {
         if (scr_con_current != 0) {
             Console.DrawConsole(scr_con_current);
         } else {
-            if (cls.key_dest == key_game || cls.key_dest == key_message)
+            if (cls.getKey_dest() == key_game || cls.getKey_dest() == key_message)
                 Console.DrawNotify(); // only draw notify in game
         }
     }
@@ -573,13 +572,13 @@ public final class SCR {
         Sound.StopAllSounds();
         cl.sound_prepped = false; // don't play ambients
 
-        if (cls.disable_screen != 0)
+        if (cls.getDisableScreen() != 0)
             return;
         if (developer.value != 0)
             return;
-        if (cls.state == ca_disconnected)
+        if (cls.getState() == ca_disconnected)
             return; // if at console, don't bring up the plaque
-        if (cls.key_dest == key_console)
+        if (cls.getKey_dest() == key_console)
             return;
         if (cl.cinematictime > 0)
             scr_draw_loading = 2; // clear to balack first
@@ -587,15 +586,15 @@ public final class SCR {
             scr_draw_loading = 1;
 
         UpdateScreen();
-        cls.disable_screen = Timer.Milliseconds();
-        cls.disable_servercount = cl.servercount;
+        cls.setDisableScreen(Timer.Milliseconds());
+        cls.setDisableServerCount(cl.servercount);
     }
 
     /*
      * ================ SCR_EndLoadingPlaque ================
      */
     public static void EndLoadingPlaque() {
-        cls.disable_screen = 0;
+        cls.setDisableScreen(0);
         Console.ClearNotify();
     }
 
@@ -614,7 +613,7 @@ public final class SCR {
         int start, stop;
         float time;
 
-        if (cls.state != ca_active)
+        if (cls.getState() != ca_active)
             return;
 
         start = Timer.Milliseconds();
@@ -641,7 +640,7 @@ public final class SCR {
         Command.Printf("%f seconds (%f fps)\n", time, 128.0f / time);
     }
 
-    static void DirtyScreen() {
+    public static void DirtyScreen() {
         AddDirtyPoint(0, 0);
         AddDirtyPoint(viddef.getWidth() - 1, viddef.getHeight() - 1);
     }
@@ -653,7 +652,7 @@ public final class SCR {
      * ==============
      */
 
-    static dirty_t clear = new dirty_t();
+    static TDirty clear = new TDirty();
 
     static void TileClear() {
         int i;
@@ -878,7 +877,7 @@ public final class SCR {
      */
     static void ExecuteLayoutString(String s) {
 
-        if (cls.state != ca_active || !cl.refresh_prepped)
+        if (cls.getState() != ca_active || !cl.refresh_prepped)
             return;
 
         if (s == null || s.length() == 0)
@@ -953,7 +952,7 @@ public final class SCR {
                 value = parser.tokenAsInt();
                 if (value >= MAX_CLIENTS || value < 0)
                     Command.Error(ERR_DROP, "client >= MAX_CLIENTS");
-                clientinfo_t ci = cl.clientinfo[value];
+                TClientInfo ci = cl.clientinfo[value];
 
                 parser.next();
                 score = parser.tokenAsInt();
@@ -990,7 +989,7 @@ public final class SCR {
                 value = parser.tokenAsInt();
                 if (value >= MAX_CLIENTS || value < 0)
                     Command.Error(ERR_DROP, "client >= MAX_CLIENTS");
-                clientinfo_t ci = cl.clientinfo[value];
+                TClientInfo ci = cl.clientinfo[value];
 
                 parser.next();
                 score = parser.tokenAsInt();
@@ -1173,9 +1172,9 @@ public final class SCR {
         // if the screen is disabled (loading plaque is up, or vid mode
         // changing)
         // do nothing at all
-        if (cls.disable_screen != 0) {
-            if (Timer.Milliseconds() - cls.disable_screen > 120000) {
-                cls.disable_screen = 0;
+        if (cls.getDisableScreen() != 0) {
+            if (Timer.Milliseconds() - cls.getDisableScreen() > 120000) {
+                cls.setDisableScreen(0);
                 Command.Printf("Loading plaque timed out.\n");
             }
             return;
@@ -1186,7 +1185,7 @@ public final class SCR {
 
         /*
          * * range check cl_camera_separation so we don't inadvertently fry
-         * someone's * brain
+         * someone'entityState * brain
          */
         if (cl_stereo_separation.value > 1.0)
             ConsoleVar.SetValue("cl_stereo_separation", 1.0f);
@@ -1218,13 +1217,13 @@ public final class SCR {
             // if a cinematic is supposed to be running, handle menus
             // and console specially
             else if (cl.cinematictime > 0) {
-                if (cls.key_dest == key_menu) {
+                if (cls.getKey_dest() == key_menu) {
                     if (cl.cinematicpalette_active) {
                         re.CinematicSetPalette(null);
                         cl.cinematicpalette_active = false;
                     }
                     Menu.Draw();
-                } else if (cls.key_dest == key_console) {
+                } else if (cls.getKey_dest() == key_console) {
                     if (cl.cinematicpalette_active) {
                         re.CinematicSetPalette(null);
                         cl.cinematicpalette_active = false;
@@ -1232,7 +1231,7 @@ public final class SCR {
                     DrawConsole();
                 } else {
                     // TODO implement cinematics completely
-                    DrawCinematic();
+                    drawCinematic();
                 }
             } else {
                 // make sure the game palette is active
@@ -1336,12 +1335,12 @@ public final class SCR {
                 ConsoleVar.SetValue("cl_maxfps", 1000);
             }
 
-            int diff = cls.realtime - lasttime;
+            int diff = cls.getRealtime() - lasttime;
             if (diff > (int) (fps.value * 1000)) {
-                fpsvalue = (cls.framecount - lastframes) * 100000 / diff
+                fpsvalue = (cls.getFramecount() - lastframes) * 100000 / diff
                         / 100.0f + " fps";
-                lastframes = cls.framecount;
-                lasttime = cls.realtime;
+                lastframes = cls.getFramecount();
+                lasttime = cls.getRealtime();
             }
             int x = viddef.getWidth() - 8 * fpsvalue.length() - 2;
             for (int i = 0; i < fpsvalue.length(); i++) {
@@ -1493,8 +1492,8 @@ public final class SCR {
      */
     static void FinishCinematic() {
         // tell the server to advance to the next map / cinematic
-        cls.netchan.message.writeByte(clc_stringcmd);
-        cls.netchan.message.print("nextserver " + cl.servercount + '\n');
+        cls.getNetchan().message.writeByte(clc_stringcmd);
+        cls.getNetchan().message.print("nextserver " + cl.servercount + '\n');
     }
 
     // ==========================================================================
@@ -1690,7 +1689,7 @@ public final class SCR {
     /**
      * ReadNextFrame
      */ 
-   static byte[] ReadNextFrame() {
+   private static byte[] ReadNextFrame() {
     
         ByteBuffer file = cl.cinematic_file;
 
@@ -1731,9 +1730,9 @@ public final class SCR {
     }
 
     /**
-     * RunCinematic
+     * runCinematic
      */
-    static void RunCinematic() {
+    static void runCinematic() {
         if (cl.cinematictime <= 0) {
             StopCinematic();
             return;
@@ -1744,13 +1743,13 @@ public final class SCR {
             return;
         }
 
-        if (cls.key_dest != key_game) {
+        if (cls.getKey_dest() != key_game) {
             // pause if menu or console is up
-            cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
+            cl.cinematictime = cls.getRealtime() - cl.cinematicframe * 1000 / 14;
             return;
         }
 
-        int frame = (int) ((cls.realtime - cl.cinematictime) * 14.0f / 1000);
+        int frame = (int) ((cls.getRealtime() - cl.cinematictime) * 14.0f / 1000);
         
         if (frame <= cl.cinematicframe)
             return;
@@ -1758,7 +1757,7 @@ public final class SCR {
         if (frame > cl.cinematicframe + 1) {
             Command.Println("Dropped frame: " + frame + " > "
                     + (cl.cinematicframe + 1));
-            cl.cinematictime = cls.realtime - cl.cinematicframe * 1000 / 14;
+            cl.cinematictime = cls.getRealtime() - cl.cinematicframe * 1000 / 14;
         }
         
         cin.pic = cin.pic_pending;
@@ -1776,17 +1775,17 @@ public final class SCR {
     }
 
     /**
-     * DrawCinematic
+     * drawCinematic
      * 
      * Returns true if a cinematic is active, meaning the view rendering should
      * be skipped.
      */
-    static boolean DrawCinematic() {
+    private static boolean drawCinematic() {
         if (cl.cinematictime <= 0) {
             return false;
         }
         
-        if (cls.key_dest == key_menu) {
+        if (cls.getKey_dest() == key_menu) {
             // blank screen and pause if menu is up
             re.CinematicSetPalette(null);
             cl.cinematicpalette_active = false;
@@ -1807,9 +1806,9 @@ public final class SCR {
     }
 
     /**
-     * PlayCinematic
+     * playCinematic
      */
-    static void PlayCinematic(String arg) {
+    static void playCinematic(String arg) {
 
         // make sure CD isn't playing music
         //CDAudio.Stop();
@@ -1822,7 +1821,7 @@ public final class SCR {
             cl.cinematicframe = -1;
             cl.cinematictime = 1;
             EndLoadingPlaque();
-            cls.state = ca_active;
+            cls.setState(ca_active);
             if (size == 0 || cin.pic == null) {
                 Command.Println(name + " not found.");
                 cl.cinematictime = 0;
@@ -1842,7 +1841,7 @@ public final class SCR {
 
         EndLoadingPlaque();
 
-        cls.state = ca_active;
+        cls.setState(ca_active);
 
         cl.cinematic_file.order(ByteOrder.LITTLE_ENDIAN);
         ByteBuffer file = cl.cinematic_file;

@@ -216,7 +216,7 @@ public interface Defines {
     int RF_USE_DISGUISE = 0x00040000;
     //ROGUE
 
-    // player_state_t->refdef flags
+    // TPlayerState->refdef flags
     int RDF_UNDERWATER = 1; // warp the screen as apropriate
     int RDF_NOWORLDMODEL = 2; // used for player configuration screen
 
@@ -1021,7 +1021,7 @@ public interface Defines {
     int svc_sound = 9; // <see code>
     int svc_print = 10; // [byte] id [string] null terminated string
     int svc_stufftext = 11;
-    // [string] stuffed into client's console buffer, should be \n terminated
+    // [string] stuffed into client'entityState console buffer, should be \n terminated
     int svc_serverdata = 12; // [long] protocol ...
     int svc_configstring = 13; // [short] [string]
     int svc_spawnbaseline = 14;
@@ -1233,7 +1233,7 @@ public interface Defines {
     int cs_free = 0; // can be reused for a new connection
     int cs_zombie = 1; // client has been disconnected, but don't reuse
     // connection for a couple seconds
-    int cs_connected = 2; // has been assigned to a client_t, but not in game yet
+    int cs_connected = 2; // has been assigned to a TClient, but not in game yet
     int cs_spawned = 3;
     int MAX_CHALLENGES = 1024;
     int ss_dead = 0; // no map loaded

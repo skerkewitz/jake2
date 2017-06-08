@@ -29,7 +29,7 @@ package jake2.game;
 import java.util.StringTokenizer;
 
 import jake2.*;
-import jake2.client.*;
+import jake2.client.Monster;
 import jake2.qcommon.Command;
 import jake2.server.*;
 import jake2.util.*;
@@ -41,7 +41,7 @@ public class GameBase {
 
     public static level_locals_t level = new level_locals_t();
 
-    public static game_import_t gi = new game_import_t();
+    public static TGameImport gi = new TGameImport();
 
     public static spawn_temp_t st = new spawn_temp_t();
 
@@ -53,10 +53,10 @@ public class GameBase {
 
     public static int num_edicts;
 
-    public static TEntityDict g_edicts[] = new TEntityDict[Defines.MAX_EDICTS];
+    public static TEntityDict entityDicts[] = new TEntityDict[Defines.MAX_EDICTS];
     static {
         for (int n = 0; n < Defines.MAX_EDICTS; n++)
-            g_edicts[n] = new TEntityDict(n);
+            entityDicts[n] = new TEntityDict(n);
     }
 
     public static TVar deathmatch = new TVar();
@@ -170,12 +170,12 @@ public class GameBase {
             from.i++;
 
         for (; from.i < num_edicts; from.i++) {
-            from.o = g_edicts[from.i];
+            from.o = entityDicts[from.i];
             if (from.o.classname == null) {
                 Command.Printf("edict with classname = null" + from.o.index);
             }
 
-            if (!from.o.inuse)
+            if (!from.o.inUse)
                 continue;
 
             if (eff.matches(from.o, s))
@@ -209,8 +209,8 @@ public class GameBase {
             from.i++;
 
         for (; from.i < num_edicts; from.i++) {
-            from.o = g_edicts[from.i];
-            if (!from.o.inuse)
+            from.o = entityDicts[from.i];
+            if (!from.o.inUse)
                 continue;
 
             if (from.o.solid == Defines.SOLID_NOT)
@@ -218,7 +218,7 @@ public class GameBase {
 
             for (j = 0; j < 3; j++)
                 eorg[j] = org[j]
-                        - (from.o.s.origin[j] + (from.o.mins[j] + from.o.maxs[j]) * 0.5f);
+                        - (from.o.entityState.origin[j] + (from.o.mins[j] + from.o.maxs[j]) * 0.5f);
 
             if (Math3D.VectorLength(eorg) > rad)
                 continue;
@@ -310,7 +310,7 @@ public class GameBase {
         for (i = 0; i < num; i++) {
             hit = touch[i];
 
-            if (!hit.inuse)
+            if (!hit.inUse)
                 continue;
 
             if (hit.touch == null)
@@ -334,10 +334,8 @@ public class GameBase {
 
     public static int STEPSIZE = 18;
 
-    /**
-     * G_RunEntity
-     */
-    public static void G_RunEntity(TEntityDict ent) {
+
+    private static void runEntity(TEntityDict ent) {
 
         if (ent.prethink != null)
             ent.prethink.think(ent);
@@ -345,22 +343,22 @@ public class GameBase {
         switch (ent.movetype) {
         case Defines.MOVETYPE_PUSH:
         case Defines.MOVETYPE_STOP:
-            SV.SV_Physics_Pusher(ent);
+            Server.physicsPusher(ent);
             break;
         case Defines.MOVETYPE_NONE:
-            SV.SV_Physics_None(ent);
+            Server.physicsNone(ent);
             break;
         case Defines.MOVETYPE_NOCLIP:
-            SV.SV_Physics_Noclip(ent);
+            Server.physicsNoClip(ent);
             break;
         case Defines.MOVETYPE_STEP:
-            SV.SV_Physics_Step(ent);
+            Server.physicsStep(ent);
             break;
         case Defines.MOVETYPE_TOSS:
         case Defines.MOVETYPE_BOUNCE:
         case Defines.MOVETYPE_FLY:
         case Defines.MOVETYPE_FLYMISSILE:
-            SV.SV_Physics_Toss(ent);
+            Server.physicsToss(ent);
             break;
         default:
             gi.error("SV_Physics: bad movetype " + ent.movetype);
@@ -403,19 +401,14 @@ public class GameBase {
         gi.dprintf("==== ShutdownGame ====\n");
     }
 
-    /**
-     * ClientEndServerFrames.
-     */
-    public static void ClientEndServerFrames() {
-        int i;
-        TEntityDict ent;
-
+    private static void clientEndServerFrames() {
         // calc the player views now that all pushing
         // and damage has been added
-        for (i = 0; i < maxclients.value; i++) {
-            ent = g_edicts[1 + i];
-            if (!ent.inuse || null == ent.client)
+        for (int i = 0; i < maxclients.value; i++) {
+            TEntityDict ent = entityDicts[1 + i];
+            if (!ent.inUse || null == ent.client) {
                 continue;
+            }
             PlayerView.ClientEndServerFrame(ent);
         }
 
@@ -439,7 +432,7 @@ public class GameBase {
      */
     public static void EndDMLevel() {
         TEntityDict ent;
-        //char * s, * t, * f;
+        //char * entityState, * t, * f;
         //static const char * seps = " ,\n\r";
         String s, t, f;
         String seps = " ,\n\r";
@@ -450,7 +443,7 @@ public class GameBase {
             return;
         }
 
-        // see if it's in the map list
+        // see if it'entityState in the map list
         if (sv_maplist.string.length() > 0) {
             s = sv_maplist.string;
             f = null;
@@ -464,7 +457,7 @@ public class GameBase {
             		f = t;
             	
                 if (t.equalsIgnoreCase(level.mapname)) {
-                    // it's in the list, go to the next one
+                    // it'entityState in the list, go to the next one
                 	if (!tk.hasMoreTokens()) {
                 		// end of list, go to first one
                         if (f == null) // there isn't a first one, same level
@@ -486,7 +479,7 @@ public class GameBase {
             edit = G_Find(edit, findByClass, "target_changelevel");
             if (edit == null) { // the map designer didn't include a
                                 // changelevel,
-                // so create a fake ent that goes back to the same level
+                // so create a fake entityDict that goes back to the same level
                 PlayerHud.BeginIntermission(CreateTargetChangeLevel(level.mapname));
                 return;
             }
@@ -520,17 +513,17 @@ public class GameBase {
     }
 
     /**
-     * CheckDMRules.
+     * checkDeathMatchRules.
      */
-    public static void CheckDMRules() {
-        int i;
-        gclient_t cl;
+    private static void checkDeathMatchRules() {
 
-        if (level.intermissiontime != 0)
+        if (level.intermissiontime != 0) {
             return;
+        }
 
-        if (0 == deathmatch.value)
+        if (deathmatch.value == 0) {
             return;
+        }
 
         if (timelimit.value != 0) {
             if (level.time >= timelimit.value * 60) {
@@ -541,10 +534,11 @@ public class GameBase {
         }
 
         if (fraglimit.value != 0) {
-            for (i = 0; i < maxclients.value; i++) {
-                cl = game.clients[i];
-                if (!g_edicts[i + 1].inuse)
+            for (int i = 0; i < maxclients.value; i++) {
+                gclient_t cl = game.clients[i];
+                if (!entityDicts[i + 1].inUse) {
                     continue;
+                }
 
                 if (cl.resp.score >= fraglimit.value) {
                     gi.bprintf(Defines.PRINT_HIGH, "Fraglimit hit.\n");
@@ -567,12 +561,12 @@ public class GameBase {
         level.changemap = null;
         level.exitintermission = false;
         level.intermissiontime = 0;
-        ClientEndServerFrames();
+        clientEndServerFrames();
 
         // clear some things before going to next level
         for (i = 0; i < maxclients.value; i++) {
-            ent = g_edicts[1 + i];
-            if (!ent.inuse)
+            ent = entityDicts[1 + i];
+            if (!ent.inUse)
                 continue;
             if (ent.health > ent.client.pers.max_health)
                 ent.health = ent.client.pers.max_health;
@@ -580,67 +574,61 @@ public class GameBase {
     }
 
     /**
-     * G_RunFrame
+     * runFrame
      *  
      * Advances the world by Defines.FRAMETIME (0.1) seconds.
      */
-    public static void G_RunFrame() {
-        int i;
-        TEntityDict ent;
+    public static void runFrame() {
 
         level.framenum++;
         level.time = level.framenum * Defines.FRAMETIME;
 
-        // choose a client for monsters to target this frame
+        /* choose a client for monsters to target this frame */
         GameAI.AI_SetSightClient();
 
-        // exit intermissions
-
+        /* exit intermissions */
         if (level.exitintermission) {
             ExitLevel();
             return;
         }
 
-        //
-        // treat each object in turn
-        // even the world gets a chance to think
-        //
-
-        for (i = 0; i < num_edicts; i++) {
-            ent = g_edicts[i];
-            if (!ent.inuse)
+        /* Treat each object in turn, even the world gets a chance to think. */
+        for (int i = 0; i < num_edicts; i++) {
+            final TEntityDict entityDict = entityDicts[i];
+            if (!entityDict.inUse) {
                 continue;
+            }
 
-            level.current_entity = ent;
+            level.current_entity = entityDict;
 
-            Math3D.VectorCopy(ent.s.origin, ent.s.old_origin);
+            Math3D.VectorCopy(entityDict.entityState.origin, entityDict.entityState.old_origin);
 
             // if the ground entity moved, make sure we are still on it
-            if ((ent.groundentity != null)
-                    && (ent.groundentity.linkcount != ent.groundentity_linkcount)) {
-                ent.groundentity = null;
-                if (0 == (ent.flags & (Defines.FL_SWIM | Defines.FL_FLY))
-                        && (ent.svflags & Defines.SVF_MONSTER) != 0) {
-                    M.M_CheckGround(ent);
+            if ((entityDict.groundentity != null)
+                    && (entityDict.groundentity.linkCount != entityDict.groundentity_linkcount)) {
+                entityDict.groundentity = null;
+                if (0 == (entityDict.flags & (Defines.FL_SWIM | Defines.FL_FLY))
+                        && (entityDict.svflags & Defines.SVF_MONSTER) != 0) {
+                    Monster.M_CheckGround(entityDict);
                 }
             }
 
             if (i > 0 && i <= maxclients.value) {
-                PlayerClient.ClientBeginServerFrame(ent);
+                PlayerClient.ClientBeginServerFrame(entityDict);
                 continue;
             }
 
-            G_RunEntity(ent);
+            runEntity(entityDict);
         }
 
-        // see if it is time to end a deathmatch
-        CheckDMRules();
+        /* see if it is time to end a deathmatch */
+        checkDeathMatchRules();
 
-        // see if needpass needs updated
+        /* see if needpass needs updated */
         CheckNeedPass();
 
-        // build the playerstate_t structures for all players
-        ClientEndServerFrames();
+        /* build the playerstate_t structures for all players */
+        clientEndServerFrames();
     }
 
     /**
@@ -648,11 +636,11 @@ public class GameBase {
      * variables. 
      */
 
-    public static void GetGameApi(game_import_t imp) {
+    public static void GetGameApi(TGameImport imp) {
         gi = imp;
         gi.pointcontents = new pmove_t.PointContentsAdapter() {
             public int pointcontents(float[] o) {
-                return ServerWorld.SV_PointContents(o);
+                return ServerWorld.pointContents(o);
             }
         };
     }

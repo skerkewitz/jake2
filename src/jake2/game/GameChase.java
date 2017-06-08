@@ -35,13 +35,13 @@ public class GameChase {
         float[] o = { 0, 0, 0 }, ownerv = { 0, 0, 0 }, goal = { 0, 0, 0 };
         TEntityDict targ;
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
         int i;
         float[] oldgoal = { 0, 0, 0 };
         float[] angles = { 0, 0, 0 };
     
         // is our chase target gone?
-        if (!ent.client.chase_target.inuse
+        if (!ent.client.chase_target.inUse
                 || ent.client.chase_target.client.resp.spectator) {
             TEntityDict old = ent.client.chase_target;
             ChaseNext(ent);
@@ -54,8 +54,8 @@ public class GameChase {
     
         targ = ent.client.chase_target;
     
-        Math3D.VectorCopy(targ.s.origin, ownerv);
-        Math3D.VectorCopy(ent.s.origin, oldgoal);
+        Math3D.VectorCopy(targ.entityState.origin, ownerv);
+        Math3D.VectorCopy(ent.entityState.origin, oldgoal);
     
         ownerv[2] += targ.viewheight;
     
@@ -66,8 +66,8 @@ public class GameChase {
         Math3D.VectorNormalize(forward);
         Math3D.VectorMA(ownerv, -30, forward, o);
     
-        if (o[2] < targ.s.origin[2] + 20)
-            o[2] = targ.s.origin[2] + 20;
+        if (o[2] < targ.entityState.origin[2] + 20)
+            o[2] = targ.entityState.origin[2] + 20;
     
         // jump animation lifts
         if (targ.groundentity == null)
@@ -104,7 +104,7 @@ public class GameChase {
         else
             ent.client.ps.pmove.pm_type = Defines.PM_FREEZE;
     
-        Math3D.VectorCopy(goal, ent.s.origin);
+        Math3D.VectorCopy(goal, ent.entityState.origin);
         for (i = 0; i < 3; i++)
             ent.client.ps.pmove.delta_angles[i] = (short) Math3D
                     .ANGLE2SHORT(targ.client.v_angle[i]
@@ -121,7 +121,7 @@ public class GameChase {
     
         ent.viewheight = 0;
         ent.client.ps.pmove.pm_flags |= pmove_t.PMF_NO_PREDICTION;
-        ServerWorld.SV_LinkEdict(ent);
+        ServerWorld.linkEdict(ent);
     }
 
     public static void ChaseNext(TEntityDict ent) {
@@ -136,9 +136,9 @@ public class GameChase {
             i++;
             if (i > GameBase.maxclients.value)
                 i = 1;
-            e = GameBase.g_edicts[i];
+            e = GameBase.entityDicts[i];
     
-            if (!e.inuse)
+            if (!e.inUse)
                 continue;
             if (!e.client.resp.spectator)
                 break;
@@ -160,8 +160,8 @@ public class GameChase {
             i--;
             if (i < 1)
                 i = (int) GameBase.maxclients.value;
-            e = GameBase.g_edicts[i];
-            if (!e.inuse)
+            e = GameBase.entityDicts[i];
+            if (!e.inUse)
                 continue;
             if (!e.client.resp.spectator)
                 break;
@@ -176,8 +176,8 @@ public class GameChase {
         TEntityDict other;
     
         for (i = 1; i <= GameBase.maxclients.value; i++) {
-            other = GameBase.g_edicts[i];
-            if (other.inuse && !other.client.resp.spectator) {
+            other = GameBase.entityDicts[i];
+            if (other.inUse && !other.client.resp.spectator) {
                 ent.client.chase_target = other;
                 ent.client.update_chase = true;
                 UpdateChaseCam(ent);

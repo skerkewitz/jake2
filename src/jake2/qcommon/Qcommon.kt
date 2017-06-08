@@ -34,8 +34,7 @@ import jake2.io.FileSystem
 import jake2.network.Netchan
 import jake2.server.ServerMain
 import jake2.sys.*
-import jake2.sys.NET
-import jake2.sys.QSystem
+import jake2.sys.Network
 
 import java.io.FileWriter
 import java.io.IOException
@@ -117,7 +116,7 @@ class Qcommon {
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
 
-                NET.Init()    //ok
+                Network.Init()    //ok
                 Netchan.Netchan_Init()    //ok
 
                 //			if (Context.dedicated.value != 1.0f)
@@ -160,7 +159,7 @@ class Qcommon {
                 //				Jake2.Q2Dialog.dispose();
 
             } catch (e: QuakeException) {
-                QSystem.Error("Error during initialization")
+                Qcommon.Error("Error during initialization")
             }
 
         }
@@ -241,7 +240,7 @@ class Qcommon {
                 if (Context.host_speeds.value != 0.0f)
                     time_before = Timer.Milliseconds()
 
-                Command.debugContext = "SV:"
+                Command.debugContext = "Server:"
                 ServerMain.SV_Frame(msec.toLong())
 
                 if (Context.host_speeds.value != 0.0f)
@@ -276,7 +275,7 @@ class Qcommon {
             Cbuf.AddText("bind MWHEELUP weapnext\n")
             Cbuf.AddText("bind MWHEELDOWN weapprev\n")
             Cbuf.AddText("bind w +forward\n")
-            Cbuf.AddText("bind s +back\n")
+            Cbuf.AddText("bind entityState +back\n")
             Cbuf.AddText("bind a +moveleft\n")
             Cbuf.AddText("bind d +moveright\n")
             Cbuf.Execute()
@@ -286,6 +285,19 @@ class Qcommon {
             Cbuf.AddEarlyCommands(clear)
             Cbuf.Execute()
             if ("" != dir) ConsoleVar.Set("cddir", dir)
+        }
+
+        @JvmStatic fun Error(error: String) {
+            CL.Shutdown()
+            //StackTrace();
+            Exception(error).printStackTrace()
+            java.lang.System.exit(1)
+        }
+
+        @JvmStatic fun Quit() {
+            CL.Shutdown()
+
+            java.lang.System.exit(0)
         }
     }
 }

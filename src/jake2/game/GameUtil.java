@@ -26,7 +26,7 @@ package jake2.game;
 
 import jake2.Defines;
 import jake2.client.Context;
-import jake2.client.M;
+import jake2.client.Monster;
 import jake2.qcommon.Command;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -97,7 +97,7 @@ public class GameUtil {
                     ent.killtarget)) != null) {
                 t = edit.o;
                 G_FreeEdict(t);
-                if (!ent.inuse) {
+                if (!ent.inUse) {
                     GameBase.gi
                             .dprintf("entity was removed while using killtargets\n");
                     return;
@@ -123,7 +123,7 @@ public class GameUtil {
                     if (t.use != null)
                         t.use.use(t, ent, activator);
                 }
-                if (!ent.inuse) {
+                if (!ent.inUse) {
                     GameBase.gi
                             .dprintf("entity was removed while using targets\n");
                     return;
@@ -133,12 +133,12 @@ public class GameUtil {
     }
 
     public static void G_InitEdict(TEntityDict e, int i) {
-        e.inuse = true;
+        e.inUse = true;
         e.classname = "noclass";
         e.gravity = 1.0f;
-        //e.s.number= e - g_edicts;
-        e.s = new TEntityState(e);
-        e.s.number = i;
+        //e.entityState.number= e - entityDicts;
+        e.entityState = new TEntityState(e);
+        e.entityState.number = i;
         e.index = i;
     }
 
@@ -153,12 +153,12 @@ public class GameUtil {
         TEntityDict e = null;
 
         for (i = (int) GameBase.maxclients.value + 1; i < GameBase.num_edicts; i++) {
-            e = GameBase.g_edicts[i];
+            e = GameBase.entityDicts[i];
             // the first couple seconds of server time can involve a lot of
             // freeing and allocating, so relax the replacement policy
-            if (!e.inuse
+            if (!e.inUse
                     && (e.freetime < 2 || GameBase.level.time - e.freetime > 0.5)) {
-                e = GameBase.g_edicts[i] = new TEntityDict(i);
+                e = GameBase.entityDicts[i] = new TEntityDict(i);
                 G_InitEdict(e, i);
                 return e;
             }
@@ -167,7 +167,7 @@ public class GameUtil {
         if (i == GameBase.game.maxentities)
             GameBase.gi.error("ED_Alloc: no free edicts");
 
-        e = GameBase.g_edicts[i] = new TEntityDict(i);
+        e = GameBase.entityDicts[i] = new TEntityDict(i);
         GameBase.num_edicts++;
         G_InitEdict(e, i);
         return e;
@@ -179,16 +179,16 @@ public class GameUtil {
     public static void G_FreeEdict(TEntityDict ed) {
         GameBase.gi.unlinkentity(ed); // unlink from world
 
-        //if ((ed - g_edicts) <= (maxclients.value + BODY_QUEUE_SIZE))
+        //if ((ed - entityDicts) <= (maxclients.value + BODY_QUEUE_SIZE))
         if (ed.index <= (GameBase.maxclients.value + Defines.BODY_QUEUE_SIZE)) {
             // gi.dprintf("tried to free special edict\n");
             return;
         }
 
-        GameBase.g_edicts[ed.index] = new TEntityDict(ed.index);
+        GameBase.entityDicts[ed.index] = new TEntityDict(ed.index);
         ed.classname = "freed";
         ed.freetime = GameBase.level.time;
-        ed.inuse = false;
+        ed.inUse = false;
     }
 
     /**
@@ -198,31 +198,31 @@ public class GameUtil {
 
     public static void G_ClearEdict(TEntityDict ent) {
         int i = ent.index;
-        GameBase.g_edicts[i] = new TEntityDict(i);
+        GameBase.entityDicts[i] = new TEntityDict(i);
     }
 
 
     /**
-     * Kills all entities that would touch the proposed new positioning of ent.
+     * Kills all entities that would touch the proposed new positioning of entityDict.
      * Ent should be unlinked before calling this!
      */
 
     public static boolean KillBox(TEntityDict ent) {
-        trace_t tr;
+        TTrace tr;
 
         while (true) {
-            tr = GameBase.gi.trace(ent.s.origin, ent.mins, ent.maxs,
-                    ent.s.origin, null, Defines.MASK_PLAYERSOLID);
-            if (tr.ent == null || tr.ent == GameBase.g_edicts[0])
+            tr = GameBase.gi.trace(ent.entityState.origin, ent.mins, ent.maxs,
+                    ent.entityState.origin, null, Defines.MASK_PLAYERSOLID);
+            if (tr.entityDict == null || tr.entityDict == GameBase.entityDicts[0])
                 break;
 
             // nail it
-            GameCombat.T_Damage(tr.ent, ent, ent, Context.vec3_origin, ent.s.origin,
+            GameCombat.T_Damage(tr.entityDict, ent, ent, Context.vec3_origin, ent.entityState.origin,
                     Context.vec3_origin, 100000, 0,
                     Defines.DAMAGE_NO_PROTECTION, Defines.MOD_TELEFRAG);
 
             // if we didn't kill it, fail
-            if (tr.ent.solid != 0)
+            if (tr.entityDict.solid != 0)
                 return false;
         }
 
@@ -284,7 +284,7 @@ public class GameUtil {
         float[] v = { 0, 0, 0 };
         float len;
 
-        Math3D.VectorSubtract(self.s.origin, other.s.origin, v);
+        Math3D.VectorSubtract(self.entityState.origin, other.entityState.origin, v);
         len = Math3D.VectorLength(v);
         if (len < Defines.MELEE_DISTANCE)
             return Defines.RANGE_MELEE;
@@ -307,8 +307,8 @@ public class GameUtil {
         float dot;
         float[] forward = { 0, 0, 0 };
 
-        Math3D.AngleVectors(self.s.angles, forward, null, null);
-        Math3D.VectorSubtract(other.s.origin, self.s.origin, vec);
+        Math3D.AngleVectors(self.entityState.angles, forward, null, null);
+        Math3D.VectorSubtract(other.entityState.origin, self.entityState.origin, vec);
         Math3D.VectorNormalize(vec);
         dot = Math3D.DotProduct(vec, forward);
 
@@ -321,11 +321,11 @@ public class GameUtil {
     public static boolean visible(TEntityDict self, TEntityDict other) {
         float[] spot1 = { 0, 0, 0 };
         float[] spot2 = { 0, 0, 0 };
-        trace_t trace;
+        TTrace trace;
 
-        Math3D.VectorCopy(self.s.origin, spot1);
+        Math3D.VectorCopy(self.entityState.origin, spot1);
         spot1[2] += self.viewheight;
-        Math3D.VectorCopy(other.s.origin, spot2);
+        Math3D.VectorCopy(other.entityState.origin, spot2);
         spot2[2] += other.viewheight;
         trace = GameBase.gi.trace(spot1, Context.vec3_origin,
                 Context.vec3_origin, spot2, self, Defines.MASK_OPAQUE);
@@ -354,7 +354,7 @@ public class GameUtil {
         int r;
 
         if ((self.monsterinfo.aiflags & Defines.AI_GOOD_GUY) != 0) {
-            if (self.goalentity != null && self.goalentity.inuse
+            if (self.goalentity != null && self.goalentity.inUse
                     && self.goalentity.classname != null) {
                 if (self.goalentity.classname.equals("target_actor"))
                     return false;
@@ -395,7 +395,7 @@ public class GameUtil {
         }
 
         // if the entity went away, forget it
-        if (!client.inuse)
+        if (!client.inUse)
             return false;
 
         if (client.client != null) {
@@ -461,11 +461,11 @@ public class GameUtil {
                 if (!visible(self, client))
                     return false;
             } else {
-                if (!GameBase.gi.inPHS(self.s.origin, client.s.origin))
+                if (!GameBase.gi.inPHS(self.entityState.origin, client.entityState.origin))
                     return false;
             }
 
-            Math3D.VectorSubtract(client.s.origin, self.s.origin, temp);
+            Math3D.VectorSubtract(client.entityState.origin, self.entityState.origin, temp);
 
             if (Math3D.VectorLength(temp) > 1000) // too far to hear
                 return false;
@@ -478,7 +478,7 @@ public class GameUtil {
                     return false;
 
             self.ideal_yaw = Math3D.vectoyaw(temp);
-            M.M_ChangeYaw(self);
+            Monster.M_ChangeYaw(self);
 
             // hunt the sound for a bit; hopefully find the real player
             self.monsterinfo.aiflags |= Defines.AI_SOUND_TARGET;
@@ -510,7 +510,7 @@ public class GameUtil {
         self.show_hostile = (int) GameBase.level.time + 1; // wake up other
                                                            // monsters
 
-        Math3D.VectorCopy(self.enemy.s.origin, self.monsterinfo.last_sighting);
+        Math3D.VectorCopy(self.enemy.entityState.origin, self.monsterinfo.last_sighting);
         self.monsterinfo.trail_time = GameBase.level.time;
 
         if (self.combattarget == null) {
@@ -524,7 +524,7 @@ public class GameUtil {
             self.goalentity = self.movetarget = self.enemy;
             GameAI.HuntTarget(self);
             GameBase.gi.dprintf("" + self.classname + "at "
-                    + Lib.vtos(self.s.origin) + ", combattarget "
+                    + Lib.vtos(self.entityState.origin) + ", combattarget "
                     + self.combattarget + " not found\n");
             return;
         }
@@ -586,13 +586,13 @@ public class GameUtil {
 
             float[] spot2 = { 0, 0, 0 };
             float chance;
-            trace_t tr;
+            TTrace tr;
 
             if (self.enemy.health > 0) {
                 // see if any entities are in the way of the shot
-                Math3D.VectorCopy(self.s.origin, spot1);
+                Math3D.VectorCopy(self.entityState.origin, spot1);
                 spot1[2] += self.viewheight;
-                Math3D.VectorCopy(self.enemy.s.origin, spot2);
+                Math3D.VectorCopy(self.enemy.entityState.origin, spot2);
                 spot2[2] += self.enemy.viewheight;
 
                 tr = GameBase.gi.trace(spot1, null, null, spot2, self,
@@ -602,7 +602,7 @@ public class GameUtil {
                                 | Defines.CONTENTS_WINDOW);
 
                 // do we have a clear shot?
-                if (tr.ent != self.enemy)
+                if (tr.entityDict != self.enemy)
                     return false;
             }
 

@@ -31,10 +31,10 @@ import jake2.io.QuakeFile;
 public class GameSave {
 
     public static void CreateEdicts() {
-        GameBase.g_edicts = new TEntityDict[GameBase.game.maxentities];
+        GameBase.entityDicts = new TEntityDict[GameBase.game.maxentities];
         for (int i = 0; i < GameBase.game.maxentities; i++)
-            GameBase.g_edicts[i] = new TEntityDict(i);
-        GameBase.g_edicts = GameBase.g_edicts;
+            GameBase.entityDicts[i] = new TEntityDict(i);
+        GameBase.entityDicts = GameBase.entityDicts;
     }
 
     public static void CreateClients() {
@@ -294,8 +294,8 @@ public class GameSave {
 
             // write out all the entities
             for (i = 0; i < GameBase.num_edicts; i++) {
-                ent = GameBase.g_edicts[i];
-                if (!ent.inuse)
+                ent = GameBase.entityDicts[i];
+                if (!ent.inUse)
                     continue;
                 f.writeInt(i);
                 ent.write(f);
@@ -349,7 +349,7 @@ public class GameSave {
                 if (entnum >= GameBase.num_edicts)
                     GameBase.num_edicts = entnum + 1;
 
-                ent = GameBase.g_edicts[entnum];
+                ent = GameBase.entityDicts[entnum];
                 ent.read(f);
                 ent.cleararealinks();
                 GameBase.gi.linkentity(ent);
@@ -359,16 +359,16 @@ public class GameSave {
 
             // mark all clients as unconnected
             for (int i = 0; i < GameBase.maxclients.value; i++) {
-                ent = GameBase.g_edicts[i + 1];
+                ent = GameBase.entityDicts[i + 1];
                 ent.client = GameBase.game.clients[i];
                 ent.client.pers.connected = false;
             }
 
             // do any load time things at this point
             for (int i = 0; i < GameBase.num_edicts; i++) {
-                ent = GameBase.g_edicts[i];
+                ent = GameBase.entityDicts[i];
 
-                if (!ent.inuse)
+                if (!ent.inUse)
                     continue;
 
                 // fire any cross-level triggers

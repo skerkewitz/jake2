@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render;
 
 import jake2.Defines;
-import jake2.client.Dimension;
+import jake2.common.Dimension;
 import jake2.client.DisplayMode;
 import jake2.client.TRefDef;
 import jake2.client.refexport_t;

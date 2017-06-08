@@ -1,10 +1,4 @@
 /*
- * kbutton_t.java
- * Copyright (C) 2004
- * 
- * $Id: kbutton_t.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
- */
-/*
 Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
@@ -14,7 +8,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 
 See the GNU General Public License for more details.
 
@@ -23,14 +17,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-package jake2.client;
 
-/**
- * kbutton_t
- */
-public class kbutton_t {
-	int[] down = new int[2];	// key nums holding it down
-	long downtime;				// msec timestamp
-	long msec;					// msec down this frame
-	public int state;
+// Created on 13.01.2004 by RST.
+
+package jake2.server
+
+import jake2.Defines
+import jake2.game.TPlayerState
+
+class TClientFrame {
+
+    var areaBytes: Int = 0
+
+    /** portalarea visibility bits  */
+    var areaBits = ByteArray(Defines.MAX_MAP_AREAS / 8)
+    var playerState = TPlayerState()
+    var numEntities: Int = 0
+
+    /** Into the circular sv_packet_entities[].  */
+    var firstEntity: Int = 0
+
+    /** For ping calculations.  */
+    var sentTime: Int = 0
 }

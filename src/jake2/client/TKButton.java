@@ -1,4 +1,10 @@
 /*
+ * kbutton_t.java
+ * Copyright (C) 2004
+ * 
+ * $Id: kbutton_t.java,v 1.1 2004-07-07 19:58:52 hzi Exp $
+ */
+/*
 Copyright (C) 1997-2001 Id Software, Inc.
 
 This program is free software; you can redistribute it and/or
@@ -8,7 +14,7 @@ of the License, or (at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 See the GNU General Public License for more details.
 
@@ -17,16 +23,14 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+package jake2.client;
 
-// Created on 28.11.2003 by RST.
-// $Id: cmodel_t.java,v 1.2 2004-07-08 15:58:44 hzi Exp $
-
-package jake2.game;
-
-public class cmodel_t
-{
-	public float[] mins = { 0, 0, 0 };
-	public float[] maxs = { 0, 0, 0 };
-	public float[] origin = { 0, 0, 0 }; // for sounds or lights
-	public int headnode;
+/**
+ * TKButton
+ */
+public class TKButton {
+	int[] down = new int[2];	// key nums holding it down
+	long downtime;				// msec timestamp
+	long msec;					// msec down this frame
+	public int state;
 }

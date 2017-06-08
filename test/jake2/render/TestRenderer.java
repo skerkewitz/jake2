@@ -594,7 +594,7 @@ public class TestRenderer {
                 c = (float) Math.cos(rot) * variance;
                 s = (float) Math.sin(rot) * variance;
                 
-                // trim it so it looks like it's starting at the origin
+                // trim it so it looks like it'entityState starting at the origin
                 if (i < 10) {
                     Math3D.VectorScale(right, c * (i / 10.0f), dir);
                     Math3D.VectorMA(dir, s * (i / 10.0f), up, dir);

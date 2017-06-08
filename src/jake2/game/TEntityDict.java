@@ -33,7 +33,7 @@ public class TEntityDict {
 
     /** Constructor. */
     public TEntityDict(int i) {
-        s.number = i;
+        entityState.number = i;
         index = i;
     }
 
@@ -43,11 +43,11 @@ public class TEntityDict {
     }
 
     /** Integrated entity state. */
-    public TEntityState s = new TEntityState(this);
+    public TEntityState entityState = new TEntityState(this);
 
-    public boolean inuse;
+    public boolean inUse;
 
-    public int linkcount;
+    public int linkCount;
 
     /**
      * FIXME: move these fields to a server private sv_entity_t. linked to a
@@ -428,22 +428,22 @@ public class TEntityDict {
         } // F_LSTRING),
 
         if (key.equals("origin")) {
-            s.origin = Lib.atov(value);
+            entityState.origin = Lib.atov(value);
             return true;
         } // F_VECTOR),
 
         if (key.equals("angles")) {
-            s.angles = Lib.atov(value);
+            entityState.angles = Lib.atov(value);
             return true;
         } // F_VECTOR),
 
         if (key.equals("angle")) {
-            s.angles = new float[] { 0, Lib.atof(value), 0 };
+            entityState.angles = new float[] { 0, Lib.atof(value), 0 };
             return true;
         } // F_ANGLEHACK),
 
         if (key.equals("item")) {
-            GameBase.gi.error("ent.set(\"item\") called.");
+            GameBase.gi.error("entityDict.set(\"item\") called.");
             return true;
         } // F_ITEM)
 
@@ -453,9 +453,9 @@ public class TEntityDict {
     /** Writes the entity to the file. */
     public void write(QuakeFile f) throws IOException {
 
-        s.write(f);
-        f.writeBoolean(inuse);
-        f.writeInt(linkcount);
+        entityState.write(f);
+        f.writeBoolean(inUse);
+        f.writeInt(linkCount);
         f.writeInt(num_clusters);
 
         f.writeInt(9999);
@@ -605,15 +605,15 @@ public class TEntityDict {
 
         f.writeEdictRef(owner);
 
-        // rst's checker :-)
+        // rst'entityState checker :-)
         f.writeInt(9876);
     }
 
     /** Reads the entity from the file. */
     public void read(QuakeFile f) throws IOException {
-        s.read(f);
-        inuse = f.readBoolean();
-        linkcount = f.readInt();
+        entityState.read(f);
+        inUse = f.readBoolean();
+        linkCount = f.readInt();
         num_clusters = f.readInt();
 
         if (f.readInt() != 9999)
@@ -770,8 +770,8 @@ public class TEntityDict {
 
         owner = f.readEdictRef();
 
-        // rst's checker :-)
+        // rst'entityState checker :-)
         if (f.readInt() != 9876)
-            System.err.println("ent load check failed for num " + index);
+            System.err.println("entityDict load check failed for num " + index);
     }
 }

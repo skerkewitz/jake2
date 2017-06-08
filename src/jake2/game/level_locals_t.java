@@ -68,7 +68,7 @@ public class level_locals_t
 	public int total_monsters;
 	public int killed_monsters;
 
-	public TEntityDict current_entity; // entity running from G_RunFrame
+	public TEntityDict current_entity; // entity running from runFrame
 	public int body_que; // dead bodies
 
 	public int power_cubes; // ugly necessity for coop
@@ -110,7 +110,7 @@ public class level_locals_t
 		f.writeInt(body_que); // dead bodies
 		f.writeInt(power_cubes); // ugly necessity for coop
 		
-		// rst's checker :-)		
+		// rst'entityState checker :-)
 		f.writeInt(4711);
 	}
 	
@@ -151,7 +151,7 @@ public class level_locals_t
 		body_que = f.readInt(); // dead bodies
 		power_cubes = f.readInt(); // ugly necessity for coop		
 		
-		// rst's checker :-)
+		// rst'entityState checker :-)
 		if (f.readInt()!= 4711)
 			System.out.println("error in reading level_locals.");
 	}

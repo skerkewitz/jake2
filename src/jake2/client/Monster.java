@@ -27,50 +27,50 @@ package jake2.client;
 
 import jake2.Defines;
 import jake2.game.*;
-import jake2.server.SV;
+import jake2.server.Server;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
 /**
- * M
+ * Monster
  */
-public final class M {
+public final class Monster {
 
     public static void M_CheckGround(TEntityDict ent) {
-        float[] point = { 0, 0, 0 };
-        trace_t trace;
 
-        if ((ent.flags & (Defines.FL_SWIM | Defines.FL_FLY)) != 0)
+        if ((ent.flags & (Defines.FL_SWIM | Defines.FL_FLY)) != 0) {
             return;
+        }
 
         if (ent.velocity[2] > 100) {
             ent.groundentity = null;
             return;
         }
 
-        // if the hull point one-quarter unit down is solid the entity is on
-        // ground
-        point[0] = ent.s.origin[0];
-        point[1] = ent.s.origin[1];
-        point[2] = ent.s.origin[2] - 0.25f;
+        /* If the hull point one-quarter unit down is solid the entity is on
+         * ground. */
+        float[] point = { 0, 0, 0 };
+        point[0] = ent.entityState.origin[0];
+        point[1] = ent.entityState.origin[1];
+        point[2] = ent.entityState.origin[2] - 0.25f;
 
-        trace = GameBase.gi.trace(ent.s.origin, ent.mins, ent.maxs, point, ent,
+        TTrace trace = GameBase.gi.trace(ent.entityState.origin, ent.mins, ent.maxs, point, ent,
                 Defines.MASK_MONSTERSOLID);
 
         // check steepness
-        if (trace.plane.normal[2] < 0.7 && !trace.startsolid) {
+        if (trace.plane.normal[2] < 0.7 && !trace.startSolid) {
             ent.groundentity = null;
             return;
         }
 
-        // ent.groundentity = trace.ent;
-        // ent.groundentity_linkcount = trace.ent.linkcount;
-        // if (!trace.startsolid && !trace.allsolid)
-        //   VectorCopy (trace.endpos, ent.s.origin);
-        if (!trace.startsolid && !trace.allsolid) {
-            Math3D.VectorCopy(trace.endpos, ent.s.origin);
-            ent.groundentity = trace.ent;
-            ent.groundentity_linkcount = trace.ent.linkcount;
+        // entityDict.groundentity = trace.entityDict;
+        // entityDict.groundentity_linkcount = trace.entityDict.linkCount;
+        // if (!trace.startSolid && !trace.allSolid)
+        //   VectorCopy (trace.endpos, entityDict.entityState.origin);
+        if (!trace.startSolid && !trace.allSolid) {
+            Math3D.VectorCopy(trace.endpos, ent.entityState.origin);
+            ent.groundentity = trace.entityDict;
+            ent.groundentity_linkcount = trace.entityDict.linkCount;
             ent.velocity[2] = 0;
         }
     }
@@ -79,19 +79,18 @@ public final class M {
      * Returns false if any part of the bottom of the entity is off an edge that
      * is not a staircase.
      */
-
     public static boolean M_CheckBottom(TEntityDict ent) {
         float[] mins = { 0, 0, 0 };
         float[] maxs = { 0, 0, 0 };
         float[] start = { 0, 0, 0 };
         float[] stop = { 0, 0, 0 };
 
-        trace_t trace;
+        TTrace trace;
         int x, y;
         float mid, bottom;
 
-        Math3D.VectorAdd(ent.s.origin, ent.mins, mins);
-        Math3D.VectorAdd(ent.s.origin, ent.maxs, maxs);
+        Math3D.VectorAdd(ent.entityState.origin, ent.mins, mins);
+        Math3D.VectorAdd(ent.entityState.origin, ent.maxs, maxs);
 
         //	   if all of the points under the corners are solid world, don't bother
         //	   with the tougher checks
@@ -156,7 +155,7 @@ public final class M {
         float move;
         float speed;
 
-        current = Math3D.anglemod(ent.s.angles[Defines.YAW]);
+        current = Math3D.anglemod(ent.entityState.angles[Defines.YAW]);
         ideal = ent.ideal_yaw;
 
         if (current == ideal)
@@ -179,7 +178,7 @@ public final class M {
                 move = -speed;
         }
 
-        ent.s.angles[Defines.YAW] = Math3D.anglemod(current + move);
+        ent.entityState.angles[Defines.YAW] = Math3D.anglemod(current + move);
     }
 
     /**
@@ -193,14 +192,14 @@ public final class M {
             return;
 
         //	   if the next step hits the enemy, return immediately
-        if (ent.enemy != null && SV.SV_CloseEnough(ent, ent.enemy, dist))
+        if (ent.enemy != null && Server.SV_CloseEnough(ent, ent.enemy, dist))
             return;
 
         //	   bump around...
         if ((Lib.rand() & 3) == 1
-                || !SV.SV_StepDirection(ent, ent.ideal_yaw, dist)) {
-            if (ent.inuse)
-                SV.SV_NewChaseDir(ent, goal, dist);
+                || !Server.stepDirection(ent, ent.ideal_yaw, dist)) {
+            if (ent.inUse)
+                Server.SV_NewChaseDir(ent, goal, dist);
         }
     }
 
@@ -220,7 +219,7 @@ public final class M {
         move[1] = (float) Math.sin(yaw) * dist;
         move[2] = 0;
 
-        return SV.SV_movestep(ent, move, true);
+        return Server.moveStep(ent, move, true);
     }
 
     public static void M_CatagorizePosition(TEntityDict ent) {
@@ -230,9 +229,9 @@ public final class M {
         //
         //	get waterlevel
         //
-        point[0] = ent.s.origin[0];
-        point[1] = ent.s.origin[1];
-        point[2] = ent.s.origin[2] + ent.mins[2] + 1;
+        point[0] = ent.entityState.origin[0];
+        point[1] = ent.entityState.origin[1];
+        point[2] = ent.entityState.origin[2] + ent.mins[2] + 1;
         cont = GameBase.gi.pointcontents.pointcontents(point);
 
         if (0 == (cont & Defines.MASK_WATER)) {
@@ -269,9 +268,9 @@ public final class M {
                                 - ent.air_finished));
                         if (dmg > 15)
                             dmg = 15;
-                        GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                                GameBase.g_edicts[0], Context.vec3_origin,
-                                ent.s.origin, Context.vec3_origin, dmg, 0,
+                        GameCombat.T_Damage(ent, GameBase.entityDicts[0],
+                                GameBase.entityDicts[0], Context.vec3_origin,
+                                ent.entityState.origin, Context.vec3_origin, dmg, 0,
                                 Defines.DAMAGE_NO_ARMOR, Defines.MOD_WATER);
                         ent.pain_debounce_time = GameBase.level.time + 1;
                     }
@@ -286,9 +285,9 @@ public final class M {
                                 - ent.air_finished));
                         if (dmg > 15)
                             dmg = 15;
-                        GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                                GameBase.g_edicts[0], Context.vec3_origin,
-                                ent.s.origin, Context.vec3_origin, dmg, 0,
+                        GameCombat.T_Damage(ent, GameBase.entityDicts[0],
+                                GameBase.entityDicts[0], Context.vec3_origin,
+                                ent.entityState.origin, Context.vec3_origin, dmg, 0,
                                 Defines.DAMAGE_NO_ARMOR, Defines.MOD_WATER);
                         ent.pain_debounce_time = GameBase.level.time + 1;
                     }
@@ -310,9 +309,9 @@ public final class M {
                 && 0 == (ent.flags & Defines.FL_IMMUNE_LAVA)) {
             if (ent.damage_debounce_time < GameBase.level.time) {
                 ent.damage_debounce_time = GameBase.level.time + 0.2f;
-                GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                        GameBase.g_edicts[0], Context.vec3_origin,
-                        ent.s.origin, Context.vec3_origin, 10 * ent.waterlevel,
+                GameCombat.T_Damage(ent, GameBase.entityDicts[0],
+                        GameBase.entityDicts[0], Context.vec3_origin,
+                        ent.entityState.origin, Context.vec3_origin, 10 * ent.waterlevel,
                         0, 0, Defines.MOD_LAVA);
             }
         }
@@ -320,9 +319,9 @@ public final class M {
                 && 0 == (ent.flags & Defines.FL_IMMUNE_SLIME)) {
             if (ent.damage_debounce_time < GameBase.level.time) {
                 ent.damage_debounce_time = GameBase.level.time + 1;
-                GameCombat.T_Damage(ent, GameBase.g_edicts[0],
-                        GameBase.g_edicts[0], Context.vec3_origin,
-                        ent.s.origin, Context.vec3_origin, 4 * ent.waterlevel,
+                GameCombat.T_Damage(ent, GameBase.entityDicts[0],
+                        GameBase.entityDicts[0], Context.vec3_origin,
+                        ent.entityState.origin, Context.vec3_origin, 4 * ent.waterlevel,
                         0, 0, Defines.MOD_SLIME);
             }
         }
@@ -357,34 +356,34 @@ public final class M {
         public String getID() { return "m_drop_to_floor";}
         public boolean think(TEntityDict ent) {
             float[] end = { 0, 0, 0 };
-            trace_t trace;
+            TTrace trace;
 
-            ent.s.origin[2] += 1;
-            Math3D.VectorCopy(ent.s.origin, end);
+            ent.entityState.origin[2] += 1;
+            Math3D.VectorCopy(ent.entityState.origin, end);
             end[2] -= 256;
 
-            trace = GameBase.gi.trace(ent.s.origin, ent.mins, ent.maxs, end,
+            trace = GameBase.gi.trace(ent.entityState.origin, ent.mins, ent.maxs, end,
                     ent, Defines.MASK_MONSTERSOLID);
 
-            if (trace.fraction == 1 || trace.allsolid)
+            if (trace.fraction == 1 || trace.allSolid)
                 return true;
 
-            Math3D.VectorCopy(trace.endpos, ent.s.origin);
+            Math3D.VectorCopy(trace.endpos, ent.entityState.origin);
 
             GameBase.gi.linkentity(ent);
-            M.M_CheckGround(ent);
+            Monster.M_CheckGround(ent);
             M_CatagorizePosition(ent);
             return true;
         }
     };
 
     public static void M_SetEffects(TEntityDict ent) {
-        ent.s.effects &= ~(Defines.EF_COLOR_SHELL | Defines.EF_POWERSCREEN);
-        ent.s.renderfx &= ~(Defines.RF_SHELL_RED | Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE);
+        ent.entityState.effects &= ~(Defines.EF_COLOR_SHELL | Defines.EF_POWERSCREEN);
+        ent.entityState.renderfx &= ~(Defines.RF_SHELL_RED | Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE);
 
         if ((ent.monsterinfo.aiflags & Defines.AI_RESURRECTING) != 0) {
-            ent.s.effects |= Defines.EF_COLOR_SHELL;
-            ent.s.renderfx |= Defines.RF_SHELL_RED;
+            ent.entityState.effects |= Defines.EF_COLOR_SHELL;
+            ent.entityState.renderfx |= Defines.RF_SHELL_RED;
         }
 
         if (ent.health <= 0)
@@ -392,10 +391,10 @@ public final class M {
 
         if (ent.powerarmor_time > GameBase.level.time) {
             if (ent.monsterinfo.power_armor_type == Defines.POWER_ARMOR_SCREEN) {
-                ent.s.effects |= Defines.EF_POWERSCREEN;
+                ent.entityState.effects |= Defines.EF_POWERSCREEN;
             } else if (ent.monsterinfo.power_armor_type == Defines.POWER_ARMOR_SHIELD) {
-                ent.s.effects |= Defines.EF_COLOR_SHELL;
-                ent.s.renderfx |= Defines.RF_SHELL_GREEN;
+                ent.entityState.effects |= Defines.EF_COLOR_SHELL;
+                ent.entityState.renderfx |= Defines.RF_SHELL_GREEN;
             }
         }
     }
@@ -411,10 +410,10 @@ public final class M {
         if ((self.monsterinfo.nextframe != 0)
                 && (self.monsterinfo.nextframe >= move.firstframe)
                 && (self.monsterinfo.nextframe <= move.lastframe)) {
-            self.s.frame = self.monsterinfo.nextframe;
+            self.entityState.frame = self.monsterinfo.nextframe;
             self.monsterinfo.nextframe = 0;
         } else {
-            if (self.s.frame == move.lastframe) {
+            if (self.entityState.frame == move.lastframe) {
                 if (move.endfunc != null) {
                     move.endfunc.think(self);
 
@@ -427,19 +426,19 @@ public final class M {
                 }
             }
 
-            if (self.s.frame < move.firstframe || self.s.frame > move.lastframe) {
+            if (self.entityState.frame < move.firstframe || self.entityState.frame > move.lastframe) {
                 self.monsterinfo.aiflags &= ~Defines.AI_HOLD_FRAME;
-                self.s.frame = move.firstframe;
+                self.entityState.frame = move.firstframe;
             } else {
                 if (0 == (self.monsterinfo.aiflags & Defines.AI_HOLD_FRAME)) {
-                    self.s.frame++;
-                    if (self.s.frame > move.lastframe)
-                        self.s.frame = move.firstframe;
+                    self.entityState.frame++;
+                    if (self.entityState.frame > move.lastframe)
+                        self.entityState.frame = move.firstframe;
                 }
             }
         }
 
-        index = self.s.frame - move.firstframe;
+        index = self.entityState.frame - move.firstframe;
         if (move.frame[index].ai != null)
             if (0 == (self.monsterinfo.aiflags & Defines.AI_HOLD_FRAME))
                 move.frame[index].ai.ai(self, move.frame[index].dist
@@ -455,8 +454,8 @@ public final class M {
     public static EntThinkAdapter M_FliesOff = new EntThinkAdapter() {
         public String getID() { return "m_fliesoff";}
         public boolean think(TEntityDict self) {
-            self.s.effects &= ~Defines.EF_FLIES;
-            self.s.sound = 0;
+            self.entityState.effects &= ~Defines.EF_FLIES;
+            self.entityState.sound = 0;
             return true;
         }
     };
@@ -468,8 +467,8 @@ public final class M {
             if (self.waterlevel != 0)
                 return true;
 
-            self.s.effects |= Defines.EF_FLIES;
-            self.s.sound = GameBase.gi.soundindex("infantry/inflies1.wav");
+            self.entityState.effects |= Defines.EF_FLIES;
+            self.entityState.sound = GameBase.gi.soundindex("infantry/inflies1.wav");
             self.think = M_FliesOff;
             self.nextthink = GameBase.level.time + 60;
             return true;

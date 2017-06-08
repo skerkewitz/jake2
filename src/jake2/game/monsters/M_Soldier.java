@@ -1060,20 +1060,20 @@ public class M_Soldier {
             // regular death
             self.deadflag = Defines.DEAD_DEAD;
             self.takedamage = Defines.DAMAGE_YES;
-            self.s.skinnum |= 1;
+            self.entityState.skinnum |= 1;
 
-            if (self.s.skinnum == 1)
+            if (self.entityState.skinnum == 1)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_death_light,
                         1, Defines.ATTN_NORM, 0);
-            else if (self.s.skinnum == 3)
+            else if (self.entityState.skinnum == 3)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_death, 1,
                         Defines.ATTN_NORM, 0);
             else
-                // (self.s.skinnum == 5)
+                // (self.entityState.skinnum == 5)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_death_ss, 1,
                         Defines.ATTN_NORM, 0);
 
-            if (Math.abs((self.s.origin[2] + self.viewheight) - point[2]) <= 4) {
+            if (Math.abs((self.entityState.origin[2] + self.viewheight) - point[2]) <= 4) {
                 // head shot
                 self.monsterinfo.currentmove = soldier_move_death3;
                 return;
@@ -1096,7 +1096,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_attack1_refire1 = new EntThinkAdapter() {
     	public String getID(){ return "soldier_attack1_refire1"; }
         public boolean think(TEntityDict self) {
-            if (self.s.skinnum > 1)
+            if (self.entityState.skinnum > 1)
                 return true;
 
             if (self.enemy.health <= 0)
@@ -1114,7 +1114,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_attack1_refire2 = new EntThinkAdapter() {
     	public String getID(){ return "soldier_attack1_refire2"; }
         public boolean think(TEntityDict self) {
-            if (self.s.skinnum < 2)
+            if (self.entityState.skinnum < 2)
                 return true;
 
             if (self.enemy.health <= 0)
@@ -1130,7 +1130,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_attack2_refire1 = new EntThinkAdapter() {
     	public String getID(){ return "soldier_attack2_refire1"; }
         public boolean think(TEntityDict self) {
-            if (self.s.skinnum > 1)
+            if (self.entityState.skinnum > 1)
                 return true;
 
             if (self.enemy.health <= 0)
@@ -1148,7 +1148,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_attack2_refire2 = new EntThinkAdapter() {
     	public String getID(){ return "soldier_attack2_refire2"; }
         public boolean think(TEntityDict self) {
-            if (self.s.skinnum < 2)
+            if (self.entityState.skinnum < 2)
                 return true;
 
             if (self.enemy.health <= 0)
@@ -1345,7 +1345,7 @@ public class M_Soldier {
             int n;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum |= 1;
+                self.entityState.skinnum |= 1;
 
             if (GameBase.level.time < self.pain_debounce_time) {
                 if ((self.velocity[2] > 100)
@@ -1357,7 +1357,7 @@ public class M_Soldier {
 
             self.pain_debounce_time = GameBase.level.time + 3;
 
-            n = self.s.skinnum | 1;
+            n = self.entityState.skinnum | 1;
             if (n == 1)
                 GameBase.gi.sound(self, Defines.CHAN_VOICE, sound_pain_light,
                         1, Defines.ATTN_NORM, 0);
@@ -1429,7 +1429,7 @@ public class M_Soldier {
     	public String getID(){ return "SP_monster_soldier_x"; }
         public boolean think(TEntityDict self) {
 
-            self.s.modelindex = GameBase.gi
+            self.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/soldier/tris.md2");
             self.monsterinfo.scale = MODEL_SCALE;
             Math3D.VectorSet(self.mins, -16, -16, -24);
@@ -1484,7 +1484,7 @@ public class M_Soldier {
             GameBase.gi.soundindex("misc/lasfly.wav");
             GameBase.gi.soundindex("soldier/solatck2.wav");
 
-            self.s.skinnum = 0;
+            self.entityState.skinnum = 0;
             self.health = 20;
             self.gib_health = -30;
             return true;
@@ -1499,9 +1499,9 @@ public class M_Soldier {
     public static EntThinkAdapter SP_monster_soldier = new EntThinkAdapter() {
     	public String getID(){ return "SP_monster_soldier"; }
         public boolean think(TEntityDict self) {
-            Command.DPrintf("Spawning a soldier at " + self.s.origin[0] + " " +
-                    self.s.origin[1] + " " +
-                    self.s.origin[2] + " " +
+            Command.DPrintf("Spawning a soldier at " + self.entityState.origin[0] + " " +
+                    self.entityState.origin[1] + " " +
+                    self.entityState.origin[2] + " " +
                     "\n");
             
             if (GameBase.deathmatch.value != 0) {
@@ -1515,7 +1515,7 @@ public class M_Soldier {
             sound_death = GameBase.gi.soundindex("soldier/soldeth1.wav");
             GameBase.gi.soundindex("soldier/solatck1.wav");
 
-            self.s.skinnum = 2;
+            self.entityState.skinnum = 2;
             self.health = 30;
             self.gib_health = -30;
             return true;
@@ -1540,7 +1540,7 @@ public class M_Soldier {
             sound_death_ss = GameBase.gi.soundindex("soldier/soldeth3.wav");
             GameBase.gi.soundindex("soldier/solatck3.wav");
 
-            self.s.skinnum = 4;
+            self.entityState.skinnum = 4;
             self.health = 40;
             self.gib_health = -30;
             return true;
@@ -1556,22 +1556,22 @@ public class M_Soldier {
         float r, u;
         int flash_index;
 
-        if (self.s.skinnum < 2)
+        if (self.entityState.skinnum < 2)
             flash_index = blaster_flash[flash_number];
-        else if (self.s.skinnum < 4)
+        else if (self.entityState.skinnum < 4)
             flash_index = shotgun_flash[flash_number];
         else
             flash_index = machinegun_flash[flash_number];
 
-        Math3D.AngleVectors(self.s.angles, forward, right, null);
-        Math3D.G_ProjectSource(self.s.origin,
+        Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+        Math3D.G_ProjectSource(self.entityState.origin,
                 M_Flash.monster_flash_offset[flash_index], forward, right,
                 start);
 
         if (flash_number == 5 || flash_number == 6) {
             Math3D.VectorCopy(forward, aim);
         } else {
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             end[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(end, start, aim);
             Math3D.vectoangles(aim, dir);
@@ -1587,10 +1587,10 @@ public class M_Soldier {
             Math3D.VectorNormalize(aim);
         }
 
-        if (self.s.skinnum <= 1) {
+        if (self.entityState.skinnum <= 1) {
             Monster.monster_fire_blaster(self, start, aim, 5, 600, flash_index,
                     Defines.EF_BLASTER);
-        } else if (self.s.skinnum <= 3) {
+        } else if (self.entityState.skinnum <= 3) {
             Monster.monster_fire_shotgun(self, start, aim, 2, 1,
                     Defines.DEFAULT_SHOTGUN_HSPREAD,
                     Defines.DEFAULT_SHOTGUN_VSPREAD,
@@ -1614,7 +1614,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_cock = new EntThinkAdapter() {
     	public String getID(){ return "soldier_cock"; }
         public boolean think(TEntityDict self) {
-            if (self.s.frame == FRAME_stand322)
+            if (self.entityState.frame == FRAME_stand322)
                 GameBase.gi.sound(self, Defines.CHAN_WEAPON, sound_cock, 1,
                         Defines.ATTN_IDLE, 0);
             else
@@ -2219,7 +2219,7 @@ public class M_Soldier {
     static EntThinkAdapter soldier_attack = new EntThinkAdapter() {
     	public String getID(){ return "soldier_attack"; }
         public boolean think(TEntityDict self) {
-            if (self.s.skinnum < 4) {
+            if (self.entityState.skinnum < 4) {
                 if (Lib.random() < 0.5)
                     self.monsterinfo.currentmove = soldier_move_attack1;
                 else

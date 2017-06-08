@@ -39,7 +39,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
-public final class NET {
+public final class Network {
 
     private final static int MAX_LOOPBACK = 4;
 

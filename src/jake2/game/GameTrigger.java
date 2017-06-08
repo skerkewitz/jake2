@@ -30,8 +30,8 @@ import jake2.util.Math3D;
 public class GameTrigger {
 
     public static void InitTrigger(TEntityDict self) {
-        if (!Math3D.VectorEquals(self.s.angles, Context.vec3_origin))
-            GameBase.G_SetMovedir(self.s.angles, self.movedir);
+        if (!Math3D.VectorEquals(self.entityState.angles, Context.vec3_origin))
+            GameBase.G_SetMovedir(self.entityState.angles, self.movedir);
 
         self.solid = Defines.SOLID_TRIGGER;
         self.movetype = Defines.MOVETYPE_NONE;
@@ -40,7 +40,7 @@ public class GameTrigger {
     }
 
     // the trigger was just activated
-    // ent.activator should be set to the activator so it can be held through a
+    // entityDict.activator should be set to the activator so it can be held through a
     // delay so wait for the delay time before firing
     public static void multi_trigger(TEntityDict ent) {
         if (ent.nextthink != 0)
@@ -83,8 +83,8 @@ public class GameTrigger {
             ent.use = Use_Multi;
         }
 
-        if (!Math3D.VectorEquals(ent.s.angles, Context.vec3_origin))
-            GameBase.G_SetMovedir(ent.s.angles, ent.movedir);
+        if (!Math3D.VectorEquals(ent.entityState.angles, Context.vec3_origin))
+            GameBase.G_SetMovedir(ent.entityState.angles, ent.movedir);
 
         GameBase.gi.setmodel(ent, ent.model);
         GameBase.gi.linkentity(ent);
@@ -126,7 +126,7 @@ public class GameTrigger {
     public static void SP_trigger_key(TEntityDict self) {
         if (GameBase.st.item == null) {
             GameBase.gi.dprintf("no key item for trigger_key at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             return;
         }
         self.item = GameItems.FindItemByClassname(GameBase.st.item);
@@ -134,13 +134,13 @@ public class GameTrigger {
         if (null == self.item) {
             GameBase.gi.dprintf("item " + GameBase.st.item
                     + " not found for trigger_key at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             return;
         }
 
         if (self.target == null) {
             GameBase.gi.dprintf(self.classname + " at "
-                    + Lib.vtos(self.s.origin) + " has no target\n");
+                    + Lib.vtos(self.entityState.origin) + " has no target\n");
             return;
         }
 
@@ -213,7 +213,7 @@ public class GameTrigger {
     public static void SP_trigger_gravity(TEntityDict self) {
         if (GameBase.st.gravity == null) {
             GameBase.gi.dprintf("trigger_gravity without gravity set at "
-                    + Lib.vtos(self.s.origin) + "\n");
+                    + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
         }
@@ -228,8 +228,8 @@ public class GameTrigger {
             self.speed = 200;
         if (0 == GameBase.st.height)
             GameBase.st.height = 200;
-        if (self.s.angles[Defines.YAW] == 0)
-            self.s.angles[Defines.YAW] = 360;
+        if (self.entityState.angles[Defines.YAW] == 0)
+            self.entityState.angles[Defines.YAW] = 360;
         InitTrigger(self);
         self.touch = trigger_monsterjump_touch;
         self.movedir[2] = GameBase.st.height;
@@ -269,7 +269,7 @@ public class GameTrigger {
             if (!Math3D.VectorEquals(self.movedir, Context.vec3_origin)) {
                 float[] forward = { 0, 0, 0 };
 
-                Math3D.AngleVectors(other.s.angles, forward, null, null);
+                Math3D.AngleVectors(other.entityState.angles, forward, null, null);
                 if (Math3D.DotProduct(forward, self.movedir) < 0)
                     return;
             }
@@ -316,7 +316,7 @@ public class GameTrigger {
 
     /**
      * QUAKED trigger_key (.5 .5 .5) (-8 -8 -8) (8 8 8) A relay trigger that
-     * only fires it's targets if player has the proper key. Use "item" to
+     * only fires it'entityState targets if player has the proper key. Use "item" to
      * specify the required key, for example "key_data_cd"
      */
 
@@ -356,8 +356,8 @@ public class GameTrigger {
                         if ((activator.client.pers.power_cubes & (1 << cube)) != 0)
                             break;
                     for (player = 1; player <= GameBase.game.maxclients; player++) {
-                        ent = GameBase.g_edicts[player];
-                        if (!ent.inuse)
+                        ent = GameBase.entityDicts[player];
+                        if (!ent.inUse)
                             continue;
                         if (null == ent.client)
                             continue;
@@ -368,8 +368,8 @@ public class GameTrigger {
                     }
                 } else {
                     for (player = 1; player <= GameBase.game.maxclients; player++) {
-                        ent = GameBase.g_edicts[player];
-                        if (!ent.inuse)
+                        ent = GameBase.entityDicts[player];
+                        if (!ent.inUse)
                             continue;
                         if (ent.client == null)
                             continue;
@@ -394,7 +394,7 @@ public class GameTrigger {
      * "sequence complete" when finished.
      * 
      * After the counter has been triggered "count" times (default 2), it will
-     * fire all of it's targets and remove itself.
+     * fire all of it'entityState targets and remove itself.
      */
     static EntUseAdapter trigger_counter_use = new EntUseAdapter() {
     	public String getID(){ return "trigger_counter_use"; }
@@ -520,7 +520,7 @@ public class GameTrigger {
             else
                 dflags = 0;
             GameCombat.T_Damage(other, self, self, Context.vec3_origin,
-                    other.s.origin, Context.vec3_origin, self.dmg, self.dmg,
+                    other.entityState.origin, Context.vec3_origin, self.dmg, self.dmg,
                     dflags, Defines.MOD_TRIGGER_HURT);
         }
     };
@@ -557,7 +557,7 @@ public class GameTrigger {
 
     /**
      * QUAKED trigger_monsterjump (.5 .5 .5) ? Walking monsters that touch this
-     * will jump in the direction of the trigger's angle "speed" default to 200,
+     * will jump in the direction of the trigger'entityState angle "speed" default to 200,
      * the speed thrown forward "height" default to 200, the speed thrown
      * upwards
      */

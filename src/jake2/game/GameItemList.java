@@ -711,7 +711,7 @@ public class GameItemList {
 	
 	/*
 	 * QUAKED key_commander_head (0 .5 .8) (-16 -16 -16) (16 16 16) tank
-	 * commander's head
+	 * commander'entityState head
 	 */
 	new TGItem("key_commander_head", GameItems.Pickup_Key, null,
 	        GameItems.Drop_General, null, "items/pkup.wav",
@@ -720,7 +720,7 @@ public class GameItemList {
 	        /* icon */
 	        "k_comhead",
 	        /* pickup */
-	        "Commander's Head",
+	        "Commander'entityState Head",
 	        /* width */
 	        2, 0, null, Defines.IT_STAY_COOP | Defines.IT_KEY, 0, null,
 	        0,
@@ -729,7 +729,7 @@ public class GameItemList {
 	
 	/*
 	 * QUAKED key_airstrike_target (0 .5 .8) (-16 -16 -16) (16 16 16)
-	 * tank commander's head
+	 * tank commander'entityState head
 	 */
 	new TGItem("key_airstrike_target", GameItems.Pickup_Key, null,
 	        GameItems.Drop_General, null, "items/pkup.wav",

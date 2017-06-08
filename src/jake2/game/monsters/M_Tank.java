@@ -911,7 +911,7 @@ public class M_Tank {
     	public String getID(){ return "tank_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum |= 1;
+                self.entityState.skinnum |= 1;
 
             if (damage <= 10)
                 return;
@@ -925,11 +925,11 @@ public class M_Tank {
 
             // If hard or nightmare, don't go into pain while attacking
             if (GameBase.skill.value >= 2) {
-                if ((self.s.frame >= FRAME_attak301)
-                        && (self.s.frame <= FRAME_attak330))
+                if ((self.entityState.frame >= FRAME_attak301)
+                        && (self.entityState.frame <= FRAME_attak330))
                     return;
-                if ((self.s.frame >= FRAME_attak101)
-                        && (self.s.frame <= FRAME_attak116))
+                if ((self.entityState.frame >= FRAME_attak101)
+                        && (self.entityState.frame <= FRAME_attak116))
                     return;
             }
 
@@ -962,20 +962,20 @@ public class M_Tank {
             float[] dir = { 0, 0, 0 };
             int flash_number;
 
-            if (self.s.frame == FRAME_attak110)
+            if (self.entityState.frame == FRAME_attak110)
                 flash_number = Defines.MZ2_TANK_BLASTER_1;
-            else if (self.s.frame == FRAME_attak113)
+            else if (self.entityState.frame == FRAME_attak113)
                 flash_number = Defines.MZ2_TANK_BLASTER_2;
             else
-                // (self.s.frame == FRAME_attak116)
+                // (self.entityState.frame == FRAME_attak116)
                 flash_number = Defines.MZ2_TANK_BLASTER_3;
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, end);
+            Math3D.VectorCopy(self.enemy.entityState.origin, end);
             end[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(end, start, dir);
 
@@ -1005,20 +1005,20 @@ public class M_Tank {
             float[] vec = { 0, 0, 0 };
             int flash_number;
 
-            if (self.s.frame == FRAME_attak324)
+            if (self.entityState.frame == FRAME_attak324)
                 flash_number = Defines.MZ2_TANK_ROCKET_1;
-            else if (self.s.frame == FRAME_attak327)
+            else if (self.entityState.frame == FRAME_attak327)
                 flash_number = Defines.MZ2_TANK_ROCKET_2;
             else
-                // (self.s.frame == FRAME_attak330)
+                // (self.entityState.frame == FRAME_attak330)
                 flash_number = Defines.MZ2_TANK_ROCKET_3;
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -1041,15 +1041,15 @@ public class M_Tank {
             int flash_number;
 
             flash_number = Defines.MZ2_TANK_MACHINEGUN_1
-                    + (self.s.frame - FRAME_attak406);
+                    + (self.entityState.frame - FRAME_attak406);
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[flash_number], forward, right,
                     start);
 
             if (self.enemy != null) {
-                Math3D.VectorCopy(self.enemy.s.origin, vec);
+                Math3D.VectorCopy(self.enemy.entityState.origin, vec);
                 vec[2] += self.enemy.viewheight;
                 Math3D.VectorSubtract(vec, start, vec);
                 Math3D.vectoangles(vec, vec);
@@ -1057,10 +1057,10 @@ public class M_Tank {
             } else {
                 dir[0] = 0;
             }
-            if (self.s.frame <= FRAME_attak415)
-                dir[1] = self.s.angles[1] - 8 * (self.s.frame - FRAME_attak411);
+            if (self.entityState.frame <= FRAME_attak415)
+                dir[1] = self.entityState.angles[1] - 8 * (self.entityState.frame - FRAME_attak411);
             else
-                dir[1] = self.s.angles[1] + 8 * (self.s.frame - FRAME_attak419);
+                dir[1] = self.entityState.angles[1] + 8 * (self.entityState.frame - FRAME_attak419);
             dir[2] = 0;
 
             Math3D.AngleVectors(dir, forward, null, null);
@@ -1335,7 +1335,7 @@ public class M_Tank {
                 return true;
             }
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, vec);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, vec);
             range = Math3D.VectorLength(vec);
 
             r = Lib.random();
@@ -1482,7 +1482,7 @@ public class M_Tank {
                 return true;
             }
 
-            self.s.modelindex = GameBase.gi
+            self.entityState.modelIndex = GameBase.gi
                     .modelindex("models/monsters/tank/tris.md2");
             Math3D.VectorSet(self.mins, -32, -32, -16);
             Math3D.VectorSet(self.maxs, 32, 32, 72);
@@ -1535,7 +1535,7 @@ public class M_Tank {
             GameAI.walkmonster_start.think(self);
 
             if (Lib.strcmp(self.classname, "monster_tank_commander") == 0)
-                self.s.skinnum = 2;
+                self.entityState.skinnum = 2;
             return true;
         }
     };

@@ -26,7 +26,7 @@
 package jake2.client;
 
 import jake2.Defines;
-import jake2.game.player_state_t;
+import jake2.game.TPlayerState;
 import jake2.qcommon.Command;
 import jake2.qcommon.TSizeBuffer;
 import jake2.render.TModel;
@@ -222,7 +222,7 @@ public class CL_tent {
         String name;
 
         // PMM - version stuff
-        //		Com_Printf ("%s\n", ROGUE_VERSION_STRING);
+        //		Com_Printf ("%entityState\n", ROGUE_VERSION_STRING);
         // PMM
         cl_sfx_ric1 = Sound.RegisterSound("world/ric1.wav");
         cl_sfx_ric2 = Sound.RegisterSound("world/ric2.wav");
@@ -1356,7 +1356,7 @@ public class CL_tent {
             // add new entities for the beams
             d = Math3D.VectorNormalize(dist);
 
-            //memset (&ent, 0, sizeof(ent));
+            //memset (&entityDict, 0, sizeof(entityDict));
             ent.clear();
             if (b[i].model == cl_mod_lightning) {
                 model_length = 35.0f;
@@ -1379,7 +1379,7 @@ public class CL_tent {
                 // dist is from end to start
                 // for this beam)
                 //				for (j=0 ; j<3 ; j++)
-                //					ent.origin[j] -= dist[j]*10.0;
+                //					entityDict.origin[j] -= dist[j]*10.0;
                 ent.model = b[i].model;
                 ent.flags = Defines.RF_FULLBRIGHT;
                 ent.angles[0] = pitch;
@@ -1426,7 +1426,7 @@ public class CL_tent {
      */
     static void AddPlayerBeams() {
         float d;
-        //TEntity ent = new TEntity();
+        //TEntity entityDict = new TEntity();
         float yaw, pitch;
         float forward;
         float len, steps;
@@ -1435,7 +1435,7 @@ public class CL_tent {
 
         float hand_multiplier;
         TFrame oldframe;
-        player_state_t ps, ops;
+        TPlayerState ps, ops;
 
         //	  PMM
         if (Context.hand != null) {
@@ -1562,14 +1562,14 @@ public class CL_tent {
                     // b[i].offset[0], b[i].offset[1], b[i].offset[2]);
                     Math3D.AngleVectors(ent.angles, f, r, u);
 
-                    // if it's a non-origin offset, it's a player, so use the
+                    // if it'entityState a non-origin offset, it'entityState a player, so use the
                     // hardcoded player offset
                     if (!Math3D.VectorEquals(b[i].offset, Context.vec3_origin)) {
                         Math3D.VectorMA(org, -(b[i].offset[0]) + 1, r, org);
                         Math3D.VectorMA(org, -(b[i].offset[1]), f, org);
                         Math3D.VectorMA(org, -(b[i].offset[2]) - 10, u, org);
                     } else {
-                        // if it's a monster, do the particle effect
+                        // if it'entityState a monster, do the particle effect
                         CLNewEffects.MonsterPlasma_Shell(b[i].start);
                     }
                 } else {
@@ -1577,7 +1577,7 @@ public class CL_tent {
                 }
             }
 
-            // if it's the heatbeam, draw the particle effect
+            // if it'entityState the heatbeam, draw the particle effect
             if ((cl_mod_heatbeam != null && (b[i].model == cl_mod_heatbeam) && (b[i].entity == Context.cl.playernum + 1))) {
                 CLNewEffects.Heatbeam(org, dist);
             }
@@ -1585,7 +1585,7 @@ public class CL_tent {
             // add new entities for the beams
             d = Math3D.VectorNormalize(dist);
 
-            //memset (&ent, 0, sizeof(ent));
+            //memset (&entityDict, 0, sizeof(entityDict));
             ent.clear();
 
             if (b[i].model == cl_mod_heatbeam) {
@@ -1611,7 +1611,7 @@ public class CL_tent {
                 // dist is from end to start
                 // for this beam)
                 //				for (j=0 ; j<3 ; j++)
-                //					ent.origin[j] -= dist[j]*10.0;
+                //					entityDict.origin[j] -= dist[j]*10.0;
                 ent.model = b[i].model;
                 ent.flags = Defines.RF_FULLBRIGHT;
                 ent.angles[0] = pitch;
@@ -1624,13 +1624,13 @@ public class CL_tent {
                 Math3D.VectorCopy(org, ent.origin);
                 ent.model = b[i].model;
                 if (cl_mod_heatbeam != null && (b[i].model == cl_mod_heatbeam)) {
-                    //					ent.flags = RF_FULLBRIGHT|RF_TRANSLUCENT;
-                    //					ent.alpha = 0.3;
+                    //					entityDict.flags = RF_FULLBRIGHT|RF_TRANSLUCENT;
+                    //					entityDict.alpha = 0.3;
                     ent.flags = Defines.RF_FULLBRIGHT;
                     ent.angles[0] = -pitch;
                     ent.angles[1] = yaw + 180.0f;
                     ent.angles[2] = (Context.cl.time) % 360;
-                    //					ent.angles[2] = rand()%360;
+                    //					entityDict.angles[2] = rand()%360;
                     ent.frame = framenum;
                 } else if (b[i].model == cl_mod_lightning) {
                     ent.flags = Defines.RF_FULLBRIGHT;
@@ -1663,7 +1663,7 @@ public class CL_tent {
         float frac;
         int f;
 
-        //memset (&ent, 0, sizeof(ent)); Pointer!
+        //memset (&entityDict, 0, sizeof(entityDict)); Pointer!
         ent = null;
         ex = cl_explosions;
         for (i = 0; i < MAX_EXPLOSIONS; i++) {

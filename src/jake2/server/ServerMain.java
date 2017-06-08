@@ -29,7 +29,7 @@ import jake2.io.FileSystem;
 import jake2.network.Netchan;
 import jake2.network.TNetAddr;
 import jake2.qcommon.*;
-import jake2.sys.NET;
+import jake2.sys.Network;
 import jake2.sys.Timer;
 import jake2.util.Lib;
 
@@ -48,7 +48,7 @@ public class ServerMain {
         }
     }
 
-    public static client_t sv_client; // current client
+    public static TClient sv_client; // current client
 
     public static TVar sv_paused;
 
@@ -100,7 +100,7 @@ public class ServerMain {
      * unwillingly. This is NOT called if the entire server is quiting or
      * crashing.
      */
-    public static void SV_DropClient(client_t drop) {
+    public static void SV_DropClient(TClient drop) {
         // add the disconnect
         drop.netchan.message.writeByte(Defines.svc_disconnect);
 
@@ -133,7 +133,7 @@ public class ServerMain {
         String player;
         String status = "";
         int i;
-        client_t cl;
+        TClient cl;
         int statusLength;
         int playerLength;
 
@@ -171,7 +171,7 @@ public class ServerMain {
      *  SVC_Ack
      */
     public static void SVC_Ack() {
-        Command.Printf("Ping acknowledge from " + NET.AdrToString(Context.net_from)
+        Command.Printf("Ping acknowledge from " + Network.AdrToString(Context.net_from)
                 + "\n");
     }
 
@@ -228,7 +228,7 @@ public class ServerMain {
 
         // see if we already have a challenge for this ip
         for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-            if (NET.CompareBaseAdr(Context.net_from,
+            if (Network.CompareBaseAdr(Context.net_from,
                     ServerInit.svs.challenges[i].adr))
                 break;
             if (ServerInit.svs.challenges[i].time < oldestTime) {
@@ -257,7 +257,7 @@ public class ServerMain {
         String userinfo;
         TNetAddr adr;
         int i;
-        client_t cl;
+        TClient cl;
 
         int version;
         int qport;
@@ -279,11 +279,11 @@ public class ServerMain {
         userinfo = Cmd.Argv(4);
 
         // force the IP key/value pair so the game can filter based on ip
-        userinfo = Info.Info_SetValueForKey(userinfo, "ip", NET.AdrToString(Context.net_from));
+        userinfo = Info.Info_SetValueForKey(userinfo, "ip", Network.AdrToString(Context.net_from));
 
         // attractloop servers are ONLY for local clients
         if (ServerInit.sv.attractloop) {
-            if (!NET.IsLocalAddress(adr)) {
+            if (!Network.IsLocalAddress(adr)) {
                 Command.Printf("Remote connect in attract loop.  Ignored.\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER, adr,
                         "print\nConnection refused.\n");
@@ -292,9 +292,9 @@ public class ServerMain {
         }
 
         // see if the challenge is valid
-        if (!NET.IsLocalAddress(adr)) {
+        if (!Network.IsLocalAddress(adr)) {
             for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-                if (NET.CompareBaseAdr(Context.net_from,
+                if (Network.CompareBaseAdr(Context.net_from,
                         ServerInit.svs.challenges[i].adr)) {
                     if (challenge == ServerInit.svs.challenges[i].challenge)
                         break; // good
@@ -316,15 +316,15 @@ public class ServerMain {
 
             if (cl.state == Defines.cs_free)
                 continue;
-            if (NET.CompareBaseAdr(adr, cl.netchan.remote_address)
+            if (Network.CompareBaseAdr(adr, cl.netchan.remote_address)
                     && (cl.netchan.qport == qport || adr.port == cl.netchan.remote_address.port)) {
-                if (!NET.IsLocalAddress(adr)
+                if (!Network.IsLocalAddress(adr)
                         && (ServerInit.svs.realtime - cl.lastconnect) < ((int) ServerMain.sv_reconnect_limit.value * 1000)) {
-                    Command.DPrintf(NET.AdrToString(adr)
+                    Command.DPrintf(Network.AdrToString(adr)
                             + ":reconnect rejected : too soon\n");
                     return;
                 }
-                Command.Printf(NET.AdrToString(adr) + ":reconnect\n");
+                Command.Printf(Network.AdrToString(adr) + ":reconnect\n");
 
                 gotnewcl(i, challenge, userinfo, adr, qport);
                 return;
@@ -357,13 +357,13 @@ public class ServerMain {
                                 TNetAddr adr, int qport) {
         // build a new connection
         // accept the new client
-        // this is the only place a client_t is ever initialized
+        // this is the only place a TClient is ever initialized
 
         ServerMain.sv_client = ServerInit.svs.clients[i];
         
         int edictnum = i + 1;
         
-        TEntityDict ent = GameBase.g_edicts[edictnum];
+        TEntityDict ent = GameBase.entityDicts[edictnum];
         ServerInit.svs.clients[i].edict = ent;
         
         // save challenge for checksumming
@@ -431,10 +431,10 @@ public class ServerMain {
         String msg = Lib.CtoJava(Context.net_message.data, 4, 1024);
 
         if (i == 0)
-            Command.Printf("Bad rcon from " + NET.AdrToString(Context.net_from)
+            Command.Printf("Bad rcon from " + Network.AdrToString(Context.net_from)
                     + ":\n" + msg + "\n");
         else
-            Command.Printf("Rcon from " + NET.AdrToString(Context.net_from) + ":\n"
+            Command.Printf("Rcon from " + Network.AdrToString(Context.net_from) + ":\n"
                     + msg + "\n");
 
         Command.BeginRedirect(Defines.RD_PACKET, SV_SEND.sv_outputbuf,
@@ -479,7 +479,7 @@ public class ServerMain {
         c = Cmd.Argv(0);
         
         //for debugging purposes 
-        //Command.Printf("Packet " + NET.AdrToString(Netchan.net_from) + " : " + c + "\n");
+        //Command.Printf("Packet " + Network.AdrToString(Netchan.net_from) + " : " + c + "\n");
         //Command.Printf(Lib.hexDump(net_message.data, 64, false) + "\n");
 
         if (0 == Lib.strcmp(c, "ping"))
@@ -498,7 +498,7 @@ public class ServerMain {
             SVC_RemoteCommand();
         else {
             Command.Printf("bad connectionless packet from "
-                    + NET.AdrToString(Context.net_from) + "\n");
+                    + Network.AdrToString(Context.net_from) + "\n");
             Command.Printf("[" + s + "]\n");
             Command.Printf("" + Lib.hexDump(Context.net_message.data, 128, false));
         }
@@ -509,7 +509,7 @@ public class ServerMain {
      */
     public static void SV_CalcPings() {
         int i, j;
-        client_t cl;
+        TClient cl;
         int total, count;
 
         for (i = 0; i < ServerMain.maxclients.value; i++) {
@@ -541,7 +541,7 @@ public class ServerMain {
      */
     public static void SV_GiveMsec() {
         int i;
-        client_t cl;
+        TClient cl;
 
         if ((ServerInit.sv.framenum & 15) != 0)
             return;
@@ -560,10 +560,10 @@ public class ServerMain {
      */
     public static void SV_ReadPackets() {
         int i;
-        client_t cl;
+        TClient cl;
         int qport = 0;
 
-        while (NET.GetPacket(Defines.NS_SERVER, Context.net_from,
+        while (Network.GetPacket(Defines.NS_SERVER, Context.net_from,
                 Context.net_message)) {
 
             // check for connectionless packet (0xffffffff) first
@@ -587,7 +587,7 @@ public class ServerMain {
                 cl = ServerInit.svs.clients[i];
                 if (cl.state == Defines.cs_free)
                     continue;
-                if (!NET.CompareBaseAdr(Context.net_from,
+                if (!Network.CompareBaseAdr(Context.net_from,
                         cl.netchan.remote_address))
                     continue;
                 if (cl.netchan.qport != qport)
@@ -617,13 +617,13 @@ public class ServerMain {
      * seconds, drop the conneciton. Server frames are used instead of realtime
      * to avoid dropping the local client while debugging.
      * 
-     * When a client is normally dropped, the client_t goes into a zombie state
+     * When a client is normally dropped, the TClient goes into a zombie state
      * for a few seconds to make sure any final reliable message gets resent if
      * necessary.
      */
     public static void SV_CheckTimeouts() {
         int i;
-        client_t cl;
+        TClient cl;
         int droppoint;
         int zombiepoint;
 
@@ -661,9 +661,9 @@ public class ServerMain {
         int i;
 
         for (i = 0; i < GameBase.num_edicts; i++) {
-            ent = GameBase.g_edicts[i];
+            ent = GameBase.entityDicts[i];
             // events only last for a single message
-            ent.s.event = 0;
+            ent.entityState.event = 0;
         }
 
     }
@@ -684,7 +684,7 @@ public class ServerMain {
 
         // don't run if paused
         if (0 == ServerMain.sv_paused.value || ServerMain.maxclients.value > 1) {
-            GameBase.G_RunFrame();
+            GameBase.runFrame();
 
             // never get more than one tic behind
             if (ServerInit.sv.time < ServerInit.svs.realtime) {
@@ -720,8 +720,8 @@ public class ServerMain {
         // get packets from clients
         SV_ReadPackets();
 
-        //if (Game.g_edicts[1] !=null)
-        //	Command.p("player at:" + Lib.vtofsbeaty(Game.g_edicts[1].s.origin ));
+        //if (Game.entityDicts[1] !=null)
+        //	Command.p("player at:" + Lib.vtofsbeaty(Game.entityDicts[1].entityState.origin ));
 
         // move autonomous things around if enough time has passed
         if (0 == ServerMain.sv_timedemo.value
@@ -732,7 +732,7 @@ public class ServerMain {
                     Command.Printf("sv lowclamp\n");
                 ServerInit.svs.realtime = ServerInit.sv.time - 100;
             }
-            NET.Sleep(ServerInit.sv.time - ServerInit.svs.realtime);
+            Network.Sleep(ServerInit.sv.time - ServerInit.svs.realtime);
             return;
         }
 
@@ -787,7 +787,7 @@ public class ServerMain {
         for (i = 0; i < Defines.MAX_MASTERS; i++)
             if (ServerMain.master_adr[i].port != 0) {
                 Command.Printf("Sending heartbeat to "
-                        + NET.AdrToString(ServerMain.master_adr[i]) + "\n");
+                        + Network.AdrToString(ServerMain.master_adr[i]) + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         ServerMain.master_adr[i], "heartbeat\n" + string);
             }
@@ -813,7 +813,7 @@ public class ServerMain {
             if (ServerMain.master_adr[i].port != 0) {
                 if (i > 0)
                     Command.Printf("Sending heartbeat to "
-                            + NET.AdrToString(ServerMain.master_adr[i]) + "\n");
+                            + Network.AdrToString(ServerMain.master_adr[i]) + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         ServerMain.master_adr[i], "shutdown");
             }
@@ -824,7 +824,7 @@ public class ServerMain {
      * Pull specific info from a newly changed userinfo string into a more C
      * freindly form.
      */
-    public static void SV_UserinfoChanged(client_t cl) {
+    public static void SV_UserinfoChanged(TClient cl) {
         String val;
         int i;
 
@@ -863,7 +863,7 @@ public class ServerMain {
      * Only called at quake2.exe startup, not for each game
      */
     public static void SV_Init() {
-        SV_CCMDS.SV_InitOperatorCommands(); //ok.
+        ServerCommands.registerOperatorCommands(); //ok.
 
         ServerMain.rcon_password = ConsoleVar.Get("rcon_password", "", 0);
         ConsoleVar.Get("skill", "1", 0);
@@ -906,7 +906,7 @@ public class ServerMain {
      */
     public static void SV_FinalMessage(String message, boolean reconnect) {
         int i;
-        client_t cl;
+        TClient cl;
 
         Context.net_message.clear();
         Context.net_message.writeByte(Defines.svc_print);
@@ -941,7 +941,7 @@ public class ServerMain {
 
         Master_Shutdown();
 
-        SV_GAME.SV_ShutdownGameProgs();
+        ServerGame.SV_ShutdownGameProgs();
 
         // free current level
         if (ServerInit.sv.demofile != null)

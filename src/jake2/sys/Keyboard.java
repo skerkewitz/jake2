@@ -26,6 +26,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sys;
 
 
+import jake2.client.Context;
+
 /**
  * Keyboard
  */
@@ -37,7 +39,7 @@ abstract public class Keyboard {
 	// motion values
 	public static int mx = 0;
 	public static int my = 0;
-	
+
 	abstract public void Init();
 
 	abstract public void Update();

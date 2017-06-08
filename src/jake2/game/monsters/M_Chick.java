@@ -864,7 +864,7 @@ public class M_Chick {
             float r;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -1083,12 +1083,12 @@ public class M_Chick {
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_CHICK_ROCKET_1],
                     forward, right, start);
 
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -1298,7 +1298,7 @@ public class M_Chick {
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/bitch/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, 0);
         Math3D.VectorSet(self.maxs, 16, 16, 56);

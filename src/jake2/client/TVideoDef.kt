@@ -19,43 +19,39 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
 // Created on 20.11.2003 by RST.
-package jake2.client;
+package jake2.client
 
-public class viddef_t {
-    private int width;
-    private int height;
-    private int newWidth;
-    private int newHeight;
+class TVideoDef {
+    var width: Int = 0
+        private set
+    var height: Int = 0
+        private set
+
+    private var newWidth: Int = 0
+    private var newHeight: Int = 0
 
     /**
-     * This method hasn't an effect on <code>width</code> and <code>height</code>
-     * directly. The new values will be active after an <code>update()</code>
+     * This method hasn't an effect on `width` and `height`
+     * directly. The new values will be active after an `update()`
      * call.
-     * 
+
      * @param width
-     *                the visible render screen width.
+     * *                the visible render screen width.
+     * *
      * @param height
-     *                the visible render screen height.
+     * *                the visible render screen height.
      */
-    public synchronized void setSize(int width, int height) {
-	newWidth = width;
-	newHeight = height;
+    @Synchronized fun setSize(width: Int, height: Int) {
+        newWidth = width
+        newHeight = height
     }
 
     /**
-     * Updates the buffered <code>width</code> and <code>height</code>. The
+     * Updates the buffered `width` and `height`. The
      * method should be called once at the beginning of a frame.
      */
-    public synchronized void update() {
-	width = newWidth;
-	height = newHeight;
-    }
-
-    public int getWidth() {
-	return width;
-    }
-
-    public int getHeight() {
-	return height;
+    @Synchronized fun update() {
+        width = newWidth
+        height = newHeight
     }
 }

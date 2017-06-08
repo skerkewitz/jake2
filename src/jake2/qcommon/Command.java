@@ -32,7 +32,6 @@ import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.io.FileSystem;
 import jake2.server.ServerMain;
-import jake2.sys.QSystem;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -349,7 +348,7 @@ public final class Command {
         // static char msg[MAXPRINTMSG];
 
         if (recursive) {
-            QSystem.Error("recursive error after: " + msg);
+            Qcommon.Companion.Error("recursive error after: " + msg);
         }
         recursive = true;
 
@@ -366,11 +365,11 @@ public final class Command {
             recursive = false;
             throw new QuakeException();
         } else {
-            ServerMain.SV_Shutdown("Server fatal crashed: %s" + msg + "\n", false);
+            ServerMain.SV_Shutdown("Server fatal crashed: %entityState" + msg + "\n", false);
             CL.Shutdown();
         }
 
-        QSystem.Error(msg);
+        Qcommon.Companion.Error(msg);
     }
 
     public static void dprintln(String fmt) {
@@ -406,14 +405,14 @@ public final class Command {
         Console.Print(msg);
 
         // also echo to debugging console
-        QSystem.ConsoleOutput(msg);
+        ConsoleOutput(msg);
 
         // logfile
         if (Context.logfile_active != null && Context.logfile_active.value != 0) {
             String name;
 
             if (Context.logfile == null) {
-                name = FileSystem.Gamedir() + "/qconsole.log";
+                name = FileSystem.gamedir() + "/qconsole.log";
                 if (Context.logfile_active.value > 2)
                     try {
                         Context.logfile = new RandomAccessFile(name, "rw");
@@ -466,7 +465,7 @@ public final class Command {
             Context.logfile = null;
         }
 
-        QSystem.Quit();
+        Qcommon.Companion.Quit();
     }
 
     public static void SetServerState(int i) {
@@ -489,7 +488,7 @@ public final class Command {
      */
     public static byte BlockSequenceCRCByte(byte base[], int offset, int length, int sequence) {
         if (sequence < 0)
-            QSystem.Error("sequence < 0, this shouldn't happen\n");
+            Qcommon.Companion.Error("sequence < 0, this shouldn't happen\n");
 
         //p_ndx = (sequence % (sizeof(chktbl) - 4));
         int p_ndx = (sequence % (1024 - 4));
@@ -515,6 +514,13 @@ public final class Command {
         crc ^= x;
 
         return (byte) (crc & 0xFF);
+    }
+
+    public static void ConsoleOutput(String msg) {
+        if (Context.nostdout != null && Context.nostdout.value != 0)
+            return;
+
+        System.out.print(msg);
     }
 
     public abstract static class RD_Flusher {

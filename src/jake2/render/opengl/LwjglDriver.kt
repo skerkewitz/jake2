@@ -25,7 +25,7 @@
  */
 package jake2.render.opengl
 
-import jake2.client.Dimension
+import jake2.common.Dimension
 import jake2.client.VID
 import jake2.qcommon.TXCommand
 import jake2.render.Base
@@ -246,7 +246,7 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
         // Enable v-sync
         glfwSwapInterval(1)
 
-        // This line is critical for LWJGL's interoperation with GLFW's
+        // This line is critical for LWJGL'entityState interoperation with GLFW'entityState
         // OpenGL context, or any context that is managed externally.
         // LWJGL detects the context that is current in the current thread,
         // creates the GLCapabilities instance and makes the OpenGL

@@ -839,7 +839,7 @@ public class M_Berserk {
         public String getID() { return "berserk_pain";}
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -959,7 +959,7 @@ public class M_Berserk {
         sound_search = GameBase.gi.soundindex("berserk/bersrch1.wav");
         sound_sight = GameBase.gi.soundindex("berserk/sight.wav");
 
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/berserk/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);

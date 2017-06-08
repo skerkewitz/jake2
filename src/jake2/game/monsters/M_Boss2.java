@@ -440,7 +440,7 @@ public class M_Boss2 {
 
             float range;
 
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, vec);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, vec);
             range = Math3D.VectorLength(vec);
 
             if (range <= 125) {
@@ -481,7 +481,7 @@ public class M_Boss2 {
     	public String getID() { return "boss2_pain"; }
         public void pain(TEntityDict self, TEntityDict other, float kick, int damage) {
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -537,16 +537,16 @@ public class M_Boss2 {
             float[] spot1 = { 0, 0, 0 }, spot2 = { 0, 0, 0 };
             float[] temp = { 0, 0, 0 };
             float chance;
-            trace_t tr;
+            TTrace tr;
 
             int enemy_range;
             float enemy_yaw;
 
             if (self.enemy.health > 0) {
                 // see if any entities are in the way of the shot
-                Math3D.VectorCopy(self.s.origin, spot1);
+                Math3D.VectorCopy(self.entityState.origin, spot1);
                 spot1[2] += self.viewheight;
-                Math3D.VectorCopy(self.enemy.s.origin, spot2);
+                Math3D.VectorCopy(self.enemy.entityState.origin, spot2);
                 spot2[2] += self.enemy.viewheight;
 
                 tr = GameBase.gi.trace(spot1, null, null, spot2, self,
@@ -555,12 +555,12 @@ public class M_Boss2 {
                                 | Defines.CONTENTS_LAVA);
 
                 // do we have a clear shot?
-                if (tr.ent != self.enemy)
+                if (tr.entityDict != self.enemy)
                     return false;
             }
 
             enemy_range = GameUtil.range(self, self.enemy);
-            Math3D.VectorSubtract(self.enemy.s.origin, self.s.origin, temp);
+            Math3D.VectorSubtract(self.enemy.entityState.origin, self.entityState.origin, temp);
             enemy_yaw = Math3D.vectoyaw(temp);
 
             self.ideal_yaw = enemy_yaw;
@@ -632,13 +632,13 @@ public class M_Boss2 {
             float[] dir = { 0, 0, 0 };
             float[] vec = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
 
             //	  1
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_ROCKET_1],
                     forward, right, start);
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -646,10 +646,10 @@ public class M_Boss2 {
                     Defines.MZ2_BOSS2_ROCKET_1);
 
             //	  2
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_ROCKET_2],
                     forward, right, start);
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -657,10 +657,10 @@ public class M_Boss2 {
                     Defines.MZ2_BOSS2_ROCKET_2);
 
             //	  3
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_ROCKET_3],
                     forward, right, start);
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -668,10 +668,10 @@ public class M_Boss2 {
                     Defines.MZ2_BOSS2_ROCKET_3);
 
             //	  4
-            Math3D.G_ProjectSource(self.s.origin,
+            Math3D.G_ProjectSource(self.entityState.origin,
                     M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_ROCKET_4],
                     forward, right, start);
-            Math3D.VectorCopy(self.enemy.s.origin, vec);
+            Math3D.VectorCopy(self.enemy.entityState.origin, vec);
             vec[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(vec, start, dir);
             Math3D.VectorNormalize(dir);
@@ -688,14 +688,14 @@ public class M_Boss2 {
                     0, 0 };
             float[] start = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             Math3D
                     .G_ProjectSource(
-                            self.s.origin,
+                            self.entityState.origin,
                             M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_MACHINEGUN_R1],
                             forward, right, start);
 
-            Math3D.VectorMA(self.enemy.s.origin, -0.2f, self.enemy.velocity,
+            Math3D.VectorMA(self.enemy.entityState.origin, -0.2f, self.enemy.velocity,
                     target);
             target[2] += self.enemy.viewheight;
             Math3D.VectorSubtract(target, start, forward);
@@ -717,14 +717,14 @@ public class M_Boss2 {
                     0, 0 };
             float[] start = { 0, 0, 0 };
 
-            Math3D.AngleVectors(self.s.angles, forward, right, null);
+            Math3D.AngleVectors(self.entityState.angles, forward, right, null);
             Math3D
                     .G_ProjectSource(
-                            self.s.origin,
+                            self.entityState.origin,
                             M_Flash.monster_flash_offset[Defines.MZ2_BOSS2_MACHINEGUN_L1],
                             forward, right, start);
 
-            Math3D.VectorMA(self.enemy.s.origin, -0.2f, self.enemy.velocity,
+            Math3D.VectorMA(self.enemy.entityState.origin, -0.2f, self.enemy.velocity,
                     target);
 
             target[2] += self.enemy.viewheight;
@@ -748,13 +748,13 @@ public class M_Boss2 {
              * float[] start={0,0,0}; float[] dir={0,0,0}; float[] vec={0,0,0};
              * int flash_number;
              * 
-             * AngleVectors (self.s.angles, forward, right, null);
+             * AngleVectors (self.entityState.angles, forward, right, null);
              * 
-             * flash_number = MZ2_BOSS2_MACHINEGUN_1 + (self.s.frame -
-             * FRAME_attack10); G_ProjectSource (self.s.origin,
+             * flash_number = MZ2_BOSS2_MACHINEGUN_1 + (self.entityState.frame -
+             * FRAME_attack10); G_ProjectSource (self.entityState.origin,
              * monster_flash_offset[flash_number], forward, right, start);
              * 
-             * VectorCopy (self.enemy.s.origin, vec); vec[2] +=
+             * VectorCopy (self.enemy.entityState.origin, vec); vec[2] +=
              * self.enemy.viewheight; VectorSubtract (vec, start, dir);
              * VectorNormalize (dir); monster_fire_bullet (self, start, dir, 3,
              * 4, DEFAULT_BULLET_HSPREAD, DEFAULT_BULLET_VSPREAD, flash_number);
@@ -1044,11 +1044,11 @@ public class M_Boss2 {
         sound_death = GameBase.gi.soundindex("bosshovr/bhvdeth1.wav");
         sound_search1 = GameBase.gi.soundindex("bosshovr/bhvunqv1.wav");
 
-        self.s.sound = GameBase.gi.soundindex("bosshovr/bhvengn1.wav");
+        self.entityState.sound = GameBase.gi.soundindex("bosshovr/bhvengn1.wav");
 
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/boss2/tris.md2");
         Math3D.VectorSet(self.mins, -56, -56, 0);
         Math3D.VectorSet(self.maxs, 56, 56, 80);

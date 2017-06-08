@@ -136,10 +136,10 @@ public class CM {
 
     public static int numcmodels;
 
-    public static cmodel_t map_cmodels[] = new cmodel_t[Defines.MAX_MAP_MODELS];
+    public static TCModel map_cmodels[] = new TCModel[Defines.MAX_MAP_MODELS];
     static {
         for (int n = 0; n < Defines.MAX_MAP_MODELS; n++)
-            map_cmodels[n] = new cmodel_t();
+            map_cmodels[n] = new TCModel();
 
     }
 
@@ -202,8 +202,8 @@ public class CM {
     /** 
      * Loads in the map and all submodels.
      */
-    public static cmodel_t CM_LoadMap(String name, boolean clientload,
-            int checksum[]) {
+    public static TCModel CM_LoadMap(String name, boolean clientload,
+                                     int checksum[]) {
         Command.DPrintf("CM_LoadMap(" + name + ")...\n");
         byte buf[];
         qfiles.dheader_t header;
@@ -244,7 +244,7 @@ public class CM {
         //
         // load the file
         //
-        buf = FileSystem.LoadFile(name);
+        buf = FileSystem.loadFile(name);
 
         if (buf == null)
             Command.Error(Defines.ERR_DROP, "Couldn't load " + name);
@@ -297,7 +297,7 @@ public class CM {
     public static void CMod_LoadSubmodels(TLump l) {
         Command.DPrintf("CMod_LoadSubmodels()\n");
         qfiles.dmodel_t in;
-        cmodel_t out;
+        TCModel out;
         int i, j, count;
 
         if ((l.filelen % qfiles.dmodel_t.SIZE) != 0)
@@ -777,7 +777,7 @@ public class CM {
     }
 
     /** Returns the model with a given id "*" + <number> */
-    public static cmodel_t InlineModel(String name) {
+    public static TCModel InlineModel(String name) {
         if (name == null || name.charAt(0) != '*')
             Command.Error(Defines.ERR_DROP, "CM_InlineModel: bad name");
 
@@ -1081,7 +1081,7 @@ public class CM {
 
     private static float[] trace_extents = { 0, 0, 0 };
 
-    private static trace_t trace_trace = new trace_t();
+    private static TTrace trace_trace = new TTrace();
 
     private static int trace_contents;
 
@@ -1091,7 +1091,7 @@ public class CM {
      * ================ CM_ClipBoxToBrush ================
      */
     public static void CM_ClipBoxToBrush(float[] mins, float[] maxs,
-            float[] p1, float[] p2, trace_t trace, cbrush_t brush) {
+                                         float[] p1, float[] p2, TTrace trace, cbrush_t brush) {
         int i, j;
         cplane_t plane, clipplane;
         float dist;
@@ -1169,9 +1169,9 @@ public class CM {
         }
 
         if (!startout) { // original point was inside brush
-            trace.startsolid = true;
+            trace.startSolid = true;
             if (!getout)
-                trace.allsolid = true;
+                trace.allSolid = true;
             return;
         }
         if (enterfrac < leavefrac) {
@@ -1191,7 +1191,7 @@ public class CM {
      * ================ CM_TestBoxInBrush ================
      */
     public static void CM_TestBoxInBrush(float[] mins, float[] maxs,
-            float[] p1, trace_t trace, cbrush_t brush) {
+                                         float[] p1, TTrace trace, cbrush_t brush) {
         int i, j;
         cplane_t plane;
         float dist;
@@ -1229,7 +1229,7 @@ public class CM {
         }
 
         // inside this brush
-        trace.startsolid = trace.allsolid = true;
+        trace.startSolid = trace.allSolid = true;
         trace.fraction = 0;
         trace.contents = brush.contents;
     }
@@ -1401,8 +1401,8 @@ public class CM {
     /*
      * ================== CM_BoxTrace ==================
      */
-    public static trace_t BoxTrace(float[] start, float[] end, float[] mins,
-            float[] maxs, int headnode, int brushmask) {
+    public static TTrace BoxTrace(float[] start, float[] end, float[] mins,
+                                  float[] maxs, int headnode, int brushmask) {
 
         // for multi-check avoidance
         checkcount++;
@@ -1412,7 +1412,7 @@ public class CM {
 
         // fill in a default trace
         //was: memset(& trace_trace, 0, sizeof(trace_trace));
-        trace_trace = new trace_t();
+        trace_trace = new TTrace();
 
         trace_trace.fraction = 1;
         trace_trace.surface = nullsurface.c;
@@ -1453,7 +1453,7 @@ public class CM {
             topnode = tn[0];
             for (i = 0; i < numleafs; i++) {
                 CM_TestInLeaf(leafs[i]);
-                if (trace_trace.allsolid)
+                if (trace_trace.allSolid)
                     break;
             }
             Math3D.VectorCopy(start, trace_trace.endpos);
@@ -1493,10 +1493,10 @@ public class CM {
      * CM_TransformedBoxTrace handles offseting and rotation of the end points for moving and rotating
      * entities.
      */
-    public static trace_t TransformedBoxTrace(float[] start, float[] end,
-            float[] mins, float[] maxs, int headnode, int brushmask,
-            float[] origin, float[] angles) {
-        trace_t trace;
+    public static TTrace TransformedBoxTrace(float[] start, float[] end,
+                                             float[] mins, float[] maxs, int headnode, int brushmask,
+                                             float[] origin, float[] angles) {
+        TTrace trace;
         float[] start_l = { 0, 0, 0 }, end_l = { 0, 0, 0 };
         float[] a = { 0, 0, 0 };
         float[] forward = { 0, 0, 0 }, right = { 0, 0, 0 }, up = { 0, 0, 0 };

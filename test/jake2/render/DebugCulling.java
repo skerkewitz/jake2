@@ -157,8 +157,8 @@ public class DebugCulling
 			refdef.blend =  new float[] { 0.0f, 0.0f, 0.0f, 0.0f };
 
 			refdef.areabits = null; // draw all
-//			refdef.areabits = new byte[Defines.MAX_MAP_AREAS / 8];
-//			Arrays.fill(refdef.areabits, (byte) 0xFF);
+//			refdef.areaBits = new byte[Defines.MAX_MAP_AREAS / 8];
+//			Arrays.fill(refdef.areaBits, (byte) 0xFF);
 
 
 			refdef.num_entities = 0;

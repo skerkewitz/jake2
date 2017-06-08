@@ -178,7 +178,7 @@ public final class Cbuf {
 
             // delete the text from the command buffer and move remaining
             // commands down
-            // this is necessary because commands (exec, alias) can insert data
+            // this is necessary because commands (exec, alias) can insertBefore data
             // at the
             // beginning of the text buffer
 

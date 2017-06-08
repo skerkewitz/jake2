@@ -892,7 +892,7 @@ public class M_Flyer {
             int n;
 
             if (self.health < (self.max_health / 2))
-                self.s.skinnum = 1;
+                self.entityState.skinnum = 1;
 
             if (GameBase.level.time < self.pain_debounce_time)
                 return;
@@ -937,18 +937,18 @@ public class M_Flyer {
         float[] dir = { 0, 0, 0 };
         int effect;
 
-        if ((self.s.frame == FRAME_attak204)
-                || (self.s.frame == FRAME_attak207)
-                || (self.s.frame == FRAME_attak210))
+        if ((self.entityState.frame == FRAME_attak204)
+                || (self.entityState.frame == FRAME_attak207)
+                || (self.entityState.frame == FRAME_attak210))
             effect = Defines.EF_HYPERBLASTER;
         else
             effect = 0;
-        Math3D.AngleVectors(self.s.angles, forward, right, null);
-        Math3D.G_ProjectSource(self.s.origin,
+        Math3D.AngleVectors(self.entityState.angles, forward, right, null);
+        Math3D.G_ProjectSource(self.entityState.origin,
                 M_Flash.monster_flash_offset[flash_number], forward, right,
                 start);
 
-        Math3D.VectorCopy(self.enemy.s.origin, end);
+        Math3D.VectorCopy(self.enemy.entityState.origin, end);
         end[2] += self.enemy.viewheight;
         Math3D.VectorSubtract(end, start, dir);
 
@@ -968,7 +968,7 @@ public class M_Flyer {
 
         // fix a map bug in jail5.bsp
         if (GameBase.level.mapname.equalsIgnoreCase("jail5")
-                && (self.s.origin[2] == -104)) {
+                && (self.entityState.origin[2] == -104)) {
             self.targetname = self.target;
             self.target = null;
         }
@@ -983,14 +983,14 @@ public class M_Flyer {
 
         GameBase.gi.soundindex("flyer/flyatck3.wav");
 
-        self.s.modelindex = GameBase.gi
+        self.entityState.modelIndex = GameBase.gi
                 .modelindex("models/monsters/flyer/tris.md2");
         Math3D.VectorSet(self.mins, -16, -16, -24);
         Math3D.VectorSet(self.maxs, 16, 16, 32);
         self.movetype = Defines.MOVETYPE_STEP;
         self.solid = Defines.SOLID_BBOX;
 
-        self.s.sound = GameBase.gi.soundindex("flyer/flyidle1.wav");
+        self.entityState.sound = GameBase.gi.soundindex("flyer/flyidle1.wav");
 
         self.health = 50;
         self.mass = 50;

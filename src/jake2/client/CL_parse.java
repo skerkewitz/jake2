@@ -30,7 +30,6 @@ import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.render.TModel;
 import jake2.sound.Sound;
-import jake2.sys.QSystem;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -54,7 +53,7 @@ public class CL_parse {
     //	  =============================================================================
 
     public static String DownloadFileName(String fn) {
-        return FileSystem.Gamedir() + "/" + fn;
+        return FileSystem.gamedir() + "/" + fn;
     }
 
     /**
@@ -73,20 +72,20 @@ public class CL_parse {
             return true;
         }
 
-        Context.cls.downloadname = filename;
+        Context.cls.setDownloadname(filename);
 
         // download to a temp name, and only rename
         // to the real name when done, so if interrupted
         // a runt file wont be left
-        Context.cls.downloadtempname = Command
-                .StripExtension(Context.cls.downloadname);
-        Context.cls.downloadtempname += ".tmp";
+        Context.cls.setDownloadtempname(Command
+                .StripExtension(Context.cls.getDownloadname()));
+        Context.cls.setDownloadtempname(Context.cls.getDownloadtempname() + ".tmp");
 
         //	  ZOID
         // check to see if we already have a tmp for this file, if so, try to
         // resume
         // open the file if not opened yet
-        String name = DownloadFileName(Context.cls.downloadtempname);
+        String name = DownloadFileName(Context.cls.getDownloadtempname());
 
         RandomAccessFile fp = Lib.fopen(name, "r+b");
         
@@ -102,21 +101,21 @@ public class CL_parse {
             }
             
 
-            Context.cls.download = fp;
+            Context.cls.setDownload(fp);
 
             // give the server an offset to start the download
-            Command.Printf("Resuming " + Context.cls.downloadname + "\n");
-            Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-            Context.cls.netchan.message.writeString("download "
-                        + Context.cls.downloadname + " " + len);
+            Command.Printf("Resuming " + Context.cls.getDownloadname() + "\n");
+            Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.writeString("download "
+                        + Context.cls.getDownloadname() + " " + len);
         } else {
-            Command.Printf("Downloading " + Context.cls.downloadname + "\n");
-            Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-            Context.cls.netchan.message.writeString("download "
-                        + Context.cls.downloadname);
+            Command.Printf("Downloading " + Context.cls.getDownloadname() + "\n");
+            Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.writeString("download "
+                        + Context.cls.getDownloadname());
         }
 
-        Context.cls.downloadnumber++;
+        Context.cls.setDownloadnumber(Context.cls.getDownloadnumber() + 1);
 
         return false;
     }
@@ -142,27 +141,27 @@ public class CL_parse {
                 return;
             }
 
-            if (FileSystem.LoadFile(filename) != null) { // it exists, no need to
+            if (FileSystem.loadFile(filename) != null) { // it exists, no need to
                 // download
                 Command.Printf("File already exists.\n");
                 return;
             }
 
-            Context.cls.downloadname = filename;
-            Command.Printf("Downloading " + Context.cls.downloadname + "\n");
+            Context.cls.setDownloadname(filename);
+            Command.Printf("Downloading " + Context.cls.getDownloadname() + "\n");
 
             // download to a temp name, and only rename
             // to the real name when done, so if interrupted
             // a runt file wont be left
-            Context.cls.downloadtempname = Command
-                    .StripExtension(Context.cls.downloadname);
-            Context.cls.downloadtempname += ".tmp";
+            Context.cls.setDownloadtempname(Command
+                    .StripExtension(Context.cls.getDownloadname()));
+            Context.cls.setDownloadtempname(Context.cls.getDownloadtempname() + ".tmp");
 
-            Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-            Context.cls.netchan.message.writeString("download "
-                        + Context.cls.downloadname);
+            Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.writeString("download "
+                        + Context.cls.getDownloadname());
 
-            Context.cls.downloadnumber++;
+            Context.cls.setDownloadnumber(Context.cls.getDownloadnumber() + 1);
         }
     };
 
@@ -182,7 +181,7 @@ public class CL_parse {
             Context.cl.sound_precache[i] = Sound
                     .RegisterSound(Context.cl.configstrings[Defines.CS_SOUNDS
                             + i]);
-            QSystem.SendKeyEvents(); // pump message loop
+            Key.SendKeyEvents(); // pump message loop
         }
         Sound.EndRegistration();
     }
@@ -200,28 +199,28 @@ public class CL_parse {
         int percent = TSizeBuffer.ReadByte(Context.net_message);
         if (size == -1) {
             Command.Printf("Server does not have this file.\n");
-            if (Context.cls.download != null) {
+            if (Context.cls.getDownload() != null) {
                 // if here, we tried to resume a file but the server said no
                 try {
-                    Context.cls.download.close();
+                    Context.cls.getDownload().close();
                 } catch (IOException e) {
                 }
-                Context.cls.download = null;
+                Context.cls.setDownload(null);
             }
             CL.RequestNextDownload();
             return;
         }
 
         // open the file if not opened yet
-        if (Context.cls.download == null) {
-            String name = DownloadFileName(Context.cls.downloadtempname).toLowerCase();
+        if (Context.cls.getDownload() == null) {
+            String name = DownloadFileName(Context.cls.getDownloadtempname()).toLowerCase();
 
             FileSystem.CreatePath(name);
 
-            Context.cls.download = Lib.fopen(name, "rw");
-            if (Context.cls.download == null) {
+            Context.cls.setDownload(Lib.fopen(name, "rw"));
+            if (Context.cls.getDownload() == null) {
                 Context.net_message.readcount += size;
-                Command.Printf("Failed to open " + Context.cls.downloadtempname
+                Command.Printf("Failed to open " + Context.cls.getDownloadtempname()
                         + "\n");
                 CL.RequestNextDownload();
                 return;
@@ -230,7 +229,7 @@ public class CL_parse {
 
 
         try {
-            Context.cls.download.write(Context.net_message.data,
+            Context.cls.getDownload().write(Context.net_message.data,
                     Context.net_message.readcount, size);
         } 
         catch (Exception e) {
@@ -240,25 +239,25 @@ public class CL_parse {
         if (percent != 100) {
             // request next block
             //	   change display routines by zoid
-            Context.cls.downloadpercent = percent;
-            Context.cls.netchan.message.writeByte(Defines.clc_stringcmd);
-            Context.cls.netchan.message.print("nextdl");
+            Context.cls.setDownloadpercent(percent);
+            Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.print("nextdl");
         } else {
             try {
-                Context.cls.download.close();
+                Context.cls.getDownload().close();
             } 
             catch (IOException e) {
             }
 
-            // rename the temp file to it's final name
-            String oldn = DownloadFileName(Context.cls.downloadtempname);
-            String newn = DownloadFileName(Context.cls.downloadname);
+            // rename the temp file to it'entityState final name
+            String oldn = DownloadFileName(Context.cls.getDownloadtempname());
+            String newn = DownloadFileName(Context.cls.getDownloadname());
             int r = Lib.rename(oldn, newn);
             if (r != 0)
                 Command.Printf("failed to rename.\n");
 
-            Context.cls.download = null;
-            Context.cls.downloadpercent = 0;
+            Context.cls.setDownload(null);
+            Context.cls.setDownloadpercent(0);
 
             // get another file if needed
 
@@ -281,14 +280,14 @@ public class CL_parse {
     public static void ParseServerData() {
         Command.DPrintf("ParseServerData():Serverdata packet received.\n");
         //
-        //	   wipe the client_state_t struct
+        //	   wipe the TClientState struct
         //
         CL.ClearState();
-        Context.cls.state = Defines.ca_connected;
+        Context.cls.setState(Defines.ca_connected);
 
         //	   parse protocol version number
         int i = TSizeBuffer.ReadLong(Context.net_message);
-        Context.cls.serverProtocol = i;
+        Context.cls.setServerProtocol(i);
 
         // BIG HACK to let demos from release work with the 3.0x patch!!!
         if (Context.server_state != 0 && Defines.PROTOCOL_VERSION == 34) {
@@ -306,10 +305,10 @@ public class CL_parse {
 
         // set gamedir
         if (str.length() > 0
-                && (FileSystem.fs_gamedirvar.string == null
-                        || FileSystem.fs_gamedirvar.string.length() == 0 || FileSystem.fs_gamedirvar.string
+                && (FileSystem.varGameDir.string == null
+                        || FileSystem.varGameDir.string.length() == 0 || FileSystem.varGameDir.string
                         .equals(str))
-                || (str.length() == 0 && (FileSystem.fs_gamedirvar.string != null || FileSystem.fs_gamedirvar.string
+                || (str.length() == 0 && (FileSystem.varGameDir.string != null || FileSystem.varGameDir.string
                         .length() == 0)))
             ConsoleVar.Set("game", str);
 
@@ -322,7 +321,7 @@ public class CL_parse {
 
         if (Context.cl.playernum == -1) { // playing a cinematic or showing a
             // pic, not a level
-            SCR.PlayCinematic(str);
+            SCR.playCinematic(str);
         } else {
             // seperate the printfs so the server message can have a color
             //			Command.Printf(
@@ -351,7 +350,7 @@ public class CL_parse {
      * 
      * ================
      */
-    public static void LoadClientinfo(clientinfo_t ci, String s) {
+    public static void LoadClientinfo(TClientInfo ci, String s) {
         //char model_name[MAX_QPATH];
         //char skin_name[MAX_QPATH];
         //char model_filename[MAX_QPATH];
@@ -363,17 +362,17 @@ public class CL_parse {
         ci.cinfo = s;
         //ci.cinfo[sizeof(ci.cinfo) - 1] = 0;
 
-        // isolate the player's name
+        // isolate the player'entityState name
         ci.name = s;
         //ci.name[sizeof(ci.name) - 1] = 0;
 
         int t = s.indexOf('\\');
-        //t = strstr(s, "\\");
+        //t = strstr(entityState, "\\");
 
         if (t != -1) {
             ci.name = s.substring(0, t);
             s = s.substring(t + 1, s.length());
-            //s = t + 1;
+            //entityState = t + 1;
         }
 
         if (Context.cl_noskins.value != 0 || s.length() == 0) {
@@ -422,7 +421,7 @@ public class CL_parse {
             ci.skin = Context.re.RegisterSkin(skin_filename);
 
             // if we don't have the skin and the model wasn't male,
-            // see if the male has it (this is for CTF's skins)
+            // see if the male has it (this is for CTF'entityState skins)
             if (ci.skin == null && !model_name.equalsIgnoreCase("male")) {
                 // change model to male
                 model_name = "male";
@@ -484,7 +483,7 @@ public class CL_parse {
     public static void ParseClientinfo(int player) {
         String s = Context.cl.configstrings[player + Defines.CS_PLAYERSKINS];
 
-        clientinfo_t ci = Context.cl.clientinfo[player];
+        TClientInfo ci = Context.cl.clientinfo[player];
 
         LoadClientinfo(ci, s);
     }
@@ -503,7 +502,7 @@ public class CL_parse {
         String olds = Context.cl.configstrings[i];
         Context.cl.configstrings[i] = s;
         
-        //Command.dprintln("ParseConfigString(): configstring[" + i + "]=<"+s+">");
+        //Command.dprintln("ParseConfigString(): configstring[" + i + "]=<"+entityState+">");
 
         // do something apropriate
 
@@ -579,7 +578,7 @@ public class CL_parse {
             channel = TSizeBuffer.ReadShort(Context.net_message);
             ent = channel >> 3;
             if (ent > Defines.MAX_EDICTS)
-                Command.Error(Defines.ERR_DROP, "CL_ParseStartSoundPacket: ent = "
+                Command.Error(Defines.ERR_DROP, "CL_ParseStartSoundPacket: entityDict = "
                         + ent);
 
             channel &= 7;
@@ -663,16 +662,16 @@ public class CL_parse {
 
             case Defines.svc_reconnect:
                 Command.Printf("Server disconnected, reconnecting\n");
-                if (Context.cls.download != null) {
+                if (Context.cls.getDownload() != null) {
                     //ZOID, close download
                     try {
-                        Context.cls.download.close();
+                        Context.cls.getDownload().close();
                     } catch (IOException e) {
                     }
-                    Context.cls.download = null;
+                    Context.cls.setDownload(null);
                 }
-                Context.cls.state = Defines.ca_connecting;
-                Context.cls.connect_time = -99999; // CL_CheckForResend() will
+                Context.cls.setState(Defines.ca_connecting);
+                Context.cls.setConnectTime(-99999); // CL_CheckForResend() will
                 // fire immediately
                 break;
 
@@ -755,7 +754,7 @@ public class CL_parse {
         // we don't know if it is ok to save a demo message until
         // after we have parsed the frame
         //
-        if (Context.cls.demorecording && !Context.cls.demowaiting)
+        if (Context.cls.getDemorecording() && !Context.cls.getDemowaiting())
             CL.WriteDemoMessage();
     }
 }

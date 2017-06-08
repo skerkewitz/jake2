@@ -19,7 +19,7 @@
  */
 
 // Created on 14.01.2004 by RST.
-// $Id: SV_GAME.java,v 1.10 2006-01-21 21:53:32 salomo Exp $
+// $Id: ServerGame.java,v 1.10 2006-01-21 21:53:32 salomo Exp $
 package jake2.server;
 
 import jake2.Defines;
@@ -28,25 +28,25 @@ import jake2.game.*;
 import jake2.qcommon.*;
 import jake2.util.Math3D;
 
-public class SV_GAME {
+public class ServerGame {
 
     /**
-     * PF_Unicast
+     * pfUnicast
      * <p>
      * Sends the contents of the mutlicast buffer to a single client.
      */
-    public static void PF_Unicast(TEntityDict ent, boolean reliable) {
-        int p;
-        client_t client;
+    public static void pfUnicast(TEntityDict ent, boolean reliable) {
 
-        if (ent == null)
+        if (ent == null) {
             return;
+        }
 
-        p = ent.index;
-        if (p < 1 || p > ServerMain.maxclients.value)
+        int p = ent.index;
+        if (p < 1 || p > ServerMain.maxclients.value) {
             return;
+        }
 
-        client = ServerInit.svs.clients[p - 1];
+        final TClient client = ServerInit.svs.clients[p - 1];
 
         if (reliable) {
             client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
@@ -55,15 +55,6 @@ public class SV_GAME {
         }
 
         ServerInit.sv.multicast.clear();
-    }
-
-    /**
-     * PF_dprintf
-     * <p>
-     * Debug print to server console.
-     */
-    public static void PF_dprintf(String fmt) {
-        Command.Printf(fmt);
     }
 
 
@@ -109,44 +100,28 @@ public class SV_GAME {
 
         ServerInit.sv.multicast.writeByte(Defines.svc_centerprint);
         ServerInit.sv.multicast.writeString(fmt);
-        PF_Unicast(ent, true);
+        pfUnicast(ent, true);
     }
 
     /**
-     * PF_error
-     * <p>
-     * Abort the server with a game error.
-     */
-    public static void PF_error(String fmt) {
-        Command.Error(Defines.ERR_DROP, "Game Error: " + fmt);
-    }
-
-    public static void PF_error(int level, String fmt) {
-        Command.Error(level, fmt);
-    }
-
-    /**
-     * PF_setmodel
+     * pfSetModel
      * <p>
      * Also sets mins and maxs for inline bmodels.
      */
-    public static void PF_setmodel(TEntityDict ent, String name) {
-        int i;
-        cmodel_t mod;
+    public static void pfSetModel(TEntityDict ent, String name) {
 
-        if (name == null)
-            Command.Error(Defines.ERR_DROP, "PF_setmodel: NULL");
+        if (name == null) {
+            Command.Error(Defines.ERR_DROP, "pfSetModel: NULL");
+        }
 
-        i = ServerInit.modelIndexOf(name);
-
-        ent.s.modelindex = i;
+        ent.entityState.modelIndex = ServerInit.modelIndexOf(name);
 
         // if it is an inline model, get the size information for it
         if (name.startsWith("*")) {
-            mod = CM.InlineModel(name);
+            TCModel mod = CM.InlineModel(name);
             Math3D.VectorCopy(mod.mins, ent.mins);
             Math3D.VectorCopy(mod.maxs, ent.maxs);
-            ServerWorld.SV_LinkEdict(ent);
+            ServerWorld.linkEdict(ent);
         }
     }
 
@@ -300,7 +275,7 @@ public class SV_GAME {
         // unload anything we have now
         SV_ShutdownGameProgs();
 
-        game_import_t gimport = new game_import_t();
+        TGameImport gimport = new TGameImport();
 
         // all functions set in game_export_t (rst)
         GameBase.GetGameApi(gimport);

@@ -56,7 +56,7 @@ import jake2.util.Lib;
 //   References                                                          6
 //   APPENDIX A - Reference Implementation                               6
 //   Security Considerations                                            20
-//   Author's Address                                                   20
+//   Author'entityState Address                                                   20
 //
 //1. Executive Summary
 //
@@ -91,7 +91,7 @@ import jake2.util.Lib;
 //   difference is that the reference implementation of MD4 in the
 //   appendix is more portable.
 //
-//   For OSI-based applications, MD4's object identifier is
+//   For OSI-based applications, MD4'entityState object identifier is
 //
 //   md4 OBJECT IDENTIFIER ::=
 //     {iso(1) member-body(2) US(840) rsadsi(113549) digestAlgorithm(2) 4}
@@ -116,8 +116,8 @@ import jake2.util.Lib;
 //   power.
 //
 //   Let the symbol "+" denote addition of words (i.e., modulo-2^32
-//   addition). Let X <<< s denote the 32-bit value obtained by circularly
-//   shifting (rotating) X left by s bit positions. Let not(X) denote the
+//   addition). Let X <<< entityState denote the 32-bit value obtained by circularly
+//   shifting (rotating) X left by entityState bit positions. Let not(X) denote the
 //   bit-wise complement of X, and let X v Y denote the bit-wise OR of X
 //   and Y. Let X xor Y denote the bit-wise XOR of X and Y, and let XY
 //   denote the bit-wise AND of X and Y.
@@ -233,8 +233,8 @@ import jake2.util.Lib;
 //        DD = D
 //
 //        /* Round 1. */
-//        /* Let [abcd k s] denote the operation
-//             a = (a + F(b,c,d) + X[k]) <<< s. */
+//        /* Let [abcd k entityState] denote the operation
+//             a = (a + F(b,c,d) + X[k]) <<< entityState. */
 //        /* Do the following 16 operations. */
 //        [ABCD  0  3]  [DABC  1  7]  [CDAB  2 11]  [BCDA  3 19]
 //        [ABCD  4  3]  [DABC  5  7]  [CDAB  6 11]  [BCDA  7 19]
@@ -242,8 +242,8 @@ import jake2.util.Lib;
 //        [ABCD 12  3]  [DABC 13  7]  [CDAB 14 11]  [BCDA 15 19]
 //
 //        /* Round 2. */
-//        /* Let [abcd k s] denote the operation
-//             a = (a + G(b,c,d) + X[k] + 5A827999) <<< s. */
+//        /* Let [abcd k entityState] denote the operation
+//             a = (a + G(b,c,d) + X[k] + 5A827999) <<< entityState. */
 //
 //
 //
@@ -259,8 +259,8 @@ import jake2.util.Lib;
 //        [ABCD  3  3]  [DABC  7  5]  [CDAB 11  9]  [BCDA 15 13]
 //
 //        /* Round 3. */
-//        /* Let [abcd k s] denote the operation
-//             a = (a + H(b,c,d) + X[k] + 6ED9EBA1) <<< s. */
+//        /* Let [abcd k entityState] denote the operation
+//             a = (a + H(b,c,d) + X[k] + 6ED9EBA1) <<< entityState. */
 //        /* Do the following 16 operations. */
 //        [ABCD  0  3]  [DABC  8  9]  [CDAB  4 11]  [BCDA 12 15]
 //        [ABCD  2  3]  [DABC 10  9]  [CDAB  6 11]  [BCDA 14 15]
@@ -532,17 +532,17 @@ import jake2.util.Lib;
 //RFC 1320              MD4 Message-Digest Algorithm            April 1992
 //
 //
-//#define FF(a, b, c, d, x, s) { \
+//#define FF(a, b, c, d, x, entityState) { \
 //    (a) += F ((b), (c), (d)) + (x); \
-//    (a) = ROTATE_LEFT ((a), (s)); \
+//    (a) = ROTATE_LEFT ((a), (entityState)); \
 //  }
-//#define GG(a, b, c, d, x, s) { \
+//#define GG(a, b, c, d, x, entityState) { \
 //    (a) += G ((b), (c), (d)) + (x) + (UINT4)0x5a827999; \
-//    (a) = ROTATE_LEFT ((a), (s)); \
+//    (a) = ROTATE_LEFT ((a), (entityState)); \
 //  }
-//#define HH(a, b, c, d, x, s) { \
+//#define HH(a, b, c, d, x, entityState) { \
 //    (a) += H ((b), (c), (d)) + (x) + (UINT4)0x6ed9eba1; \
-//    (a) = ROTATE_LEFT ((a), (s)); \
+//    (a) = ROTATE_LEFT ((a), (entityState)); \
 //  }
 //
 ///* MD4 initialization. Begins an MD4 operation, writing a new context.
@@ -899,7 +899,7 @@ import jake2.util.Lib;
 //
 //  if (count > 1)
 //    for (i = 1; i < count; i++)
-//      if (argv[i][0] == '-' && argv[i][1] == 's')
+//      if (argv[i][0] == '-' && argv[i][1] == 'entityState')
 //        MDString (argv[i] + 2);
 //      else if (strcmp (argv[i], "-t") == 0)
 //        MDTimeTrial ();
@@ -934,7 +934,7 @@ import jake2.util.Lib;
 //  MDUpdate (&context, string, len);
 //  MDFinal (digest, &context);
 //
-//  printf ("MD%d (\"%s\") = ", MD, string);
+//  printf ("MD%d (\"%entityState\") = ", MD, string);
 //  MDPrint (digest);
 //  printf ("\n");
 //}
@@ -1016,7 +1016,7 @@ import jake2.util.Lib;
 //  unsigned char buffer[1024], digest[16];
 //
 //  if ((file = fopen (filename, "r")) == NULL)
-//    printf ("%s can't be opened\n", filename);
+//    printf ("%entityState can't be opened\n", filename);
 //
 //  else {
 //    MDInit (&context);
@@ -1026,7 +1026,7 @@ import jake2.util.Lib;
 //
 //    fclose (file);
 //
-//    printf ("MD%d (%s) = ", MD, filename);
+//    printf ("MD%d (%entityState) = ", MD, filename);
 //    MDPrint (digest);
 //
 //
@@ -1106,7 +1106,7 @@ import jake2.util.Lib;
 //   before the completion of that review, the MD5 algorithm [4] is
 //   recommended.
 //
-//Author's Address
+//Author'entityState Address
 //
 //   Ronald L. Rivest
 //   Massachusetts Institute of Technology
