@@ -32,9 +32,13 @@ import jake2.game.Cmd
 import jake2.game.TVar
 import jake2.io.FileSystem
 import jake2.network.Netchan
+import jake2.render.opengl.LwjglRenderer
 import jake2.server.ServerMain
 import jake2.sys.*
 import jake2.sys.Network
+import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
+import org.lwjgl.opengl.GL
 
 import java.io.FileWriter
 import java.io.IOException
@@ -170,6 +174,9 @@ class Engine {
          * @param msec the current game time
          */
         fun Frame(msec: Int) {
+
+            GL.createCapabilities()
+
             var msec = msec
             try {
 
@@ -298,6 +305,14 @@ class Engine {
             CL.Shutdown()
 
             java.lang.System.exit(0)
+        }
+
+        fun pumpEvents() {
+            GLFW.glfwPollEvents()
+        }
+
+        fun shouldClose(): Boolean {
+            return glfwWindowShouldClose(LwjglRenderer.window)
         }
     }
 }

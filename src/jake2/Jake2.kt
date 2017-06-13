@@ -33,8 +33,6 @@ import jake2.qcommon.ConsoleVar
 import jake2.qcommon.Engine
 import jake2.render.opengl.LwjglRenderer
 import jake2.sys.Timer
-import org.lwjgl.opengl.GL
-
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 
@@ -43,8 +41,6 @@ import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
  * Jake2 is the renderMain class of Quake2 for Java.
  */
 object Jake2 {
-
-    //public static Q2DataDialog Q2Dialog;
 
     /**
      * renderMain is used to start the game. Quake2 for Java supports the following
@@ -88,13 +84,6 @@ object Jake2 {
         if (dedicated)
             Context.dedicated.value = 1.0f
 
-        //    	// open the q2dialog, if we are not in dedicated mode.
-        //    	if (Context.dedicated.value != 1.0f)
-        //    	{
-        //    		Q2Dialog = new Q2DataDialog();
-        //    		Locale.setDefault(Locale.US);
-        //    		Q2Dialog.setVisible(true);
-        //    	}
 
         // in C the first arg is the filename
         val commandLineOptions = CommandLineOptions(arrayOf("jake2") + args)
@@ -102,23 +91,18 @@ object Jake2 {
 
         Context.nostdout = ConsoleVar.get("nostdout", "0", 0)
 
-        var oldtime = Timer.Milliseconds()
-        var newtime: Int
-        var time: Int
-        while (!glfwWindowShouldClose(LwjglRenderer.window)) {
+        var oldTime = Timer.Milliseconds()
+        while (!Engine.shouldClose()) {
 
-            GL.createCapabilities()
-
-            // find time spending rendering last frame
-            newtime = Timer.Milliseconds()
-            time = newtime - oldtime
-
-            if (time > 0) {
-                Engine.Frame(time)
+            // find deltaTime spending rendering last frame
+            val newTime = Timer.Milliseconds()
+            val deltaTime = newTime - oldTime
+            if (deltaTime > 0) {
+                Engine.Frame(deltaTime)
             }
 
-            oldtime = newtime
-            glfwPollEvents()
+            oldTime = newTime
+            Engine.pumpEvents()
         }
     }
 }
