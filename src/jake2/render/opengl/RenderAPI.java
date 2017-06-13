@@ -1,8 +1,9 @@
-package jake2.render;
+package jake2.render.opengl;
 
-import jake2.common.Dimension;
 import jake2.client.TRefDef;
-import jake2.render.opengl.GLDriver;
+import jake2.common.Dimension;
+import jake2.render.TImage;
+import jake2.render.TModel;
 
 
 public interface RenderAPI {
@@ -44,7 +45,7 @@ public interface RenderAPI {
     void Draw_FadeScreen();
 
     void Draw_StretchRaw(int x, int y, int w, int h, int cols, int rows,
-            byte[] data);
+                         byte[] data);
 
     void R_SetPalette(byte[] palette);
 

@@ -1,9 +1,13 @@
-package jake2.render;
+package jake2.render.opengl;
 
 import jake2.common.Dimension;
 import jake2.client.TRefDef;
+import jake2.render.Base;
+import jake2.render.TImage;
+import jake2.render.TModel;
 import jake2.render.fast.*;
 import jake2.render.opengl.GLDriver;
+import jake2.render.opengl.RenderAPI;
 
 /**
  * Created by tropper on 23.05.17.

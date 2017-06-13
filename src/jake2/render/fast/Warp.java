@@ -29,6 +29,7 @@ import jake2.Defines;
 import jake2.client.Context;
 import jake2.qcommon.Command;
 import jake2.render.*;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.util.Math3D;
 import jake2.util.Vec3Cache;
 import org.lwjgl.opengl.GL11;

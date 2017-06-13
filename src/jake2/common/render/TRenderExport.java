@@ -36,7 +36,7 @@ import jake2.sys.Keyboard;
 
 
 /**
- * Public interface for Renderer implementations.
+ * Public interface for RendererFactory implementations.
  *
  * ref.h, TRenderExport
  * these are the functions exported by the refresh module

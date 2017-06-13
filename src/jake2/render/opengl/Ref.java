@@ -23,9 +23,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
-package jake2.render;
+package jake2.render.opengl;
 
 import jake2.common.render.TRenderExport;
+import jake2.render.opengl.RenderAPI;
 
 /**
  * Ref

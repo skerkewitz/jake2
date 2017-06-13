@@ -30,7 +30,7 @@ import jake2.client.Context;
 import jake2.common.TDynamicLight;
 import jake2.game.cplane_t;
 import jake2.qcommon.Command;
-import jake2.render.RenderAPIImpl;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.render.TMNode;
 import jake2.render.TMapSurface;
 import jake2.render.TMapTexInfo;

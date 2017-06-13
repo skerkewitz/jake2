@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.common.Dimension;
 import jake2.client.VID;
 import jake2.qcommon.Command;
-import jake2.render.RenderAPIImpl;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.render.TImage;
 import jake2.util.Lib;
 import org.lwjgl.opengl.GL11;

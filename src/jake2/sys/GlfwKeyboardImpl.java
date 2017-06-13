@@ -1,7 +1,7 @@
 package jake2.sys;
 
 import jake2.client.Key;
-import jake2.render.opengl.LwjglDriver;
+import jake2.render.opengl.LwjglRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -15,9 +15,9 @@ public class GlfwKeyboardImpl extends Keyboard {
 
     @Override
     public void Init() {
-        long window_ = LwjglDriver.Companion.getWindow();
+        long window_ = LwjglRenderer.Companion.getWindow();
 
-        glfwSetCursorPos(LwjglDriver.Companion.getWindow(), 320, 240);
+        glfwSetCursorPos(LwjglRenderer.Companion.getWindow(), 320, 240);
 
         glfwSetKeyCallback(window_, (window, key, scancode, action, mods) -> {
             System.out.println("key " + key + " scancode " + scancode);
@@ -68,7 +68,7 @@ public class GlfwKeyboardImpl extends Keyboard {
         double[] l_mx = new double[1];
         double[] l_my = new double[1];
 
-        glfwGetCursorPos(LwjglDriver.Companion.getWindow(), l_mx, l_my);
+        glfwGetCursorPos(LwjglRenderer.Companion.getWindow(), l_mx, l_my);
 
         if (Input.mouse_active) {
             mx = (int) ((l_mx[0] - 640 / 2) * 2);
@@ -78,7 +78,7 @@ public class GlfwKeyboardImpl extends Keyboard {
             my = 0;
         }
 
-        glfwSetCursorPos(LwjglDriver.Companion.getWindow(), 320, 240);
+        glfwSetCursorPos(LwjglRenderer.Companion.getWindow(), 320, 240);
     }
 
 //    private void HandleEvents() {
@@ -152,12 +152,12 @@ public class GlfwKeyboardImpl extends Keyboard {
 
     @Override
     public void installGrabs() {
-        glfwSetInputMode(LwjglDriver.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetInputMode(LwjglRenderer.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
 
     @Override
     public void uninstallGrabs() {
-        glfwSetInputMode(LwjglDriver.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetInputMode(LwjglRenderer.Companion.getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     private static int XLateKey(int code, int scancode) {

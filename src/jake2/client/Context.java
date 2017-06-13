@@ -330,7 +330,7 @@ public final class Context {
     public static final TConsole console = new TConsole();
     public static TVar con_notifytime;
     public static TVideoDef viddef = new TVideoDef();
-    // Renderer interface used by VID, SCR, ...
+    // RendererFactory interface used by VID, SCR, ...
     public static TRenderExport re = null;
 
     public static boolean[] keydown = new boolean[256];

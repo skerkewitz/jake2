@@ -31,6 +31,7 @@ import jake2.common.TDynamicLight;
 import jake2.game.cplane_t;
 import jake2.qcommon.Command;
 import jake2.render.*;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 import org.lwjgl.opengl.ARBMultitexture;

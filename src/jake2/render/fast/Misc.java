@@ -28,7 +28,7 @@ package jake2.render.fast;
 import jake2.client.TVideoDef;
 import jake2.client.VID;
 import jake2.io.FileSystem;
-import jake2.render.RenderAPIImpl;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.util.Lib;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;

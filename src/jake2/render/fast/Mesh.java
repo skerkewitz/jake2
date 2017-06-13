@@ -30,7 +30,7 @@ import jake2.client.TEntity;
 import jake2.client.VID;
 import jake2.qcommon.qfiles;
 import jake2.render.Anorms;
-import jake2.render.RenderAPIImpl;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.render.TImage;
 import jake2.util.Lib;
 import jake2.util.Math3D;

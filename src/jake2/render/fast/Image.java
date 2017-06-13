@@ -32,7 +32,7 @@ import jake2.io.FileSystem;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.qfiles;
-import jake2.render.RenderAPIImpl;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.render.TImage;
 import jake2.util.Lib;
 import org.lwjgl.opengl.ARBImaging;

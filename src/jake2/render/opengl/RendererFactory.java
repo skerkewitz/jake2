@@ -23,18 +23,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
  */
-package jake2.render;
+package jake2.render.opengl;
 
 import jake2.common.render.TRenderExport;
 
 import java.util.Vector;
 
 /**
- * Renderer
+ * RendererFactory
  * 
  * @author cwei
  */
-public class Renderer {
+public class RendererFactory {
 
     static RenderAPI renderer = new RenderAPIImpl();
 
@@ -44,7 +44,7 @@ public class Renderer {
         try {
             try {
                 Class.forName("org.lwjgl.opengl.GL11");
-                Class.forName("jake2.render.LwjglRenderer");
+                Class.forName("jake2.render.opengl.LwjglRenderer");
             } catch (ClassNotFoundException e) {
                 // ignore the lwjgl driver if runtime not in classpath
             }
@@ -64,20 +64,11 @@ public class Renderer {
     }
 
     /**
-     * Factory method to get the Renderer implementation.
+     * Factory method to get the RendererFactory implementation.
      * 
-     * @return TRenderExport (Renderer singleton)
+     * @return TRenderExport (RendererFactory singleton)
      */
     public static TRenderExport getDriver(String driverName) {
-        return getDriver(driverName, true);
-    }
-
-    /**
-     * Factory method to get the Renderer implementation.
-     * 
-     * @return TRenderExport (Renderer singleton)
-     */
-    public static TRenderExport getDriver(String driverName, boolean fast) {
         // find a driver
 
         int count = drivers.size();

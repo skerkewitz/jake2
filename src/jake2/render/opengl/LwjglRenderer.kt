@@ -1,62 +1,263 @@
 /*
- * LWJGLBase.java
+ * LwjglRenderer.java
  * Copyright (C) 2004
- * 
- * $Id: LwjglDriver.java,v 1.5 2007-11-03 13:04:23 cawe Exp $
+ *
+ * $Id: LwjglRenderer.java,v 1.5 2007-01-11 23:20:40 cawe Exp $
  */
 /*
- Copyright (C) 1997-2001 Id Software, Inc.
+Copyright (C) 1997-2001 Id Software, Inc.
 
- This program is free software; you can redistribute it and/or
- modify it under the terms of the GNU General Public License
- as published by the Free Software Foundation; either version 2
- of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
- See the GNU General Public License for more details.
+See the GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
- */
+*/
 package jake2.render.opengl
 
-import jake2.common.Dimension
+import jake2.Defines
+import jake2.client.DisplayMode
+import jake2.client.TRefDef
 import jake2.client.VID
+import jake2.common.Dimension
+import jake2.common.render.TRenderExport
 import jake2.qcommon.TXCommand
 import jake2.render.Base
-
+import jake2.render.TImage
+import jake2.render.TModel
 import jake2.sys.GlfwKeyboardImpl
 import jake2.sys.Keyboard
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI
 import org.lwjgl.opengl.GL
-
-import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL11
 
-//import org.lwjgl.opengl.Display;
-//import org.lwjgl.opengl.DisplayMode;
 
 /**
- * LWJGLBase
+ * LwjglRenderer
 
  * @author dsanders/cwei
  */
-abstract class LwjglDriver protected constructor()// see LwjglRenderer
-    : GLDriver {
+internal class LwjglRenderer private constructor() : GLDriver, TRenderExport, Ref {
 
-    protected var keyboard: Keyboard = GlfwKeyboardImpl() //new LWJGLKBD();
+    // is set from RendererFactory factory
+    private var impl: RenderAPI? = null
+
+    private var keyboard: Keyboard = GlfwKeyboardImpl() //new LWJGLKBD();
 
     //	private DisplayMode oldDisplayMode;
 
-    // window position on the screen
-    internal var window_xpos: Int = 0
-    internal var window_ypos: Int = 0
+    // ============================================================================
+    // public interface for RendererFactory implementations
+    //
+    // TRenderExport (ref.h)
+    // ============================================================================
+
+    /**
+     * @see TRenderExport.init
+     */
+    override fun init(vid_xpos: Int, vid_ypos: Int): Boolean {
+//        super.init(vid_xpos, vid_ypos)
+        // init the OpenGL drivers
+        impl!!.setGLDriver(this)
+
+        // pre init
+        if (!impl!!.R_Init(vid_xpos, vid_ypos)) return false
+        // post init
+        return impl!!.R_Init2()
+    }
+
+    /**
+     * @see TRenderExport.Shutdown
+     */
+    override fun Shutdown() {
+        impl!!.R_Shutdown()
+    }
+
+    /**
+     * @see TRenderExport.beginRegistration
+     */
+    override fun beginRegistration(map: String) {
+        impl!!.R_BeginRegistration(map)
+    }
+
+    /**
+     * @see TRenderExport.registerModel
+     */
+    override fun registerModel(name: String): TModel? {
+        return impl!!.R_RegisterModel(name)
+    }
+
+    /**
+     * @see TRenderExport.registerSkin
+     */
+    override fun registerSkin(name: String): TImage {
+        return impl!!.R_RegisterSkin(name)
+    }
+
+    /**
+     * @see TRenderExport.registerPic
+     */
+    override fun registerPic(name: String): TImage {
+        return impl!!.Draw_FindPic(name)
+    }
+
+    /**
+     * @see TRenderExport.setSky
+     */
+    override fun setSky(name: String, rotate: Float, axis: FloatArray) {
+        impl!!.R_SetSky(name, rotate, axis)
+    }
+
+    /**
+     * @see TRenderExport.endRegistration
+     */
+    override fun endRegistration() {
+        impl!!.R_EndRegistration()
+    }
+
+    /**
+     * @see TRenderExport.renderFrame
+     */
+    override fun renderFrame(fd: TRefDef) {
+        impl!!.R_RenderFrame(fd)
+    }
+
+
+    override fun DrawGetPicSize(dim: Dimension, name: String) {
+        impl!!.Draw_GetPicSize(dim, name)
+    }
+
+    /**
+     * @see TRenderExport.DrawPic
+     */
+    override fun DrawPic(x: Int, y: Int, name: String) {
+        impl!!.Draw_Pic(x, y, name)
+    }
+
+    /**
+     * @see TRenderExport.DrawStretchPic
+     */
+    override fun DrawStretchPic(x: Int, y: Int, w: Int, h: Int, name: String) {
+        impl!!.Draw_StretchPic(x, y, w, h, name)
+    }
+
+    /**
+     * @see TRenderExport.DrawChar
+     */
+    override fun DrawChar(x: Int, y: Int, num: Int) {
+        impl!!.Draw_Char(x, y, num)
+    }
+
+    /**
+     * @see TRenderExport.DrawTileClear
+     */
+    override fun DrawTileClear(x: Int, y: Int, w: Int, h: Int, name: String) {
+        impl!!.Draw_TileClear(x, y, w, h, name)
+    }
+
+    /**
+     * @see TRenderExport.DrawFill
+     */
+    override fun DrawFill(x: Int, y: Int, w: Int, h: Int, c: Int) {
+        impl!!.Draw_Fill(x, y, w, h, c)
+    }
+
+    /**
+     * @see TRenderExport.DrawFadeScreen
+     */
+    override fun DrawFadeScreen() {
+        impl!!.Draw_FadeScreen()
+    }
+
+    /**
+     * @see TRenderExport.DrawStretchRaw
+     */
+    override fun DrawStretchRaw(x: Int, y: Int, w: Int, h: Int, cols: Int, rows: Int, data: ByteArray) {
+        impl!!.Draw_StretchRaw(x, y, w, h, cols, rows, data)
+    }
+
+    /**
+     * @see TRenderExport.CinematicSetPalette
+     */
+    override fun CinematicSetPalette(palette: ByteArray?) {
+        impl!!.R_SetPalette(palette)
+    }
+
+    /**
+     * @see TRenderExport.BeginFrame
+     */
+    override fun BeginFrame(camera_separation: Float) {
+        impl!!.R_BeginFrame(camera_separation)
+    }
+
+    /**
+     * @see TRenderExport.EndFrame
+     */
+    override fun EndFrame() {
+        endFrame()
+    }
+
+    /**
+     * @see TRenderExport.appActivate
+     */
+    override fun appActivate(activate: Boolean) {
+        appActivate(activate)
+    }
+
+    override fun screenshot() {
+        impl!!.GL_ScreenShot_f()
+    }
+
+    override fun apiVersion(): Int {
+        return Defines.API_VERSION
+    }
+
+    override fun getModeList(): Array<DisplayMode> {
+        return arrayOf()
+    }
+
+    override fun getKeyboardHandler(): Keyboard {
+        return keyboard
+    }
+
+    // ============================================================================
+    // Ref interface
+    // ============================================================================
+
+    override fun getName(): String {
+        return DRIVER_NAME
+    }
+
+    override fun toString(): String {
+        return DRIVER_NAME
+    }
+
+    override fun GetRefAPI(renderer: RenderAPI): TRenderExport {
+        this.impl = renderer
+        return this
+    }
+
+    companion object {
+        val DRIVER_NAME = "lwjgl"
+        var window: Long = 0
+
+        init {
+            RendererFactory.register(LwjglRenderer())
+        }
+    }
+
 
     //	private java.awt.DisplayMode toAwtDisplayMode(DisplayMode m) {
     //		return new java.awt.DisplayMode(m.getWidth(), m.getHeight(), m
@@ -213,38 +414,38 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
         GLFWErrorCallback.createPrint(System.err).set()
 
         // Initialize GLFW. Most GLFW functions will not work before doing this.
-        if (!glfwInit())
+        if (!GLFW.glfwInit())
             throw IllegalStateException("Unable to initialize GLFW")
 
-        glfwDefaultWindowHints()
-        glfwWindowHint(GLFW_RESIZABLE, GL11.GL_TRUE)
+        GLFW.glfwDefaultWindowHints()
+        GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GL11.GL_TRUE)
 //        glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 2)
 //        glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 1)
         dim = Dimension(640, 480)
 
-        window = glfwCreateWindow(dim.width, dim.height, "Quake2", 0, 0)
+        window = GLFW.glfwCreateWindow(dim.width, dim.height, "Quake2", 0, 0)
         if (window == 0L)
             throw RuntimeException("Failed to create the GLFW window")
 
 
-        glfwSetWindowFocusCallback(window, GLFWWindowFocusCallbackI { window, focused ->
+        GLFW.glfwSetWindowFocusCallback(window, GLFWWindowFocusCallbackI { window, focused ->
             System.out.println("Window got focus " + focused)
         })
 
-        glfwSetWindowPos(window, 100, 100)
+        GLFW.glfwSetWindowPos(window, 100, 100)
 
-        glfwFocusWindow(window)
-        glfwMakeContextCurrent(window)
+        GLFW.glfwFocusWindow(window)
+        GLFW.glfwMakeContextCurrent(window)
 
-        glfwSetInputMode(window, GLFW_STICKY_KEYS, GLFW_TRUE)
+        GLFW.glfwSetInputMode(window, GLFW.GLFW_STICKY_KEYS, GLFW.GLFW_TRUE)
 
         // Make the window visible
-        glfwShowWindow(window)
+        GLFW.glfwShowWindow(window)
 
-        glfwMakeContextCurrent(window)
+        GLFW.glfwMakeContextCurrent(window)
 
         // Enable v-sync
-        glfwSwapInterval(1)
+        GLFW.glfwSwapInterval(1)
 
         // This line is critical for LWJGL'entityState interoperation with GLFW'entityState
         // OpenGL context, or any context that is managed externally.
@@ -342,15 +543,15 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
         //		}
     }
 
-    /**
-     * @return true
-     */
-    override fun init(xpos: Int, ypos: Int): Boolean {
-        // do nothing
-        window_xpos = xpos
-        window_ypos = ypos
-        return true
-    }
+//    /**
+//     * @return true
+//     */
+//    override fun init(xpos: Int, ypos: Int): Boolean {
+//        // do nothing
+//        window_xpos = xpos
+//        window_ypos = ypos
+//        return true
+//    }
 
     override fun beginFrame(camera_separation: Float) {
         // do nothing
@@ -359,12 +560,8 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
     override fun endFrame() {
         GL11.glFlush()
         // swap buffers
-        glfwSwapBuffers(window)
+        GLFW.glfwSwapBuffers(window)
         //Display.update();
-    }
-
-    override fun appActivate(activate: Boolean) {
-        // do nothing
     }
 
     override fun enableLogging(enable: Boolean) {
@@ -384,8 +581,5 @@ abstract class LwjglDriver protected constructor()// see LwjglRenderer
         callback.execute()
     }
 
-    companion object {
-        var window: Long = 0
-    }
-}
 
+}

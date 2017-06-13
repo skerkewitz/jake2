@@ -31,7 +31,7 @@ import jake2.qcommon.Command
 import jake2.qcommon.CommandLineOptions
 import jake2.qcommon.ConsoleVar
 import jake2.qcommon.Engine
-import jake2.render.opengl.LwjglDriver
+import jake2.render.opengl.LwjglRenderer
 import jake2.sys.Timer
 import org.lwjgl.opengl.GL
 
@@ -105,7 +105,7 @@ object Jake2 {
         var oldtime = Timer.Milliseconds()
         var newtime: Int
         var time: Int
-        while (!glfwWindowShouldClose(LwjglDriver.window)) {
+        while (!glfwWindowShouldClose(LwjglRenderer.window)) {
 
             GL.createCapabilities()
 

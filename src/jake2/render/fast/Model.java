@@ -36,6 +36,7 @@ import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.TTexInfo;
 import jake2.qcommon.qfiles;
 import jake2.render.*;
+import jake2.render.opengl.RenderAPIImpl;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 

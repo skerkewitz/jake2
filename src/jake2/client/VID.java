@@ -31,7 +31,7 @@ import jake2.common.Dimension;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.*;
-import jake2.render.Renderer;
+import jake2.render.opengl.RendererFactory;
 import jake2.sound.Sound;
 import jake2.sys.Input;
 import jake2.sys.Keyboard;
@@ -176,7 +176,7 @@ public class VID {
 		
 		boolean found = false;
 		
-		String[] driverNames = Renderer.getDriverNames();
+		String[] driverNames = RendererFactory.getDriverNames();
 		for (int i = 0; i < driverNames.length; i++) {
 			if (driverNames[i].equals(name)) {
 				found = true;
@@ -190,7 +190,7 @@ public class VID {
 		}
 
 		Command.Printf( "LoadLibrary(\"" + name +"\")\n" );
-		re = Renderer.getDriver(name, fast);
+		re = RendererFactory.getDriver(name);
 		
 		if (re == null)
 		{
@@ -252,14 +252,14 @@ public class VID {
 			if ( !LoadRefresh( vid_ref.string, true ) )
 			{
 				String renderer;
-				if (vid_ref.string.equals(Renderer.getPreferedName())) {
+				if (vid_ref.string.equals(RendererFactory.getPreferedName())) {
 				    // try the default renderer as fallback after prefered
-				    renderer = Renderer.getDefaultName();
+				    renderer = RendererFactory.getDefaultName();
 				} else {
 				    // try the prefered renderer as first fallback
-				    renderer = Renderer.getPreferedName();
+				    renderer = RendererFactory.getPreferedName();
 				}
-				if ( vid_ref.string.equals(Renderer.getDefaultName())) {
+				if ( vid_ref.string.equals(RendererFactory.getDefaultName())) {
 				    renderer = vid_ref.string;
 					Command.Printf("Refresh failed\n");
 					gl_mode = ConsoleVar.get( "gl_mode", "0", 0 );
@@ -297,7 +297,7 @@ public class VID {
 	public static void Init()
 	{
 		/* Create the video variables so we know how to start the graphics drivers */
-		vid_ref = ConsoleVar.get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
+		vid_ref = ConsoleVar.get("vid_ref", RendererFactory.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
 		vid_xpos = ConsoleVar.get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
 		vid_ypos = ConsoleVar.get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
 		vid_width = ConsoleVar.get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
@@ -501,7 +501,7 @@ public class VID {
 	}
 	
 	private static void initRefs() {
-		drivers = Renderer.getDriverNames();
+		drivers = RendererFactory.getDriverNames();
 		refs = new String[drivers.length];
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < drivers.length; i++) {
@@ -521,7 +521,7 @@ public class VID {
 		initRefs();
 		
 		if ( gl_driver == null )
-			gl_driver = ConsoleVar.get( "gl_driver", Renderer.getPreferedName(), 0 );
+			gl_driver = ConsoleVar.get( "gl_driver", RendererFactory.getPreferedName(), 0 );
 		if ( gl_picmip == null )
 			gl_picmip = ConsoleVar.get( "gl_picmip", "0", 0 );
 		if ( gl_mode == null)

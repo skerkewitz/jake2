@@ -25,12 +25,11 @@ package jake2.render;
 
 import jake2.client.TVideoDef;
 import jake2.game.TVar;
-import jake2.render.opengl.GLDriver;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Base
- * 
+ *
  * @author dsanders/cwei
  */
 public abstract class Base {
@@ -152,7 +151,7 @@ public abstract class Base {
     public static final int GL_RENDERER_MCD = 0x01000000;
 
     public static final int GL_RENDERER_OTHER = 0x80000000;
-    
+
     // enum rserr_t
     public static final int rserr_ok = 0;
 
@@ -169,14 +168,8 @@ public abstract class Base {
 
     protected TVar vid_fullscreen;
 
-    protected GLDriver glImpl;
-
-    public void setGLDriver(GLDriver driver) {
-        glImpl = driver;
-    }
-
     public static synchronized void setVid(int width, int height) {
-    	vid.setSize(width, height);
+        vid.setSize(width, height);
     }
-    
+
 }
