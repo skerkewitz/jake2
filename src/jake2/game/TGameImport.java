@@ -27,7 +27,7 @@ import jake2.qcommon.*;
 import jake2.server.*;
 
 //
-//	collection of functions provided by the main engine
+//	collection of functions provided by the renderMain engine
 //
 public class TGameImport {
     // special messages
@@ -172,7 +172,7 @@ public class TGameImport {
 
     // console variable interaction
     public TVar cvar(String var_name, String value, int flags) {
-        return ConsoleVar.Get(var_name, value, flags);
+        return ConsoleVar.get(var_name, value, flags);
     }
 
     // console variable interaction
@@ -203,7 +203,7 @@ public class TGameImport {
     // add commands to the server console as if they were typed in
     // for map changing, etc
     public void AddCommandString(String text) {
-        Cbuf.AddText(text);
+        CommandBuffer.AddText(text);
     }
 
 }

@@ -38,7 +38,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static jake2.render.Base.*;
-import static jake2.render.fast.Main.d_8to24table;
+import static jake2.render.fast.RenderMain.d_8to24table;
 
 /**
  * Draw
@@ -144,7 +144,7 @@ public class Draw {
         if (RenderAPIImpl.image.scrap_dirty)
             RenderAPIImpl.image.Scrap_Upload();
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
         RenderAPIImpl.image.bindTexture(image.texnum);
@@ -159,7 +159,7 @@ public class Draw {
         GL11.glVertex2f(x, y + h);
         GL11.glEnd();
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 
@@ -180,7 +180,7 @@ public class Draw {
         if (RenderAPIImpl.image.scrap_dirty)
             RenderAPIImpl.image.Scrap_Upload();
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
         RenderAPIImpl.image.bindTexture(image.texnum);
@@ -196,7 +196,7 @@ public class Draw {
         GL11.glVertex2f(x, y + image.height);
         GL11.glEnd();
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 
@@ -217,7 +217,7 @@ public class Draw {
             return;
         }
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
         RenderAPIImpl.image.bindTexture(image.texnum);
@@ -232,7 +232,7 @@ public class Draw {
         GL11.glVertex2f(x, y + h);
         GL11.glEnd();
 
-        if (((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
+        if (((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0)) && !image.has_alpha)
             GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 
@@ -325,7 +325,7 @@ public class Draw {
         }
         t = rows * hscale / 256;
 
-        if (!RenderAPIImpl.main.qglColorTableEXT) {
+        if (!RenderAPIImpl.renderMain.qglColorTableEXT) {
             //int[] image32 = new int[256*256];
             image32.clear();
             int destIndex = 0;
@@ -339,7 +339,7 @@ public class Draw {
                 fracstep = cols * 0x10000 / 256;
                 frac = fracstep >> 1;
                 for (j = 0; j < 256; j++) {
-                    image32.put(destIndex + j, RenderAPIImpl.main.r_rawpalette[data[sourceIndex + (frac >> 16)] & 0xff]);
+                    image32.put(destIndex + j, RenderAPIImpl.renderMain.r_rawpalette[data[sourceIndex + (frac >> 16)] & 0xff]);
                     frac += fracstep;
                 }
             }
@@ -375,7 +375,7 @@ public class Draw {
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
-        if ((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
+        if ((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
             GL11.glDisable(GL11.GL_ALPHA_TEST);
 
         GL11.glBegin(GL11.GL_QUADS);
@@ -389,7 +389,7 @@ public class Draw {
         GL11.glVertex2f(x, y + h);
         GL11.glEnd();
 
-        if ((RenderAPIImpl.main.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.main.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
+        if ((RenderAPIImpl.renderMain.gl_config.renderer == GL_RENDERER_MCD) || ((RenderAPIImpl.renderMain.gl_config.renderer & GL_RENDERER_RENDITION) != 0))
             GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 

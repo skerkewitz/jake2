@@ -25,7 +25,7 @@
  */
 package jake2.render;
 
-import jake2.client.refexport_t;
+import jake2.common.render.TRenderExport;
 
 import java.util.Vector;
 
@@ -66,18 +66,18 @@ public class Renderer {
     /**
      * Factory method to get the Renderer implementation.
      * 
-     * @return refexport_t (Renderer singleton)
+     * @return TRenderExport (Renderer singleton)
      */
-    public static refexport_t getDriver(String driverName) {
+    public static TRenderExport getDriver(String driverName) {
         return getDriver(driverName, true);
     }
 
     /**
      * Factory method to get the Renderer implementation.
      * 
-     * @return refexport_t (Renderer singleton)
+     * @return TRenderExport (Renderer singleton)
      */
-    public static refexport_t getDriver(String driverName, boolean fast) {
+    public static TRenderExport getDriver(String driverName, boolean fast) {
         // find a driver
 
         int count = drivers.size();

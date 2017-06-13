@@ -28,7 +28,7 @@ import jake2.game.TVar;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.network.TNetAddr;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -164,7 +164,7 @@ public final class Network {
      * Gets a packet from internal loopback.
      */
     public static boolean GetLoopPacket(int sock, TNetAddr net_from,
-            TSizeBuffer net_message) {
+            TBuffer net_message) {
 	
         loopback_t loop = loopbacks[sock];
 
@@ -179,7 +179,7 @@ public final class Network {
 
         System.arraycopy(loop.msgs[i].data, 0, net_message.data, 0,
                 loop.msgs[i].datalen);
-        net_message.cursize = loop.msgs[i].datalen;
+        net_message.writeHeadPosition = loop.msgs[i].datalen;
 
         net_from.set(net_local_adr);
         return true;
@@ -207,7 +207,7 @@ public final class Network {
      * Gets a packet from a network channel
      */
     public static boolean GetPacket(int sock, TNetAddr net_from,
-            TSizeBuffer net_message) {
+            TBuffer net_message) {
 
         if (GetLoopPacket(sock, net_from, net_message)) {
             return true;
@@ -236,7 +236,7 @@ public final class Network {
             }
 
             // set the size
-            net_message.cursize = packetLength;
+            net_message.writeHeadPosition = packetLength;
             // set the sentinel
             net_message.data[packetLength] = 0;
             return true;
@@ -279,9 +279,9 @@ public final class Network {
     public static void OpenIP() {
         TVar port, ip, clientport;
 
-        port = ConsoleVar.Get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
-        ip = ConsoleVar.Get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
-        clientport = ConsoleVar.Get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
+        port = ConsoleVar.get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
+        ip = ConsoleVar.get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
+        clientport = ConsoleVar.get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
         
         if (ip_sockets[Defines.NS_SERVER] == null)
             ip_sockets[Defines.NS_SERVER] = Socket(Defines.NS_SERVER,
@@ -356,7 +356,7 @@ public final class Network {
     }
 
     /**
-     * Shutdown - closes the sockets 
+     * shutdown - closes the sockets
      */
     public static void Shutdown() {
         // close sockets

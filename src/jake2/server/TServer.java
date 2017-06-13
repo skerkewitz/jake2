@@ -25,7 +25,7 @@ package jake2.server;
 import jake2.Defines;
 import jake2.game.TCModel;
 import jake2.game.TEntityState;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 
 import java.io.RandomAccessFile;
 
@@ -61,7 +61,7 @@ public class TServer {
 
     // the multicast buffer is used to send a message to a set of clients
     // it is only used to marshall data until SV_Multicast is called
-    TSizeBuffer multicast = new TSizeBuffer();
+    TBuffer multicast = new TBuffer();
 
     byte multicast_buf[] = new byte[Defines.MAX_MSGLEN];
 

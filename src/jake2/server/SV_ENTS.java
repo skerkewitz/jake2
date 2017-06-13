@@ -53,7 +53,7 @@ public class SV_ENTS {
      * Writes a delta update of an TEntityState list to the message.
      */
     static void SV_EmitPacketEntities(TClientFrame from, TClientFrame to,
-                                      TSizeBuffer msg) {
+                                      TBuffer msg) {
         TEntityState oldent = null, newent = null;
         int oldindex, newindex;
         int oldnum, newnum;
@@ -134,7 +134,7 @@ public class SV_ENTS {
      * Writes the status of a player to a client system.
      */
     static void SV_WritePlayerstateToClient(TClientFrame from,
-                                            TClientFrame to, TSizeBuffer msg) {
+                                            TClientFrame to, TBuffer msg) {
         // ptr
         TPlayerState ps, ops;
         // mem
@@ -302,7 +302,7 @@ public class SV_ENTS {
     /**
      * Writes a frame to a client system.
      */
-    public static void SV_WriteFrameToClient(TClient client, TSizeBuffer msg) {
+    public static void SV_WriteFrameToClient(TClient client, TBuffer msg) {
         //ptr
         TClientFrame frame, oldframe;
         int lastframe;
@@ -542,7 +542,7 @@ public class SV_ENTS {
 
         //memset (nostate, 0, sizeof(nostate));
         TEntityState nostate = new TEntityState(null);
-        TSizeBuffer buf = new TSizeBuffer();
+        TBuffer buf = new TBuffer();
         buf.init(buf_data, buf_data.length);
 
         // write a frame message that doesn't contain a TPlayerState
@@ -570,17 +570,17 @@ public class SV_ENTS {
         buf.writeShort(0);
 
         // now add the accumulated multicast information
-        buf.write(ServerInit.svs.demo_multicast.data, ServerInit.svs.demo_multicast.cursize);
+        buf.write(ServerInit.svs.demo_multicast.data, ServerInit.svs.demo_multicast.writeHeadPosition);
         ServerInit.svs.demo_multicast.clear();
 
         // now write the entire message to the file, prefixed by the length
-        int len = EndianHandler.swapInt(buf.cursize);
+        int len = EndianHandler.swapInt(buf.writeHeadPosition);
 
         try {
             //fwrite (len, 4, 1, svs.demofile);
             ServerInit.svs.demofile.writeInt(len);
-            //fwrite (buf.data, buf.cursize, 1, svs.demofile);
-            ServerInit.svs.demofile.write(buf.data, 0, buf.cursize);
+            //fwrite (buf.data, buf.writeHeadPosition, 1, svs.demofile);
+            ServerInit.svs.demofile.write(buf.data, 0, buf.writeHeadPosition);
         } catch (IOException e1) {
             Command.Printf("Error writing demo file:" + e);
         }

@@ -59,7 +59,7 @@ public final class Netchan extends ServerMain {
      * The reliable message can be added to at any time by doing MSG_Write*
      * (&netchan.message, <data>).
      * 
-     * If the message buffer is overflowed, either by a single message, or by
+     * If the message buffer is didOverflow, either by a single message, or by
      * multiple frames worth piling up while the last reliable transmit goes
      * unacknowledged, the netchan signals a fatal error.
      * 
@@ -97,7 +97,7 @@ public final class Netchan extends ServerMain {
     public static TVar qport;
 
     //public static TNetAddr net_from = new TNetAddr();
-    public static TSizeBuffer net_message = new TSizeBuffer();
+    public static TBuffer net_message = new TBuffer();
 
     public static byte net_message_buffer[] = new byte[Defines.MAX_MSGLEN];
 
@@ -111,13 +111,13 @@ public final class Netchan extends ServerMain {
         // pick a port value that should be nice and random
         port = Timer.Milliseconds() & 0xffff;
 
-        showpackets = ConsoleVar.Get("showpackets", "0", 0);
-        showdrop = ConsoleVar.Get("showdrop", "0", 0);
-        qport = ConsoleVar.Get("qport", "" + port, TVar.CVAR_FLAG_NOSET);
+        showpackets = ConsoleVar.get("showpackets", "0", 0);
+        showdrop = ConsoleVar.get("showdrop", "0", 0);
+        qport = ConsoleVar.get("qport", "" + port, TVar.CVAR_FLAG_NOSET);
     }
 
     private static final byte send_buf[] = new byte[Defines.MAX_MSGLEN];
-    private static final TSizeBuffer send = new TSizeBuffer();
+    private static final TBuffer send = new TBuffer();
     
     /**
      * Netchan_OutOfBand. Sends an out-of-band datagram.
@@ -132,7 +132,7 @@ public final class Netchan extends ServerMain {
         send.write(data, length);
 
         // send the datagram
-        Network.SendPacket(net_socket, send.cursize, send.data, adr);
+        Network.SendPacket(net_socket, send.writeHeadPosition, send.data, adr);
     }
 
     public static void OutOfBandPrint(int net_socket, TNetAddr adr, String s) {
@@ -152,7 +152,7 @@ public final class Netchan extends ServerMain {
         chan.outgoing_sequence = 1;
 
         chan.message.init(chan.message_buf, chan.message_buf.length);
-        chan.message.allowoverflow = true;
+        chan.message.allowOverflow = true;
     }
 
     /**
@@ -173,7 +173,7 @@ public final class Netchan extends ServerMain {
 
         // if the reliable transmit buffer is empty, copy the current message
         // out
-        if (0 == chan.reliable_length && chan.message.cursize != 0) {
+        if (0 == chan.reliable_length && chan.message.writeHeadPosition != 0) {
             send_reliable = true;
         }
 
@@ -192,7 +192,7 @@ public final class Netchan extends ServerMain {
         int w1, w2;
 
         // check for message overflow
-        if (chan.message.overflowed) {
+        if (chan.message.didOverflow) {
             chan.fatal_error = true;
             Command.Printf(Network.AdrToString(chan.remote_address)
                     + ":Outgoing message overflow\n");
@@ -201,11 +201,11 @@ public final class Netchan extends ServerMain {
 
         send_reliable = Netchan_NeedReliable(chan) ? 1 : 0;
 
-        if (chan.reliable_length == 0 && chan.message.cursize != 0) {
+        if (chan.reliable_length == 0 && chan.message.writeHeadPosition != 0) {
             System.arraycopy(chan.message_buf, 0, chan.reliable_buf, 0,
-                    chan.message.cursize);
-            chan.reliable_length = chan.message.cursize;
-            chan.message.cursize = 0;
+                    chan.message.writeHeadPosition);
+            chan.reliable_length = chan.message.writeHeadPosition;
+            chan.message.writeHeadPosition = 0;
             chan.reliable_sequence ^= 1;
         }
 
@@ -233,25 +233,25 @@ public final class Netchan extends ServerMain {
         }
 
         // add the unreliable part if space is available
-        if (send.maxsize - send.cursize >= length)
+        if (send.maxsize - send.writeHeadPosition >= length)
             send.write(data, length);
         else
             Command.Printf("Netchan_Transmit: dumped unreliable\n");
 
         // send the datagram
-        Network.SendPacket(chan.sock, send.cursize, send.data, chan.remote_address);
+        Network.SendPacket(chan.sock, send.writeHeadPosition, send.data, chan.remote_address);
 
         if (showpackets.value != 0) {
             if (send_reliable != 0)
                 Command.Printf(
-                        "send " + send.cursize + " : entityState="
+                        "send " + send.writeHeadPosition + " : entityState="
                                 + (chan.outgoing_sequence - 1) + " reliable="
                                 + chan.reliable_sequence + " ack="
                                 + chan.incoming_sequence + " rack="
                                 + chan.incoming_reliable_sequence + "\n");
             else
                 Command.Printf(
-                        "send " + send.cursize + " : entityState="
+                        "send " + send.writeHeadPosition + " : entityState="
                                 + (chan.outgoing_sequence - 1) + " ack="
                                 + chan.incoming_sequence + " rack="
                                 + chan.incoming_reliable_sequence + "\n");
@@ -262,15 +262,15 @@ public final class Netchan extends ServerMain {
      * Netchan_Process is called when the current net_message is from remote_address modifies
      * net_message so that it points to the packet payload.
      */
-    public static boolean Process(TNetChan chan, TSizeBuffer msg) {
+    public static boolean Process(TNetChan chan, TBuffer msg) {
         // get sequence numbers
-        TSizeBuffer.BeginReading(msg);
-        int sequence = TSizeBuffer.ReadLong(msg);
-        int sequence_ack = TSizeBuffer.ReadLong(msg);
+        msg.resetReadPosition();
+        int sequence = TBuffer.ReadLong(msg);
+        int sequence_ack = TBuffer.ReadLong(msg);
 
         // read the qport if we are a server
         if (chan.sock == Defines.NS_SERVER)
-            TSizeBuffer.ReadShort(msg);
+            TBuffer.ReadShort(msg);
 
         // achtung unsigned int
         int reliable_message = sequence >>> 31;
@@ -282,14 +282,14 @@ public final class Netchan extends ServerMain {
         if (showpackets.value != 0) {
             if (reliable_message != 0)
                 Command.Printf(
-                        "recv " + msg.cursize + " : entityState=" + sequence
+                        "recv " + msg.writeHeadPosition + " : entityState=" + sequence
                                 + " reliable="
                                 + (chan.incoming_reliable_sequence ^ 1)
                                 + " ack=" + sequence_ack + " rack="
                                 + reliable_ack + "\n");
             else
                 Command.Printf(
-                        "recv " + msg.cursize + " : entityState=" + sequence + " ack="
+                        "recv " + msg.writeHeadPosition + " : entityState=" + sequence + " ack="
                                 + sequence_ack + " rack=" + reliable_ack + "\n");
         }
 

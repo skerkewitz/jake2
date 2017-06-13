@@ -40,16 +40,16 @@ import java.io.FileWriter
 import java.io.IOException
 
 /**
- * Qcommon contains some  basic routines for the game engine
+ * Engine contains some  basic routines for the game engine
  * namely initialization, shutdown and frame generation.
  */
-class Qcommon {
+class Engine {
     companion object {
 
         val BUILDSTRING = "Java " + System.getProperty("java.version")
         val CPUSTRING = System.getProperty("os.arch")
 
-        public var commandLineOptions: CommandLineOptions? = null
+        var commandLineOptions: CommandLineOptions? = null
 
         /**
          * This function initializes the different subsystems of
@@ -57,14 +57,14 @@ class Qcommon {
          * was replaced with exceptions.
          * @param commandLineOptions the original unmodified command line arguments
          */
-        @JvmStatic fun Init(commandLineOptions: CommandLineOptions) {
+        @JvmStatic fun init(commandLineOptions: CommandLineOptions) {
             try {
 
                 // prepare enough of the subsystems to handle
                 // cvar and command buffer management
                 this.commandLineOptions = commandLineOptions
 
-                Cbuf.Init()
+                CommandBuffer.Init()
 
                 Cmd.Init()
                 ConsoleVar.Init()
@@ -75,8 +75,8 @@ class Qcommon {
                 // a basedir or cddir needs to be set before execing
                 // config files, but we want other parms to override
                 // the settings of the config files
-                Cbuf.AddEarlyCommands(false)
-                Cbuf.Execute()
+                CommandBuffer.AddEarlyCommands(false)
+                CommandBuffer.execute()
 
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing filesystem...");
@@ -99,19 +99,19 @@ class Qcommon {
                 //
                 // init commands and vars
                 //
-                Cmd.AddCommand("error", Command.Error_f)
+                Cmd.registerCommand("error", Command.Error_f)
 
-                Context.host_speeds = ConsoleVar.Get("host_speeds", "0", 0)
-                Context.log_stats = ConsoleVar.Get("log_stats", "0", 0)
-                Context.developer = ConsoleVar.Get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
-                Context.timescale = ConsoleVar.Get("timescale", "0", 0)
-                Context.fixedtime = ConsoleVar.Get("fixedtime", "0", 0)
-                Context.logfile_active = ConsoleVar.Get("logfile", "0", 0)
-                Context.showtrace = ConsoleVar.Get("showtrace", "0", 0)
-                Context.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+                Context.host_speeds = ConsoleVar.get("host_speeds", "0", 0)
+                Context.log_stats = ConsoleVar.get("log_stats", "0", 0)
+                Context.developer = ConsoleVar.get("developer", "0", TVar.CVAR_FLAG_ARCHIVE)
+                Context.timescale = ConsoleVar.get("timescale", "0", 0)
+                Context.fixedtime = ConsoleVar.get("fixedtime", "0", 0)
+                Context.logfile_active = ConsoleVar.get("logfile", "0", 0)
+                Context.showtrace = ConsoleVar.get("showtrace", "0", 0)
+                Context.dedicated = ConsoleVar.get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
                 val s = Command.sprintf("%4.2f %s %s %s", Context.VERSION, CPUSTRING, Context.__DATE__, BUILDSTRING)
 
-                ConsoleVar.Get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
+                ConsoleVar.get("version", s, TVar.CVAR_FLAG_SERVERINFO or TVar.CVAR_FLAG_NOSET)
 
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.setStatus("initializing network subsystem...");
@@ -136,14 +136,14 @@ class Qcommon {
                 CL.Init()
 
                 // add + commands from command line
-                if (!Cbuf.AddLateCommands()) {
+                if (!CommandBuffer.AddLateCommands()) {
                     // if the user didn't give any commands, run default action
                     if (Context.dedicated.value == 0f)
-                        Cbuf.AddText("d1\n")
+                        CommandBuffer.AddText("d1\n")
                     else
-                        Cbuf.AddText("dedicated_start\n")
+                        CommandBuffer.AddText("dedicated_start\n")
 
-                    Cbuf.Execute()
+                    CommandBuffer.execute()
                 } else {
                     // the user asked for something explicit
                     // so drop the loading plaque
@@ -159,7 +159,7 @@ class Qcommon {
                 //				Jake2.Q2Dialog.dispose();
 
             } catch (e: QuakeException) {
-                Qcommon.Error("Error during initialization")
+                Engine.Error("Error during initialization")
             }
 
         }
@@ -231,7 +231,7 @@ class Qcommon {
                     Context.c_pointcontents = 0
                 }
 
-                Cbuf.Execute()
+                CommandBuffer.execute()
 
                 var time_before = 0
                 var time_between = 0
@@ -270,20 +270,20 @@ class Qcommon {
         }
 
         internal fun reconfigure(clear: Boolean) {
-            val dir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
-            Cbuf.AddText("exec default.cfg\n")
-            Cbuf.AddText("bind MWHEELUP weapnext\n")
-            Cbuf.AddText("bind MWHEELDOWN weapprev\n")
-            Cbuf.AddText("bind w +forward\n")
-            Cbuf.AddText("bind entityState +back\n")
-            Cbuf.AddText("bind a +moveleft\n")
-            Cbuf.AddText("bind d +moveright\n")
-            Cbuf.Execute()
+            val dir = ConsoleVar.get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
+            CommandBuffer.AddText("exec default.cfg\n")
+            CommandBuffer.AddText("bind MWHEELUP weapnext\n")
+            CommandBuffer.AddText("bind MWHEELDOWN weapprev\n")
+            CommandBuffer.AddText("bind w +forward\n")
+            CommandBuffer.AddText("bind entityState +back\n")
+            CommandBuffer.AddText("bind a +moveleft\n")
+            CommandBuffer.AddText("bind d +moveright\n")
+            CommandBuffer.execute()
             ConsoleVar.Set("vid_fullscreen", "0")
-            Cbuf.AddText("exec config.cfg\n")
+            CommandBuffer.AddText("exec config.cfg\n")
 
-            Cbuf.AddEarlyCommands(clear)
-            Cbuf.Execute()
+            CommandBuffer.AddEarlyCommands(clear)
+            CommandBuffer.execute()
             if ("" != dir) ConsoleVar.Set("cddir", dir)
         }
 

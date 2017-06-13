@@ -278,11 +278,11 @@ public class Warp {
 	 */
 	void EmitWaterPolys(TMapSurface fa)
 	{
-		float rdt = RenderAPIImpl.main.r_newrefdef.time;
+		float rdt = RenderAPIImpl.renderMain.r_newrefdef.time;
 
 		float scroll;
 		if ((fa.texinfo.flags & Defines.SURF_FLOWING) != 0)
-			scroll = -64 * ( (RenderAPIImpl.main.r_newrefdef.time*0.5f) - (int)(RenderAPIImpl.main.r_newrefdef.time*0.5f) );
+			scroll = -64 * ( (RenderAPIImpl.renderMain.r_newrefdef.time*0.5f) - (int)(RenderAPIImpl.renderMain.r_newrefdef.time*0.5f) );
 		else
 			scroll = 0;
 		
@@ -298,7 +298,7 @@ public class Warp {
                 ot = p.t1(i);
 
                 s = os
-                        + Warp.SIN[(int) ((ot * 0.125f + RenderAPIImpl.main.r_newrefdef.time) * TURBSCALE) & 255];
+                        + Warp.SIN[(int) ((ot * 0.125f + RenderAPIImpl.renderMain.r_newrefdef.time) * TURBSCALE) & 255];
                 s += scroll;
                 s *= (1.0f / 64);
 
@@ -550,9 +550,9 @@ public class Warp {
 	    // calculate vertex values for sky box
         for (TGlPoly p = fa.polys; p != null; p = p.next) {
             for (int i = 0; i < p.numverts; i++) {
-                verts[i][0] = p.x(i) - RenderAPIImpl.main.r_origin[0];
-                verts[i][1] = p.y(i) - RenderAPIImpl.main.r_origin[1];
-                verts[i][2] = p.z(i) - RenderAPIImpl.main.r_origin[2];
+                verts[i][0] = p.x(i) - RenderAPIImpl.renderMain.r_origin[0];
+                verts[i][1] = p.y(i) - RenderAPIImpl.renderMain.r_origin[1];
+                verts[i][2] = p.z(i) - RenderAPIImpl.renderMain.r_origin[2];
             }
             ClipSkyPolygon(p.numverts, verts, 0);
         }
@@ -638,8 +638,8 @@ public class Warp {
 		}
 
 		GL11.glPushMatrix ();
-		GL11.glTranslatef (RenderAPIImpl.main.r_origin[0], RenderAPIImpl.main.r_origin[1], RenderAPIImpl.main.r_origin[2]);
-		GL11.glRotatef (RenderAPIImpl.main.r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
+		GL11.glTranslatef (RenderAPIImpl.renderMain.r_origin[0], RenderAPIImpl.renderMain.r_origin[1], RenderAPIImpl.renderMain.r_origin[2]);
+		GL11.glRotatef (RenderAPIImpl.renderMain.r_newrefdef.time * skyrotate, skyaxis[0], skyaxis[1], skyaxis[2]);
 
 		for (i=0 ; i<6 ; i++)
 		{
@@ -688,10 +688,10 @@ public class Warp {
 		for (int i=0 ; i<6 ; i++)
 		{
 			// chop down rotating skies for less memory
-			if (RenderAPIImpl.main.gl_skymip.value != 0 || skyrotate != 0)
-				RenderAPIImpl.main.gl_picmip.value++;
+			if (RenderAPIImpl.renderMain.gl_skymip.value != 0 || skyrotate != 0)
+				RenderAPIImpl.renderMain.gl_picmip.value++;
 
-			if ( RenderAPIImpl.main.qglColorTableEXT && RenderAPIImpl.main.gl_ext_palettedtexture.value != 0) {
+			if ( RenderAPIImpl.renderMain.qglColorTableEXT && RenderAPIImpl.renderMain.gl_ext_palettedtexture.value != 0) {
 				//	Com_sprintf (pathname, sizeof(pathname), "env/%entityState%entityState.pcx", skyname, suf[i]);
 				pathname = "env/" + skyname + suf[i] + ".pcx";
 			} else {
@@ -702,11 +702,11 @@ public class Warp {
 			sky_images[i] = RenderAPIImpl.image.GL_FindImage(pathname, it_sky);
 
 			if (sky_images[i] == null)
-				sky_images[i] = RenderAPIImpl.main.r_notexture;
+				sky_images[i] = RenderAPIImpl.renderMain.r_notexture;
 
-			if (RenderAPIImpl.main.gl_skymip.value != 0 || skyrotate != 0)
+			if (RenderAPIImpl.renderMain.gl_skymip.value != 0 || skyrotate != 0)
 			{	// take less memory
-				RenderAPIImpl.main.gl_picmip.value--;
+				RenderAPIImpl.renderMain.gl_picmip.value--;
 				sky_min = 1.0f / 256;
 				sky_max = 255.0f / 256;
 			}

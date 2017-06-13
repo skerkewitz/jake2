@@ -54,8 +54,8 @@ public class ClientView {
         if ((i = Context.cl.configstrings[Defines.CS_MODELS + 1].length()) == 0)
             return; // no map loaded
 
-        SCR.AddDirtyPoint(0, 0);
-        SCR.AddDirtyPoint(Context.viddef.getWidth() - 1, Context.viddef.getHeight() - 1);
+        SCR.addDirtyPoint(0, 0);
+        SCR.addDirtyPoint(Context.viddef.getWidth() - 1, Context.viddef.getHeight() - 1);
 
         // let the render dll load the map
         mapname = Context.cl.configstrings[Defines.CS_MODELS + 1].substring(5,
@@ -65,7 +65,7 @@ public class ClientView {
         // register models, pics, and skins
         Command.Printf("Map: " + mapname + "\r");
         SCR.UpdateScreen();
-        Context.re.BeginRegistration(mapname);
+        Context.re.beginRegistration(mapname);
         Command.Printf("                                     \r");
 
         // precache status bar pics
@@ -99,7 +99,7 @@ public class ClientView {
                 }
             } else {
                 Context.cl.model_draw[i] = Context.re
-                        .RegisterModel(Context.cl.configstrings[Defines.CS_MODELS
+                        .registerModel(Context.cl.configstrings[Defines.CS_MODELS
                                 + i]);
                 if (name.charAt(0) == '*')
                     Context.cl.model_clip[i] = CM
@@ -117,7 +117,7 @@ public class ClientView {
         for (i = 1; i < Defines.MAX_IMAGES
                 && Context.cl.configstrings[Defines.CS_IMAGES + i].length() > 0; i++) {
             Context.cl.image_precache[i] = Context.re
-                    .RegisterPic(Context.cl.configstrings[Defines.CS_IMAGES + i]);
+                    .registerPic(Context.cl.configstrings[Defines.CS_IMAGES + i]);
             Key.SendKeyEvents(); // pump message loop
         }
 
@@ -145,12 +145,12 @@ public class ClientView {
         axis[0] = Float.parseFloat(st.nextToken());
         axis[1] = Float.parseFloat(st.nextToken());
         axis[2] = Float.parseFloat(st.nextToken());
-        Context.re.SetSky(Context.cl.configstrings[Defines.CS_SKY], rotate,
+        Context.re.setSky(Context.cl.configstrings[Defines.CS_SKY], rotate,
                 axis);
         Command.Printf("                                     \r");
 
         // the renderer can now free unneeded stuff
-        Context.re.EndRegistration();
+        Context.re.endRegistration();
 
         // clear any lines of console text
         Console.ClearNotify();

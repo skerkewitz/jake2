@@ -48,11 +48,11 @@ import static jake2.render.Base.*;
 
 
 /**
- * Main
+ * RenderMain
  *
  * @author cwei
  */
-public class Main {
+public class RenderMain {
 
     public static int[] d_8to24table = new int[256];
 
@@ -123,6 +123,8 @@ public class Main {
     int r_viewcluster, r_viewcluster2, r_oldviewcluster, r_oldviewcluster2;
 
     TVar r_norefresh;
+
+    /** Should entities be rendered? */
     TVar r_drawentities;
     TVar r_drawworld;
     TVar r_speeds;
@@ -346,15 +348,15 @@ public class Main {
     }
 
     /**
-     * R_DrawEntitiesOnList
+     * renderEntitiesOnList
      */
-    void R_DrawEntitiesOnList() {
-        if (r_drawentities.value == 0.0f)
+    void renderEntitiesOnList() {
+        if (r_drawentities.value == 0.0f) {
             return;
+        }
 
         // draw non-transparent first
-        int i;
-        for (i = 0; i < r_newrefdef.num_entities; i++) {
+        for (int i = 0; i < r_newrefdef.num_entities; i++) {
             currententity = r_newrefdef.entities[i];
             if ((currententity.flags & Defines.RF_TRANSLUCENT) != 0)
                 continue; // solid
@@ -375,7 +377,7 @@ public class Main {
                         RenderAPIImpl.surf.R_DrawBrushModel(currententity);
                         break;
                     case mod_sprite:
-                        RenderAPIImpl.main.R_DrawSpriteModel(currententity);
+                        RenderAPIImpl.renderMain.R_DrawSpriteModel(currententity);
                         break;
                     default:
                         Command.Error(Defines.ERR_DROP, "Bad modeltype");
@@ -386,7 +388,7 @@ public class Main {
         // draw transparent entities
         // we could sort these if it ever becomes a problem...
         GL11.glDepthMask(false); // no z writes
-        for (i = 0; i < r_newrefdef.num_entities; i++) {
+        for (int i = 0; i < r_newrefdef.num_entities; i++) {
             currententity = r_newrefdef.entities[i];
             if ((currententity.flags & Defines.RF_TRANSLUCENT) == 0)
                 continue; // solid
@@ -770,10 +772,10 @@ public class Main {
     }
 
     /**
-     * R_RenderView
+     * renderView
      * r_newrefdef must be set before the first call
      */
-    void R_RenderView(TRefDef fd) {
+    private void renderView(TRefDef fd) {
 
         if (r_norefresh.value != 0.0f)
             return;
@@ -782,11 +784,11 @@ public class Main {
 
         // included by cwei
         if (r_newrefdef == null) {
-            Command.Error(Defines.ERR_DROP, "R_RenderView: TRefDef fd is null");
+            Command.Error(Defines.ERR_DROP, "renderView: TRefDef fd is null");
         }
 
         if (r_worldmodel == null && (r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) == 0)
-            Command.Error(Defines.ERR_DROP, "R_RenderView: NULL worldmodel");
+            Command.Error(Defines.ERR_DROP, "renderView: NULL worldmodel");
 
         if (r_speeds.value != 0.0f) {
             c_brush_polys = 0;
@@ -808,7 +810,7 @@ public class Main {
 
         RenderAPIImpl.surf.R_DrawWorld();
 
-        R_DrawEntitiesOnList();
+        renderEntitiesOnList();
 
         RenderAPIImpl.light.renderDynamicLights();
 
@@ -827,14 +829,15 @@ public class Main {
     }
 
     /**
-     * R_SetGL2D
+     * setGL2D
+     * @param videoDef
      */
-    void R_SetGL2D() {
+    private void setGL2D(TVideoDef videoDef) {
         // set 2D virtual screen size
-        GL11.glViewport(0, 0, vid.getWidth(), vid.getHeight());
+        GL11.glViewport(0, 0, videoDef.getWidth(), videoDef.getHeight());
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
-        GL11.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
+        GL11.glOrtho(0, videoDef.getWidth(), videoDef.getHeight(), 0, -99999, 99999);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glLoadIdentity();
         GL11.glDisable(GL11.GL_DEPTH_TEST);
@@ -847,15 +850,13 @@ public class Main {
     // stack variable
     private final float[] light = {0, 0, 0};
 
-    /**
-     * R_SetLightLevel
-     */
-    void R_SetLightLevel() {
-        if ((r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) != 0)
+
+    void setLightLevel() {
+        if ((r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) != 0) {
             return;
+        }
 
         // save off light value for server to look at (BIG HACK!)
-
         RenderAPIImpl.light.lightPoint(r_newrefdef.vieworg, light);
 
         // pick the greatest component, which should be the same
@@ -874,95 +875,92 @@ public class Main {
     }
 
     /**
-     * R_RenderFrame
+     * renderFrame
      */
-    public void R_RenderFrame(TRefDef fd) {
-        R_RenderView(fd);
-        R_SetLightLevel();
-        R_SetGL2D();
+    public void renderFrame(TRefDef fd) {
+        renderView(fd);
+        setLightLevel();
+        setGL2D(vid);
     }
 
-    /**
-     * R_Register
-     */
-    protected void R_Register() {
-        r_lefthand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
-        r_norefresh = ConsoleVar.Get("r_norefresh", "0", 0);
-        r_fullbright = ConsoleVar.Get("r_fullbright", "0", 0);
-        r_drawentities = ConsoleVar.Get("r_drawentities", "1", 0);
-        r_drawworld = ConsoleVar.Get("r_drawworld", "1", 0);
-        r_novis = ConsoleVar.Get("r_novis", "0", 0);
-        r_nocull = ConsoleVar.Get("r_nocull", "0", 0);
-        r_lerpmodels = ConsoleVar.Get("r_lerpmodels", "1", 0);
-        r_speeds = ConsoleVar.Get("r_speeds", "0", 0);
+    private void registerVariables() {
+        r_lefthand = ConsoleVar.get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
+        r_norefresh = ConsoleVar.get("r_norefresh", "0", 0);
+        r_fullbright = ConsoleVar.get("r_fullbright", "0", 0);
+        r_drawentities = ConsoleVar.get("r_drawentities", "1", 0);
+        r_drawworld = ConsoleVar.get("r_drawworld", "1", 0);
+        r_novis = ConsoleVar.get("r_novis", "0", 0);
+        r_nocull = ConsoleVar.get("r_nocull", "0", 0);
+        r_lerpmodels = ConsoleVar.get("r_lerpmodels", "1", 0);
+        r_speeds = ConsoleVar.get("r_speeds", "0", 0);
 
-        r_lightlevel = ConsoleVar.Get("r_lightlevel", "1", 0);
+        r_lightlevel = ConsoleVar.get("r_lightlevel", "1", 0);
 
-        gl_nosubimage = ConsoleVar.Get("gl_nosubimage", "0", 0);
-        gl_allow_software = ConsoleVar.Get("gl_allow_software", "0", 0);
+        gl_nosubimage = ConsoleVar.get("gl_nosubimage", "0", 0);
+        gl_allow_software = ConsoleVar.get("gl_allow_software", "0", 0);
 
-        gl_particle_min_size = ConsoleVar.Get("gl_particle_min_size", "2", TVar.CVAR_FLAG_ARCHIVE);
-        gl_particle_max_size = ConsoleVar.Get("gl_particle_max_size", "40", TVar.CVAR_FLAG_ARCHIVE);
-        gl_particle_size = ConsoleVar.Get("gl_particle_size", "40", TVar.CVAR_FLAG_ARCHIVE);
-        gl_particle_att_a = ConsoleVar.Get("gl_particle_att_a", "0.01", TVar.CVAR_FLAG_ARCHIVE);
-        gl_particle_att_b = ConsoleVar.Get("gl_particle_att_b", "0.0", TVar.CVAR_FLAG_ARCHIVE);
-        gl_particle_att_c = ConsoleVar.Get("gl_particle_att_c", "0.01", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_min_size = ConsoleVar.get("gl_particle_min_size", "2", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_max_size = ConsoleVar.get("gl_particle_max_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_size = ConsoleVar.get("gl_particle_size", "40", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_att_a = ConsoleVar.get("gl_particle_att_a", "0.01", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_att_b = ConsoleVar.get("gl_particle_att_b", "0.0", TVar.CVAR_FLAG_ARCHIVE);
+        gl_particle_att_c = ConsoleVar.get("gl_particle_att_c", "0.01", TVar.CVAR_FLAG_ARCHIVE);
 
-        gl_modulate = ConsoleVar.Get("gl_modulate", "1.5", TVar.CVAR_FLAG_ARCHIVE);
-        gl_log = ConsoleVar.Get("gl_log", "0", 0);
-        gl_bitdepth = ConsoleVar.Get("gl_bitdepth", "0", 0);
-        gl_mode = ConsoleVar.Get("gl_mode", "3", TVar.CVAR_FLAG_ARCHIVE); // 640x480
-        gl_lightmap = ConsoleVar.Get("gl_lightmap", "0", 0);
-        gl_shadows = ConsoleVar.Get("gl_shadows", "0", TVar.CVAR_FLAG_ARCHIVE);
-        gl_dynamic = ConsoleVar.Get("gl_dynamic", "1", 0);
-        gl_nobind = ConsoleVar.Get("gl_nobind", "0", 0);
-        gl_round_down = ConsoleVar.Get("gl_round_down", "1", 0);
-        gl_picmip = ConsoleVar.Get("gl_picmip", "0", 0);
-        gl_skymip = ConsoleVar.Get("gl_skymip", "0", 0);
-        gl_showtris = ConsoleVar.Get("gl_showtris", "0", 0);
-        gl_ztrick = ConsoleVar.Get("gl_ztrick", "0", 0);
-        gl_finish = ConsoleVar.Get("gl_finish", "0", TVar.CVAR_FLAG_ARCHIVE);
-        gl_clear = ConsoleVar.Get("gl_clear", "0", 0);
-        gl_cull = ConsoleVar.Get("gl_cull", "1", 0);
-        gl_polyblend = ConsoleVar.Get("gl_polyblend", "1", 0);
-        gl_flashblend = ConsoleVar.Get("gl_flashblend", "0", 0);
-        gl_playermip = ConsoleVar.Get("gl_playermip", "0", 0);
-        gl_monolightmap = ConsoleVar.Get("gl_monolightmap", "0", 0);
-        gl_driver = ConsoleVar.Get("gl_driver", "opengl32", TVar.CVAR_FLAG_ARCHIVE);
-        gl_texturemode = ConsoleVar.Get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", TVar.CVAR_FLAG_ARCHIVE);
-        gl_texturealphamode = ConsoleVar.Get("gl_texturealphamode", "default", TVar.CVAR_FLAG_ARCHIVE);
-        gl_texturesolidmode = ConsoleVar.Get("gl_texturesolidmode", "default", TVar.CVAR_FLAG_ARCHIVE);
-        gl_lockpvs = ConsoleVar.Get("gl_lockpvs", "0", 0);
+        gl_modulate = ConsoleVar.get("gl_modulate", "1.5", TVar.CVAR_FLAG_ARCHIVE);
+        gl_log = ConsoleVar.get("gl_log", "0", 0);
+        gl_bitdepth = ConsoleVar.get("gl_bitdepth", "0", 0);
+        gl_mode = ConsoleVar.get("gl_mode", "3", TVar.CVAR_FLAG_ARCHIVE); // 640x480
+        gl_lightmap = ConsoleVar.get("gl_lightmap", "0", 0);
+        gl_shadows = ConsoleVar.get("gl_shadows", "0", TVar.CVAR_FLAG_ARCHIVE);
+        gl_dynamic = ConsoleVar.get("gl_dynamic", "1", 0);
+        gl_nobind = ConsoleVar.get("gl_nobind", "0", 0);
+        gl_round_down = ConsoleVar.get("gl_round_down", "1", 0);
+        gl_picmip = ConsoleVar.get("gl_picmip", "0", 0);
+        gl_skymip = ConsoleVar.get("gl_skymip", "0", 0);
+        gl_showtris = ConsoleVar.get("gl_showtris", "0", 0);
+        gl_ztrick = ConsoleVar.get("gl_ztrick", "0", 0);
+        gl_finish = ConsoleVar.get("gl_finish", "0", TVar.CVAR_FLAG_ARCHIVE);
+        gl_clear = ConsoleVar.get("gl_clear", "0", 0);
+        gl_cull = ConsoleVar.get("gl_cull", "1", 0);
+        gl_polyblend = ConsoleVar.get("gl_polyblend", "1", 0);
+        gl_flashblend = ConsoleVar.get("gl_flashblend", "0", 0);
+        gl_playermip = ConsoleVar.get("gl_playermip", "0", 0);
+        gl_monolightmap = ConsoleVar.get("gl_monolightmap", "0", 0);
+        gl_driver = ConsoleVar.get("gl_driver", "opengl32", TVar.CVAR_FLAG_ARCHIVE);
+        gl_texturemode = ConsoleVar.get("gl_texturemode", "GL_LINEAR_MIPMAP_NEAREST", TVar.CVAR_FLAG_ARCHIVE);
+        gl_texturealphamode = ConsoleVar.get("gl_texturealphamode", "default", TVar.CVAR_FLAG_ARCHIVE);
+        gl_texturesolidmode = ConsoleVar.get("gl_texturesolidmode", "default", TVar.CVAR_FLAG_ARCHIVE);
+        gl_lockpvs = ConsoleVar.get("gl_lockpvs", "0", 0);
 
-        gl_vertex_arrays = ConsoleVar.Get("gl_vertex_arrays", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_vertex_arrays = ConsoleVar.get("gl_vertex_arrays", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-        gl_ext_swapinterval = ConsoleVar.Get("gl_ext_swapinterval", "1", TVar.CVAR_FLAG_ARCHIVE);
-        gl_ext_palettedtexture = ConsoleVar.Get("gl_ext_palettedtexture", "0", TVar.CVAR_FLAG_ARCHIVE);
-        gl_ext_multitexture = ConsoleVar.Get("gl_ext_multitexture", "1", TVar.CVAR_FLAG_ARCHIVE);
-        gl_ext_pointparameters = ConsoleVar.Get("gl_ext_pointparameters", "1", TVar.CVAR_FLAG_ARCHIVE);
-        gl_ext_compiled_vertex_array = ConsoleVar.Get("gl_ext_compiled_vertex_array", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_ext_swapinterval = ConsoleVar.get("gl_ext_swapinterval", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_ext_palettedtexture = ConsoleVar.get("gl_ext_palettedtexture", "0", TVar.CVAR_FLAG_ARCHIVE);
+        gl_ext_multitexture = ConsoleVar.get("gl_ext_multitexture", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_ext_pointparameters = ConsoleVar.get("gl_ext_pointparameters", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_ext_compiled_vertex_array = ConsoleVar.get("gl_ext_compiled_vertex_array", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-        gl_drawbuffer = ConsoleVar.Get("gl_drawbuffer", "GL_BACK", 0);
-        gl_swapinterval = ConsoleVar.Get("gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE);
+        gl_drawbuffer = ConsoleVar.get("gl_drawbuffer", "GL_BACK", 0);
+        gl_swapinterval = ConsoleVar.get("gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE);
 
-        gl_saturatelighting = ConsoleVar.Get("gl_saturatelighting", "0", 0);
+        gl_saturatelighting = ConsoleVar.get("gl_saturatelighting", "0", 0);
 
-        gl_3dlabs_broken = ConsoleVar.Get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
+        gl_3dlabs_broken = ConsoleVar.get("gl_3dlabs_broken", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-        VID.vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
-        vid_gamma = ConsoleVar.Get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
-        vid_ref = ConsoleVar.Get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
+        VID.vid_fullscreen = ConsoleVar.get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+        vid_gamma = ConsoleVar.get("vid_gamma", "1.0", TVar.CVAR_FLAG_ARCHIVE);
+        vid_ref = ConsoleVar.get("vid_ref", "lwjgl", TVar.CVAR_FLAG_ARCHIVE);
 
-        Cmd.AddCommand("imagelist", () -> RenderAPIImpl.image.GL_ImageList_f());
-        Cmd.AddCommand("screenshot", () -> RenderAPIImpl.glImpl.screenshot());
-        Cmd.AddCommand("modellist", () -> RenderAPIImpl.model.Mod_Modellist_f());
-        Cmd.AddCommand("gl_strings", () -> RenderAPIImpl.misc.GL_Strings_f());
+        Cmd.registerCommand("imagelist", () -> RenderAPIImpl.image.GL_ImageList_f());
+        Cmd.registerCommand("screenshot", () -> RenderAPIImpl.glImpl.screenshot());
+        Cmd.registerCommand("modellist", () -> RenderAPIImpl.model.Mod_Modellist_f());
+        Cmd.registerCommand("gl_strings", () -> RenderAPIImpl.misc.GL_Strings_f());
     }
 
     /**
      * R_SetMode
      */
-    protected boolean R_SetMode() {
+    private boolean R_SetMode() {
         boolean fullscreen = (VID.vid_fullscreen.value > 0.0f);
 
         VID.vid_fullscreen.modified = false;
@@ -1020,7 +1018,7 @@ public class Main {
 
         RenderAPIImpl.image.Draw_GetPalette();
 
-        R_Register();
+        registerVariables();
 
         // set our "safe" modes
         gl_state.prev_mode = 3;
@@ -1228,10 +1226,10 @@ public class Main {
      * R_Shutdown
      */
     public void R_Shutdown() {
-        Cmd.RemoveCommand("modellist");
-        Cmd.RemoveCommand("screenshot");
-        Cmd.RemoveCommand("imagelist");
-        Cmd.RemoveCommand("gl_strings");
+        Cmd.removeCommand("modellist");
+        Cmd.removeCommand("screenshot");
+        Cmd.removeCommand("imagelist");
+        Cmd.removeCommand("gl_strings");
 
         RenderAPIImpl.model.Mod_FreeAll();
 
@@ -1260,7 +1258,7 @@ public class Main {
             // FIXME: only restart if CDS is required
             TVar ref;
 
-            ref = ConsoleVar.Get("vid_ref", "lwjgl", 0);
+            ref = ConsoleVar.get("vid_ref", "lwjgl", 0);
             ref.modified = true;
         }
 
@@ -1302,17 +1300,7 @@ public class Main {
 		/*
 		** go into 2D mode
 		*/
-        GL11.glViewport(0, 0, vid.getWidth(), vid.getHeight());
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glOrtho(0, vid.getWidth(), vid.getHeight(), 0, -99999, 99999);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glLoadIdentity();
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glDisable(GL11.GL_CULL_FACE);
-        GL11.glDisable(GL11.GL_BLEND);
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glColor4f(1, 1, 1, 1);
+        setGL2D(vid);
 
 		/*
 		** draw buffer stuff

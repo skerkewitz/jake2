@@ -32,7 +32,7 @@ import jake2.game.TVar;
 import jake2.io.FileSystem;
 import jake2.io.QuakeFile;
 import jake2.network.TNetAddr;
-import jake2.qcommon.Cbuf;
+import jake2.qcommon.CommandBuffer;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.TXCommand;
@@ -697,7 +697,7 @@ public final class Menu {
 
         if (!cached) {
             for (int i = 0; i < NUM_CURSOR_FRAMES; i++) {
-                re.RegisterPic("m_cursor" + i);
+                re.registerPic("m_cursor" + i);
             }
             cached = true;
         }
@@ -1359,7 +1359,7 @@ public final class Menu {
                 // Key_KeynumToString(key), bindnames[item.localdata[0]][0]);
                 cmd = "bind \"" + Key.KeynumToString(key) + "\" \""
                         + bindnames[item.localdata[0]][0] + "\"";
-                Cbuf.InsertText(cmd);
+                CommandBuffer.InsertText(cmd);
             }
 
             Menu_SetStatusBar(s_keys_menu,
@@ -1468,8 +1468,8 @@ public final class Menu {
     }
 
     static void ControlsResetDefaultsFunc(Object unused) {
-        Cbuf.AddText("exec default.cfg\n");
-        Cbuf.Execute();
+        CommandBuffer.AddText("exec default.cfg\n");
+        CommandBuffer.execute();
 
         ControlsSetMenuItemValues();
     }
@@ -1501,7 +1501,7 @@ public final class Menu {
          */
 
         if (cl.attractloop) {
-            Cbuf.AddText("killserver\n");
+            CommandBuffer.AddText("killserver\n");
             return;
         }
 
@@ -1560,7 +1560,7 @@ public final class Menu {
             }
         }
 
-        win_noalttab = ConsoleVar.Get("win_noalttab", "0", TVar.CVAR_FLAG_ARCHIVE);
+        win_noalttab = ConsoleVar.get("win_noalttab", "0", TVar.CVAR_FLAG_ARCHIVE);
 
         /*
          * * configure controls menu and menu items
@@ -1882,7 +1882,7 @@ public final class Menu {
 
         ConsoleVar.SetValue("gamerules", 0); //PGM
 
-        Cbuf.AddText("loading ; killserver ; wait ; newgame\n");
+        CommandBuffer.AddText("loading ; killserver ; wait ; newgame\n");
         cls.setKey_dest(key_game);
     }
 
@@ -2054,7 +2054,7 @@ public final class Menu {
         TMenuAction a = (TMenuAction) self;
 
         if (m_savevalid[a.localdata[0]])
-            Cbuf.AddText("load save" + a.localdata[0] + "\n");
+            CommandBuffer.AddText("load save" + a.localdata[0] + "\n");
         forceMenuOff();
     }
 
@@ -2115,7 +2115,7 @@ public final class Menu {
     static void SaveGameCallback(Object self) {
         TMenuAction a = (TMenuAction) self;
 
-        Cbuf.AddText("save save" + a.localdata[0] + "\n");
+        CommandBuffer.AddText("save save" + a.localdata[0] + "\n");
         forceMenuOff();
     }
 
@@ -2218,7 +2218,7 @@ public final class Menu {
 
         buffer = "connect " + Network.AdrToString(local_server_netadr[index])
                 + "\n";
-        Cbuf.AddText(buffer);
+        CommandBuffer.AddText(buffer);
         forceMenuOff();
     }
 
@@ -2435,10 +2435,10 @@ public final class Menu {
 
         if (spot != null) {
             if (Context.server_state != 0)
-                Cbuf.AddText("disconnect\n");
-            Cbuf.AddText("gamemap \"*" + startmap + "$" + spot + "\"\n");
+                CommandBuffer.AddText("disconnect\n");
+            CommandBuffer.AddText("gamemap \"*" + startmap + "$" + spot + "\"\n");
         } else {
-            Cbuf.AddText("map " + startmap + "\n");
+            CommandBuffer.AddText("map " + startmap + "\n");
         }
 
         forceMenuOff();
@@ -3194,7 +3194,7 @@ public final class Menu {
         s_addressbook_menu.nitems = 0;
 
         for (int i = 0; i < NUM_ADDRESSBOOK_ENTRIES; i++) {
-            TVar adr = ConsoleVar.Get("adr" + i, "", TVar.CVAR_FLAG_ARCHIVE);
+            TVar adr = ConsoleVar.get("adr" + i, "", TVar.CVAR_FLAG_ARCHIVE);
 
             s_addressbook_fields[i].type = MTYPE_FIELD;
             s_addressbook_fields[i].name = null;
@@ -3454,7 +3454,7 @@ public final class Menu {
         int currentdirectoryindex = 0;
         int currentskinindex = 0;
 
-        TVar hand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
+        TVar hand = ConsoleVar.get("hand", "0", TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_ARCHIVE);
 
         PlayerConfig_ScanDirectories();
 
@@ -3642,7 +3642,7 @@ public final class Menu {
             scratch = "players/" + s_pmi[s_player_model_box.curvalue].directory
                     + "/tris.md2";
 
-            entity.model = re.RegisterModel(scratch);
+            entity.model = re.registerModel(scratch);
 
             scratch = "players/"
                     + s_pmi[s_player_model_box.curvalue].directory
@@ -3650,7 +3650,7 @@ public final class Menu {
                     + s_pmi[s_player_model_box.curvalue].skindisplaynames[s_player_skin_box.curvalue]
                     + ".pcx";
 
-            entity.skin = re.RegisterSkin(scratch);
+            entity.skin = re.registerSkin(scratch);
             entity.flags = RF_FULLBRIGHT;
             entity.origin[0] = 80;
             entity.origin[1] = 0;
@@ -3677,7 +3677,7 @@ public final class Menu {
                     refdef.width / 8, refdef.height / 8);
             refdef.height += 4;
 
-            re.RenderFrame(refdef);
+            re.renderFrame(refdef);
 
             scratch = "/players/"
                     + s_pmi[s_player_model_box.curvalue].directory
@@ -3785,22 +3785,22 @@ public final class Menu {
      * init
      */
     public static void Init() {
-        Cmd.AddCommand("menu_main", Menu::Menu_Main_f);
-        Cmd.AddCommand("menu_game", Menu::Menu_Game_f);
-        Cmd.AddCommand("menu_loadgame", Menu::Menu_LoadGame_f);
-        Cmd.AddCommand("menu_savegame", Menu::Menu_SaveGame_f);
-        Cmd.AddCommand("menu_joinserver", Menu::Menu_JoinServer_f);
-        Cmd.AddCommand("menu_addressbook", Menu::Menu_AddressBook_f);
-        Cmd.AddCommand("menu_startserver", Menu::Menu_StartServer_f);
-        Cmd.AddCommand("menu_dmoptions", Menu::Menu_DMOptions_f);
-        Cmd.AddCommand("menu_playerconfig", Menu::Menu_PlayerConfig_f);
-        Cmd.AddCommand("menu_downloadoptions", Menu::Menu_DownloadOptions_f);
-        Cmd.AddCommand("menu_credits", Menu::Menu_Credits_f);
-        Cmd.AddCommand("menu_multiplayer", Menu::Menu_Multiplayer_f);
-        Cmd.AddCommand("menu_video", Menu::Menu_Video_f);
-        Cmd.AddCommand("menu_options", Menu::Menu_Options_f);
-        Cmd.AddCommand("menu_keys", Menu::Menu_Keys_f);
-        Cmd.AddCommand("menu_quit", Menu::Menu_Quit_f);
+        Cmd.registerCommand("menu_main", Menu::Menu_Main_f);
+        Cmd.registerCommand("menu_game", Menu::Menu_Game_f);
+        Cmd.registerCommand("menu_loadgame", Menu::Menu_LoadGame_f);
+        Cmd.registerCommand("menu_savegame", Menu::Menu_SaveGame_f);
+        Cmd.registerCommand("menu_joinserver", Menu::Menu_JoinServer_f);
+        Cmd.registerCommand("menu_addressbook", Menu::Menu_AddressBook_f);
+        Cmd.registerCommand("menu_startserver", Menu::Menu_StartServer_f);
+        Cmd.registerCommand("menu_dmoptions", Menu::Menu_DMOptions_f);
+        Cmd.registerCommand("menu_playerconfig", Menu::Menu_PlayerConfig_f);
+        Cmd.registerCommand("menu_downloadoptions", Menu::Menu_DownloadOptions_f);
+        Cmd.registerCommand("menu_credits", Menu::Menu_Credits_f);
+        Cmd.registerCommand("menu_multiplayer", Menu::Menu_Multiplayer_f);
+        Cmd.registerCommand("menu_video", Menu::Menu_Video_f);
+        Cmd.registerCommand("menu_options", Menu::Menu_Options_f);
+        Cmd.registerCommand("menu_keys", Menu::Menu_Keys_f);
+        Cmd.registerCommand("menu_quit", Menu::Menu_Quit_f);
 
         for (int i = 0; i < m_layers.length; i++) {
             m_layers[i] = new TMenuLayer();

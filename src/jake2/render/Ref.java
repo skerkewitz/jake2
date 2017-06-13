@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 package jake2.render;
 
-import jake2.client.refexport_t;
+import jake2.common.render.TRenderExport;
 
 /**
  * Ref
@@ -34,6 +34,6 @@ import jake2.client.refexport_t;
  */
 public interface Ref {
 	
-	refexport_t GetRefAPI(RenderAPI renderer);
+	TRenderExport GetRefAPI(RenderAPI renderer);
 	String getName();
 }

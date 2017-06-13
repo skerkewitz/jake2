@@ -179,7 +179,7 @@ public class ServerUser {
 
         // write a packet full of data
 
-        while (ServerMain.sv_client.netchan.message.cursize < Defines.MAX_MSGLEN / 2
+        while (ServerMain.sv_client.netchan.message.writeHeadPosition < Defines.MAX_MSGLEN / 2
                 && start < Defines.MAX_CONFIGSTRINGS) {
             if (ServerInit.sv.configstrings[start] != null
                     && ServerInit.sv.configstrings[start].length() != 0) {
@@ -232,7 +232,7 @@ public class ServerUser {
 
         // write a packet full of data
 
-        while (ServerMain.sv_client.netchan.message.cursize < Defines.MAX_MSGLEN / 2
+        while (ServerMain.sv_client.netchan.message.writeHeadPosition < Defines.MAX_MSGLEN / 2
                 && start < Defines.MAX_EDICTS) {
             base = ServerInit.sv.baselines[start];
             if (base.modelIndex != 0 || base.sound != 0 || base.effects != 0) {
@@ -273,7 +273,7 @@ public class ServerUser {
         // call the game begin function
         PlayerClient.ClientBegin(ServerUser.sv_player);
 
-        Cbuf.InsertFromDefer();
+        CommandBuffer.insertFromDefer();
     }
 
     //=============================================================================
@@ -425,10 +425,10 @@ public class ServerUser {
         v = ConsoleVar.VariableString("nextserver");
         //if (!v[0])
         if (v.length() == 0)
-            Cbuf.AddText("killserver\n");
+            CommandBuffer.AddText("killserver\n");
         else {
-            Cbuf.AddText(v);
-            Cbuf.AddText("\n");
+            CommandBuffer.AddText(v);
+            CommandBuffer.AddText("\n");
         }
         ConsoleVar.Set("nextserver", "");
     }
@@ -525,14 +525,14 @@ public class ServerUser {
         stringCmdCount = 0;
 
         while (true) {
-            if (Context.net_message.readcount > Context.net_message.cursize) {
+            if (Context.net_message.readHeadPosition > Context.net_message.writeHeadPosition) {
                 Command.Printf("SV_ReadClientMessage: bad read:\n");
                 Command.Printf(Lib.hexDump(Context.net_message.data, 32, false));
                 ServerMain.SV_DropClient(cl);
                 return;
             }
 
-            c = TSizeBuffer.ReadByte(Context.net_message);
+            c = TBuffer.ReadByte(Context.net_message);
             if (c == -1)
                 break;
 
@@ -546,7 +546,7 @@ public class ServerUser {
                 break;
 
             case Defines.clc_userinfo:
-                cl.userinfo = TSizeBuffer.ReadString(Context.net_message);
+                cl.userinfo = TBuffer.ReadString(Context.net_message);
                 ServerMain.SV_UserinfoChanged(cl);
                 break;
 
@@ -555,9 +555,9 @@ public class ServerUser {
                     return; // someone is trying to cheat...
 
                 move_issued = true;
-                checksumIndex = Context.net_message.readcount;
-                checksum = TSizeBuffer.ReadByte(Context.net_message);
-                lastframe = TSizeBuffer.ReadLong(Context.net_message);
+                checksumIndex = Context.net_message.readHeadPosition;
+                checksum = TBuffer.ReadByte(Context.net_message);
+                lastframe = TBuffer.ReadLong(Context.net_message);
 
                 if (lastframe != cl.lastframe) {
                     cl.lastframe = lastframe;
@@ -570,9 +570,9 @@ public class ServerUser {
 
                 //memset (nullcmd, 0, sizeof(nullcmd));
                 nullcmd = new usercmd_t();
-                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, nullcmd, oldest);
-                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, oldest, oldcmd);
-                TSizeBuffer.ReadDeltaUsercmd(Context.net_message, oldcmd, newcmd);
+                TBuffer.ReadDeltaUsercmd(Context.net_message, nullcmd, oldest);
+                TBuffer.ReadDeltaUsercmd(Context.net_message, oldest, oldcmd);
+                TBuffer.ReadDeltaUsercmd(Context.net_message, oldcmd, newcmd);
 
                 if (cl.state != Defines.cs_spawned) {
                     cl.lastframe = -1;
@@ -583,7 +583,7 @@ public class ServerUser {
 
                 calculatedChecksum = Command.BlockSequenceCRCByte(
                         Context.net_message.data, checksumIndex + 1,
-                        Context.net_message.readcount - checksumIndex - 1,
+                        Context.net_message.readHeadPosition - checksumIndex - 1,
                         cl.netchan.incoming_sequence);
 
                 if ((calculatedChecksum & 0xff) != checksum) {
@@ -620,7 +620,7 @@ public class ServerUser {
                 break;
 
             case Defines.clc_stringcmd:
-                s = TSizeBuffer.ReadString(Context.net_message);
+                s = TBuffer.ReadString(Context.net_message);
 
                 // malicious users may try using too many string commands
                 if (++stringCmdCount < ServerUser.MAX_STRINGCMDS)

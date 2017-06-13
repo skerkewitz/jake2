@@ -281,10 +281,10 @@ public class Key {
         //
         // register our functions
         //
-        Cmd.AddCommand("bind", Key.Bind_f);
-        Cmd.AddCommand("unbind", Key.fUnbind);
-        Cmd.AddCommand("unbindall", Key.fUnbindall);
-        Cmd.AddCommand("bindlist", Key.fBindlist);
+        Cmd.registerCommand("bind", Key.Bind_f);
+        Cmd.registerCommand("unbind", Key.fUnbind);
+        Cmd.registerCommand("unbindall", Key.fUnbindall);
+        Cmd.registerCommand("bindlist", Key.fBindlist);
     }
 
     public static void ClearTyping() {
@@ -341,7 +341,7 @@ public class Key {
 
             if (Context.cl.frame.playerstate.stats[Defines.STAT_LAYOUTS] != 0 && Context.cls.getKey_dest() == Defines.key_game) {
                 // put away help computer / inventory
-                Cbuf.AddText("cmd putaway\n");
+                CommandBuffer.AddText("cmd putaway\n");
                 return;
             }
             switch (Context.cls.getKey_dest()) {
@@ -385,13 +385,13 @@ public class Key {
             kb = keybindings[key];
             if (kb != null && kb.length() > 0 && kb.charAt(0) == '+') {
                 cmd = "-" + kb.substring(1) + " " + key + " " + time + "\n";
-                Cbuf.AddText(cmd);
+                CommandBuffer.AddText(cmd);
             }
 //			if (keyshift[key] != key) {
 //				kb = Context.keybindings[keyshift[key]];
 //				if (kb != null && kb.length()>0 && kb.charAt(0) == '+') {
 //					cmd = "-" + kb.substring(1) + " " + key + " " + time + "\n";
-//					Cbuf.AddText(cmd);
+//					CommandBuffer.AddText(cmd);
 //				}
 //			}
             return;
@@ -408,9 +408,9 @@ public class Key {
                 if (kb.length() > 0 && kb.charAt(0) == '+') {
                     // button commands add keynum and time as a parm
                     cmd = kb + " " + key + " " + time + "\n";
-                    Cbuf.AddText(cmd);
+                    CommandBuffer.AddText(cmd);
                 } else {
-                    Cbuf.AddText(kb + "\n");
+                    CommandBuffer.AddText(kb + "\n");
                 }
             }
             return;
@@ -495,12 +495,12 @@ public class Key {
 
         if (key == K_ENTER || key == K_KP_ENTER) {
             if (Context.chat_team)
-                Cbuf.AddText("say_team \"");
+                CommandBuffer.AddText("say_team \"");
             else
-                Cbuf.AddText("say \"");
+                CommandBuffer.AddText("say \"");
 
-            Cbuf.AddText(Context.chat_buffer);
-            Cbuf.AddText("\"\n");
+            CommandBuffer.AddText(Context.chat_buffer);
+            CommandBuffer.AddText("\"\n");
 
             Context.cls.setKey_dest(Defines.key_game);
             Context.chat_buffer = "";
@@ -582,7 +582,7 @@ public class Key {
 
         if (key == 'l') {
             if (keydown[K_CTRL]) {
-                Cbuf.AddText("clear\n");
+                CommandBuffer.AddText("clear\n");
                 return;
             }
         }
@@ -590,14 +590,14 @@ public class Key {
         if (key == K_ENTER || key == K_KP_ENTER) {
             // backslash text are commands, else chat
             if (key_lines[edit_line][1] == '\\' || key_lines[edit_line][1] == '/')
-                Cbuf.AddText(
+                CommandBuffer.AddText(
                         new String(key_lines[edit_line], 2, Lib.strlen(key_lines[edit_line]) - 2));
             else
-                Cbuf.AddText(
+                CommandBuffer.AddText(
                         new String(key_lines[edit_line], 1, Lib.strlen(key_lines[edit_line]) - 1));
 
 
-            Cbuf.AddText("\n");
+            CommandBuffer.AddText("\n");
 
             Command.Printf(new String(key_lines[edit_line], 0, Lib.strlen(key_lines[edit_line])) + "\n");
             edit_line = (edit_line + 1) & 31;

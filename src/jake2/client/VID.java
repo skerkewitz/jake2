@@ -57,7 +57,7 @@ public class VID {
 	public static final int PRINT_DEVELOPER = 1; // only print when "developer 1"
 	public static final int PRINT_ALERT = 2;
 
-	//	   Main windowed and fullscreen graphics interface module. This module
+	//	   RenderMain windowed and fullscreen graphics interface module. This module
 	//	   is used for both the software and OpenGL rendering versions of the
 	//	   Quake refresh engine.
 
@@ -205,7 +205,7 @@ public class VID {
 
 		Input.Real_IN_Init();
 
-		if ( !re.Init((int)vid_xpos.value, (int)vid_ypos.value) )
+		if ( !re.init((int)vid_xpos.value, (int)vid_ypos.value) )
 		{
 			re.Shutdown();
 			FreeReflib();
@@ -262,7 +262,7 @@ public class VID {
 				if ( vid_ref.string.equals(Renderer.getDefaultName())) {
 				    renderer = vid_ref.string;
 					Command.Printf("Refresh failed\n");
-					gl_mode = ConsoleVar.Get( "gl_mode", "0", 0 );
+					gl_mode = ConsoleVar.get( "gl_mode", "0", 0 );
 					if (gl_mode.value != 0.0f) {
 						Command.Printf("Trying mode 0\n");
 						ConsoleVar.SetValue("gl_mode", 0);
@@ -297,19 +297,19 @@ public class VID {
 	public static void Init()
 	{
 		/* Create the video variables so we know how to start the graphics drivers */
-		vid_ref = ConsoleVar.Get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
-		vid_xpos = ConsoleVar.Get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
-		vid_ypos = ConsoleVar.Get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
-		vid_width = ConsoleVar.Get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
-		vid_height = ConsoleVar.Get("vid_height", "480", TVar.CVAR_FLAG_ARCHIVE);
-		vid_fullscreen = ConsoleVar.Get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
-		vid_gamma = ConsoleVar.Get( "vid_gamma", "1", TVar.CVAR_FLAG_ARCHIVE );
+		vid_ref = ConsoleVar.get("vid_ref", Renderer.getPreferedName(), TVar.CVAR_FLAG_ARCHIVE);
+		vid_xpos = ConsoleVar.get("vid_xpos", "3", TVar.CVAR_FLAG_ARCHIVE);
+		vid_ypos = ConsoleVar.get("vid_ypos", "22", TVar.CVAR_FLAG_ARCHIVE);
+		vid_width = ConsoleVar.get("vid_width", "640", TVar.CVAR_FLAG_ARCHIVE);
+		vid_height = ConsoleVar.get("vid_height", "480", TVar.CVAR_FLAG_ARCHIVE);
+		vid_fullscreen = ConsoleVar.get("vid_fullscreen", "0", TVar.CVAR_FLAG_ARCHIVE);
+		vid_gamma = ConsoleVar.get( "vid_gamma", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		vid_modes[11].width = (int)vid_width.value;
 		vid_modes[11].height = (int)vid_height.value;
 		
 		/* Add some console commands that we want to handle */
-		Cmd.AddCommand ("vid_restart", () -> {
+		Cmd.registerCommand("vid_restart", () -> {
 			vid_modes[11].width = (int) vid_width.value;
 			vid_modes[11].height = (int) vid_height.value;
 			vid_ref.modified = true;
@@ -521,16 +521,16 @@ public class VID {
 		initRefs();
 		
 		if ( gl_driver == null )
-			gl_driver = ConsoleVar.Get( "gl_driver", Renderer.getPreferedName(), 0 );
+			gl_driver = ConsoleVar.get( "gl_driver", Renderer.getPreferedName(), 0 );
 		if ( gl_picmip == null )
-			gl_picmip = ConsoleVar.Get( "gl_picmip", "0", 0 );
+			gl_picmip = ConsoleVar.get( "gl_picmip", "0", 0 );
 		if ( gl_mode == null)
-			gl_mode = ConsoleVar.Get( "gl_mode", "3", 0 );
+			gl_mode = ConsoleVar.get( "gl_mode", "3", 0 );
 		if ( gl_ext_palettedtexture == null )
-			gl_ext_palettedtexture = ConsoleVar.Get( "gl_ext_palettedtexture", "1", TVar.CVAR_FLAG_ARCHIVE );
+			gl_ext_palettedtexture = ConsoleVar.get( "gl_ext_palettedtexture", "1", TVar.CVAR_FLAG_ARCHIVE );
 
 		if ( gl_swapinterval == null)
-			gl_swapinterval = ConsoleVar.Get( "gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE );
+			gl_swapinterval = ConsoleVar.get( "gl_swapinterval", "0", TVar.CVAR_FLAG_ARCHIVE );
 
 		s_mode_list.curvalue = (int)gl_mode.value;
 		if (vid_fullscreen.value != 0.0f) {
@@ -548,7 +548,7 @@ public class VID {
 		}
 
 		if ( SCR.scr_viewsize == null )
-			SCR.scr_viewsize = ConsoleVar.Get ("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
+			SCR.scr_viewsize = ConsoleVar.get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
 
 		s_screensize_slider.curvalue = (int)(SCR.scr_viewsize.value/10);
 

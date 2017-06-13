@@ -26,7 +26,7 @@ import jake2.Defines;
 import jake2.game.TEntityDict;
 import jake2.game.usercmd_t;
 import jake2.network.TNetChan;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 
 public class TClient {
 
@@ -55,8 +55,8 @@ public class TClient {
     String name = ""; // extracted from userinfo, high bits masked
     int messagelevel; // for filtering printed messages
     // The datagram is written to by sound calls, prints, temp ents, etc.
-    // It can be harmlessly overflowed.
-    TSizeBuffer datagram = new TSizeBuffer();
+    // It can be harmlessly didOverflow.
+    TBuffer datagram = new TBuffer();
     byte datagram_buf[] = new byte[Defines.MAX_MSGLEN];
     TClientFrame frames[] = new TClientFrame[Defines.UPDATE_BACKUP]; // updates can be delta'd from here
     byte download[]; // file being downloaded

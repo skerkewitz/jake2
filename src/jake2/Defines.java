@@ -1219,7 +1219,7 @@ public interface Defines {
     int DTRIVERTX_SIZE = 4;
     int ALIAS_VERSION = 8;
     String GAMEVERSION = "baseq2";
-    int API_VERSION = 3; // ref_library (refexport_t)
+    int API_VERSION = 3; // ref_library (TRenderExport)
     int DVIS_PVS = 0;
     int DVIS_PHS = 1;
     // ----------------

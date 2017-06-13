@@ -97,8 +97,8 @@ public final class Input {
     }
 
     public static void Init() {
-        Context.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        Context.in_joystick = ConsoleVar.Get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.in_mouse = ConsoleVar.get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.in_joystick = ConsoleVar.get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
     }
 
     public static void Shutdown() {
@@ -107,20 +107,20 @@ public final class Input {
 
     public static void Real_IN_Init() {
         // mouse variables
-        Context.m_filter = ConsoleVar.Get("m_filter", "0", 0);
-        Context.in_mouse = ConsoleVar.Get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
-        Context.freelook = ConsoleVar.Get("freelook", "1", 0);
-        Context.lookstrafe = ConsoleVar.Get("lookstrafe", "0", 0);
-        Context.sensitivity = ConsoleVar.Get("sensitivity", "3", 0);
-        Context.m_pitch = ConsoleVar.Get("m_pitch", "0.022", 0);
-        Context.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
-        Context.m_forward = ConsoleVar.Get("m_forward", "1", 0);
-        Context.m_side = ConsoleVar.Get("m_side", "0.8", 0);
+        Context.m_filter = ConsoleVar.get("m_filter", "0", 0);
+        Context.in_mouse = ConsoleVar.get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.freelook = ConsoleVar.get("freelook", "1", 0);
+        Context.lookstrafe = ConsoleVar.get("lookstrafe", "0", 0);
+        Context.sensitivity = ConsoleVar.get("sensitivity", "3", 0);
+        Context.m_pitch = ConsoleVar.get("m_pitch", "0.022", 0);
+        Context.m_yaw = ConsoleVar.get("m_yaw", "0.022", 0);
+        Context.m_forward = ConsoleVar.get("m_forward", "1", 0);
+        Context.m_side = ConsoleVar.get("m_side", "0.8", 0);
 
-        Cmd.AddCommand("+mlook", Input::MLookDown);
-        Cmd.AddCommand("-mlook", Input::MLookUp);
-        Cmd.AddCommand("force_centerview", Input::Force_CenterView_f);
-        Cmd.AddCommand("togglemouse", Input::toggleMouse);
+        Cmd.registerCommand("+mlook", Input::MLookDown);
+        Cmd.registerCommand("-mlook", Input::MLookUp);
+        Cmd.registerCommand("force_centerview", Input::Force_CenterView_f);
+        Cmd.registerCommand("togglemouse", Input::toggleMouse);
 
         Input.mouse_avail = true;
     }

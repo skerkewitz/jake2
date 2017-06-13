@@ -462,7 +462,7 @@ public class ServerInit {
             SV_SEND.SV_SendClientMessages();
             spawnServer(level, spawnpoint, Defines.ss_game, attractloop,
                     loadgame);
-            Cbuf.CopyToDefer();
+            CommandBuffer.copyToDefer();
         }
 
         SV_SEND.SV_BroadcastCommand("reconnect\n");

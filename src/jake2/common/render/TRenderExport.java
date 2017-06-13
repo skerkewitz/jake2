@@ -24,8 +24,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
-package jake2.client;
+package jake2.common.render;
 
+import jake2.client.DisplayMode;
+import jake2.client.TRefDef;
 import jake2.common.Dimension;
 import jake2.qcommon.TXCommand;
 import jake2.render.TImage;
@@ -34,47 +36,42 @@ import jake2.sys.Keyboard;
 
 
 /**
- * refexport_t
- * 
- * @author cwei
+ * Public interface for Renderer implementations.
+ *
+ * ref.h, TRenderExport
+ * these are the functions exported by the refresh module
  */
-public interface refexport_t {
-	// ============================================================================
-	// public interface for Renderer implementations
-	//
-	// ref.h, refexport_t
-	// ============================================================================
-	//
-	// these are the functions exported by the refresh module
-	//
-	// called when the library is loaded
-	boolean Init(int vid_xpos, int vid_ypos);
+public interface TRenderExport {
 
-	// called before the library is unloaded
+	/** Called when the library is loaded. */
+	boolean init(int vid_xpos, int vid_ypos);
+
+	/** Called before the library is unloaded. */
 	void Shutdown();
 
-	// All data that will be used in a level should be
-	// registered before rendering any frames to prevent disk hits,
-	// but they can still be registered at a later time
-	// if necessary.
-	//
-	// EndRegistration will free any remaining data that wasn't registered.
-	// Any model_s or skin_s pointers from before the BeginRegistration
-	// are no longer valid after EndRegistration.
-	//
-	// Skins and images need to be differentiated, because skins
-	// are flood filled to eliminate mip map edge errors, and pics have
-	// an implicit "pics/" prepended to the name. (a pic name that starts with a
-	// slash will not use the "pics/" prefix or the ".pcx" postfix)
-	void BeginRegistration(String map);
-	TModel RegisterModel(String name);
-	TImage RegisterSkin(String name);
-	TImage RegisterPic(String name);
-	void SetSky(String name, float rotate, /* vec3_t */
-	float[] axis);
-	void EndRegistration();
+	/**
+	All data that will be used in a level should be
+	registered before rendering any frames to prevent disk hits,
+	but they can still be registered at a later time
+	if necessary.
 
-	void RenderFrame(TRefDef fd);
+	endRegistration will free any remaining data that wasn't registered.
+	Any model_s or skin_s pointers from before the beginRegistration
+	are no longer valid after endRegistration.
+
+	Skins and images need to be differentiated, because skins
+	are flood filled to eliminate mip map edge errors, and pics have
+	an implicit "pics/" prepended to the name. (a pic name that starts with a
+	slash will not use the "pics/" prefix or the ".pcx" postfix)
+	*/
+    void beginRegistration(String map);
+	TModel registerModel(String name);
+	TImage registerSkin(String name);
+	TImage registerPic(String name);
+	void setSky(String name, float rotate, /* vec3_t */	float[] axis);
+	void endRegistration();
+
+	void renderFrame(TRefDef fd);
 
 	void DrawGetPicSize(Dimension dim /* int *w, *h */, String name);
 	// will return 0 0 if not found
@@ -96,7 +93,7 @@ public interface refexport_t {
 	void BeginFrame(float camera_separation);
 	void EndFrame();
 
-	void AppActivate(boolean activate);
+	void appActivate(boolean activate);
 	
 	/**
 	 * 

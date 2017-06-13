@@ -255,7 +255,7 @@ public final class V {
             return;
         }
         String name = "models/" + Cmd.Argv(1) + "/tris.md2";
-        Context.gun_model = re.RegisterModel(name);
+        Context.gun_model = re.registerModel(name);
     };
 
     /*
@@ -354,7 +354,7 @@ public final class V {
             //Arrays.sort(cl.refdef.entities, entitycmpfnc);
         }
 
-        re.RenderFrame(cl.refdef);
+        re.renderFrame(cl.refdef);
         if (cl_stats.value != 0.0f)
             Command.Printf("entityDict:%i  lt:%i  part:%i\n", r_numentities, r_numdlights, r_numparticles);
         if (log_stats.value != 0.0f && (log_stats_file != null))
@@ -364,8 +364,8 @@ public final class V {
             } catch (IOException e) {
             }
 
-        SCR.AddDirtyPoint(scr_vrect.getX(), scr_vrect.getY());
-        SCR.AddDirtyPoint(scr_vrect.getX() + scr_vrect.getWidth() - 1, scr_vrect.getY()
+        SCR.addDirtyPoint(scr_vrect.getX(), scr_vrect.getY());
+        SCR.addDirtyPoint(scr_vrect.getX() + scr_vrect.getWidth() - 1, scr_vrect.getY()
                 + scr_vrect.getHeight() - 1);
 
         SCR.DrawCrosshair();
@@ -381,19 +381,19 @@ public final class V {
             (int) cl.refdef.viewangles[YAW]);
 
     public static void Init() {
-        Cmd.AddCommand("gun_next", Gun_Next_f);
-        Cmd.AddCommand("gun_prev", Gun_Prev_f);
-        Cmd.AddCommand("gun_model", Gun_Model_f);
+        Cmd.registerCommand("gun_next", Gun_Next_f);
+        Cmd.registerCommand("gun_prev", Gun_Prev_f);
+        Cmd.registerCommand("gun_model", Gun_Model_f);
 
-        Cmd.AddCommand("viewpos", Viewpos_f);
+        Cmd.registerCommand("viewpos", Viewpos_f);
 
-        crosshair = ConsoleVar.Get("crosshair", "0", TVar.CVAR_FLAG_ARCHIVE);
+        crosshair = ConsoleVar.get("crosshair", "0", TVar.CVAR_FLAG_ARCHIVE);
 
-        cl_testblend = ConsoleVar.Get("cl_testblend", "0", 0);
-        cl_testparticles = ConsoleVar.Get("cl_testparticles", "0", 0);
-        cl_testentities = ConsoleVar.Get("cl_testentities", "0", 0);
-        cl_testlights = ConsoleVar.Get("cl_testlights", "0", 0);
+        cl_testblend = ConsoleVar.get("cl_testblend", "0", 0);
+        cl_testparticles = ConsoleVar.get("cl_testparticles", "0", 0);
+        cl_testentities = ConsoleVar.get("cl_testentities", "0", 0);
+        cl_testlights = ConsoleVar.get("cl_testlights", "0", 0);
 
-        cl_stats = ConsoleVar.Get("cl_stats", "0", 0);
+        cl_stats = ConsoleVar.get("cl_stats", "0", 0);
     }
 }

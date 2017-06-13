@@ -156,7 +156,7 @@ public class CM {
 
     public static byte map_visibility[] = new byte[Defines.MAX_MAP_VISIBILITY];
 
-    /** Main visibility data. */
+    /** RenderMain visibility data. */
     public static qfiles.dvis_t map_vis = new qfiles.dvis_t(ByteBuffer
             .wrap(map_visibility));
 
@@ -209,7 +209,7 @@ public class CM {
         qfiles.dheader_t header;
         int length;
 
-        map_noareas = ConsoleVar.Get("map_noareas", "0", 0);
+        map_noareas = ConsoleVar.get("map_noareas", "0", 0);
 
         if (map_name.equals(name)
                 && (clientload || 0 == ConsoleVar.VariableValue("flushmap"))) {
@@ -282,7 +282,7 @@ public class CM {
         
         FileSystem.FreeFile(buf);
 
-        CM_InitBoxHull();
+        initBoxHull();
 
         Arrays.fill(portalopen, false);
 
@@ -830,7 +830,7 @@ public class CM {
     /** Set up the planes and nodes so that the six floats of a bounding box can
      * just be stored out and get a proper clipping hull structure.
      */
-    public static void CM_InitBoxHull() {
+    private static void initBoxHull() {
 
         box_headnode = numnodes; //rst: still room for 6 brushes left?
 

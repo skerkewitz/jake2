@@ -101,7 +101,7 @@ public class Sound {
 
         Command.Printf("\n------- sound initialization -------\n");
 
-        TVar cv = ConsoleVar.Get("s_initsound", "1", 0);
+        TVar cv = ConsoleVar.get("s_initsound", "1", 0);
         if (cv.value == 0.0f) {
             Command.Printf("not initializing.\n");
             useDriver("dummy");
@@ -114,7 +114,7 @@ public class Sound {
             defaultDriver = drivers.get(drivers.size() - 1).getName();
         }
 
-        s_impl = ConsoleVar.Get("s_impl", defaultDriver, TVar.CVAR_FLAG_ARCHIVE);
+        s_impl = ConsoleVar.get("s_impl", defaultDriver, TVar.CVAR_FLAG_ARCHIVE);
         useDriver(s_impl.string);
 
         if (impl.Init()) {
@@ -172,7 +172,7 @@ public class Sound {
 
     /**
      * Updates the sound renderer according to the changes in the environment,
-     * called once each time through the main loop.
+     * called once each time through the renderMain loop.
      */
     public static void Update(float[] origin, float[] forward, float[] right, float[] up) {
         impl.Update(origin, forward, right, up);

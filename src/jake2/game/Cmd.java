@@ -85,7 +85,7 @@ public final class Cmd {
         }
         Command.Printf("execing " + Cmd.Argv(1) + "\n");
 
-        Cbuf.InsertText(new String(f));
+        CommandBuffer.InsertText(new String(f));
 
         FileSystem.FreeFile(f);
     };
@@ -148,11 +148,11 @@ public final class Cmd {
      */
     public static void Init() {
 
-        Cmd.AddCommand("exec", Exec_f);
-        Cmd.AddCommand("echo", Echo_f);
-        Cmd.AddCommand("cmdlist", List_f);
-        Cmd.AddCommand("alias", Alias_f);
-        Cmd.AddCommand("wait", Wait_f);
+        Cmd.registerCommand("exec", Exec_f);
+        Cmd.registerCommand("echo", Echo_f);
+        Cmd.registerCommand("cmdlist", List_f);
+        Cmd.registerCommand("alias", Alias_f);
+        Cmd.registerCommand("wait", Wait_f);
     }
 
     /**
@@ -234,7 +234,7 @@ public final class Cmd {
      * unless they are in a quoted token.
      */
     public static void TokenizeString(char text[], boolean macroExpand) {
-        String com_token;
+
 
         cmd_argc = 0;
         cmd_args = "";
@@ -271,7 +271,7 @@ public final class Cmd {
                 cmd_args.trim();
             }
 
-            com_token = Command.Parse(ph);
+            String com_token = Command.Parse(ph);
 
             if (ph.data == null)
                 return;
@@ -283,7 +283,7 @@ public final class Cmd {
         }
     }
 
-    public static void AddCommand(String cmd_name, TXCommand function) {
+    public static void registerCommand(String cmd_name, TXCommand function) {
 
         //Command.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
         // fail if the command is a variable name
@@ -304,7 +304,7 @@ public final class Cmd {
     /**
      * Cmd_RemoveCommand
      */
-    public static void RemoveCommand(String cmd_name) {
+    public static void removeCommand(String cmd_name) {
 
         if (cmd_functions.remove(cmd_name) == null) {
             Command.Printf("Cmd_RemoveCommand: " + cmd_name + " not added\n");
@@ -366,7 +366,7 @@ public final class Cmd {
                     Command.Printf("ALIAS_LOOP_COUNT\n");
                     return;
                 }
-                Cbuf.InsertText(a.value);
+                CommandBuffer.InsertText(a.value);
                 return;
             }
         }
@@ -385,8 +385,8 @@ public final class Cmd {
      * Give items to a client.
      */
     public static void Give_f(TEntityDict ent) {
-        String name;
-        TGItem it;
+
+
         int index;
         int i;
         boolean give_all;
@@ -398,7 +398,7 @@ public final class Cmd {
             return;
         }
 
-        name = Cmd.Args();
+        String name = Cmd.Args();
 
         give_all = 0 == Lib.Q_stricmp(name, "all");
 
@@ -413,7 +413,7 @@ public final class Cmd {
 
         if (give_all || 0 == Lib.Q_stricmp(name, "weapons")) {
             for (i = 1; i < GameBase.game.num_items; i++) {
-                it = GameItemList.itemlist[i];
+                TGItem it = GameItemList.itemlist[i];
                 if (null == it.pickup)
                     continue;
                 if (0 == (it.flags & Defines.IT_WEAPON))
@@ -426,7 +426,7 @@ public final class Cmd {
 
         if (give_all || 0 == Lib.Q_stricmp(name, "ammo")) {
             for (i = 1; i < GameBase.game.num_items; i++) {
-                it = GameItemList.itemlist[i];
+                TGItem it = GameItemList.itemlist[i];
                 if (null == it.pickup)
                     continue;
                 if (0 == (it.flags & Defines.IT_AMMO))
@@ -440,7 +440,7 @@ public final class Cmd {
         if (give_all || Lib.Q_stricmp(name, "armor") == 0) {
             gitem_armor_t info;
 
-            it = GameItems.FindItem("Jacket Armor");
+            TGItem it = GameItems.FindItem("Jacket Armor");
             ent.client.pers.inventory[GameItems.ITEM_INDEX(it)] = 0;
 
             it = GameItems.FindItem("Combat Armor");
@@ -455,7 +455,7 @@ public final class Cmd {
         }
 
         if (give_all || Lib.Q_stricmp(name, "Power Shield") == 0) {
-            it = GameItems.FindItem("Power Shield");
+            TGItem it = GameItems.FindItem("Power Shield");
             it_ent = GameUtil.G_Spawn();
             it_ent.classname = it.classname;
             GameItems.SpawnItem(it_ent, it);
@@ -469,7 +469,7 @@ public final class Cmd {
 
         if (give_all) {
             for (i = 1; i < GameBase.game.num_items; i++) {
-                it = GameItemList.itemlist[i];
+                TGItem it = GameItemList.itemlist[i];
                 if (it.pickup != null)
                     continue;
                 if ((it.flags & (Defines.IT_ARMOR | Defines.IT_WEAPON | Defines.IT_AMMO)) != 0)
@@ -479,7 +479,7 @@ public final class Cmd {
             return;
         }
 
-        it = GameItems.FindItem(name);
+        TGItem it = GameItems.FindItem(name);
         if (it == null) {
             name = Cmd.Argv(1);
             it = GameItems.FindItem(name);

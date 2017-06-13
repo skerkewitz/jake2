@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.client.ui.Menu;
 import jake2.game.Cmd;
 import jake2.io.FileSystem;
-import jake2.qcommon.Cbuf;
+import jake2.qcommon.CommandBuffer;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.TXCommand;
@@ -51,13 +51,13 @@ public final class Console {
         SCR.EndLoadingPlaque(); // get rid of loading plaque
 
         if (Context.cl.attractloop) {
-            Cbuf.AddText("killserver\n");
+            CommandBuffer.AddText("killserver\n");
             return;
         }
 
         if (cls.getState() == Defines.ca_disconnected) {
             // start the demo loop again
-            Cbuf.AddText("d1\n");
+            CommandBuffer.AddText("d1\n");
             return;
         }
 
@@ -154,14 +154,14 @@ public final class Console {
         //
         // register our commands
         //
-        Context.con_notifytime = ConsoleVar.Get("con_notifytime", "3", 0);
+        Context.con_notifytime = ConsoleVar.get("con_notifytime", "3", 0);
 
-        Cmd.AddCommand("toggleconsole", ToggleConsole_f);
-        Cmd.AddCommand("togglechat", ToggleChat_f);
-        Cmd.AddCommand("messagemode", MessageMode_f);
-        Cmd.AddCommand("messagemode2", MessageMode2_f);
-        Cmd.AddCommand("clear", Clear_f);
-        Cmd.AddCommand("condump", Dump_f);
+        Cmd.registerCommand("toggleconsole", ToggleConsole_f);
+        Cmd.registerCommand("togglechat", ToggleChat_f);
+        Cmd.registerCommand("messagemode", MessageMode_f);
+        Cmd.registerCommand("messagemode2", MessageMode2_f);
+        Cmd.registerCommand("clear", Clear_f);
+        Cmd.registerCommand("condump", Dump_f);
         console.initialized = true;
     }
 
@@ -490,8 +490,8 @@ public final class Console {
         }
 
         if (v != 0) {
-            SCR.AddDirtyPoint(0, 0);
-            SCR.AddDirtyPoint(viddef.getWidth() - 1, v);
+            SCR.addDirtyPoint(0, 0);
+            SCR.addDirtyPoint(viddef.getWidth() - 1, v);
         }
     }
 
@@ -513,8 +513,8 @@ public final class Console {
 
         // draw the background
         re.DrawStretchPic(0, -height + lines, width, height, "conback");
-        SCR.AddDirtyPoint(0, 0);
-        SCR.AddDirtyPoint(width - 1, lines - 1);
+        SCR.addDirtyPoint(0, 0);
+        SCR.addDirtyPoint(width - 1, lines - 1);
 
         String version = Command.sprintf("v%4.2f", VERSION);
         for (int x = 0; x < 5; x++)

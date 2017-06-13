@@ -128,7 +128,7 @@ public final class CL {
             try {
                 String name;
                 byte buf_data[] = new byte[Defines.MAX_MSGLEN];
-                TSizeBuffer buf = new TSizeBuffer();
+                TBuffer buf = new TBuffer();
                 int i;
                 TEntityState ent;
 
@@ -183,13 +183,13 @@ public final class CL {
                 // configstrings
                 for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++) {
                     if (Context.cl.configstrings[i].length() > 0) {
-                        if (buf.cursize + Context.cl.configstrings[i].length()
+                        if (buf.writeHeadPosition + Context.cl.configstrings[i].length()
                                 + 32 > buf.maxsize) { 
                             // write it out
-                            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
+                            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
                             Context.cls.getDemofile()
-                                    .write(buf.data, 0, buf.cursize);
-                            buf.cursize = 0;
+                                    .write(buf.data, 0, buf.writeHeadPosition);
+                            buf.writeHeadPosition = 0;
                         }
 
                         buf.writeByte(Defines.svc_configstring);
@@ -206,10 +206,10 @@ public final class CL {
                     if (ent.modelIndex == 0)
                         continue;
 
-                    if (buf.cursize + 64 > buf.maxsize) { // write it out
-                        Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
-                        Context.cls.getDemofile().write(buf.data, 0, buf.cursize);
-                        buf.cursize = 0;
+                    if (buf.writeHeadPosition + 64 > buf.maxsize) { // write it out
+                        Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
+                        Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
+                        buf.writeHeadPosition = 0;
                     }
 
                     buf.writeByte(Defines.svc_spawnbaseline);
@@ -220,8 +220,8 @@ public final class CL {
                 buf.writeString("precache\n");
 
                 // write it to the demo file
-                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.cursize));
-                Context.cls.getDemofile().write(buf.data, 0, buf.cursize);
+                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
+                Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
                 // the rest of the demo file will be individual frames
 
             } catch (IOException e) {
@@ -436,7 +436,7 @@ public final class CL {
         // send a broadcast packet
         Command.Printf("pinging broadcast...\n");
 
-        noudp = ConsoleVar.Get("noudp", "0", TVar.CVAR_FLAG_NOSET);
+        noudp = ConsoleVar.get("noudp", "0", TVar.CVAR_FLAG_NOSET);
         if (noudp.value == 0.0f) {
             adr.type = Defines.NA_BROADCAST;
             adr.port = Defines.PORT_SERVER;
@@ -446,7 +446,7 @@ public final class CL {
         }
 
         // we use no IPX
-        noipx = ConsoleVar.Get("noipx", "1", TVar.CVAR_FLAG_NOSET);
+        noipx = ConsoleVar.get("noipx", "1", TVar.CVAR_FLAG_NOSET);
         if (noipx.value == 0.0f) {
             adr.type = Defines.NA_BROADCAST_IPX;
             //adr.port = BigShort(PORT_SERVER);
@@ -559,7 +559,7 @@ public final class CL {
     //	  ============================================================================
 
     /**
-     * Shutdown
+     * shutdown
      * 
      * FIXME: this is a callback from Sys_Quit and Com_Error. It would be better
      * to run quit through here before the final handoff to the sys code.
@@ -575,7 +575,7 @@ public final class CL {
         int swlen;
 
         // the first eight bytes are just packet sequencing stuff
-        swlen = Context.net_message.cursize - 8;
+        swlen = Context.net_message.writeHeadPosition - 8;
 
         try {
             Context.cls.getDemofile().writeInt(EndianHandler.swapInt(swlen));
@@ -732,7 +732,7 @@ public final class CL {
     static void ParseStatusMessage() {
         String s;
 
-        s = TSizeBuffer.ReadString(Context.net_message);
+        s = TBuffer.ReadString(Context.net_message);
 
         Command.Printf(s + "\n");
         Menu.AddToServerList(Context.net_from, s);
@@ -747,10 +747,10 @@ public final class CL {
         String s;
         String c;
 
-        TSizeBuffer.BeginReading(Context.net_message);
-        TSizeBuffer.ReadLong(Context.net_message); // skip the -1
+        Context.net_message.resetReadPosition();
+        TBuffer.ReadLong(Context.net_message); // skip the -1
 
-        s = TSizeBuffer.ReadStringLine(Context.net_message);
+        s = TBuffer.ReadStringLine(Context.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
@@ -784,14 +784,14 @@ public final class CL {
                 Command.Printf("Command packet from remote host.  Ignored.\n");
                 return;
             }
-            s = TSizeBuffer.ReadString(Context.net_message);
-            Cbuf.AddText(s);
-            Cbuf.AddText("\n");
+            s = TBuffer.ReadString(Context.net_message);
+            CommandBuffer.AddText(s);
+            CommandBuffer.AddText("\n");
             return;
         }
         // print command from somewhere
         if (c.equals("print")) {
-            s = TSizeBuffer.ReadString(Context.net_message);
+            s = TBuffer.ReadString(Context.net_message);
             if (s.length() > 0)
             	Command.Printf(s);
             return;
@@ -844,7 +844,7 @@ public final class CL {
                     || Context.cls.getState() == Defines.ca_connecting)
                 continue; // dump it if not connected
 
-            if (Context.net_message.cursize < 8) {
+            if (Context.net_message.writeHeadPosition < 8) {
                 Command.Printf(Network.AdrToString(Context.net_from)
                         + ": Runt packet\n");
                 continue;
@@ -1234,118 +1234,118 @@ public final class CL {
 
         CL_input.InitInput();
 
-        ConsoleVar.Get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr2", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr3", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr4", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr5", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr6", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr7", "", TVar.CVAR_FLAG_ARCHIVE);
-        ConsoleVar.Get("adr8", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr2", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr3", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr4", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr5", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr6", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr7", "", TVar.CVAR_FLAG_ARCHIVE);
+        ConsoleVar.get("adr8", "", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our variables
         //
-        Context.cl_stereo_separation = ConsoleVar.Get("cl_stereo_separation", "0.4",
+        Context.cl_stereo_separation = ConsoleVar.get("cl_stereo_separation", "0.4",
                 TVar.CVAR_FLAG_ARCHIVE);
-        Context.cl_stereo = ConsoleVar.Get("cl_stereo", "0", 0);
+        Context.cl_stereo = ConsoleVar.get("cl_stereo", "0", 0);
 
-        Context.cl_add_blend = ConsoleVar.Get("cl_blend", "1", 0);
-        Context.cl_add_lights = ConsoleVar.Get("cl_lights", "1", 0);
-        Context.cl_add_particles = ConsoleVar.Get("cl_particles", "1", 0);
-        Context.cl_add_entities = ConsoleVar.Get("cl_entities", "1", 0);
-        Context.cl_gun = ConsoleVar.Get("cl_gun", "1", 0);
-        Context.cl_footsteps = ConsoleVar.Get("cl_footsteps", "1", 0);
-        Context.cl_noskins = ConsoleVar.Get("cl_noskins", "0", 0);
-        Context.cl_autoskins = ConsoleVar.Get("cl_autoskins", "0", 0);
-        Context.cl_predict = ConsoleVar.Get("cl_predict", "1", 0);
+        Context.cl_add_blend = ConsoleVar.get("cl_blend", "1", 0);
+        Context.cl_add_lights = ConsoleVar.get("cl_lights", "1", 0);
+        Context.cl_add_particles = ConsoleVar.get("cl_particles", "1", 0);
+        Context.cl_add_entities = ConsoleVar.get("cl_entities", "1", 0);
+        Context.cl_gun = ConsoleVar.get("cl_gun", "1", 0);
+        Context.cl_footsteps = ConsoleVar.get("cl_footsteps", "1", 0);
+        Context.cl_noskins = ConsoleVar.get("cl_noskins", "0", 0);
+        Context.cl_autoskins = ConsoleVar.get("cl_autoskins", "0", 0);
+        Context.cl_predict = ConsoleVar.get("cl_predict", "1", 0);
 
-        Context.cl_maxfps = ConsoleVar.Get("cl_maxfps", "90", 0);
+        Context.cl_maxfps = ConsoleVar.get("cl_maxfps", "90", 0);
 
-        Context.cl_upspeed = ConsoleVar.Get("cl_upspeed", "200", 0);
-        Context.cl_forwardspeed = ConsoleVar.Get("cl_forwardspeed", "200", 0);
-        Context.cl_sidespeed = ConsoleVar.Get("cl_sidespeed", "200", 0);
-        Context.cl_yawspeed = ConsoleVar.Get("cl_yawspeed", "140", 0);
-        Context.cl_pitchspeed = ConsoleVar.Get("cl_pitchspeed", "150", 0);
-        Context.cl_anglespeedkey = ConsoleVar.Get("cl_anglespeedkey", "1.5", 0);
+        Context.cl_upspeed = ConsoleVar.get("cl_upspeed", "200", 0);
+        Context.cl_forwardspeed = ConsoleVar.get("cl_forwardspeed", "200", 0);
+        Context.cl_sidespeed = ConsoleVar.get("cl_sidespeed", "200", 0);
+        Context.cl_yawspeed = ConsoleVar.get("cl_yawspeed", "140", 0);
+        Context.cl_pitchspeed = ConsoleVar.get("cl_pitchspeed", "150", 0);
+        Context.cl_anglespeedkey = ConsoleVar.get("cl_anglespeedkey", "1.5", 0);
 
-        Context.cl_run = ConsoleVar.Get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Context.lookspring = ConsoleVar.Get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Context.lookstrafe = ConsoleVar.Get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.cl_run = ConsoleVar.get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.lookspring = ConsoleVar.get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
+        Context.lookstrafe = ConsoleVar.get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
         Context.sensitivity = ConsoleVar
-                .Get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
+                .get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Context.m_pitch = ConsoleVar.Get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
-        Context.m_yaw = ConsoleVar.Get("m_yaw", "0.022", 0);
-        Context.m_forward = ConsoleVar.Get("m_forward", "1", 0);
-        Context.m_side = ConsoleVar.Get("m_side", "1", 0);
+        Context.m_pitch = ConsoleVar.get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
+        Context.m_yaw = ConsoleVar.get("m_yaw", "0.022", 0);
+        Context.m_forward = ConsoleVar.get("m_forward", "1", 0);
+        Context.m_side = ConsoleVar.get("m_side", "1", 0);
 
-        Context.cl_shownet = ConsoleVar.Get("cl_shownet", "0", 0);
-        Context.cl_showmiss = ConsoleVar.Get("cl_showmiss", "0", 0);
-        Context.cl_showclamp = ConsoleVar.Get("showclamp", "0", 0);
-        Context.cl_timeout = ConsoleVar.Get("cl_timeout", "120", 0);
-        Context.cl_paused = ConsoleVar.Get("paused", "0", 0);
-        Context.cl_timedemo = ConsoleVar.Get("timedemo", "0", 0);
+        Context.cl_shownet = ConsoleVar.get("cl_shownet", "0", 0);
+        Context.cl_showmiss = ConsoleVar.get("cl_showmiss", "0", 0);
+        Context.cl_showclamp = ConsoleVar.get("showclamp", "0", 0);
+        Context.cl_timeout = ConsoleVar.get("cl_timeout", "120", 0);
+        Context.cl_paused = ConsoleVar.get("paused", "0", 0);
+        Context.cl_timedemo = ConsoleVar.get("timedemo", "0", 0);
 
-        Context.rcon_client_password = ConsoleVar.Get("rcon_password", "", 0);
-        Context.rcon_address = ConsoleVar.Get("rcon_address", "", 0);
+        Context.rcon_client_password = ConsoleVar.get("rcon_password", "", 0);
+        Context.rcon_address = ConsoleVar.get("rcon_address", "", 0);
 
-        Context.cl_lightlevel = ConsoleVar.Get("r_lightlevel", "0", 0);
+        Context.cl_lightlevel = ConsoleVar.get("r_lightlevel", "0", 0);
 
         //
         // userinfo
         //
-        Context.info_password = ConsoleVar.Get("password", "", TVar.CVAR_FLAG_USERINFO);
-        Context.info_spectator = ConsoleVar.Get("spectator", "0",
+        Context.info_password = ConsoleVar.get("password", "", TVar.CVAR_FLAG_USERINFO);
+        Context.info_spectator = ConsoleVar.get("spectator", "0",
                 TVar.CVAR_FLAG_USERINFO);
-        Context.name = ConsoleVar.Get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
+        Context.name = ConsoleVar.get("name", "unnamed", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Context.skin = ConsoleVar.Get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
+        Context.skin = ConsoleVar.get("skin", "male/grunt", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Context.rate = ConsoleVar.Get("rate", "25000", TVar.CVAR_FLAG_USERINFO
+        Context.rate = ConsoleVar.get("rate", "25000", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE); // FIXME
-        Context.msg = ConsoleVar.Get("msg", "1", TVar.CVAR_FLAG_USERINFO
+        Context.msg = ConsoleVar.get("msg", "1", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Context.hand = ConsoleVar.Get("hand", "0", TVar.CVAR_FLAG_USERINFO
+        Context.hand = ConsoleVar.get("hand", "0", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Context.fov = ConsoleVar.Get("fov", "90", TVar.CVAR_FLAG_USERINFO
+        Context.fov = ConsoleVar.get("fov", "90", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
-        Context.gender = ConsoleVar.Get("gender", "male", TVar.CVAR_FLAG_USERINFO
+        Context.gender = ConsoleVar.get("gender", "male", TVar.CVAR_FLAG_USERINFO
                 | TVar.CVAR_FLAG_ARCHIVE);
         Context.gender_auto = ConsoleVar
-                .Get("gender_auto", "1", TVar.CVAR_FLAG_ARCHIVE);
+                .get("gender_auto", "1", TVar.CVAR_FLAG_ARCHIVE);
         Context.gender.modified = false; // clear this so we know when user sets
                                          // it manually
 
-        Context.cl_vwep = ConsoleVar.Get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.cl_vwep = ConsoleVar.get("cl_vwep", "1", TVar.CVAR_FLAG_ARCHIVE);
 
         //
         // register our commands
         //
-        Cmd.AddCommand("cmd", ForwardToServer_f);
-        Cmd.AddCommand("pause", Pause_f);
-        Cmd.AddCommand("pingservers", PingServers_f);
-        Cmd.AddCommand("skins", Skins_f);
+        Cmd.registerCommand("cmd", ForwardToServer_f);
+        Cmd.registerCommand("pause", Pause_f);
+        Cmd.registerCommand("pingservers", PingServers_f);
+        Cmd.registerCommand("skins", Skins_f);
 
-        Cmd.AddCommand("userinfo", Userinfo_f);
-        Cmd.AddCommand("snd_restart", Snd_Restart_f);
+        Cmd.registerCommand("userinfo", Userinfo_f);
+        Cmd.registerCommand("snd_restart", Snd_Restart_f);
 
-        Cmd.AddCommand("changing", Changing_f);
-        Cmd.AddCommand("disconnect", Disconnect_f);
-        Cmd.AddCommand("record", Record_f);
-        Cmd.AddCommand("stop", Stop_f);
+        Cmd.registerCommand("changing", Changing_f);
+        Cmd.registerCommand("disconnect", Disconnect_f);
+        Cmd.registerCommand("record", Record_f);
+        Cmd.registerCommand("stop", Stop_f);
 
-        Cmd.AddCommand("quit", Quit_f);
+        Cmd.registerCommand("quit", Quit_f);
 
-        Cmd.AddCommand("connect", Connect_f);
-        Cmd.AddCommand("reconnect", Reconnect_f);
+        Cmd.registerCommand("connect", Connect_f);
+        Cmd.registerCommand("reconnect", Reconnect_f);
 
-        Cmd.AddCommand("rcon", Rcon_f);
+        Cmd.registerCommand("rcon", Rcon_f);
 
-        Cmd.AddCommand("precache", Precache_f);
+        Cmd.registerCommand("precache", Precache_f);
 
-        Cmd.AddCommand("download", CL_parse.Download_f);
+        Cmd.registerCommand("download", CL_parse.Download_f);
 
         //
         // forward to server commands
@@ -1353,25 +1353,25 @@ public final class CL {
         // the only thing this does is allow command completion
         // to work -- all unknown commands are automatically
         // forwarded to the server
-        Cmd.AddCommand("wave", null);
-        Cmd.AddCommand("inven", null);
-        Cmd.AddCommand("kill", null);
-        Cmd.AddCommand("use", null);
-        Cmd.AddCommand("drop", null);
-        Cmd.AddCommand("say", null);
-        Cmd.AddCommand("say_team", null);
-        Cmd.AddCommand("info", null);
-        Cmd.AddCommand("prog", null);
-        Cmd.AddCommand("give", null);
-        Cmd.AddCommand("god", null);
-        Cmd.AddCommand("notarget", null);
-        Cmd.AddCommand("noclip", null);
-        Cmd.AddCommand("invuse", null);
-        Cmd.AddCommand("invprev", null);
-        Cmd.AddCommand("invnext", null);
-        Cmd.AddCommand("invdrop", null);
-        Cmd.AddCommand("weapnext", null);
-        Cmd.AddCommand("weapprev", null);
+        Cmd.registerCommand("wave", null);
+        Cmd.registerCommand("inven", null);
+        Cmd.registerCommand("kill", null);
+        Cmd.registerCommand("use", null);
+        Cmd.registerCommand("drop", null);
+        Cmd.registerCommand("say", null);
+        Cmd.registerCommand("say_team", null);
+        Cmd.registerCommand("info", null);
+        Cmd.registerCommand("prog", null);
+        Cmd.registerCommand("give", null);
+        Cmd.registerCommand("god", null);
+        Cmd.registerCommand("notarget", null);
+        Cmd.registerCommand("noclip", null);
+        Cmd.registerCommand("invuse", null);
+        Cmd.registerCommand("invprev", null);
+        Cmd.registerCommand("invnext", null);
+        Cmd.registerCommand("invdrop", null);
+        Cmd.registerCommand("weapnext", null);
+        Cmd.registerCommand("weapprev", null);
 
     }
 
@@ -1423,7 +1423,7 @@ public final class CL {
         // find all the cvars if we haven't done it yet
         if (0 == CL.numcheatvars) {
             while (CL.cheatvars[CL.numcheatvars].name != null) {
-                CL.cheatvars[CL.numcheatvars].var = ConsoleVar.Get(
+                CL.cheatvars[CL.numcheatvars].var = ConsoleVar.get(
                         CL.cheatvars[CL.numcheatvars].name,
                         CL.cheatvars[CL.numcheatvars].value, 0);
                 CL.numcheatvars++;
@@ -1452,7 +1452,7 @@ public final class CL {
         Input.Commands();
 
         // process console commands
-        Cbuf.Execute();
+        CommandBuffer.execute();
 
         // fix any cheating cvars
         FixCvarCheats();
@@ -1544,7 +1544,7 @@ public final class CL {
     }
 
     /**
-     * Shutdown
+     * shutdown
      */
     public static void Shutdown() {
 
@@ -1589,7 +1589,7 @@ public final class CL {
         Input.Init();
 
         FileSystem.ExecAutoexec();
-        Cbuf.Execute();
+        CommandBuffer.execute();
     }
 
     /**

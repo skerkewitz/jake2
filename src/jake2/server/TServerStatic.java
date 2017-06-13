@@ -24,7 +24,7 @@ package jake2.server;
 
 import jake2.Defines;
 import jake2.game.TEntityState;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 
 import java.io.RandomAccessFile;
 
@@ -65,7 +65,7 @@ public class TServerStatic {
     // serverrecord values
     RandomAccessFile demofile;
 
-    TSizeBuffer demo_multicast = new TSizeBuffer();
+    TBuffer demo_multicast = new TBuffer();
 
     byte demo_multicast_buf[] = new byte[Defines.MAX_MSGLEN];
 }

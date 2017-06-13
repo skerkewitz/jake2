@@ -12,7 +12,7 @@ public class RenderAPIImpl implements RenderAPI {
 
     public static GLDriver glImpl;
 
-    public static Main main = new Main();
+    public static RenderMain renderMain = new RenderMain();
     public static Image image = new Image();
     public static Light light = new Light();
     public static Mesh mesh = new Mesh();
@@ -29,17 +29,17 @@ public class RenderAPIImpl implements RenderAPI {
 
     @Override
     public boolean R_Init(int vid_xpos, int vid_ypos) {
-        return main.R_Init(0, 0);
+        return renderMain.R_Init(0, 0);
     }
 
     @Override
     public boolean R_Init2() {
-        return main.R_Init2();
+        return renderMain.R_Init2();
     }
 
     @Override
     public void R_Shutdown() {
-        main.R_Shutdown();
+        renderMain.R_Shutdown();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class RenderAPIImpl implements RenderAPI {
 
     @Override
     public void R_RenderFrame(TRefDef fd) {
-        main.R_RenderFrame(fd);
+        renderMain.renderFrame(fd);
     }
 
     @Override
@@ -119,16 +119,16 @@ public class RenderAPIImpl implements RenderAPI {
 
     @Override
     public void R_SetPalette(byte[] palette) {
-        main.R_SetPalette(palette);
+        renderMain.R_SetPalette(palette);
     }
 
     @Override
     public void R_BeginFrame(float camera_separation) {
-        main.R_BeginFrame(camera_separation);
+        renderMain.R_BeginFrame(camera_separation);
     }
 
     @Override
     public void GL_ScreenShot_f() {
-        misc.GL_ScreenShot_f();
+        misc.GL_ScreenShot_f(Base.vid);
     }
 }

@@ -1,12 +1,13 @@
 package jake2.client;
 
 import jake2.Defines;
+import jake2.common.render.TRenderExport;
 import jake2.game.TVar;
 import jake2.game.cmdalias_t;
 import jake2.game.TEntityState;
 import jake2.io.FileSystem;
 import jake2.network.TNetAddr;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 import jake2.render.TModel;
 
 import java.io.FileWriter;
@@ -83,7 +84,7 @@ public final class Context {
     public static TVar in_joystick;
 
 
-    public static TSizeBuffer net_message = new TSizeBuffer();
+    public static TBuffer net_message = new TBuffer();
 
     /*
     =============================================================================
@@ -92,8 +93,6 @@ public final class Context {
 
     =============================================================================
     */
-
-    public static byte defer_text_buf[] = new byte[8192];
 
     public static cmdalias_t cmd_alias;
 
@@ -332,7 +331,7 @@ public final class Context {
     public static TVar con_notifytime;
     public static TVideoDef viddef = new TVideoDef();
     // Renderer interface used by VID, SCR, ...
-    public static refexport_t re = null;
+    public static TRenderExport re = null;
 
     public static boolean[] keydown = new boolean[256];
     public static boolean chat_team = false;

@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.game.TEntityState;
 import jake2.game.monsters.M_Flash;
 import jake2.qcommon.Command;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 import jake2.sound.Sound;
 import jake2.util.Lib;
 import jake2.util.Math3D;
@@ -196,11 +196,11 @@ public class CLEffects {
         float volume;
         String soundname;
 
-        int i = TSizeBuffer.ReadShort(Context.net_message);
+        int i = TBuffer.ReadShort(Context.net_message);
         if (i < 1 || i >= Defines.MAX_EDICTS)
             Command.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash: bad entity");
 
-        int weapon = TSizeBuffer.ReadByte(Context.net_message);
+        int weapon = TBuffer.ReadByte(Context.net_message);
         int silenced = weapon & Defines.MZ_SILENCED;
         weapon &= ~Defines.MZ_SILENCED;
 
@@ -450,11 +450,11 @@ public class CLEffects {
     static void ParseMuzzleFlash2() {
         String soundname;
 
-        int ent = TSizeBuffer.ReadShort(Context.net_message);
+        int ent = TBuffer.ReadShort(Context.net_message);
         if (ent < 1 || ent >= Defines.MAX_EDICTS)
             Command.Error(Defines.ERR_DROP, "CL_ParseMuzzleFlash2: bad entity");
 
-        int flash_number = TSizeBuffer.ReadByte(Context.net_message);
+        int flash_number = TBuffer.ReadByte(Context.net_message);
 
         // locate the origin
         Math3D.AngleVectors(Context.cl_entities[ent].current.angles, forward, right, null);

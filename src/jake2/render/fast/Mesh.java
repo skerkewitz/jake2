@@ -91,7 +91,7 @@ public class Mesh {
 
 	int ovv, vv;
 	// PMM -- added RF_SHELL_DOUBLE, RF_SHELL_HALF_DAM
-	if ((RenderAPIImpl.main.currententity.flags & (Defines.RF_SHELL_RED
+	if ((RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0) {
 	    float[] normal;
@@ -154,22 +154,22 @@ public class Mesh {
      * vertexes
      */
     void GL_DrawAliasFrameLerp(qfiles.dmdl_t paliashdr, float backlerp) {
-	qfiles.daliasframe_t frame = paliashdr.aliasFrames[RenderAPIImpl.main.currententity.frame];
+	qfiles.daliasframe_t frame = paliashdr.aliasFrames[RenderAPIImpl.renderMain.currententity.frame];
 
 	int[] verts = frame.verts;
 
-	qfiles.daliasframe_t oldframe = paliashdr.aliasFrames[RenderAPIImpl.main.currententity.oldframe];
+	qfiles.daliasframe_t oldframe = paliashdr.aliasFrames[RenderAPIImpl.renderMain.currententity.oldframe];
 
 	int[] ov = oldframe.verts;
 
 	float alpha;
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_TRANSLUCENT) != 0)
-	    alpha = RenderAPIImpl.main.currententity.alpha;
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_TRANSLUCENT) != 0)
+	    alpha = RenderAPIImpl.renderMain.currententity.alpha;
 	else
 	    alpha = 1.0f;
 
 	// PMM - added double shell
-	if ((RenderAPIImpl.main.currententity.flags & (Defines.RF_SHELL_RED
+	if ((RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
 	    GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -177,9 +177,9 @@ public class Mesh {
 	float frontlerp = 1.0f - backlerp;
 
 	// move should be the delta back to the previous frame * backlerp
-	Math3D.VectorSubtract(RenderAPIImpl.main.currententity.oldorigin, RenderAPIImpl.main.currententity.origin,
+	Math3D.VectorSubtract(RenderAPIImpl.renderMain.currententity.oldorigin, RenderAPIImpl.renderMain.currententity.origin,
 		frontv);
-	Math3D.AngleVectors(RenderAPIImpl.main.currententity.angles, vectors[0], vectors[1],
+	Math3D.AngleVectors(RenderAPIImpl.renderMain.currententity.angles, vectors[0], vectors[1],
 		vectors[2]);
 
 	move[0] = Math3D.DotProduct(frontv, vectors[0]); // forward
@@ -202,7 +202,7 @@ public class Mesh {
 	GL11.glVertexPointer(3, GL11.GL_FLOAT, 0, vertexArrayBuf);
 
 	// PMM - added double damage shell
-	if ((RenderAPIImpl.main.currententity.flags & (Defines.RF_SHELL_RED
+	if ((RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0) {
 	    GL11.glColor4f(shadelight[0], shadelight[1], shadelight[2], alpha);
@@ -227,7 +227,7 @@ public class Mesh {
 	    }
 	}
 
-	ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.main.TEXTURE0);
+	ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.renderMain.TEXTURE0);
 	GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 0, textureArrayBuf);
 	// GL11.GL11.glEnableClientState( GL_TEXTURE_COORD_ARRAY);
 
@@ -273,7 +273,7 @@ public class Mesh {
 	}
 
 	// PMM - added double damage shell
-	if ((RenderAPIImpl.main.currententity.flags & (Defines.RF_SHELL_RED
+	if ((RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_BLUE
 		| Defines.RF_SHELL_DOUBLE | Defines.RF_SHELL_HALF_DAM)) != 0)
 	    GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -287,7 +287,7 @@ public class Mesh {
      * GL_DrawAliasShadow
      */
     void GL_DrawAliasShadow(qfiles.dmdl_t paliashdr, int posenum) {
-	float lheight = RenderAPIImpl.main.currententity.origin[2] - RenderAPIImpl.light.lightspot[2];
+	float lheight = RenderAPIImpl.renderMain.currententity.origin[2] - RenderAPIImpl.light.lightspot[2];
 	int[] order = paliashdr.glCmds;
 	float height = -lheight + 1.0f;
 
@@ -337,16 +337,16 @@ public class Mesh {
      * R_CullAliasModel
      */
     boolean R_CullAliasModel(TEntity e) {
-	qfiles.dmdl_t paliashdr = (qfiles.dmdl_t) RenderAPIImpl.main.currentmodel.extradata;
+	qfiles.dmdl_t paliashdr = (qfiles.dmdl_t) RenderAPIImpl.renderMain.currentmodel.extradata;
 
 	if ((e.frame >= paliashdr.num_frames) || (e.frame < 0)) {
 	    VID.Printf(VID.PRINT_ALL, "R_CullAliasModel "
-		    + RenderAPIImpl.main.currentmodel.name + ": no such frame " + e.frame + '\n');
+		    + RenderAPIImpl.renderMain.currentmodel.name + ": no such frame " + e.frame + '\n');
 	    e.frame = 0;
 	}
 	if ((e.oldframe >= paliashdr.num_frames) || (e.oldframe < 0)) {
 	    VID.Printf(VID.PRINT_ALL, "R_CullAliasModel "
-		    + RenderAPIImpl.main.currentmodel.name + ": no such oldframe " + e.oldframe
+		    + RenderAPIImpl.renderMain.currentmodel.name + ": no such oldframe " + e.oldframe
 		    + '\n');
 	    e.oldframe = 0;
 	}
@@ -428,9 +428,9 @@ public class Mesh {
 	    mask = 0;
 
 	    for (f = 0; f < 4; f++) {
-		float dp = Math3D.DotProduct(RenderAPIImpl.main.frustum[f].normal, bbox[p]);
+		float dp = Math3D.DotProduct(RenderAPIImpl.renderMain.frustum[f].normal, bbox[p]);
 
-		if ((dp - RenderAPIImpl.main.frustum[f].dist) < 0) {
+		if ((dp - RenderAPIImpl.renderMain.frustum[f].dist) < 0) {
 		    mask |= (1 << f);
 		}
 	    }
@@ -457,11 +457,11 @@ public class Mesh {
 	}
 
 	if ((e.flags & Defines.RF_WEAPONMODEL) != 0) {
-	    if (RenderAPIImpl.main.r_lefthand.value == 2.0f)
+	    if (RenderAPIImpl.renderMain.r_lefthand.value == 2.0f)
 		return;
 	}
 
-	qfiles.dmdl_t paliashdr = (qfiles.dmdl_t) RenderAPIImpl.main.currentmodel.extradata;
+	qfiles.dmdl_t paliashdr = (qfiles.dmdl_t) RenderAPIImpl.renderMain.currentmodel.extradata;
 
 	//
 	// get lighting information
@@ -471,52 +471,52 @@ public class Mesh {
 	// authors happy
 	//
 	int i;
-	if ((RenderAPIImpl.main.currententity.flags & (Defines.RF_SHELL_HALF_DAM
+	if ((RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_SHELL_HALF_DAM
 		| Defines.RF_SHELL_GREEN | Defines.RF_SHELL_RED
 		| Defines.RF_SHELL_BLUE | Defines.RF_SHELL_DOUBLE)) != 0) {
 	    Math3D.VectorClear(shadelight);
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_SHELL_HALF_DAM) != 0) {
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_SHELL_HALF_DAM) != 0) {
 		shadelight[0] = 0.56f;
 		shadelight[1] = 0.59f;
 		shadelight[2] = 0.45f;
 	    }
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_SHELL_DOUBLE) != 0) {
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_SHELL_DOUBLE) != 0) {
 		shadelight[0] = 0.9f;
 		shadelight[1] = 0.7f;
 	    }
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_SHELL_RED) != 0)
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_SHELL_RED) != 0)
 		shadelight[0] = 1.0f;
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_SHELL_GREEN) != 0)
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_SHELL_GREEN) != 0)
 		shadelight[1] = 1.0f;
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_SHELL_BLUE) != 0)
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_SHELL_BLUE) != 0)
 		shadelight[2] = 1.0f;
 	}
 
-	else if ((RenderAPIImpl.main.currententity.flags & Defines.RF_FULLBRIGHT) != 0) {
+	else if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_FULLBRIGHT) != 0) {
 	    for (i = 0; i < 3; i++)
 		shadelight[i] = 1.0f;
 	} else {
-		RenderAPIImpl.light.lightPoint(RenderAPIImpl.main.currententity.origin, shadelight);
+		RenderAPIImpl.light.lightPoint(RenderAPIImpl.renderMain.currententity.origin, shadelight);
 
 	    // player lighting hack for communication back to server
 	    // big hack!
-	    if ((RenderAPIImpl.main.currententity.flags & Defines.RF_WEAPONMODEL) != 0) {
+	    if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_WEAPONMODEL) != 0) {
 		// pick the greatest component, which should be the same
 		// as the mono value returned by software
 		if (shadelight[0] > shadelight[1]) {
 		    if (shadelight[0] > shadelight[2])
-			RenderAPIImpl.main.r_lightlevel.value = 150 * shadelight[0];
+			RenderAPIImpl.renderMain.r_lightlevel.value = 150 * shadelight[0];
 		    else
-			RenderAPIImpl.main.r_lightlevel.value = 150 * shadelight[2];
+			RenderAPIImpl.renderMain.r_lightlevel.value = 150 * shadelight[2];
 		} else {
 		    if (shadelight[1] > shadelight[2])
-			RenderAPIImpl.main.r_lightlevel.value = 150 * shadelight[1];
+			RenderAPIImpl.renderMain.r_lightlevel.value = 150 * shadelight[1];
 		    else
-			RenderAPIImpl.main.r_lightlevel.value = 150 * shadelight[2];
+			RenderAPIImpl.renderMain.r_lightlevel.value = 150 * shadelight[2];
 		}
 	    }
 
-	    if (RenderAPIImpl.main.gl_monolightmap.string.charAt(0) != '0') {
+	    if (RenderAPIImpl.renderMain.gl_monolightmap.string.charAt(0) != '0') {
 		float s = shadelight[0];
 
 		if (s < shadelight[1])
@@ -530,7 +530,7 @@ public class Mesh {
 	    }
 	}
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_MINLIGHT) != 0) {
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_MINLIGHT) != 0) {
 	    for (i = 0; i < 3; i++)
 		if (shadelight[i] > 0.1f)
 		    break;
@@ -541,13 +541,13 @@ public class Mesh {
 	    }
 	}
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_GLOW) != 0) { // bonus items
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_GLOW) != 0) { // bonus items
 	    // will pulse
 	    // with time
 	    float scale;
 	    float min;
 
-	    scale = (float) (0.1f * Math.sin(RenderAPIImpl.main.r_newrefdef.time * 7));
+	    scale = (float) (0.1f * Math.sin(RenderAPIImpl.renderMain.r_newrefdef.time * 7));
 	    for (i = 0; i < 3; i++) {
 		min = shadelight[i] * 0.8f;
 		shadelight[i] += scale;
@@ -558,8 +558,8 @@ public class Mesh {
 
 	// =================
 	// PGM ir goggles color override
-	if ((RenderAPIImpl.main.r_newrefdef.renderFlags & Defines.RDF_IRGOGGLES) != 0
-		&& (RenderAPIImpl.main.currententity.flags & Defines.RF_IR_VISIBLE) != 0) {
+	if ((RenderAPIImpl.renderMain.r_newrefdef.renderFlags & Defines.RDF_IRGOGGLES) != 0
+		&& (RenderAPIImpl.renderMain.currententity.flags & Defines.RF_IR_VISIBLE) != 0) {
 	    shadelight[0] = 1.0f;
 	    shadelight[1] = 0.0f;
 	    shadelight[2] = 0.0f;
@@ -567,10 +567,10 @@ public class Mesh {
 	// PGM
 	// =================
 
-	shadedots = r_avertexnormal_dots[((int) (RenderAPIImpl.main.currententity.angles[1] * (SHADEDOT_QUANT / 360.0)))
+	shadedots = r_avertexnormal_dots[((int) (RenderAPIImpl.renderMain.currententity.angles[1] * (SHADEDOT_QUANT / 360.0)))
 		& (SHADEDOT_QUANT - 1)];
 
-	float an = (float) (RenderAPIImpl.main.currententity.angles[1] / 180 * Math.PI);
+	float an = (float) (RenderAPIImpl.renderMain.currententity.angles[1] / 180 * Math.PI);
 	shadevector[0] = (float) Math.cos(-an);
 	shadevector[1] = (float) Math.sin(-an);
 	shadevector[2] = 1;
@@ -580,28 +580,28 @@ public class Mesh {
 	// locate the proper data
 	//
 
-		RenderAPIImpl.main.c_alias_polys += paliashdr.num_tris;
+		RenderAPIImpl.renderMain.c_alias_polys += paliashdr.num_tris;
 
 	//
 	// draw all the triangles
 	//
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_DEPTHHACK) != 0) // hack the
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_DEPTHHACK) != 0) // hack the
 	    // depth range
 	    // to prevent
 	    // view model
 	    // from poking
 	    // into walls
-	    GL11.glDepthRange(RenderAPIImpl.main.gldepthmin, RenderAPIImpl.main.gldepthmin + 0.3
-		    * (RenderAPIImpl.main.gldepthmax - RenderAPIImpl.main.gldepthmin));
+	    GL11.glDepthRange(RenderAPIImpl.renderMain.gldepthmin, RenderAPIImpl.renderMain.gldepthmin + 0.3
+		    * (RenderAPIImpl.renderMain.gldepthmax - RenderAPIImpl.renderMain.gldepthmin));
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_WEAPONMODEL) != 0
-		&& (RenderAPIImpl.main.r_lefthand.value == 1.0f)) {
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_WEAPONMODEL) != 0
+		&& (RenderAPIImpl.renderMain.r_lefthand.value == 1.0f)) {
 	    GL11.glMatrixMode(GL11.GL_PROJECTION);
 	    GL11.glPushMatrix();
 	    GL11.glLoadIdentity();
 	    GL11.glScalef(-1, 1, 1);
-		RenderAPIImpl.main.MYgluPerspective(RenderAPIImpl.main.r_newrefdef.fov_y, (float) RenderAPIImpl.main.r_newrefdef.width
-		    / RenderAPIImpl.main.r_newrefdef.height, 4, 4096);
+		RenderAPIImpl.renderMain.MYgluPerspective(RenderAPIImpl.renderMain.r_newrefdef.fov_y, (float) RenderAPIImpl.renderMain.r_newrefdef.width
+		    / RenderAPIImpl.renderMain.r_newrefdef.height, 4, 4096);
 	    GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
 	    GL11.glCullFace(GL11.GL_BACK);
@@ -609,24 +609,24 @@ public class Mesh {
 
 	GL11.glPushMatrix();
 	e.angles[PITCH] = -e.angles[PITCH]; // sigh.
-		RenderAPIImpl.main.R_RotateForEntity(e);
+		RenderAPIImpl.renderMain.R_RotateForEntity(e);
 	e.angles[PITCH] = -e.angles[PITCH]; // sigh.
 
 	TImage skin;
 	// select skin
-	if (RenderAPIImpl.main.currententity.skin != null)
-	    skin = RenderAPIImpl.main.currententity.skin; // custom player skin
+	if (RenderAPIImpl.renderMain.currententity.skin != null)
+	    skin = RenderAPIImpl.renderMain.currententity.skin; // custom player skin
 	else {
-	    if (RenderAPIImpl.main.currententity.skinnum >= qfiles.MAX_MD2SKINS)
-		skin = RenderAPIImpl.main.currentmodel.skins[0];
+	    if (RenderAPIImpl.renderMain.currententity.skinnum >= qfiles.MAX_MD2SKINS)
+		skin = RenderAPIImpl.renderMain.currentmodel.skins[0];
 	    else {
-		skin = RenderAPIImpl.main.currentmodel.skins[RenderAPIImpl.main.currententity.skinnum];
+		skin = RenderAPIImpl.renderMain.currentmodel.skins[RenderAPIImpl.renderMain.currententity.skinnum];
 		if (skin == null)
-		    skin = RenderAPIImpl.main.currentmodel.skins[0];
+		    skin = RenderAPIImpl.renderMain.currentmodel.skins[0];
 	    }
 	}
 	if (skin == null)
-	    skin = RenderAPIImpl.main.r_notexture; // fallback...
+	    skin = RenderAPIImpl.renderMain.r_notexture; // fallback...
 		RenderAPIImpl.image.bindTexture(skin.texnum);
 
 	// draw it
@@ -634,61 +634,61 @@ public class Mesh {
 	GL11.glShadeModel(GL11.GL_SMOOTH);
 
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
 	    GL11.glEnable(GL11.GL_BLEND);
 	}
 
-	if ((RenderAPIImpl.main.currententity.frame >= paliashdr.num_frames)
-		|| (RenderAPIImpl.main.currententity.frame < 0)) {
+	if ((RenderAPIImpl.renderMain.currententity.frame >= paliashdr.num_frames)
+		|| (RenderAPIImpl.renderMain.currententity.frame < 0)) {
 	    VID.Printf(VID.PRINT_ALL, "R_DrawAliasModel "
-		    + RenderAPIImpl.main.currentmodel.name + ": no such frame "
-		    + RenderAPIImpl.main.currententity.frame + '\n');
-	    RenderAPIImpl.main.currententity.frame = 0;
-	    RenderAPIImpl.main.currententity.oldframe = 0;
+		    + RenderAPIImpl.renderMain.currentmodel.name + ": no such frame "
+		    + RenderAPIImpl.renderMain.currententity.frame + '\n');
+	    RenderAPIImpl.renderMain.currententity.frame = 0;
+	    RenderAPIImpl.renderMain.currententity.oldframe = 0;
 	}
 
-	if ((RenderAPIImpl.main.currententity.oldframe >= paliashdr.num_frames)
-		|| (RenderAPIImpl.main.currententity.oldframe < 0)) {
+	if ((RenderAPIImpl.renderMain.currententity.oldframe >= paliashdr.num_frames)
+		|| (RenderAPIImpl.renderMain.currententity.oldframe < 0)) {
 	    VID.Printf(VID.PRINT_ALL, "R_DrawAliasModel "
-		    + RenderAPIImpl.main.currentmodel.name + ": no such oldframe "
-		    + RenderAPIImpl.main.currententity.oldframe + '\n');
-	    RenderAPIImpl.main.currententity.frame = 0;
-	    RenderAPIImpl.main.currententity.oldframe = 0;
+		    + RenderAPIImpl.renderMain.currentmodel.name + ": no such oldframe "
+		    + RenderAPIImpl.renderMain.currententity.oldframe + '\n');
+	    RenderAPIImpl.renderMain.currententity.frame = 0;
+	    RenderAPIImpl.renderMain.currententity.oldframe = 0;
 	}
 
-	if (RenderAPIImpl.main.r_lerpmodels.value == 0.0f)
-	    RenderAPIImpl.main.currententity.backlerp = 0;
+	if (RenderAPIImpl.renderMain.r_lerpmodels.value == 0.0f)
+	    RenderAPIImpl.renderMain.currententity.backlerp = 0;
 
-	GL_DrawAliasFrameLerp(paliashdr, RenderAPIImpl.main.currententity.backlerp);
+	GL_DrawAliasFrameLerp(paliashdr, RenderAPIImpl.renderMain.currententity.backlerp);
 
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 	GL11.glShadeModel(GL11.GL_FLAT);
 
 	GL11.glPopMatrix();
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_WEAPONMODEL) != 0
-		&& (RenderAPIImpl.main.r_lefthand.value == 1.0F)) {
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_WEAPONMODEL) != 0
+		&& (RenderAPIImpl.renderMain.r_lefthand.value == 1.0F)) {
 	    GL11.glMatrixMode(GL11.GL_PROJECTION);
 	    GL11.glPopMatrix();
 	    GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	    GL11.glCullFace(GL11.GL_FRONT);
 	}
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_TRANSLUCENT) != 0) {
 	    GL11.glDisable(GL11.GL_BLEND);
 	}
 
-	if ((RenderAPIImpl.main.currententity.flags & Defines.RF_DEPTHHACK) != 0)
-	    GL11.glDepthRange(RenderAPIImpl.main.gldepthmin, RenderAPIImpl.main.gldepthmax);
+	if ((RenderAPIImpl.renderMain.currententity.flags & Defines.RF_DEPTHHACK) != 0)
+	    GL11.glDepthRange(RenderAPIImpl.renderMain.gldepthmin, RenderAPIImpl.renderMain.gldepthmax);
 
-	if (RenderAPIImpl.main.gl_shadows.value != 0.0f
-		&& (RenderAPIImpl.main.currententity.flags & (Defines.RF_TRANSLUCENT | Defines.RF_WEAPONMODEL)) == 0) {
+	if (RenderAPIImpl.renderMain.gl_shadows.value != 0.0f
+		&& (RenderAPIImpl.renderMain.currententity.flags & (Defines.RF_TRANSLUCENT | Defines.RF_WEAPONMODEL)) == 0) {
 	    GL11.glPushMatrix();
-		RenderAPIImpl.main.R_RotateForEntity(e);
+		RenderAPIImpl.renderMain.R_RotateForEntity(e);
 	    GL11.glDisable(GL11.GL_TEXTURE_2D);
 	    GL11.glEnable(GL11.GL_BLEND);
 	    GL11.glColor4f(0, 0, 0, 0.5f);
-	    GL_DrawAliasShadow(paliashdr, RenderAPIImpl.main.currententity.frame);
+	    GL_DrawAliasShadow(paliashdr, RenderAPIImpl.renderMain.currententity.frame);
 	    GL11.glEnable(GL11.GL_TEXTURE_2D);
 	    GL11.glDisable(GL11.GL_BLEND);
 	    GL11.glPopMatrix();

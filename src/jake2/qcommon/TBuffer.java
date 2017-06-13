@@ -35,20 +35,31 @@ import jake2.util.Math3D;
 import java.util.Arrays;
 
 /**
- * TSizeBuffer
+ * Buffer implementation similar to a ByteBuffer.
  */
-public final class TSizeBuffer {
+public final class TBuffer {
 
     // 2k read buffer.
-    public boolean allowoverflow = false;
-    public boolean overflowed = false;
+    /** Determine if the buffer should raise an error on overflow or silently clear itself. */
+    public boolean allowOverflow = false;
+
+    /** Will be true if the buffer didOverflow during write operation. */
+    public boolean didOverflow = false;
+
+    /** The array that backup this buffer. */
     public byte[] data = null;
+
+    /** The capacity of this buffer. */
     public int maxsize = 0;
-    public int cursize = 0;
-    public int readcount = 0;
+
+    /** The current position of the write head inside the buffer. */
+    public int writeHeadPosition = 0;
+
+    /** The current position of the read head inside the buffer. */
+    public int readHeadPosition = 0;
 
     //should be ok.
-    public static void ReadDir(TSizeBuffer sb, float[] dir) {
+    public static void ReadDir(TBuffer sb, float[] dir) {
         int b;
 
         b = ReadByte(sb);
@@ -57,74 +68,74 @@ public final class TSizeBuffer {
         Math3D.VectorCopy(Context.bytedirs[b], dir);
     }
 
-    public static void BeginReading(TSizeBuffer msg) {
-        msg.readcount = 0;
+    public void resetReadPosition() {
+        readHeadPosition = 0;
     }
 
     // returns -1 if no more characters are available, but also [-128 , 127]
-    public static int ReadChar(TSizeBuffer msg_read) {
+    public static int ReadChar(TBuffer msg_read) {
         int c;
 
-        if (msg_read.readcount + 1 > msg_read.cursize)
+        if (msg_read.readHeadPosition + 1 > msg_read.writeHeadPosition)
             c = -1;
         else
-            c = msg_read.data[msg_read.readcount];
-        msg_read.readcount++;
+            c = msg_read.data[msg_read.readHeadPosition];
+        msg_read.readHeadPosition++;
         // kickangles bugfix (rst)
         return c;
     }
 
-    public static int ReadByte(TSizeBuffer msg_read) {
+    public static int ReadByte(TBuffer msg_read) {
         int c;
 
-        if (msg_read.readcount + 1 > msg_read.cursize)
+        if (msg_read.readHeadPosition + 1 > msg_read.writeHeadPosition)
             c = -1;
         else
-            c = msg_read.data[msg_read.readcount] & 0xff;
+            c = msg_read.data[msg_read.readHeadPosition] & 0xff;
 
-        msg_read.readcount++;
+        msg_read.readHeadPosition++;
 
         return c;
     }
 
-    public static short ReadShort(TSizeBuffer msg_read) {
+    public static short ReadShort(TBuffer msg_read) {
         int c;
 
-        if (msg_read.readcount + 2 > msg_read.cursize)
+        if (msg_read.readHeadPosition + 2 > msg_read.writeHeadPosition)
             c = -1;
         else
-            c = (short) ((msg_read.data[msg_read.readcount] & 0xff) + (msg_read.data[msg_read.readcount + 1] << 8));
+            c = (short) ((msg_read.data[msg_read.readHeadPosition] & 0xff) + (msg_read.data[msg_read.readHeadPosition + 1] << 8));
 
-        msg_read.readcount += 2;
+        msg_read.readHeadPosition += 2;
 
         return (short) c;
     }
 
-    public static int ReadLong(TSizeBuffer msg_read) {
+    public static int ReadLong(TBuffer msg_read) {
         int c;
 
-        if (msg_read.readcount + 4 > msg_read.cursize) {
+        if (msg_read.readHeadPosition + 4 > msg_read.writeHeadPosition) {
             Command.Printf("buffer underrun in ReadLong!");
             c = -1;
         }
 
         else
-            c = (msg_read.data[msg_read.readcount] & 0xff)
-                    | ((msg_read.data[msg_read.readcount + 1] & 0xff) << 8)
-                    | ((msg_read.data[msg_read.readcount + 2] & 0xff) << 16)
-                    | ((msg_read.data[msg_read.readcount + 3] & 0xff) << 24);
+            c = (msg_read.data[msg_read.readHeadPosition] & 0xff)
+                    | ((msg_read.data[msg_read.readHeadPosition + 1] & 0xff) << 8)
+                    | ((msg_read.data[msg_read.readHeadPosition + 2] & 0xff) << 16)
+                    | ((msg_read.data[msg_read.readHeadPosition + 3] & 0xff) << 24);
 
-        msg_read.readcount += 4;
+        msg_read.readHeadPosition += 4;
 
         return c;
     }
 
-    public static float ReadFloat(TSizeBuffer msg_read) {
+    public static float ReadFloat(TBuffer msg_read) {
         int n = ReadLong(msg_read);
         return Float.intBitsToFloat(n);
     }
 
-    public static String ReadString(TSizeBuffer msg_read) {
+    public static String ReadString(TBuffer msg_read) {
         byte[] readbuf = new byte[2048];
 
         byte c;
@@ -143,7 +154,7 @@ public final class TSizeBuffer {
         return ret;
     }
 
-    public static String ReadStringLine(TSizeBuffer msg_read) {
+    public static String ReadStringLine(TBuffer msg_read) {
         byte[] readbuf = new byte[2048];
         int l;
         byte c;
@@ -162,26 +173,26 @@ public final class TSizeBuffer {
         return ret;
     }
 
-    public static float ReadCoord(TSizeBuffer msg_read) {
+    public static float ReadCoord(TBuffer msg_read) {
         return ReadShort(msg_read) * (1.0f / 8);
     }
 
-    public static void ReadPos(TSizeBuffer msg_read, float pos[]) {
+    public static void ReadPos(TBuffer msg_read, float pos[]) {
         assert (pos.length == 3) : "vec3_t bug";
         pos[0] = ReadShort(msg_read) * (1.0f / 8);
         pos[1] = ReadShort(msg_read) * (1.0f / 8);
         pos[2] = ReadShort(msg_read) * (1.0f / 8);
     }
 
-    public static float ReadAngle(TSizeBuffer msg_read) {
+    public static float ReadAngle(TBuffer msg_read) {
         return ReadChar(msg_read) * (360.0f / 256);
     }
 
-    public static float ReadAngle16(TSizeBuffer msg_read) {
+    public static float ReadAngle16(TBuffer msg_read) {
         return Math3D.SHORT2ANGLE(ReadShort(msg_read));
     }
 
-    public static void ReadDeltaUsercmd(TSizeBuffer msg_read, usercmd_t from,
+    public static void ReadDeltaUsercmd(TBuffer msg_read, usercmd_t from,
                                         usercmd_t move) {
         int bits;
 
@@ -221,7 +232,7 @@ public final class TSizeBuffer {
 
     }
 
-    public static void ReadData(TSizeBuffer msg_read, byte data[], int len) {
+    public static void ReadData(TBuffer msg_read, byte data[], int len) {
         for (int i = 0; i < len; i++)
             data[i] = (byte) ReadByte(msg_read);
     }
@@ -564,34 +575,33 @@ public final class TSizeBuffer {
 
     public void init(byte data[], int length) {
         // TODO check this. cwei
-        this.readcount = 0;
+        this.readHeadPosition = 0;
 
         this.data = data;
         this.maxsize = length;
-        this.cursize = 0;
-        this.allowoverflow = this.overflowed = false;
+        this.writeHeadPosition = 0;
+        this.allowOverflow = this.didOverflow = false;
     }
 
     /**
-     * Ask for the pointer using TSizeBuffer.cursize (RST)
+     * Ask for the pointer using TBuffer.writeHeadPosition (RST)
      */
     private int getSpace(int length) {
-        int oldsize;
 
-        if (this.cursize + length > this.maxsize) {
-            if (!this.allowoverflow)
-                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowoverflow set");
+        if (this.writeHeadPosition + length > this.maxsize) {
+            if (!this.allowOverflow)
+                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowOverflow set");
 
             if (length > this.maxsize)
                 Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: " + length + " is > full buffer size");
 
             Command.Printf("SZ_GetSpace: overflow\n");
             this.clear();
-            this.overflowed = true;
+            this.didOverflow = true;
         }
 
-        oldsize = this.cursize;
-        this.cursize += length;
+        int oldsize = this.writeHeadPosition;
+        this.writeHeadPosition += length;
 
         return oldsize;
     }
@@ -617,9 +627,9 @@ public final class TSizeBuffer {
         int length = data.length();
         byte str[] = Lib.stringToBytes(data);
 
-        if (this.cursize != 0) {
+        if (this.writeHeadPosition != 0) {
 
-            if (this.data[this.cursize - 1] != 0) {
+            if (this.data[this.writeHeadPosition - 1] != 0) {
                 //memcpy( SZ_GetSpace(buf, len), data, len); // no trailing 0
                 System.arraycopy(str, 0, this.data, this.getSpace(length + 1), length);
             } else {
@@ -631,7 +641,7 @@ public final class TSizeBuffer {
             System.arraycopy(str, 0, this.data, this.getSpace(length), length);
         //memcpy(SZ_GetSpace(buf, len), data, len);
 
-        this.data[this.cursize - 1] = 0;
+        this.data[this.writeHeadPosition - 1] = 0;
     }
 
 
@@ -639,7 +649,19 @@ public final class TSizeBuffer {
         if (data != null) {
             Arrays.fill(data, (byte) 0);
         }
-        cursize = 0;
-        overflowed = false;
+        writeHeadPosition = 0;
+        didOverflow = false;
+    }
+
+    public static TBuffer createWithSize(int size) {
+
+        final byte[] buffer = new byte[size];
+        final TBuffer sizeBuffer = new TBuffer();
+        sizeBuffer.init(buffer, buffer.length);
+        return sizeBuffer;
+    }
+
+    public byte[] getBuffer() {
+        return data;
     }
 }

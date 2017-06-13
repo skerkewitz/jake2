@@ -488,44 +488,44 @@ public class CL_input {
 	 * ============ CL_InitInput ============
 	 */
 	static void InitInput() {
-		Cmd.AddCommand("centerview", () -> Input.CenterView());
+		Cmd.registerCommand("centerview", () -> Input.CenterView());
 
-		Cmd.AddCommand("+moveup", CL_input::IN_UpDown);
-		Cmd.AddCommand("-moveup", CL_input::IN_UpUp);
-		Cmd.AddCommand("+movedown", CL_input::IN_DownDown);
-		Cmd.AddCommand("-movedown", () -> IN_DownUp());
-		Cmd.AddCommand("+left", () -> IN_LeftDown());
-		Cmd.AddCommand("-left", () -> IN_LeftUp());
-		Cmd.AddCommand("+right", () -> IN_RightDown());
-		Cmd.AddCommand("-right", () -> IN_RightUp());
-		Cmd.AddCommand("+forward", () -> IN_ForwardDown());
-		Cmd.AddCommand("-forward", () -> IN_ForwardUp());
-		Cmd.AddCommand("+back", () -> IN_BackDown());
-		Cmd.AddCommand("-back", () -> IN_BackUp());
-		Cmd.AddCommand("+lookup", () -> IN_LookupDown());
-		Cmd.AddCommand("-lookup", () -> IN_LookupUp());
-		Cmd.AddCommand("+lookdown", () -> IN_LookdownDown());
-		Cmd.AddCommand("-lookdown", () -> IN_LookdownUp());
-		Cmd.AddCommand("+strafe", () -> IN_StrafeDown());
-		Cmd.AddCommand("-strafe", () -> IN_StrafeUp());
-		Cmd.AddCommand("+moveleft", () -> IN_MoveleftDown());
-		Cmd.AddCommand("-moveleft", () -> IN_MoveleftUp());
-		Cmd.AddCommand("+moveright", () -> IN_MoverightDown());
-		Cmd.AddCommand("-moveright", () -> IN_MoverightUp());
-		Cmd.AddCommand("+speed", () -> IN_SpeedDown());
-		Cmd.AddCommand("-speed", () -> IN_SpeedUp());
-		Cmd.AddCommand("+attack", () -> IN_AttackDown());
-		Cmd.AddCommand("-attack", () -> IN_AttackUp());
-		Cmd.AddCommand("+use", () -> IN_UseDown());
-		Cmd.AddCommand("-use", () -> IN_UseUp());
-		Cmd.AddCommand("impulse", () -> IN_Impulse());
-		Cmd.AddCommand("+klook", () -> IN_KLookDown());
-		Cmd.AddCommand("-klook", () -> IN_KLookUp());
+		Cmd.registerCommand("+moveup", CL_input::IN_UpDown);
+		Cmd.registerCommand("-moveup", CL_input::IN_UpUp);
+		Cmd.registerCommand("+movedown", CL_input::IN_DownDown);
+		Cmd.registerCommand("-movedown", () -> IN_DownUp());
+		Cmd.registerCommand("+left", () -> IN_LeftDown());
+		Cmd.registerCommand("-left", () -> IN_LeftUp());
+		Cmd.registerCommand("+right", () -> IN_RightDown());
+		Cmd.registerCommand("-right", () -> IN_RightUp());
+		Cmd.registerCommand("+forward", () -> IN_ForwardDown());
+		Cmd.registerCommand("-forward", () -> IN_ForwardUp());
+		Cmd.registerCommand("+back", () -> IN_BackDown());
+		Cmd.registerCommand("-back", () -> IN_BackUp());
+		Cmd.registerCommand("+lookup", () -> IN_LookupDown());
+		Cmd.registerCommand("-lookup", () -> IN_LookupUp());
+		Cmd.registerCommand("+lookdown", () -> IN_LookdownDown());
+		Cmd.registerCommand("-lookdown", () -> IN_LookdownUp());
+		Cmd.registerCommand("+strafe", () -> IN_StrafeDown());
+		Cmd.registerCommand("-strafe", () -> IN_StrafeUp());
+		Cmd.registerCommand("+moveleft", () -> IN_MoveleftDown());
+		Cmd.registerCommand("-moveleft", () -> IN_MoveleftUp());
+		Cmd.registerCommand("+moveright", () -> IN_MoverightDown());
+		Cmd.registerCommand("-moveright", () -> IN_MoverightUp());
+		Cmd.registerCommand("+speed", () -> IN_SpeedDown());
+		Cmd.registerCommand("-speed", () -> IN_SpeedUp());
+		Cmd.registerCommand("+attack", () -> IN_AttackDown());
+		Cmd.registerCommand("-attack", () -> IN_AttackUp());
+		Cmd.registerCommand("+use", () -> IN_UseDown());
+		Cmd.registerCommand("-use", () -> IN_UseUp());
+		Cmd.registerCommand("impulse", () -> IN_Impulse());
+		Cmd.registerCommand("+klook", () -> IN_KLookDown());
+		Cmd.registerCommand("-klook", () -> IN_KLookUp());
 
-		cl_nodelta = ConsoleVar.Get("cl_nodelta", "0", 0);
+		cl_nodelta = ConsoleVar.get("cl_nodelta", "0", 0);
 	}
 
-	private static final TSizeBuffer buf = new TSizeBuffer();
+	private static final TBuffer buf = new TBuffer();
 	private static final byte[] data = new byte[128];
 	private static final usercmd_t nullcmd = new usercmd_t();
 	/*
@@ -553,7 +553,7 @@ public class CL_input {
 			return;
 
 		if (Context.cls.getState() == Defines.ca_connected) {
-			if (Context.cls.getNetchan().message.cursize != 0 || Context.curtime - Context.cls.getNetchan().last_sent > 1000)
+			if (Context.cls.getNetchan().message.writeHeadPosition != 0 || Context.curtime - Context.cls.getNetchan().last_sent > 1000)
 				Netchan.Transmit(Context.cls.getNetchan(), 0, new byte[0]);
 			return;
 		}
@@ -582,7 +582,7 @@ public class CL_input {
 		buf.writeByte(Defines.clc_move);
 
 		// save the position for a checksum byte
-		checksumIndex = buf.cursize;
+		checksumIndex = buf.writeHeadPosition;
 		buf.writeByte(0);
 
 		// let the server know what the last frame we
@@ -614,12 +614,12 @@ public class CL_input {
 		buf.writeDeltaUsercmd(oldcmd, cmd);
 
 		// calculate a checksum over the move commands
-		buf.data[checksumIndex] = Command.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.cursize - checksumIndex - 1,
+		buf.data[checksumIndex] = Command.BlockSequenceCRCByte(buf.data, checksumIndex + 1, buf.writeHeadPosition - checksumIndex - 1,
 				Context.cls.getNetchan().outgoing_sequence);
 
 		//
 		// deliver the message
 		//
-		Netchan.Transmit(Context.cls.getNetchan(), buf.cursize, buf.data);
+		Netchan.Transmit(Context.cls.getNetchan(), buf.writeHeadPosition, buf.data);
 	}
 }

@@ -52,7 +52,7 @@ public class ConsoleVar {
      * @param flags
      * @return
      */
-    public static TVar Get(String name, String value, int flags) {
+    public static TVar get(String name, String value, int flags) {
 
         if ((flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
             if (!InfoValidate(name)) {
@@ -90,8 +90,55 @@ public class ConsoleVar {
     }
 
     static void Init() {
-        Cmd.AddCommand("set", Set_f);
-        Cmd.AddCommand("cvarlist", List_f);
+
+        Cmd.registerCommand("set", () -> {
+            int c = Cmd.Argc();
+            if (c != 3 && c != 4) {
+                Command.Printf("usage: set <variable> <value> [u / entityState]\n");
+                return;
+            }
+
+            if (c == 4) {
+                int flags;
+                if (Cmd.Argv(3).equals("u"))
+                    flags = TVar.CVAR_FLAG_USERINFO;
+                else if (Cmd.Argv(3).equals("entityState"))
+                    flags = TVar.CVAR_FLAG_SERVERINFO;
+                else {
+                    Command.Printf("flags can only be 'u' or 'entityState'\n");
+                    return;
+                }
+                ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
+            } else
+                ConsoleVar.Set(Cmd.Argv(1), Cmd.Argv(2));
+        });
+
+        Cmd.registerCommand("cvarlist", () -> {
+            int i = 0;
+            for (TVar var : cvar_vars) {
+                if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
+                    Command.Printf("*");
+                else
+                    Command.Printf(" ");
+                if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
+                    Command.Printf("U");
+                else
+                    Command.Printf(" ");
+                if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
+                    Command.Printf("Sound");
+                else
+                    Command.Printf(" ");
+                if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
+                    Command.Printf("-");
+                else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
+                    Command.Printf("L");
+                else
+                    Command.Printf(" ");
+                Command.Printf(" " + var.name + " \"" + var.string + "\"\n");
+                i += 1;
+            }
+            Command.Printf(i + " cvars\n");
+        });
     }
 
     public static String VariableString(String var_name) {
@@ -118,7 +165,7 @@ public class ConsoleVar {
 
         var = ConsoleVar.FindVar(var_name);
         if (null == var) { // create it
-            return ConsoleVar.Get(var_name, value, flags);
+            return ConsoleVar.get(var_name, value, flags);
         }
 
         var.modified = true;
@@ -156,7 +203,7 @@ public class ConsoleVar {
         TVar var = ConsoleVar.FindVar(var_name);
         if (var == null) { 
         	// create it
-            return ConsoleVar.Get(var_name, value, 0);
+            return ConsoleVar.get(var_name, value, 0);
         }
 
         if ((var.flags & (TVar.CVAR_FLAG_USERINFO | TVar.CVAR_FLAG_SERVERINFO)) != 0) {
@@ -219,66 +266,8 @@ public class ConsoleVar {
         return var;
     }
 
-    /** 
-     * Set command, sets variables.
-     */
-    
-    static TXCommand Set_f = () -> {
-
-        int c = Cmd.Argc();
-        if (c != 3 && c != 4) {
-            Command.Printf("usage: set <variable> <value> [u / entityState]\n");
-            return;
-        }
-
-        if (c == 4) {
-            int flags;
-            if (Cmd.Argv(3).equals("u"))
-                flags = TVar.CVAR_FLAG_USERINFO;
-            else if (Cmd.Argv(3).equals("entityState"))
-                flags = TVar.CVAR_FLAG_SERVERINFO;
-            else {
-                Command.Printf("flags can only be 'u' or 'entityState'\n");
-                return;
-            }
-            ConsoleVar.FullSet(Cmd.Argv(1), Cmd.Argv(2), flags);
-        } else
-            ConsoleVar.Set(Cmd.Argv(1), Cmd.Argv(2));
-    };
-
 
     /**
-     * List command, lists all available commands.
-     */
-    static TXCommand List_f = () -> {
-        int i = 0;
-        for (TVar var : cvar_vars) {
-            if ((var.flags & TVar.CVAR_FLAG_ARCHIVE) != 0)
-                Command.Printf("*");
-            else
-                Command.Printf(" ");
-            if ((var.flags & TVar.CVAR_FLAG_USERINFO) != 0)
-                Command.Printf("U");
-            else
-                Command.Printf(" ");
-            if ((var.flags & TVar.CVAR_FLAG_SERVERINFO) != 0)
-                Command.Printf("Sound");
-            else
-                Command.Printf(" ");
-            if ((var.flags & TVar.CVAR_FLAG_NOSET) != 0)
-                Command.Printf("-");
-            else if ((var.flags & TVar.CVAR_FLAG_LATCH) != 0)
-                Command.Printf("L");
-            else
-                Command.Printf(" ");
-            Command.Printf(" " + var.name + " \"" + var.string + "\"\n");
-            i += 1;
-        }
-        Command.Printf(i + " cvars\n");
-    };
-
-
-    /** 
      * Sets a float value of a variable.
      * 
      * The overloading is very important, there was a problem with 

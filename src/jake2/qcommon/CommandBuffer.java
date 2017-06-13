@@ -31,34 +31,33 @@ import jake2.game.Cmd;
 import jake2.util.Lib;
 
 /**
- * Cbuf
+ * CommandBuffer
  */
-public final class Cbuf {
+public final class CommandBuffer {
 
-    private static final byte[] line = new byte[1024];
-    private static final byte[] tmp = new byte[8192];
-
-    private static TSizeBuffer cmd_text = new TSizeBuffer();
-    private static byte[] cmd_text_buf = new byte[8192];
+    private  static byte[] defer_text_buf = new byte[8192];
+    private static TBuffer cmd_text = TBuffer.createWithSize(8192);
 
     /**
      *  
      */
     public static void Init() {
-        cmd_text.init(cmd_text_buf, cmd_text_buf.length);
+
     }
 
     public static void InsertText(String text) {
+        final byte[] tmp = new byte[8192];
+
 
         // copy off any commands still remaining in the exec buffer
-        int templen = cmd_text.cursize;
+        int templen = cmd_text.writeHeadPosition;
         if (templen != 0) {
             System.arraycopy(cmd_text.data, 0, tmp, 0, templen);
             cmd_text.clear();
         }
 
         // add the entire text of the file
-        Cbuf.AddText(text);
+        CommandBuffer.AddText(text);
 
         // add the copied off data
         if (templen != 0) {
@@ -71,12 +70,12 @@ public final class Cbuf {
      */
     static void AddEarlyCommands(boolean clear) {
 
-        CommandLineOptions commandLineOptions = Qcommon.Companion.getCommandLineOptions();
+        CommandLineOptions commandLineOptions = Engine.Companion.getCommandLineOptions();
         for (int i = 0; i < commandLineOptions.count(); i++) {
             String s = commandLineOptions.valueAt(i);
             if (!s.equals("+set"))
                 continue;
-            Cbuf.AddText("set " + commandLineOptions.valueAt(i + 1) + " " + commandLineOptions.valueAt(i + 2) + "\n");
+            CommandBuffer.AddText("set " + commandLineOptions.valueAt(i + 1) + " " + commandLineOptions.valueAt(i + 2) + "\n");
             if (clear) {
                 commandLineOptions.clearValueAt(i);
                 commandLineOptions.clearValueAt(i + 1);
@@ -96,16 +95,16 @@ public final class Cbuf {
 
         // build the combined string to parse from
         int s = 0;
-        int argc = Qcommon.Companion.getCommandLineOptions().count();
+        int argc = Engine.Companion.getCommandLineOptions().count();
         for (i = 1; i < argc; i++) {
-            s += Qcommon.Companion.getCommandLineOptions().valueAt(i).length();
+            s += Engine.Companion.getCommandLineOptions().valueAt(i).length();
         }
         if (s == 0)
             return false;
 
         String text = "";
         for (i = 1; i < argc; i++) {
-            text += Qcommon.Companion.getCommandLineOptions().valueAt(i);
+            text += Engine.Companion.getCommandLineOptions().valueAt(i);
             if (i != argc - 1)
                 text += " ";
         }
@@ -127,7 +126,7 @@ public final class Cbuf {
 
         ret = (build.length() != 0);
         if (ret)
-            Cbuf.AddText(build);
+            CommandBuffer.AddText(build);
 
         text = null;
         build = null;
@@ -141,7 +140,7 @@ public final class Cbuf {
     public static void AddText(String text) {
         int l = text.length();
 
-        if (cmd_text.cursize + l >= cmd_text.maxsize) {
+        if (cmd_text.writeHeadPosition + l >= cmd_text.maxsize) {
             Command.Printf("Cbuf_AddText: overflow\n");
             return;
         }
@@ -151,20 +150,19 @@ public final class Cbuf {
     /**
      *  
      */
-    public static void Execute() {
+    public static void execute() {
 
-        byte[] text = null;
-
+        final byte[] line = new byte[1024];
         Context.alias_count = 0; // don't allow infinite alias loops
 
-        while (cmd_text.cursize != 0) {
+        while (cmd_text.writeHeadPosition != 0) {
             // find a \n or ; line break
-            text = cmd_text.data;
+            byte[] text = cmd_text.data;
 
             int quotes = 0;
             int i;
 
-            for (i = 0; i < cmd_text.cursize; i++) {
+            for (i = 0; i < cmd_text.writeHeadPosition; i++) {
                 if (text[i] == '"')
                     quotes++;
                 if (!(quotes % 2 != 0) && text[i] == ';')
@@ -182,16 +180,16 @@ public final class Cbuf {
             // at the
             // beginning of the text buffer
 
-            if (i == cmd_text.cursize)
-                cmd_text.cursize = 0;
+            if (i == cmd_text.writeHeadPosition)
+                cmd_text.writeHeadPosition = 0;
             else {
                 i++;
-                cmd_text.cursize -= i;
-                //byte[] tmp = new byte[Context.cmd_text.cursize];
-
-                System.arraycopy(text, i, tmp, 0, cmd_text.cursize);
-                System.arraycopy(tmp, 0, text, 0, cmd_text.cursize);
-                text[cmd_text.cursize] = '\0';
+                cmd_text.writeHeadPosition -= i;
+                //byte[] tmp = new byte[Context.cmd_text.writeHeadPosition];
+                final byte[] tmp = new byte[8192];
+                System.arraycopy(text, i, tmp, 0, cmd_text.writeHeadPosition);
+                System.arraycopy(tmp, 0, text, 0, cmd_text.writeHeadPosition);
+                text[cmd_text.writeHeadPosition] = '\0';
 
             }
 
@@ -216,10 +214,10 @@ public final class Cbuf {
             Cmd.ExecuteString(text);
             break;
         case Defines.EXEC_INSERT:
-            Cbuf.InsertText(text);
+            CommandBuffer.InsertText(text);
             break;
         case Defines.EXEC_APPEND:
-            Cbuf.AddText(text);
+            CommandBuffer.AddText(text);
             break;
         default:
             Command.Error(Defines.ERR_FATAL, "Cbuf_ExecuteText: bad exec_when");
@@ -229,19 +227,18 @@ public final class Cbuf {
     /*
      * ============ Cbuf_CopyToDefer ============
      */
-    public static void CopyToDefer() {
-        System.arraycopy(cmd_text_buf, 0, Context.defer_text_buf, 0,
-                cmd_text.cursize);
-        Context.defer_text_buf[cmd_text.cursize] = 0;
-        cmd_text.cursize = 0;
+    public static void copyToDefer() {
+        System.arraycopy(cmd_text.getBuffer(), 0, defer_text_buf, 0, cmd_text.writeHeadPosition);
+        defer_text_buf[cmd_text.writeHeadPosition] = 0;
+        cmd_text.writeHeadPosition = 0;
     }
 
     /*
      * ============ Cbuf_InsertFromDefer ============
      */
-    public static void InsertFromDefer() {
-        InsertText(new String(Context.defer_text_buf).trim());
-        Context.defer_text_buf[0] = 0;
+    public static void insertFromDefer() {
+        InsertText(new String(defer_text_buf).trim());
+        defer_text_buf[0] = 0;
     }
 
 }

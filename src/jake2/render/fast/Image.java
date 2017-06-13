@@ -190,7 +190,7 @@ public class Image {
         int i;
         //byte[] temptable = new byte[768];
 
-        if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f) {
+        if (RenderAPIImpl.renderMain.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f) {
             ByteBuffer temptable = Lib.newByteBuffer(768);
             for (i = 0; i < 256; i++) {
                 temptable.put(i * 3 + 0, (byte) ((palette[i] >> 0) & 0xff));
@@ -204,23 +204,23 @@ public class Image {
 
     void GL_EnableMultitexture(boolean enable) {
         if (enable) {
-            GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+            GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE1);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL_TexEnv(GL11.GL_REPLACE);
         } else {
-            GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+            GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE1);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             GL_TexEnv(GL11.GL_REPLACE);
         }
-        GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
+        GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE0);
         GL_TexEnv(GL11.GL_REPLACE);
     }
 
     void GL_SelectTexture(int texture /* GLenum */) {
-        int tmu = (texture == RenderAPIImpl.main.TEXTURE0) ? 0 : 1;
+        int tmu = (texture == RenderAPIImpl.renderMain.TEXTURE0) ? 0 : 1;
 
-        if (tmu != RenderAPIImpl.main.gl_state.currenttmu) {
-            RenderAPIImpl.main.gl_state.currenttmu = tmu;
+        if (tmu != RenderAPIImpl.renderMain.gl_state.currenttmu) {
+            RenderAPIImpl.renderMain.gl_state.currenttmu = tmu;
             ARBMultitexture.glActiveTextureARB(texture);
             ARBMultitexture.glClientActiveTextureARB(texture);
         }
@@ -243,35 +243,33 @@ public class Image {
 	=================
 	*/
 
-    void GL_TexEnv(int mode /* GLenum */
-    ) {
-
-        if (mode != lastmodes[RenderAPIImpl.main.gl_state.currenttmu]) {
+    void GL_TexEnv(int mode /* GLenum */ ) {
+        if (mode != lastmodes[RenderAPIImpl.renderMain.gl_state.currenttmu]) {
             GL11.glTexEnvi(GL11.GL_TEXTURE_ENV, GL11.GL_TEXTURE_ENV_MODE, mode);
-            lastmodes[RenderAPIImpl.main.gl_state.currenttmu] = mode;
+            lastmodes[RenderAPIImpl.renderMain.gl_state.currenttmu] = mode;
         }
     }
 
     void bindTexture(int textureId) {
 
-        if ((RenderAPIImpl.main.gl_nobind.value != 0) && (draw_chars != null)) {
+        if ((RenderAPIImpl.renderMain.gl_nobind.value != 0) && (draw_chars != null)) {
             // performance evaluation option
             textureId = draw_chars.texnum;
         }
-        if (RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] == textureId)
+        if (RenderAPIImpl.renderMain.gl_state.currenttextures[RenderAPIImpl.renderMain.gl_state.currenttmu] == textureId)
             return;
 
-        RenderAPIImpl.main.gl_state.currenttextures[RenderAPIImpl.main.gl_state.currenttmu] = textureId;
+        RenderAPIImpl.renderMain.gl_state.currenttextures[RenderAPIImpl.renderMain.gl_state.currenttmu] = textureId;
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureId);
     }
 
     void GL_MBind(int target /* GLenum */, int texnum) {
         GL_SelectTexture(target);
-        if (target == RenderAPIImpl.main.TEXTURE0) {
-            if (RenderAPIImpl.main.gl_state.currenttextures[0] == texnum)
+        if (target == RenderAPIImpl.renderMain.TEXTURE0) {
+            if (RenderAPIImpl.renderMain.gl_state.currenttextures[0] == texnum)
                 return;
         } else {
-            if (RenderAPIImpl.main.gl_state.currenttextures[1] == texnum)
+            if (RenderAPIImpl.renderMain.gl_state.currenttextures[1] == texnum)
                 return;
         }
         bindTexture(texnum);
@@ -732,8 +730,8 @@ public class Image {
             // attempt to find opaque black
             for (i = 0; i < 256; ++i)
                 // TODO check this
-                if (RenderAPIImpl.main.d_8to24table[i] == 0xFF000000) { // alpha 1.0
-                    //if (RenderAPIImpl.main.d_8to24table[i] == (255 << 0)) // alpha 1.0
+                if (RenderAPIImpl.renderMain.d_8to24table[i] == 0xFF000000) { // alpha 1.0
+                    //if (RenderAPIImpl.renderMain.d_8to24table[i] == (255 << 0)) // alpha 1.0
                     filledcolor = i;
                     break;
                 }
@@ -976,7 +974,7 @@ public class Image {
 
             c = r | (g << 5) | (b << 11);
 
-            paletted_texture.put(i, RenderAPIImpl.main.gl_state.d_16to8table[c]);
+            paletted_texture.put(i, RenderAPIImpl.renderMain.gl_state.d_16to8table[c]);
         }
     }
 
@@ -994,16 +992,16 @@ public class Image {
         uploaded_paletted = false;
 
         for (scaled_width = 1; scaled_width < width; scaled_width <<= 1) ;
-        if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_width > width && mipmap)
+        if (RenderAPIImpl.renderMain.gl_round_down.value > 0.0f && scaled_width > width && mipmap)
             scaled_width >>= 1;
         for (scaled_height = 1; scaled_height < height; scaled_height <<= 1) ;
-        if (RenderAPIImpl.main.gl_round_down.value > 0.0f && scaled_height > height && mipmap)
+        if (RenderAPIImpl.renderMain.gl_round_down.value > 0.0f && scaled_height > height && mipmap)
             scaled_height >>= 1;
 
         // let people sample down the world textures for speed
         if (mipmap) {
-            scaled_width >>= (int) RenderAPIImpl.main.gl_picmip.value;
-            scaled_height >>= (int) RenderAPIImpl.main.gl_picmip.value;
+            scaled_width >>= (int) RenderAPIImpl.renderMain.gl_picmip.value;
+            scaled_height >>= (int) RenderAPIImpl.renderMain.gl_picmip.value;
         }
 
         // don't ever bother with >256 textures
@@ -1047,7 +1045,7 @@ public class Image {
         try {
             if (scaled_width == width && scaled_height == height) {
                 if (!mipmap) {
-                    if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+                    if (RenderAPIImpl.renderMain.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
                         uploaded_paletted = true;
                         GL_BuildPalettedTexture(paletted_texture, data, scaled_width, scaled_height);
                         GL11.glTexImage2D(
@@ -1085,7 +1083,7 @@ public class Image {
 
             GL_LightScaleTexture(scaled, scaled_width, scaled_height, !mipmap);
 
-            if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
+            if (RenderAPIImpl.renderMain.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && (samples == gl_solid_format)) {
                 uploaded_paletted = true;
                 GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
                 GL11.glTexImage2D(
@@ -1118,7 +1116,7 @@ public class Image {
                         scaled_height = 1;
 
                     miplevel++;
-                    if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
+                    if (RenderAPIImpl.renderMain.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && samples == gl_solid_format) {
                         uploaded_paletted = true;
                         GL_BuildPalettedTexture(paletted_texture, scaled, scaled_width, scaled_height);
                         GL11.glTexImage2D(
@@ -1173,7 +1171,7 @@ public class Image {
         if (s > trans.length)
             Command.Error(Defines.ERR_DROP, "GL_Upload8: too large");
 
-        if (RenderAPIImpl.main.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
+        if (RenderAPIImpl.renderMain.qglColorTableEXT && gl_ext_palettedtexture.value != 0.0f && is_sky) {
             GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL_COLOR_INDEX8_EXT, width, height, 0, GL11.GL_COLOR_INDEX, GL11.GL_UNSIGNED_BYTE, ByteBuffer.wrap(data));
 
             GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, gl_filter_max);
@@ -1185,7 +1183,7 @@ public class Image {
             int p;
             for (int i = 0; i < s; i++) {
                 p = data[i] & 0xff;
-                trans[i] = RenderAPIImpl.main.d_8to24table[p];
+                trans[i] = RenderAPIImpl.renderMain.d_8to24table[p];
 
                 if (p == 255) { // transparent, so scan around for another color
                     // to avoid alpha fringes
@@ -1202,11 +1200,11 @@ public class Image {
                         p = 0;
                     // copy rgb components
 
-                    // ((byte *)&trans[i])[0] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[0];
-                    // ((byte *)&trans[i])[1] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[1];
-                    // ((byte *)&trans[i])[2] = ((byte *)&RenderAPIImpl.main.d_8to24table[p])[2];
+                    // ((byte *)&trans[i])[0] = ((byte *)&RenderAPIImpl.renderMain.d_8to24table[p])[0];
+                    // ((byte *)&trans[i])[1] = ((byte *)&RenderAPIImpl.renderMain.d_8to24table[p])[1];
+                    // ((byte *)&trans[i])[2] = ((byte *)&RenderAPIImpl.renderMain.d_8to24table[p])[2];
 
-                    trans[i] = RenderAPIImpl.main.d_8to24table[p] & 0x00FFFFFF; // only rgb
+                    trans[i] = RenderAPIImpl.renderMain.d_8to24table[p] & 0x00FFFFFF; // only rgb
                 }
             }
 
@@ -1252,7 +1250,7 @@ public class Image {
             Command.Error(Defines.ERR_DROP, "Draw_LoadPic: \"" + name + "\" is too long");
 
         image.name = name;
-        image.registration_sequence = RenderAPIImpl.main.registration_sequence;
+        image.registration_sequence = RenderAPIImpl.renderMain.registration_sequence;
 
         image.width = width;
         image.height = height;
@@ -1365,7 +1363,7 @@ public class Image {
         byte[] raw = FileSystem.loadFile(name);
         if (raw == null) {
             VID.Printf(VID.PRINT_ALL, "GL_FindImage: can't load " + name + '\n');
-            return RenderAPIImpl.main.r_notexture;
+            return RenderAPIImpl.renderMain.r_notexture;
         }
 
         qfiles.miptex_t mt = new qfiles.miptex_t(raw);
@@ -1393,7 +1391,7 @@ public class Image {
         // look for it
         TImage image = (TImage) imageCache.get(name);
         if (image != null) {
-            image.registration_sequence = RenderAPIImpl.main.registration_sequence;
+            image.registration_sequence = RenderAPIImpl.renderMain.registration_sequence;
             return image;
         }
 
@@ -1457,15 +1455,15 @@ public class Image {
     void GL_FreeUnusedImages() {
 
         // never free r_notexture or particle texture
-        RenderAPIImpl.main.r_notexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
-        RenderAPIImpl.main.r_particletexture.registration_sequence = RenderAPIImpl.main.registration_sequence;
+        RenderAPIImpl.renderMain.r_notexture.registration_sequence = RenderAPIImpl.renderMain.registration_sequence;
+        RenderAPIImpl.renderMain.r_particletexture.registration_sequence = RenderAPIImpl.renderMain.registration_sequence;
 
         TImage image = null;
 
         for (int i = 0; i < numgltextures; i++) {
             image = gltextures[i];
             // used this sequence
-            if (image.registration_sequence == RenderAPIImpl.main.registration_sequence)
+            if (image.registration_sequence == RenderAPIImpl.renderMain.registration_sequence)
                 continue;
             // free TImage slot
             if (image.registration_sequence == 0)
@@ -1508,12 +1506,12 @@ public class Image {
             g = pal[j++] & 0xFF;
             b = pal[j++] & 0xFF;
 
-            RenderAPIImpl.main.d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
+            RenderAPIImpl.renderMain.d_8to24table[i] = (255 << 24) | (b << 16) | (g << 8) | (r << 0);
         }
 
-        RenderAPIImpl.main.d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
+        RenderAPIImpl.renderMain.d_8to24table[255] &= 0x00FFFFFF; // 255 is transparent
 
-        TParticle.setColorPalette(RenderAPIImpl.main.d_8to24table);
+        TParticle.setColorPalette(RenderAPIImpl.renderMain.d_8to24table);
     }
 
     /*
@@ -1525,25 +1523,25 @@ public class Image {
         int i, j;
         float g = vid_gamma.value;
 
-        RenderAPIImpl.main.registration_sequence = 1;
+        RenderAPIImpl.renderMain.registration_sequence = 1;
 
         // init intensity conversions
-        intensity = ConsoleVar.Get("intensity", "2", 0);
+        intensity = ConsoleVar.get("intensity", "2", 0);
 
         if (intensity.value <= 1)
             ConsoleVar.Set("intensity", "1");
 
-        RenderAPIImpl.main.gl_state.inverse_intensity = 1 / intensity.value;
+        RenderAPIImpl.renderMain.gl_state.inverse_intensity = 1 / intensity.value;
 
         Draw_GetPalette();
 
-        if (RenderAPIImpl.main.qglColorTableEXT) {
-            RenderAPIImpl.main.gl_state.d_16to8table = FileSystem.loadFile("pics/16to8.dat");
-            if (RenderAPIImpl.main.gl_state.d_16to8table == null)
+        if (RenderAPIImpl.renderMain.qglColorTableEXT) {
+            RenderAPIImpl.renderMain.gl_state.d_16to8table = FileSystem.loadFile("pics/16to8.dat");
+            if (RenderAPIImpl.renderMain.gl_state.d_16to8table == null)
                 Command.Error(Defines.ERR_FATAL, "Couldn't load pics/16to8.pcx");
         }
 
-        if ((RenderAPIImpl.main.gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
+        if ((RenderAPIImpl.renderMain.gl_config.renderer & (GL_RENDERER_VOODOO | GL_RENDERER_VOODOO2)) != 0) {
             g = 1.0F;
         }
 

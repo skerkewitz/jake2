@@ -87,7 +87,7 @@ import jake2.util.Lib;
 //   The MD4 algorithm is being placed in the public domain for review and
 //   possible adoption as a standard.
 //
-//   This document replaces the October 1990 RFC 1186 [2].  The main
+//   This document replaces the October 1990 RFC 1186 [2].  The renderMain
 //   difference is that the reference implementation of MD4 in the
 //   appendix is more portable.
 //
@@ -882,7 +882,7 @@ import jake2.util.Lib;
 //#define MDFinal MD5Final
 //#endif
 //
-///* Main driver.
+///* RenderMain driver.
 //
 //   Arguments (may be any combination):
 //     -sstring - digests string
@@ -891,7 +891,7 @@ import jake2.util.Lib;
 //     filename - digests file
 //     (none)   - digests standard input
 // */
-//int main (count, argv)
+//int renderMain (count, argv)
 //int count;
 //char *argv[];
 //{

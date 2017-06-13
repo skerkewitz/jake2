@@ -398,7 +398,7 @@ public class ServerMain {
 
         ServerInit.svs.clients[i].datagram.init(ServerInit.svs.clients[i].datagram_buf, ServerInit.svs.clients[i].datagram_buf.length);
         
-        ServerInit.svs.clients[i].datagram.allowoverflow = true;
+        ServerInit.svs.clients[i].datagram.allowOverflow = true;
         ServerInit.svs.clients[i].lastmessage = ServerInit.svs.realtime; // don't timeout
         ServerInit.svs.clients[i].lastconnect = ServerInit.svs.realtime;
         Command.DPrintf("new client added.\n");
@@ -469,10 +469,10 @@ public class ServerMain {
         String s;
         String c;
 
-        TSizeBuffer.BeginReading(Context.net_message);
-        TSizeBuffer.ReadLong(Context.net_message); // skip the -1 marker
+        Context.net_message.resetReadPosition();
+        TBuffer.ReadLong(Context.net_message); // skip the -1 marker
 
-        s = TSizeBuffer.ReadStringLine(Context.net_message);
+        s = TBuffer.ReadStringLine(Context.net_message);
 
         Cmd.TokenizeString(s.toCharArray(), false);
 
@@ -577,10 +577,10 @@ public class ServerMain {
 
             // read the qport out of the message so we can fix up
             // stupid address translating routers
-            TSizeBuffer.BeginReading(Context.net_message);
-            TSizeBuffer.ReadLong(Context.net_message); // sequence number
-            TSizeBuffer.ReadLong(Context.net_message); // sequence number
-            qport = TSizeBuffer.ReadShort(Context.net_message) & 0xffff;
+            Context.net_message.resetReadPosition();
+            TBuffer.ReadLong(Context.net_message); // sequence number
+            TBuffer.ReadLong(Context.net_message); // sequence number
+            qport = TBuffer.ReadShort(Context.net_message) & 0xffff;
 
             // check for packets from connected clients
             for (i = 0; i < ServerMain.maxclients.value; i++) {
@@ -865,35 +865,35 @@ public class ServerMain {
     public static void SV_Init() {
         ServerCommands.registerOperatorCommands(); //ok.
 
-        ServerMain.rcon_password = ConsoleVar.Get("rcon_password", "", 0);
-        ConsoleVar.Get("skill", "1", 0);
-        ConsoleVar.Get("deathmatch", "0", TVar.CVAR_FLAG_LATCH);
-        ConsoleVar.Get("coop", "0", TVar.CVAR_FLAG_LATCH);
-        ConsoleVar.Get("dmflags", "" + Defines.DF_INSTANT_ITEMS, TVar.CVAR_FLAG_SERVERINFO);
-        ConsoleVar.Get("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
-        ConsoleVar.Get("timelimit", "0", TVar.CVAR_FLAG_SERVERINFO);
-        ConsoleVar.Get("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        ConsoleVar.Get("protocol", "" + Defines.PROTOCOL_VERSION, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
+        ServerMain.rcon_password = ConsoleVar.get("rcon_password", "", 0);
+        ConsoleVar.get("skill", "1", 0);
+        ConsoleVar.get("deathmatch", "0", TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.get("coop", "0", TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.get("dmflags", "" + Defines.DF_INSTANT_ITEMS, TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.get("fraglimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.get("timelimit", "0", TVar.CVAR_FLAG_SERVERINFO);
+        ConsoleVar.get("cheats", "0", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        ConsoleVar.get("protocol", "" + Defines.PROTOCOL_VERSION, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
 
-        ServerMain.maxclients = ConsoleVar.Get("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
-        ServerMain.hostname = ConsoleVar.Get("hostname", "noname",TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_ARCHIVE);
-        ServerMain.timeout = ConsoleVar.Get("timeout", "125", 0);
-        ServerMain.zombietime = ConsoleVar.Get("zombietime", "2", 0);
-        ServerMain.sv_showclamp = ConsoleVar.Get("showclamp", "0", 0);
-        ServerMain.sv_paused = ConsoleVar.Get("paused", "0", 0);
-        ServerMain.sv_timedemo = ConsoleVar.Get("timedemo", "0", 0);
-        ServerMain.sv_enforcetime = ConsoleVar.Get("sv_enforcetime", "0", 0);
+        ServerMain.maxclients = ConsoleVar.get("maxclients", "1", TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_LATCH);
+        ServerMain.hostname = ConsoleVar.get("hostname", "noname",TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.timeout = ConsoleVar.get("timeout", "125", 0);
+        ServerMain.zombietime = ConsoleVar.get("zombietime", "2", 0);
+        ServerMain.sv_showclamp = ConsoleVar.get("showclamp", "0", 0);
+        ServerMain.sv_paused = ConsoleVar.get("paused", "0", 0);
+        ServerMain.sv_timedemo = ConsoleVar.get("timedemo", "0", 0);
+        ServerMain.sv_enforcetime = ConsoleVar.get("sv_enforcetime", "0", 0);
 
-        ServerMain.allow_download = ConsoleVar.Get("allow_download", "1", TVar.CVAR_FLAG_ARCHIVE);
-        ServerMain.allow_download_players = ConsoleVar.Get("allow_download_players","0", TVar.CVAR_FLAG_ARCHIVE);
-        ServerMain.allow_download_models = ConsoleVar.Get("allow_download_models", "1", TVar.CVAR_FLAG_ARCHIVE);
-        ServerMain.allow_download_sounds = ConsoleVar.Get("allow_download_sounds", "1", TVar.CVAR_FLAG_ARCHIVE);
-        ServerMain.allow_download_maps = ConsoleVar.Get("allow_download_maps", "1", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.allow_download = ConsoleVar.get("allow_download", "1", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.allow_download_players = ConsoleVar.get("allow_download_players","0", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.allow_download_models = ConsoleVar.get("allow_download_models", "1", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.allow_download_sounds = ConsoleVar.get("allow_download_sounds", "1", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.allow_download_maps = ConsoleVar.get("allow_download_maps", "1", TVar.CVAR_FLAG_ARCHIVE);
 
-        ServerMain.sv_noreload = ConsoleVar.Get("sv_noreload", "0", 0);
-        ServerMain.sv_airaccelerate = ConsoleVar.Get("sv_airaccelerate", "0", TVar.CVAR_FLAG_LATCH);
-        ServerMain.public_server = ConsoleVar.Get("public", "0", 0);
-        ServerMain.sv_reconnect_limit = ConsoleVar.Get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
+        ServerMain.sv_noreload = ConsoleVar.get("sv_noreload", "0", 0);
+        ServerMain.sv_airaccelerate = ConsoleVar.get("sv_airaccelerate", "0", TVar.CVAR_FLAG_LATCH);
+        ServerMain.public_server = ConsoleVar.get("public", "0", 0);
+        ServerMain.sv_reconnect_limit = ConsoleVar.get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
 
         Context.net_message.init(Context.net_message_buffer, Context.net_message_buffer.length);
     }
@@ -921,13 +921,13 @@ public class ServerMain {
         for (i = 0; i < ServerInit.svs.clients.length; i++) {
             cl = ServerInit.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Context.net_message.cursize,
+                Netchan.Transmit(cl.netchan, Context.net_message.writeHeadPosition,
                         Context.net_message.data);
         }
         for (i = 0; i < ServerInit.svs.clients.length; i++) {
             cl = ServerInit.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Context.net_message.cursize,
+                Netchan.Transmit(cl.netchan, Context.net_message.writeHeadPosition,
                         Context.net_message.data);
         }
     }

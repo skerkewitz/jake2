@@ -49,9 +49,9 @@ public class ServerGame {
         final TClient client = ServerInit.svs.clients[p - 1];
 
         if (reliable) {
-            client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
+            client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.writeHeadPosition);
         } else {
-            client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
+            client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.writeHeadPosition);
         }
 
         ServerInit.sv.multicast.clear();

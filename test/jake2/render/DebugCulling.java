@@ -26,7 +26,7 @@ package jake2.render;
 import jake2.Defines;
 import jake2.client.*;
 import jake2.qcommon.Com;
-import jake2.qcommon.Qcommon;
+import jake2.qcommon.Engine;
 import jake2.sys.KBD;
 
 /**

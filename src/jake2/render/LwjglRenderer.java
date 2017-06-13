@@ -26,10 +26,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.render;
 
 import jake2.Defines;
+import jake2.common.render.TRenderExport;
 import jake2.common.Dimension;
 import jake2.client.DisplayMode;
 import jake2.client.TRefDef;
-import jake2.client.refexport_t;
 import jake2.render.opengl.LwjglDriver;
 import jake2.sys.GlfwKeyboardImpl;
 import jake2.sys.Keyboard;
@@ -40,7 +40,7 @@ import jake2.sys.Keyboard;
  * 
  * @author dsanders/cwei
  */
-final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
+final class LwjglRenderer extends LwjglDriver implements TRenderExport, Ref {
 	
     	public static final String DRIVER_NAME = "lwjgl";
 
@@ -63,13 +63,13 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 	// ============================================================================
 	// public interface for Renderer implementations
 	//
-	// refexport_t (ref.h)
+	// TRenderExport (ref.h)
 	// ============================================================================
 
 	/**
-	 * @see jake2.client.refexport_t#Init()
+	 * @see TRenderExport#Init()
 	 */
-	public boolean Init(int vid_xpos, int vid_ypos) {
+	public boolean init(int vid_xpos, int vid_ypos) {
         // init the OpenGL drivers
         impl.setGLDriver(this);
 
@@ -80,57 +80,57 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#Shutdown()
+	 * @see TRenderExport#shutdown()
 	 */
 	public void Shutdown() {
 		impl.R_Shutdown();
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#BeginRegistration(java.lang.String)
+	 * @see TRenderExport#beginRegistration(java.lang.String)
 	 */
-	public final void BeginRegistration(String map) {
+	public final void beginRegistration(String map) {
 		impl.R_BeginRegistration(map);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#RegisterModel(java.lang.String)
+	 * @see TRenderExport#registerModel(java.lang.String)
 	 */
-	public final TModel RegisterModel(String name) {
+	public final TModel registerModel(String name) {
 		return impl.R_RegisterModel(name);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#RegisterSkin(java.lang.String)
+	 * @see TRenderExport#registerSkin(java.lang.String)
 	 */
-	public final TImage RegisterSkin(String name) {
+	public final TImage registerSkin(String name) {
 		return impl.R_RegisterSkin(name);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#RegisterPic(java.lang.String)
+	 * @see TRenderExport#registerPic(java.lang.String)
 	 */
-	public final TImage RegisterPic(String name) {
+	public final TImage registerPic(String name) {
 		return impl.Draw_FindPic(name);
 	}
 	/**
-	 * @see jake2.client.refexport_t#SetSky(java.lang.String, float, float[])
+	 * @see TRenderExport#setSky(java.lang.String, float, float[])
 	 */
-	public final void SetSky(String name, float rotate, float[] axis) {
+	public final void setSky(String name, float rotate, float[] axis) {
 		impl.R_SetSky(name, rotate, axis);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#EndRegistration()
+	 * @see TRenderExport#endRegistration()
 	 */
-	public final void EndRegistration() {
+	public final void endRegistration() {
 		impl.R_EndRegistration();
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#RenderFrame(TRefDef)
+	 * @see TRenderExport#renderFrame(TRefDef)
 	 */
-	public final void RenderFrame(TRefDef fd) {
+	public final void renderFrame(TRefDef fd) {
 		impl.R_RenderFrame(fd);
 	}
 
@@ -140,83 +140,83 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawPic(int, int, java.lang.String)
+	 * @see TRenderExport#DrawPic(int, int, java.lang.String)
 	 */
 	public final void DrawPic(int x, int y, String name) {
 		impl.Draw_Pic(x, y, name);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawStretchPic(int, int, int, int, java.lang.String)
+	 * @see TRenderExport#DrawStretchPic(int, int, int, int, java.lang.String)
 	 */
 	public final void DrawStretchPic(int x, int y, int w, int h, String name) {
 		impl.Draw_StretchPic(x, y, w, h, name);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawChar(int, int, int)
+	 * @see TRenderExport#DrawChar(int, int, int)
 	 */
 	public final void DrawChar(int x, int y, int num) {
 		impl.Draw_Char(x, y, num);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawTileClear(int, int, int, int, java.lang.String)
+	 * @see TRenderExport#DrawTileClear(int, int, int, int, java.lang.String)
 	 */
 	public final void DrawTileClear(int x, int y, int w, int h, String name) {
 		impl.Draw_TileClear(x, y, w, h, name);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawFill(int, int, int, int, int)
+	 * @see TRenderExport#DrawFill(int, int, int, int, int)
 	 */
 	public final void DrawFill(int x, int y, int w, int h, int c) {
 		impl.Draw_Fill(x, y, w, h, c);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawFadeScreen()
+	 * @see TRenderExport#DrawFadeScreen()
 	 */
 	public final void DrawFadeScreen() {
 		impl.Draw_FadeScreen();
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#DrawStretchRaw(int, int, int, int, int, int, byte[])
+	 * @see TRenderExport#DrawStretchRaw(int, int, int, int, int, int, byte[])
 	 */
 	public final void DrawStretchRaw(int x, int y, int w, int h, int cols, int rows, byte[] data) {
 		impl.Draw_StretchRaw(x, y, w, h, cols, rows, data);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#CinematicSetPalette(byte[])
+	 * @see TRenderExport#CinematicSetPalette(byte[])
 	 */
 	public final void CinematicSetPalette(byte[] palette) {
 		impl.R_SetPalette(palette);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#BeginFrame(float)
+	 * @see TRenderExport#beginFrame(float)
 	 */
 	public final void BeginFrame(float camera_separation) {
 		impl.R_BeginFrame(camera_separation);
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#EndFrame()
+	 * @see TRenderExport#endFrame()
 	 */
 	public final void EndFrame() {
 		endFrame();
 	}
 
 	/**
-	 * @see jake2.client.refexport_t#AppActivate(boolean)
+	 * @see TRenderExport#appActivate(boolean)
 	 */
-	public final void AppActivate(boolean activate) {
+	public final void appActivate(boolean activate) {
 	    appActivate(activate);
 	}
 
-    	public void screenshot() {
+	public void screenshot() {
     	    impl.GL_ScreenShot_f();
 	}
 
@@ -245,7 +245,7 @@ final class LwjglRenderer extends LwjglDriver implements refexport_t, Ref {
 		return DRIVER_NAME;
 	}
 
-	public final refexport_t GetRefAPI(RenderAPI renderer) {
+	public final TRenderExport GetRefAPI(RenderAPI renderer) {
         	this.impl = renderer;
 		return this;
 	}

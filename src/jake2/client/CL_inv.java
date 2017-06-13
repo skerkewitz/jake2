@@ -29,7 +29,7 @@ package jake2.client;
 
 import jake2.Defines;
 import jake2.qcommon.Command;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 import jake2.util.Lib;
 
 /**
@@ -44,7 +44,7 @@ public class CL_inv {
 		int i;
 
 		for (i = 0; i < Defines.MAX_ITEMS; i++)
-			Context.cl.inventory[i] = TSizeBuffer.ReadShort(Context.net_message);
+			Context.cl.inventory[i] = TBuffer.ReadShort(Context.net_message);
 	}
 
 	/*

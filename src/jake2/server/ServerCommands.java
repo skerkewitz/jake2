@@ -33,7 +33,7 @@ import jake2.network.TNetAddr;
 import jake2.qcommon.CM;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.TSizeBuffer;
+import jake2.qcommon.TBuffer;
 import jake2.sys.Network;
 import jake2.util.Lib;
 
@@ -810,7 +810,7 @@ public class ServerCommands {
         //char	name[MAX_OSPATH];
         String name;
         byte buf_data[] = new byte[32768];
-        TSizeBuffer buf = new TSizeBuffer();
+        TBuffer buf = new TBuffer();
         int len;
         int i;
 
@@ -874,13 +874,13 @@ public class ServerCommands {
             }
 
         // write it to the demo file
-        Command.DPrintf("signon message length: " + buf.cursize + "\n");
-        len = EndianHandler.swapInt(buf.cursize);
+        Command.DPrintf("signon message length: " + buf.writeHeadPosition + "\n");
+        len = EndianHandler.swapInt(buf.writeHeadPosition);
         //fwrite(len, 4, 1, svs.demofile);
-        //fwrite(buf.data, buf.cursize, 1, svs.demofile);
+        //fwrite(buf.data, buf.writeHeadPosition, 1, svs.demofile);
         try {
             ServerInit.svs.demofile.writeInt(len);
-            ServerInit.svs.demofile.write(buf.data, 0, buf.cursize);
+            ServerInit.svs.demofile.write(buf.data, 0, buf.writeHeadPosition);
         } catch (IOException e1) {
             // TODO: do quake2 error handling!
             e1.printStackTrace();
@@ -918,29 +918,29 @@ public class ServerCommands {
     }
 
     public static void registerOperatorCommands() {
-        Cmd.AddCommand("heartbeat", ServerCommands::funcHeartbeat);
-        Cmd.AddCommand("kick", ServerCommands::funcKick);
-        Cmd.AddCommand("status", ServerCommands::funcStatus);
-        Cmd.AddCommand("serverinfo", ServerCommands::funcServerInfo);
-        Cmd.AddCommand("dumpuser", ServerCommands::funcDumpUser);
+        Cmd.registerCommand("heartbeat", ServerCommands::funcHeartbeat);
+        Cmd.registerCommand("kick", ServerCommands::funcKick);
+        Cmd.registerCommand("status", ServerCommands::funcStatus);
+        Cmd.registerCommand("serverinfo", ServerCommands::funcServerInfo);
+        Cmd.registerCommand("dumpuser", ServerCommands::funcDumpUser);
 
-        Cmd.AddCommand("map", ServerCommands::funcMap);
-        Cmd.AddCommand("demomap", ServerCommands::funcDemoMap);
-        Cmd.AddCommand("gamemap", ServerCommands::funcGameMap);
-        Cmd.AddCommand("setmaster", ServerCommands::funcSetMaster);
+        Cmd.registerCommand("map", ServerCommands::funcMap);
+        Cmd.registerCommand("demomap", ServerCommands::funcDemoMap);
+        Cmd.registerCommand("gamemap", ServerCommands::funcGameMap);
+        Cmd.registerCommand("setmaster", ServerCommands::funcSetMaster);
 
         if (Context.dedicated.value != 0) {
-            Cmd.AddCommand("say", ServerCommands::funcConSay);
+            Cmd.registerCommand("say", ServerCommands::funcConSay);
         }
 
-        Cmd.AddCommand("serverrecord", ServerCommands::funcServerRecord);
-        Cmd.AddCommand("serverstop", ServerCommands::funcServerStop);
+        Cmd.registerCommand("serverrecord", ServerCommands::funcServerRecord);
+        Cmd.registerCommand("serverstop", ServerCommands::funcServerStop);
 
-        Cmd.AddCommand("save", ServerCommands::funcSaveGame);
-        Cmd.AddCommand("load", ServerCommands::funcLoadGame);
+        Cmd.registerCommand("save", ServerCommands::funcSaveGame);
+        Cmd.registerCommand("load", ServerCommands::funcLoadGame);
 
-        Cmd.AddCommand("killserver", ServerCommands::funcKillServer);
+        Cmd.registerCommand("killserver", ServerCommands::funcKillServer);
 
-        Cmd.AddCommand("sv", ServerCommands::funcServerCommands);
+        Cmd.registerCommand("sv", ServerCommands::funcServerCommands);
     }
 }

@@ -27,10 +27,10 @@ import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.Cmd;
 import jake2.game.TVar;
-import jake2.qcommon.Cbuf;
+import jake2.qcommon.CommandBuffer;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
-import jake2.qcommon.Qcommon;
+import jake2.qcommon.Engine;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -95,7 +95,7 @@ public final class FileSystem {
     public static File FindFirst(String path, int musthave, int canthave) {
 
         if (fdir != null) {
-            Qcommon.Error("Sys_BeginFind without close");
+            Engine.Error("Sys_BeginFind without close");
         }
 
         //	COM_FilePath (path, findbase);
@@ -173,9 +173,9 @@ public final class FileSystem {
      * InitFilesystem
      */
     public FileSystem() {
-        Cmd.AddCommand("path", FileSystem::funcPath);
-        Cmd.AddCommand("link", () -> Link_f());
-        Cmd.AddCommand("dir", () -> Dir_f());
+        Cmd.registerCommand("path", FileSystem::funcPath);
+        Cmd.registerCommand("link", () -> Link_f());
+        Cmd.registerCommand("dir", () -> Dir_f());
 
         fs_userdir = java.lang.System.getProperty("user.home") + "/.jake2";
         FileSystem.CreatePath(fs_userdir + "/");
@@ -185,7 +185,7 @@ public final class FileSystem {
         // basedir <path>
         // allows the game to run from outside the data tree
         //
-        varBaseDir = ConsoleVar.Get("basedir", ".", TVar.CVAR_FLAG_NOSET);
+        varBaseDir = ConsoleVar.get("basedir", ".", TVar.CVAR_FLAG_NOSET);
 
         //
         // cddir <path>
@@ -204,7 +204,7 @@ public final class FileSystem {
         markBaseSearchPaths();
 
         // check for game override
-        varGameDir = ConsoleVar.Get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
+        varGameDir = ConsoleVar.get("game", "", TVar.CVAR_FLAG_LATCH | TVar.CVAR_FLAG_SERVERINFO);
 
         if (varGameDir.string.length() > 0)
             SetGamedir(varGameDir.string);
@@ -735,7 +735,7 @@ public final class FileSystem {
                 | Defines.SFF_SYSTEM;
 
         if (findAll(name, 0, canthave) != null) {
-            Cbuf.AddText("exec autoexec.cfg\n");
+            CommandBuffer.AddText("exec autoexec.cfg\n");
         }
     }
 
@@ -777,7 +777,7 @@ public final class FileSystem {
         // flush all data, so it will be forced to reload
         //
         if ((Context.dedicated != null) && (Context.dedicated.value == 0.0f))
-            Cbuf.AddText("vid_restart\nsnd_restart\n");
+            CommandBuffer.AddText("vid_restart\nsnd_restart\n");
 
         gameDir = varBaseDir.string + '/' + dir;
 
@@ -941,7 +941,7 @@ public final class FileSystem {
      * set baseq2 directory
      */
     public void setCDDir() {
-        varCdDir = ConsoleVar.Get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
+        varCdDir = ConsoleVar.get("cddir", "", TVar.CVAR_FLAG_ARCHIVE);
         if (varCdDir.string.length() > 0)
             AddGameDirectory(varCdDir.string);
     }

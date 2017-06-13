@@ -78,7 +78,7 @@ public class Surf {
 		int[] allocated = new int[BLOCK_WIDTH];
 
 		// the lightmap texture data needs to be kept in
-		// main memory so texsubimage can update properly
+		// renderMain memory so texsubimage can update properly
 		//byte[] lightmap_buffer = new byte[4 * BLOCK_WIDTH * BLOCK_HEIGHT];
 		IntBuffer lightmap_buffer = Lib.newIntBuffer(BLOCK_WIDTH * BLOCK_HEIGHT, ByteOrder.LITTLE_ENDIAN);
 				
@@ -114,7 +114,7 @@ public class Surf {
 		if (tex.next == null)
 			return tex.image;
 
-		int c = RenderAPIImpl.main.currententity.frame % tex.numframes;
+		int c = RenderAPIImpl.renderMain.currententity.frame % tex.numframes;
 		while (c != 0)
 		{
 			tex = tex.next;
@@ -138,7 +138,7 @@ public class Surf {
 	 */
 	void DrawGLFlowingPoly(TGlPoly p)
 	{
-		float scroll = -64 * ( (RenderAPIImpl.main.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.main.r_newrefdef.time / 40.0f) );
+		float scroll = -64 * ( (RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) );
 		if(scroll == 0.0f)
 			scroll = -64.0f;
 		p.beginScrolling(scroll);
@@ -151,7 +151,7 @@ public class Surf {
 	*/
 	void R_DrawTriangleOutlines()
 	{
-        if (RenderAPIImpl.main.gl_showtris.value == 0)
+        if (RenderAPIImpl.renderMain.gl_showtris.value == 0)
             return;
 
         GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -187,7 +187,7 @@ public class Surf {
 	 */
 	void R_RenderBrushPoly(TMapSurface fa)
 	{
-		RenderAPIImpl.main.c_brush_polys++;
+		RenderAPIImpl.renderMain.c_brush_polys++;
 
 		TImage image = R_TextureAnimation(fa.texinfo);
 
@@ -197,9 +197,9 @@ public class Surf {
 
 			// warp texture, no lightmaps
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
-			GL11.glColor4f( RenderAPIImpl.main.gl_state.inverse_intensity,
-					RenderAPIImpl.main.gl_state.inverse_intensity,
-					RenderAPIImpl.main.gl_state.inverse_intensity,
+			GL11.glColor4f( RenderAPIImpl.renderMain.gl_state.inverse_intensity,
+					RenderAPIImpl.renderMain.gl_state.inverse_intensity,
+					RenderAPIImpl.renderMain.gl_state.inverse_intensity,
 						1.0F );
 			RenderAPIImpl.warp.EmitWaterPolys (fa);
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
@@ -229,7 +229,7 @@ public class Surf {
 		int maps;
 		for ( maps = 0; maps < Defines.MAXLIGHTMAPS && fa.styles[maps] != (byte)255; maps++ )
 		{
-			if ( RenderAPIImpl.main.r_newrefdef.lightstyles[fa.styles[maps] & 0xFF].white != fa.cached_light[maps] ) {
+			if ( RenderAPIImpl.renderMain.r_newrefdef.lightstyles[fa.styles[maps] & 0xFF].white != fa.cached_light[maps] ) {
 				gotoDynamic = true;
 				break;
 			}
@@ -240,10 +240,10 @@ public class Surf {
 
 		// dynamic this frame or dynamic previously
 		boolean is_dynamic = false;
-		if ( gotoDynamic || ( fa.dlightframe == RenderAPIImpl.main.r_framecount ) )
+		if ( gotoDynamic || ( fa.dlightframe == RenderAPIImpl.renderMain.r_framecount ) )
 		{
 			//	label dynamic:
-			if ( RenderAPIImpl.main.gl_dynamic.value != 0 )
+			if ( RenderAPIImpl.renderMain.gl_dynamic.value != 0 )
 			{
 				if (( fa.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33 | Defines.SURF_TRANS66 | Defines.SURF_WARP ) ) == 0)
 				{
@@ -254,7 +254,7 @@ public class Surf {
 
 		if ( is_dynamic )
 		{
-			if ( ( (fa.styles[maps] & 0xFF) >= 32 || fa.styles[maps] == 0 ) && ( fa.dlightframe != RenderAPIImpl.main.r_framecount ) )
+			if ( ( (fa.styles[maps] & 0xFF) >= 32 || fa.styles[maps] == 0 ) && ( fa.dlightframe != RenderAPIImpl.renderMain.r_framecount ) )
 			{
 				// ist ersetzt durch temp2:	unsigned	temp[34*34];
 				int smax, tmax;
@@ -265,7 +265,7 @@ public class Surf {
 				RenderAPIImpl.light.buildLightMap( fa, temp2, smax);
 				R_SetCacheState( fa );
 
-				RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + fa.lightmaptexturenum );
+				RenderAPIImpl.image.bindTexture( RenderAPIImpl.renderMain.gl_state.lightmap_textures + fa.lightmaptexturenum );
 
 				GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0,
 								  fa.light_s, fa.light_t, 
@@ -298,11 +298,11 @@ public class Surf {
 	 */
 	void R_DrawAlphaSurfaces()
 	{
-		RenderAPIImpl.main.r_world_matrix.clear();
+		RenderAPIImpl.renderMain.r_world_matrix.clear();
 		//
 		// go back to the world matrix
 		//
-		GL11.glLoadMatrixf(RenderAPIImpl.main.r_world_matrix);
+		GL11.glLoadMatrixf(RenderAPIImpl.renderMain.r_world_matrix);
 
 		GL11.glEnable (GL11.GL_BLEND);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
@@ -310,14 +310,14 @@ public class Surf {
 
 		// the textures are prescaled up for a better lighting range,
 		// so scale it back down
-		float intens = RenderAPIImpl.main.gl_state.inverse_intensity;
+		float intens = RenderAPIImpl.renderMain.gl_state.inverse_intensity;
 
 		GL11.glInterleavedArrays(GL11.GL_T2F_V3F, TGlPoly.BYTE_STRIDE, globalPolygonInterleavedBuf);
 
 		for (TMapSurface s = r_alpha_surfaces; s != null ; s=s.texturechain)
 		{
 			RenderAPIImpl.image.bindTexture(s.texinfo.image.texnum);
-			RenderAPIImpl.main.c_brush_polys++;
+			RenderAPIImpl.renderMain.c_brush_polys++;
 			if ((s.texinfo.flags & Defines.SURF_TRANS33) != 0)
 				GL11.glColor4f (intens, intens, intens, 0.33f);
 			else if ((s.texinfo.flags & Defines.SURF_TRANS66) != 0)
@@ -404,7 +404,7 @@ public class Surf {
 		int map;
 		for ( map = 0; map < Defines.MAXLIGHTMAPS && (surf.styles[map] != (byte)255); map++ )
 		{
-			if ( RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[map] & 0xFF].white != surf.cached_light[map] ) {
+			if ( RenderAPIImpl.renderMain.r_newrefdef.lightstyles[surf.styles[map] & 0xFF].white != surf.cached_light[map] ) {
 				gotoDynamic = true;
 				break;
 			}
@@ -415,10 +415,10 @@ public class Surf {
 
 		// dynamic this frame or dynamic previously
 		boolean is_dynamic = false;
-		if ( gotoDynamic || ( surf.dlightframe == RenderAPIImpl.main.r_framecount ) )
+		if ( gotoDynamic || ( surf.dlightframe == RenderAPIImpl.renderMain.r_framecount ) )
 		{
 			//	label dynamic:
-			if ( RenderAPIImpl.main.gl_dynamic.value != 0 )
+			if ( RenderAPIImpl.renderMain.gl_dynamic.value != 0 )
 			{
 				if ( (surf.texinfo.flags & (Defines.SURF_SKY | Defines.SURF_TRANS33 | Defines.SURF_TRANS66 | Defines.SURF_WARP )) == 0 )
 				{
@@ -436,7 +436,7 @@ public class Surf {
 			// ist raus gezogen worden int[] temp = new int[128*128];
 			int smax, tmax;
 
-			if ( ( (surf.styles[map] & 0xFF) >= 32 || surf.styles[map] == 0 ) && ( surf.dlightframe != RenderAPIImpl.main.r_framecount ) )
+			if ( ( (surf.styles[map] & 0xFF) >= 32 || surf.styles[map] == 0 ) && ( surf.dlightframe != RenderAPIImpl.renderMain.r_framecount ) )
 			{
 				smax = (surf.extents[0]>>4)+1;
 				tmax = (surf.extents[1]>>4)+1;
@@ -444,7 +444,7 @@ public class Surf {
 				RenderAPIImpl.light.buildLightMap( surf, temp, smax);
 				R_SetCacheState( surf );
 
-				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + surf.lightmaptexturenum );
+				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE1, RenderAPIImpl.renderMain.gl_state.lightmap_textures + surf.lightmaptexturenum );
 
 				lmtex = surf.lightmaptexturenum;
 
@@ -462,7 +462,7 @@ public class Surf {
 
 				RenderAPIImpl.light.buildLightMap( surf, temp, smax);
 
-				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + 0 );
+				RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE1, RenderAPIImpl.renderMain.gl_state.lightmap_textures + 0 );
 
 				lmtex = 0;
 
@@ -474,10 +474,10 @@ public class Surf {
 
 			}
 
-			RenderAPIImpl.main.c_brush_polys++;
+			RenderAPIImpl.renderMain.c_brush_polys++;
 
-			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE0, image.texnum );
-			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + lmtex );
+			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE0, image.texnum );
+			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE1, RenderAPIImpl.renderMain.gl_state.lightmap_textures + lmtex );
 
 			// ==========
 			//	  PGM
@@ -485,7 +485,7 @@ public class Surf {
 			{
 				float scroll;
 		
-				scroll = -64 * ( (RenderAPIImpl.main.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.main.r_newrefdef.time / 40.0f) );
+				scroll = -64 * ( (RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) );
 				if(scroll == 0.0f)
 					scroll = -64.0f;
 
@@ -508,10 +508,10 @@ public class Surf {
 		}
 		else
 		{
-			RenderAPIImpl.main.c_brush_polys++;
+			RenderAPIImpl.renderMain.c_brush_polys++;
 
-			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE0, image.texnum );
-			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.main.TEXTURE1, RenderAPIImpl.main.gl_state.lightmap_textures + lmtex);
+			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE0, image.texnum );
+			RenderAPIImpl.image.GL_MBind(RenderAPIImpl.renderMain.TEXTURE1, RenderAPIImpl.renderMain.gl_state.lightmap_textures + lmtex);
 			
 			// ==========
 			//	  PGM
@@ -519,7 +519,7 @@ public class Surf {
 			{
 				float scroll;
 		
-				scroll = -64 * ( (RenderAPIImpl.main.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.main.r_newrefdef.time / 40.0f) );
+				scroll = -64 * ( (RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) - (int)(RenderAPIImpl.renderMain.r_newrefdef.time / 40.0f) );
 				if(scroll == 0.0)
 					scroll = -64.0f;
 
@@ -553,22 +553,22 @@ public class Surf {
 	void R_DrawInlineBModel()
 	{
 		// calculate dynamic lighting for bmodel
-		if ( RenderAPIImpl.main.gl_flashblend.value == 0 )
+		if ( RenderAPIImpl.renderMain.gl_flashblend.value == 0 )
 		{
 			TDynamicLight lt;
-			for (int k=0 ; k<RenderAPIImpl.main.r_newrefdef.num_dlights ; k++)
+			for (int k = 0; k<RenderAPIImpl.renderMain.r_newrefdef.num_dlights ; k++)
 			{
-				lt = RenderAPIImpl.main.r_newrefdef.dlights[k];
-				RenderAPIImpl.light.markLights(lt, 1<<k, RenderAPIImpl.main.currentmodel.nodes[RenderAPIImpl.main.currentmodel.firstnode]);
+				lt = RenderAPIImpl.renderMain.r_newrefdef.dlights[k];
+				RenderAPIImpl.light.markLights(lt, 1<<k, RenderAPIImpl.renderMain.currentmodel.nodes[RenderAPIImpl.renderMain.currentmodel.firstnode]);
 			}
 		}
 
 		// psurf = &currentmodel->surfaces[currentmodel->firstmodelsurface];
-		int psurfp = RenderAPIImpl.main.currentmodel.firstmodelsurface;
-		TMapSurface[] surfaces = RenderAPIImpl.main.currentmodel.surfaces;
+		int psurfp = RenderAPIImpl.renderMain.currentmodel.firstmodelsurface;
+		TMapSurface[] surfaces = RenderAPIImpl.renderMain.currentmodel.surfaces;
 		//psurf = surfaces[psurfp];
 
-		if ( (RenderAPIImpl.main.currententity.flags & Defines.RF_TRANSLUCENT) != 0 )
+		if ( (RenderAPIImpl.renderMain.currententity.flags & Defines.RF_TRANSLUCENT) != 0 )
 		{
 			GL11.glEnable (GL11.GL_BLEND);
 			GL11.glColor4f (1,1,1,0.25f);
@@ -581,7 +581,7 @@ public class Surf {
 		TMapSurface psurf;
 		cplane_t pplane;
 		float dot;
-		for (int i=0 ; i<RenderAPIImpl.main.currentmodel.nummodelsurfaces ; i++)
+		for (int i = 0; i<RenderAPIImpl.renderMain.currentmodel.nummodelsurfaces ; i++)
 		{
 			psurf = surfaces[psurfp++];
 			// find which side of the node we are on
@@ -611,7 +611,7 @@ public class Surf {
 			}
 		}
 		
-		if ( (RenderAPIImpl.main.currententity.flags & Defines.RF_TRANSLUCENT) != 0 ) {
+		if ( (RenderAPIImpl.renderMain.currententity.flags & Defines.RF_TRANSLUCENT) != 0 ) {
 			GL11.glDisable (GL11.GL_BLEND);
 			GL11.glColor4f (1,1,1,1);
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
@@ -630,11 +630,11 @@ public class Surf {
 	 */
 	void R_DrawBrushModel(TEntity e)
 	{
-		if (RenderAPIImpl.main.currentmodel.nummodelsurfaces == 0)
+		if (RenderAPIImpl.renderMain.currentmodel.nummodelsurfaces == 0)
 			return;
 
-		RenderAPIImpl.main.currententity = e;
-		RenderAPIImpl.main.gl_state.currenttextures[0] = RenderAPIImpl.main.gl_state.currenttextures[1] = -1;
+		RenderAPIImpl.renderMain.currententity = e;
+		RenderAPIImpl.renderMain.gl_state.currenttextures[0] = RenderAPIImpl.renderMain.gl_state.currenttextures[1] = -1;
 
 		boolean rotated;
 		if (e.angles[0] != 0 || e.angles[1] != 0 || e.angles[2] != 0)
@@ -642,18 +642,18 @@ public class Surf {
 			rotated = true;
 			for (int i=0 ; i<3 ; i++)
 			{
-				mins[i] = e.origin[i] - RenderAPIImpl.main.currentmodel.radius;
-				maxs[i] = e.origin[i] + RenderAPIImpl.main.currentmodel.radius;
+				mins[i] = e.origin[i] - RenderAPIImpl.renderMain.currentmodel.radius;
+				maxs[i] = e.origin[i] + RenderAPIImpl.renderMain.currentmodel.radius;
 			}
 		}
 		else
 		{
 			rotated = false;
-			Math3D.VectorAdd(e.origin, RenderAPIImpl.main.currentmodel.mins, mins);
-			Math3D.VectorAdd(e.origin, RenderAPIImpl.main.currentmodel.maxs, maxs);
+			Math3D.VectorAdd(e.origin, RenderAPIImpl.renderMain.currentmodel.mins, mins);
+			Math3D.VectorAdd(e.origin, RenderAPIImpl.renderMain.currentmodel.maxs, maxs);
 		}
 
-		if (RenderAPIImpl.main.R_CullBox(mins, maxs)) return;
+		if (RenderAPIImpl.renderMain.R_CullBox(mins, maxs)) return;
 
 		GL11.glColor3f (1,1,1);
 		
@@ -662,7 +662,7 @@ public class Surf {
 		// TODO wird beim multitexturing nicht gebraucht
 		//gl_lms.clearLightmapSurfaces();
 		
-		Math3D.VectorSubtract (RenderAPIImpl.main.r_newrefdef.vieworg, e.origin, modelorg);
+		Math3D.VectorSubtract (RenderAPIImpl.renderMain.r_newrefdef.vieworg, e.origin, modelorg);
 		if (rotated)
 		{
 			Math3D.VectorCopy (modelorg, org);
@@ -676,22 +676,22 @@ public class Surf {
 		
 		e.angles[0] = -e.angles[0];	// stupid quake bug
 		e.angles[2] = -e.angles[2];	// stupid quake bug
-		RenderAPIImpl.main.R_RotateForEntity(e);
+		RenderAPIImpl.renderMain.R_RotateForEntity(e);
 		e.angles[0] = -e.angles[0];	// stupid quake bug
 		e.angles[2] = -e.angles[2];	// stupid quake bug
 
 		RenderAPIImpl.image.GL_EnableMultitexture( true );
-		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
+		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE0);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 		GL11.glInterleavedArrays(GL11.GL_T2F_V3F, TGlPoly.BYTE_STRIDE, globalPolygonInterleavedBuf);
-		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE1);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
 		GL11.glTexCoordPointer(2, GL11.GL_FLOAT, TGlPoly.BYTE_STRIDE, globalPolygonTexCoord1Buf);
 		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 
 		R_DrawInlineBModel();
 
-		ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.main.TEXTURE1);
+		ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.renderMain.TEXTURE1);
 		GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 
 		RenderAPIImpl.image.GL_EnableMultitexture( false );
@@ -715,10 +715,10 @@ public class Surf {
 		if (node.contents == Defines.CONTENTS_SOLID)
 			return;		// solid
 		
-		if (node.visframe != RenderAPIImpl.main.r_visframecount)
+		if (node.visframe != RenderAPIImpl.renderMain.r_visframecount)
 			return;
 			
-		if (RenderAPIImpl.main.R_CullBox(node.mins, node.maxs))
+		if (RenderAPIImpl.renderMain.R_CullBox(node.mins, node.maxs))
 			return;
 	
 		int c;
@@ -729,9 +729,9 @@ public class Surf {
 			TMLeaf pleaf = (TMLeaf)node;
 
 			// check for door connected areas
-			if (RenderAPIImpl.main.r_newrefdef.areabits != null)
+			if (RenderAPIImpl.renderMain.r_newrefdef.areabits != null)
 			{
-				if ( ((RenderAPIImpl.main.r_newrefdef.areabits[pleaf.area >> 3] & 0xFF) & (1 << (pleaf.area & 7)) ) == 0 )
+				if ( ((RenderAPIImpl.renderMain.r_newrefdef.areabits[pleaf.area >> 3] & 0xFF) & (1 << (pleaf.area & 7)) ) == 0 )
 					return;		// not visible
 			}
 
@@ -744,7 +744,7 @@ public class Surf {
 			{
 				do
 				{
-					mark.visframe = RenderAPIImpl.main.r_framecount;
+					mark.visframe = RenderAPIImpl.renderMain.r_framecount;
 					mark = pleaf.getMarkSurface(++markp); // next surface
 				} while (--c != 0);
 			}
@@ -794,8 +794,8 @@ public class Surf {
 		//for ( c = node.numsurfaces, surf = r_worldmodel.surfaces[node.firstsurface]; c != 0 ; c--, surf++)
 		for ( c = 0; c < node.numsurfaces; c++)
 		{
-			surf = RenderAPIImpl.main.r_worldmodel.surfaces[node.firstsurface + c];
-			if (surf.visframe != RenderAPIImpl.main.r_framecount)
+			surf = RenderAPIImpl.renderMain.r_worldmodel.surfaces[node.firstsurface + c];
+			if (surf.visframe != RenderAPIImpl.renderMain.r_framecount)
 				continue;
 
 			if ( (surf.flags & Defines.SURF_PLANEBACK) != sidebit )
@@ -838,23 +838,23 @@ public class Surf {
 	 */
 	void R_DrawWorld()
 	{
-		if (RenderAPIImpl.main.r_drawworld.value == 0)
+		if (RenderAPIImpl.renderMain.r_drawworld.value == 0)
 			return;
 
-		if ( (RenderAPIImpl.main.r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) != 0 )
+		if ( (RenderAPIImpl.renderMain.r_newrefdef.renderFlags & Defines.RDF_NOWORLDMODEL) != 0 )
 			return;
 
-		RenderAPIImpl.main.currentmodel = RenderAPIImpl.main.r_worldmodel;
+		RenderAPIImpl.renderMain.currentmodel = RenderAPIImpl.renderMain.r_worldmodel;
 
-		Math3D.VectorCopy(RenderAPIImpl.main.r_newrefdef.vieworg, modelorg);
+		Math3D.VectorCopy(RenderAPIImpl.renderMain.r_newrefdef.vieworg, modelorg);
 
 		TEntity ent = worldEntity;
 		// auto cycle the world frame for texture animation
 		ent.clear();
-		ent.frame = (int)(RenderAPIImpl.main.r_newrefdef.time*2);
-		RenderAPIImpl.main.currententity = ent;
+		ent.frame = (int)(RenderAPIImpl.renderMain.r_newrefdef.time*2);
+		RenderAPIImpl.renderMain.currententity = ent;
 
-		RenderAPIImpl.main.gl_state.currenttextures[0] = RenderAPIImpl.main.gl_state.currenttextures[1] = -1;
+		RenderAPIImpl.renderMain.gl_state.currenttextures[0] = RenderAPIImpl.renderMain.gl_state.currenttextures[1] = -1;
 
 		GL11.glColor3f (1,1,1);
 		// memset (gl_lms.lightmap_surfaces, 0, sizeof(gl_lms.lightmap_surfaces));
@@ -865,21 +865,21 @@ public class Surf {
 
 		RenderAPIImpl.image.GL_EnableMultitexture( true );
 
-		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.main.TEXTURE0);
+		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE0);
 		RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 		GL11.glInterleavedArrays(GL11.GL_T2F_V3F, TGlPoly.BYTE_STRIDE, globalPolygonInterleavedBuf);
-		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE1);
 		GL11.glTexCoordPointer(2, GL11.GL_FLOAT, TGlPoly.BYTE_STRIDE, globalPolygonTexCoord1Buf);
 		GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 
-		if ( RenderAPIImpl.main.gl_lightmap.value != 0)
+		if ( RenderAPIImpl.renderMain.gl_lightmap.value != 0)
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_REPLACE);
 		else 
 			RenderAPIImpl.image.GL_TexEnv(GL11.GL_MODULATE);
 				
-		R_RecursiveWorldNode(RenderAPIImpl.main.r_worldmodel.nodes[0]); // root node
+		R_RecursiveWorldNode(RenderAPIImpl.renderMain.r_worldmodel.nodes[0]); // root node
 				
-		ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.main.TEXTURE1);
+		ARBMultitexture.glClientActiveTextureARB(RenderAPIImpl.renderMain.TEXTURE1);
 		GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
 
 		RenderAPIImpl.image.GL_EnableMultitexture( false );
@@ -898,38 +898,38 @@ public class Surf {
 	 */
 	void R_MarkLeaves()
 	{
-		if (RenderAPIImpl.main.r_oldviewcluster == RenderAPIImpl.main.r_viewcluster && RenderAPIImpl.main.r_oldviewcluster2 == RenderAPIImpl.main.r_viewcluster2 && RenderAPIImpl.main.r_novis.value == 0 && RenderAPIImpl.main.r_viewcluster != -1)
+		if (RenderAPIImpl.renderMain.r_oldviewcluster == RenderAPIImpl.renderMain.r_viewcluster && RenderAPIImpl.renderMain.r_oldviewcluster2 == RenderAPIImpl.renderMain.r_viewcluster2 && RenderAPIImpl.renderMain.r_novis.value == 0 && RenderAPIImpl.renderMain.r_viewcluster != -1)
 			return;
 
 		// development aid to let you run around and see exactly where
 		// the pvs ends
-		if (RenderAPIImpl.main.gl_lockpvs.value != 0)
+		if (RenderAPIImpl.renderMain.gl_lockpvs.value != 0)
 			return;
 
-		RenderAPIImpl.main.r_visframecount++;
-		RenderAPIImpl.main.r_oldviewcluster = RenderAPIImpl.main.r_viewcluster;
-		RenderAPIImpl.main.r_oldviewcluster2 = RenderAPIImpl.main.r_viewcluster2;
+		RenderAPIImpl.renderMain.r_visframecount++;
+		RenderAPIImpl.renderMain.r_oldviewcluster = RenderAPIImpl.renderMain.r_viewcluster;
+		RenderAPIImpl.renderMain.r_oldviewcluster2 = RenderAPIImpl.renderMain.r_viewcluster2;
 
 		int i;
-		if (RenderAPIImpl.main.r_novis.value != 0 || RenderAPIImpl.main.r_viewcluster == -1 || RenderAPIImpl.main.r_worldmodel.vis == null)
+		if (RenderAPIImpl.renderMain.r_novis.value != 0 || RenderAPIImpl.renderMain.r_viewcluster == -1 || RenderAPIImpl.renderMain.r_worldmodel.vis == null)
 		{
 			// mark everything
-			for (i=0 ; i<RenderAPIImpl.main.r_worldmodel.numleafs ; i++)
-				RenderAPIImpl.main.r_worldmodel.leafs[i].visframe = RenderAPIImpl.main.r_visframecount;
-			for (i=0 ; i<RenderAPIImpl.main.r_worldmodel.numnodes ; i++)
-				RenderAPIImpl.main.r_worldmodel.nodes[i].visframe = RenderAPIImpl.main.r_visframecount;
+			for (i=0 ; i<RenderAPIImpl.renderMain.r_worldmodel.numleafs ; i++)
+				RenderAPIImpl.renderMain.r_worldmodel.leafs[i].visframe = RenderAPIImpl.renderMain.r_visframecount;
+			for (i=0 ; i<RenderAPIImpl.renderMain.r_worldmodel.numnodes ; i++)
+				RenderAPIImpl.renderMain.r_worldmodel.nodes[i].visframe = RenderAPIImpl.renderMain.r_visframecount;
 			return;
 		}
 
-		byte[] vis = RenderAPIImpl.model.Mod_ClusterPVS(RenderAPIImpl.main.r_viewcluster, RenderAPIImpl.main.r_worldmodel);
+		byte[] vis = RenderAPIImpl.model.Mod_ClusterPVS(RenderAPIImpl.renderMain.r_viewcluster, RenderAPIImpl.renderMain.r_worldmodel);
 		int c;
 		// may have to combine two clusters because of solid water boundaries
-		if (RenderAPIImpl.main.r_viewcluster2 != RenderAPIImpl.main.r_viewcluster)
+		if (RenderAPIImpl.renderMain.r_viewcluster2 != RenderAPIImpl.renderMain.r_viewcluster)
 		{
 			// memcpy (fatvis, vis, (r_worldmodel.numleafs+7)/8);
-			System.arraycopy(vis, 0, fatvis, 0, (RenderAPIImpl.main.r_worldmodel.numleafs+7) >> 3);
-			vis = RenderAPIImpl.model.Mod_ClusterPVS(RenderAPIImpl.main.r_viewcluster2, RenderAPIImpl.main.r_worldmodel);
-			c = (RenderAPIImpl.main.r_worldmodel.numleafs + 31) >> 5;
+			System.arraycopy(vis, 0, fatvis, 0, (RenderAPIImpl.renderMain.r_worldmodel.numleafs+7) >> 3);
+			vis = RenderAPIImpl.model.Mod_ClusterPVS(RenderAPIImpl.renderMain.r_viewcluster2, RenderAPIImpl.renderMain.r_worldmodel);
+			c = (RenderAPIImpl.renderMain.r_worldmodel.numleafs + 31) >> 5;
 			c <<= 2;
 			for (int k=0 ; k<c ; k+=4) {
 				fatvis[k] |= vis[k];
@@ -944,9 +944,9 @@ public class Surf {
 		TMNode node;
 		TMLeaf leaf;
 		int cluster;
-		for ( i=0; i < RenderAPIImpl.main.r_worldmodel.numleafs; i++)
+		for (i=0; i < RenderAPIImpl.renderMain.r_worldmodel.numleafs; i++)
 		{
-			leaf = RenderAPIImpl.main.r_worldmodel.leafs[i];
+			leaf = RenderAPIImpl.renderMain.r_worldmodel.leafs[i];
 			cluster = leaf.cluster;
 			if (cluster == -1)
 				continue;
@@ -955,9 +955,9 @@ public class Surf {
 				node = leaf;
 				do
 				{
-					if (node.visframe == RenderAPIImpl.main.r_visframecount)
+					if (node.visframe == RenderAPIImpl.renderMain.r_visframecount)
 						break;
-					node.visframe = RenderAPIImpl.main.r_visframecount;
+					node.visframe = RenderAPIImpl.renderMain.r_visframecount;
 					node = node.parent;
 				} while (node != null);
 			}
@@ -988,7 +988,7 @@ public class Surf {
 	{
 		int texture = ( dynamic ) ? 0 : gl_lms.current_lightmap_texture;
 
-		RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + texture );
+		RenderAPIImpl.image.bindTexture( RenderAPIImpl.renderMain.gl_state.lightmap_textures + texture );
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 
@@ -1073,7 +1073,7 @@ public class Surf {
 	void GL_BuildPolygonFromSurface(TMapSurface fa)
 	{
 		// reconstruct the polygon
-		TMEdge[] pedges = RenderAPIImpl.main.currentmodel.edges;
+		TMEdge[] pedges = RenderAPIImpl.renderMain.currentmodel.edges;
 		int lnumverts = fa.numedges;
 		//
 		// draw texture
@@ -1091,17 +1091,17 @@ public class Surf {
 		float s, t;
 		for (int i=0 ; i<lnumverts ; i++)
 		{
-			lindex = RenderAPIImpl.main.currentmodel.surfedges[fa.firstedge + i];
+			lindex = RenderAPIImpl.renderMain.currentmodel.surfedges[fa.firstedge + i];
 
 			if (lindex > 0)
 			{
 				r_pedge = pedges[lindex];
-				vec = RenderAPIImpl.main.currentmodel.vertexes[r_pedge.v[0]].position;
+				vec = RenderAPIImpl.renderMain.currentmodel.vertexes[r_pedge.v[0]].position;
 			}
 			else
 			{
 				r_pedge = pedges[-lindex];
-				vec = RenderAPIImpl.main.currentmodel.vertexes[r_pedge.v[1]].position;
+				vec = RenderAPIImpl.renderMain.currentmodel.vertexes[r_pedge.v[1]].position;
 			}
 			s = Math3D.DotProduct (vec, fa.texinfo.vecs[0]) + fa.texinfo.vecs[0][3];
 			s /= fa.texinfo.image.width;
@@ -1196,10 +1196,10 @@ public class Surf {
 		// memset( gl_lms.allocated, 0, sizeof(gl_lms.allocated) );
 		Arrays.fill(gl_lms.allocated, 0);
 
-		RenderAPIImpl.main.r_framecount = 1;		// no dlightcache
+		RenderAPIImpl.renderMain.r_framecount = 1;		// no dlightcache
 
 		RenderAPIImpl.image.GL_EnableMultitexture( true );
-		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.main.TEXTURE1);
+		RenderAPIImpl.image.GL_SelectTexture(RenderAPIImpl.renderMain.TEXTURE1);
 
 		/*
 		** setup the base lightstyles so the lightmaps won't have to be regenerated
@@ -1212,11 +1212,11 @@ public class Surf {
 			lightstyles[i].rgb[2] = 1;
 			lightstyles[i].white = 3;
 		}
-		RenderAPIImpl.main.r_newrefdef.lightstyles = lightstyles;
+		RenderAPIImpl.renderMain.r_newrefdef.lightstyles = lightstyles;
 
-		if (RenderAPIImpl.main.gl_state.lightmap_textures == 0)
+		if (RenderAPIImpl.renderMain.gl_state.lightmap_textures == 0)
 		{
-			RenderAPIImpl.main.gl_state.lightmap_textures = TEXNUM_LIGHTMAPS;
+			RenderAPIImpl.renderMain.gl_state.lightmap_textures = TEXNUM_LIGHTMAPS;
 		}
 
 		gl_lms.current_lightmap_texture = 1;
@@ -1235,7 +1235,7 @@ public class Surf {
 		** format then we should change this code to use real alpha maps.
 		*/
 		
-		char format = RenderAPIImpl.main.gl_monolightmap.string.toUpperCase().charAt(0);
+		char format = RenderAPIImpl.renderMain.gl_monolightmap.string.toUpperCase().charAt(0);
 		
 		if ( format == 'A' )
 		{
@@ -1264,7 +1264,7 @@ public class Surf {
 		/*
 		** initialize the dynamic lightmap texture
 		*/
-		RenderAPIImpl.image.bindTexture( RenderAPIImpl.main.gl_state.lightmap_textures + 0 );
+		RenderAPIImpl.image.bindTexture( RenderAPIImpl.renderMain.gl_state.lightmap_textures + 0 );
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		GL11.glTexParameterf(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
 		GL11.glTexImage2D(GL11.GL_TEXTURE_2D,
@@ -1325,7 +1325,7 @@ public class Surf {
 	 */
 	void R_SetCacheState(TMapSurface surf) {
 		for (int maps = 0; maps < Defines.MAXLIGHTMAPS && surf.styles[maps] != (byte) 255; maps++) {
-			surf.cached_light[maps] = RenderAPIImpl.main.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].white;
+			surf.cached_light[maps] = RenderAPIImpl.renderMain.r_newrefdef.lightstyles[surf.styles[maps] & 0xFF].white;
 		}
 	}
 

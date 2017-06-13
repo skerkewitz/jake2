@@ -58,20 +58,20 @@ public class CLEntity {
 		int i;
 		int number;
 
-		total = TSizeBuffer.ReadByte(Context.net_message);
+		total = TBuffer.ReadByte(Context.net_message);
 		if ((total & Defines.U_MOREBITS1) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Context.net_message);
+			b = TBuffer.ReadByte(Context.net_message);
 			total |= b << 8;
 		}
 		if ((total & Defines.U_MOREBITS2) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Context.net_message);
+			b = TBuffer.ReadByte(Context.net_message);
 			total |= b << 16;
 		}
 		if ((total & Defines.U_MOREBITS3) != 0) {
 		    
-			b = TSizeBuffer.ReadByte(Context.net_message);
+			b = TBuffer.ReadByte(Context.net_message);
 			total |= b << 24;
 		}
 
@@ -81,9 +81,9 @@ public class CLEntity {
 				bitcounts[i]++;
 
 		if ((total & Defines.U_NUMBER16) != 0)
-			number = TSizeBuffer.ReadShort(Context.net_message);
+			number = TBuffer.ReadShort(Context.net_message);
 		else
-			number = TSizeBuffer.ReadByte(Context.net_message);
+			number = TBuffer.ReadByte(Context.net_message);
 
 		bits[0] = total;
 
@@ -104,70 +104,70 @@ public class CLEntity {
 		to.number = number;
 
 		if ((bits & Defines.U_MODEL) != 0)
-			to.modelIndex = TSizeBuffer.ReadByte(Context.net_message);
+			to.modelIndex = TBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL2) != 0)
-			to.modelindex2 = TSizeBuffer.ReadByte(Context.net_message);
+			to.modelindex2 = TBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL3) != 0)
-			to.modelindex3 = TSizeBuffer.ReadByte(Context.net_message);
+			to.modelindex3 = TBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_MODEL4) != 0)
-			to.modelindex4 = TSizeBuffer.ReadByte(Context.net_message);
+			to.modelindex4 = TBuffer.ReadByte(Context.net_message);
 
 		if ((bits & Defines.U_FRAME8) != 0)
-			to.frame = TSizeBuffer.ReadByte(Context.net_message);
+			to.frame = TBuffer.ReadByte(Context.net_message);
 		if ((bits & Defines.U_FRAME16) != 0)
-			to.frame = TSizeBuffer.ReadShort(Context.net_message);
+			to.frame = TBuffer.ReadShort(Context.net_message);
 
 		if ((bits & Defines.U_SKIN8) != 0 && (bits & Defines.U_SKIN16) != 0) //used
 																			 // for
 																			 // laser
 																			 // colors
-			to.skinnum = TSizeBuffer.ReadLong(Context.net_message);
+			to.skinnum = TBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_SKIN8) != 0)
-			to.skinnum = TSizeBuffer.ReadByte(Context.net_message);
+			to.skinnum = TBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_SKIN16) != 0)
-			to.skinnum = TSizeBuffer.ReadShort(Context.net_message);
+			to.skinnum = TBuffer.ReadShort(Context.net_message);
 
 		if ((bits & (Defines.U_EFFECTS8 | Defines.U_EFFECTS16)) == (Defines.U_EFFECTS8 | Defines.U_EFFECTS16))
-			to.effects = TSizeBuffer.ReadLong(Context.net_message);
+			to.effects = TBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_EFFECTS8) != 0)
-			to.effects = TSizeBuffer.ReadByte(Context.net_message);
+			to.effects = TBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_EFFECTS16) != 0)
-			to.effects = TSizeBuffer.ReadShort(Context.net_message);
+			to.effects = TBuffer.ReadShort(Context.net_message);
 
 		if ((bits & (Defines.U_RENDERFX8 | Defines.U_RENDERFX16)) == (Defines.U_RENDERFX8 | Defines.U_RENDERFX16))
-			to.renderfx = TSizeBuffer.ReadLong(Context.net_message);
+			to.renderfx = TBuffer.ReadLong(Context.net_message);
 		else if ((bits & Defines.U_RENDERFX8) != 0)
-			to.renderfx = TSizeBuffer.ReadByte(Context.net_message);
+			to.renderfx = TBuffer.ReadByte(Context.net_message);
 		else if ((bits & Defines.U_RENDERFX16) != 0)
-			to.renderfx = TSizeBuffer.ReadShort(Context.net_message);
+			to.renderfx = TBuffer.ReadShort(Context.net_message);
 
 		if ((bits & Defines.U_ORIGIN1) != 0)
-			to.origin[0] = TSizeBuffer.ReadCoord(Context.net_message);
+			to.origin[0] = TBuffer.ReadCoord(Context.net_message);
 		if ((bits & Defines.U_ORIGIN2) != 0)
-			to.origin[1] = TSizeBuffer.ReadCoord(Context.net_message);
+			to.origin[1] = TBuffer.ReadCoord(Context.net_message);
 		if ((bits & Defines.U_ORIGIN3) != 0)
-			to.origin[2] = TSizeBuffer.ReadCoord(Context.net_message);
+			to.origin[2] = TBuffer.ReadCoord(Context.net_message);
 
 		if ((bits & Defines.U_ANGLE1) != 0)
-			to.angles[0] = TSizeBuffer.ReadAngle(Context.net_message);
+			to.angles[0] = TBuffer.ReadAngle(Context.net_message);
 		if ((bits & Defines.U_ANGLE2) != 0)
-			to.angles[1] = TSizeBuffer.ReadAngle(Context.net_message);
+			to.angles[1] = TBuffer.ReadAngle(Context.net_message);
 		if ((bits & Defines.U_ANGLE3) != 0)
-			to.angles[2] = TSizeBuffer.ReadAngle(Context.net_message);
+			to.angles[2] = TBuffer.ReadAngle(Context.net_message);
 
 		if ((bits & Defines.U_OLDORIGIN) != 0)
-			TSizeBuffer.ReadPos(Context.net_message, to.old_origin);
+			TBuffer.ReadPos(Context.net_message, to.old_origin);
 
 		if ((bits & Defines.U_SOUND) != 0)
-			to.sound = TSizeBuffer.ReadByte(Context.net_message);
+			to.sound = TBuffer.ReadByte(Context.net_message);
 
 		if ((bits & Defines.U_EVENT) != 0)
-			to.event = TSizeBuffer.ReadByte(Context.net_message);
+			to.event = TBuffer.ReadByte(Context.net_message);
 		else
 			to.event = 0;
 
 		if ((bits & Defines.U_SOLID) != 0)
-			to.solid = TSizeBuffer.ReadShort(Context.net_message);
+			to.solid = TBuffer.ReadShort(Context.net_message);
 	}
 
 	/*
@@ -264,7 +264,7 @@ public class CLEntity {
 			if (newnum >= Defines.MAX_EDICTS)
 				Command.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: bad number:" + newnum);
 
-			if (Context.net_message.readcount > Context.net_message.cursize)
+			if (Context.net_message.readHeadPosition > Context.net_message.writeHeadPosition)
 				Command.Error(Defines.ERR_DROP, "CL_ParsePacketEntities: end of message");
 
 			if (0 == newnum)
@@ -366,40 +366,40 @@ public class CLEntity {
 			//memset (state, 0, sizeof(*state));
 			state.clear();
 
-		flags = TSizeBuffer.ReadShort(Context.net_message);
+		flags = TBuffer.ReadShort(Context.net_message);
 
 		//
 		// parse the pmove_state_t
 		//
 		if ((flags & Defines.PS_M_TYPE) != 0)
-			state.pmove.pm_type = TSizeBuffer.ReadByte(Context.net_message);
+			state.pmove.pm_type = TBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_M_ORIGIN) != 0) {
-			state.pmove.origin[0] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.origin[1] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.origin[2] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.origin[0] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.origin[1] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.origin[2] = TBuffer.ReadShort(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_VELOCITY) != 0) {
-			state.pmove.velocity[0] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.velocity[1] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.velocity[2] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.velocity[0] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.velocity[1] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.velocity[2] = TBuffer.ReadShort(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_TIME) != 0) {
-			state.pmove.pm_time = (byte) TSizeBuffer.ReadByte(Context.net_message);
+			state.pmove.pm_time = (byte) TBuffer.ReadByte(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_M_FLAGS) != 0)
-			state.pmove.pm_flags = (byte) TSizeBuffer.ReadByte(Context.net_message);
+			state.pmove.pm_flags = (byte) TBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_M_GRAVITY) != 0)
-			state.pmove.gravity = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.gravity = TBuffer.ReadShort(Context.net_message);
 
 		if ((flags & Defines.PS_M_DELTA_ANGLES) != 0) {
-			state.pmove.delta_angles[0] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.delta_angles[1] = TSizeBuffer.ReadShort(Context.net_message);
-			state.pmove.delta_angles[2] = TSizeBuffer.ReadShort(Context.net_message);
+			state.pmove.delta_angles[0] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.delta_angles[1] = TBuffer.ReadShort(Context.net_message);
+			state.pmove.delta_angles[2] = TBuffer.ReadShort(Context.net_message);
 		}
 
 		if (Context.cl.attractloop)
@@ -409,57 +409,57 @@ public class CLEntity {
 		// parse the rest of the TPlayerState
 		//
 		if ((flags & Defines.PS_VIEWOFFSET) != 0) {
-			state.viewoffset[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.viewoffset[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.viewoffset[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.viewoffset[0] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.viewoffset[1] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.viewoffset[2] = TBuffer.ReadChar(Context.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_VIEWANGLES) != 0) {
-			state.viewangles[0] = TSizeBuffer.ReadAngle16(Context.net_message);
-			state.viewangles[1] = TSizeBuffer.ReadAngle16(Context.net_message);
-			state.viewangles[2] = TSizeBuffer.ReadAngle16(Context.net_message);
+			state.viewangles[0] = TBuffer.ReadAngle16(Context.net_message);
+			state.viewangles[1] = TBuffer.ReadAngle16(Context.net_message);
+			state.viewangles[2] = TBuffer.ReadAngle16(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_KICKANGLES) != 0) {
 
-			state.kick_angles[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.kick_angles[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.kick_angles[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.kick_angles[0] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.kick_angles[1] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.kick_angles[2] = TBuffer.ReadChar(Context.net_message) * 0.25f;
 
 		}
 
 		if ((flags & Defines.PS_WEAPONINDEX) != 0) {
-			state.gunindex = TSizeBuffer.ReadByte(Context.net_message);
+			state.gunindex = TBuffer.ReadByte(Context.net_message);
 		}
 
 		if ((flags & Defines.PS_WEAPONFRAME) != 0) {
-			state.gunframe = TSizeBuffer.ReadByte(Context.net_message);
-			state.gunoffset[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.gunoffset[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.gunoffset[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.gunangles[0] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.gunangles[1] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
-			state.gunangles[2] = TSizeBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunframe = TBuffer.ReadByte(Context.net_message);
+			state.gunoffset[0] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunoffset[1] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunoffset[2] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[0] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[1] = TBuffer.ReadChar(Context.net_message) * 0.25f;
+			state.gunangles[2] = TBuffer.ReadChar(Context.net_message) * 0.25f;
 		}
 
 		if ((flags & Defines.PS_BLEND) != 0) {
-			state.blend[0] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
-			state.blend[1] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
-			state.blend[2] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
-			state.blend[3] = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[0] = TBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[1] = TBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[2] = TBuffer.ReadByte(Context.net_message) / 255.0f;
+			state.blend[3] = TBuffer.ReadByte(Context.net_message) / 255.0f;
 		}
 
 		if ((flags & Defines.PS_FOV) != 0)
-			state.fov = TSizeBuffer.ReadByte(Context.net_message);
+			state.fov = TBuffer.ReadByte(Context.net_message);
 
 		if ((flags & Defines.PS_RDFLAGS) != 0)
-			state.rdflags = TSizeBuffer.ReadByte(Context.net_message);
+			state.rdflags = TBuffer.ReadByte(Context.net_message);
 
 		// parse stats
-		statbits = TSizeBuffer.ReadLong(Context.net_message);
+		statbits = TBuffer.ReadLong(Context.net_message);
 		for (i = 0; i < Defines.MAX_STATS; i++)
 			if ((statbits & (1 << i)) != 0)
-				state.stats[i] = TSizeBuffer.ReadShort(Context.net_message);
+				state.stats[i] = TBuffer.ReadShort(Context.net_message);
 	}
 
 	/*
@@ -494,13 +494,13 @@ public class CLEntity {
 		//memset( cl.frame, 0, sizeof(cl.frame));
 		Context.cl.frame.reset();
 
-		Context.cl.frame.serverframe = TSizeBuffer.ReadLong(Context.net_message);
-		Context.cl.frame.deltaframe = TSizeBuffer.ReadLong(Context.net_message);
+		Context.cl.frame.serverframe = TBuffer.ReadLong(Context.net_message);
+		Context.cl.frame.deltaframe = TBuffer.ReadLong(Context.net_message);
 		Context.cl.frame.servertime = Context.cl.frame.serverframe * 100;
 
 		// BIG HACK to let old demos continue to work
 		if (Context.cls.getServerProtocol() != 26)
-			Context.cl.surpressCount = TSizeBuffer.ReadByte(Context.net_message);
+			Context.cl.surpressCount = TBuffer.ReadByte(Context.net_message);
 
 		if (Context.cl_shownet.value == 3)
 			Command.Printf("   frame:" + Context.cl.frame.serverframe + "  delta:" + Context.cl.frame.deltaframe + "\n");
@@ -538,18 +538,18 @@ public class CLEntity {
 			Context.cl.time = Context.cl.frame.servertime - 100;
 
 		// read areaBits
-		len = TSizeBuffer.ReadByte(Context.net_message);
-		TSizeBuffer.ReadData(Context.net_message, Context.cl.frame.areabits, len);
+		len = TBuffer.ReadByte(Context.net_message);
+		TBuffer.ReadData(Context.net_message, Context.cl.frame.areabits, len);
 
 		// read playerinfo
-		cmd = TSizeBuffer.ReadByte(Context.net_message);
+		cmd = TBuffer.ReadByte(Context.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_playerinfo)
 			Command.Error(Defines.ERR_DROP, "CL_ParseFrame: not playerinfo");
 		ParsePlayerstate(old, Context.cl.frame);
 
 		// read packet entities
-		cmd = TSizeBuffer.ReadByte(Context.net_message);
+		cmd = TBuffer.ReadByte(Context.net_message);
 		CL_parse.SHOWNET(CL_parse.svc_strings[cmd]);
 		if (cmd != Defines.svc_packetentities)
 			Command.Error(Defines.ERR_DROP, "CL_ParseFrame: not packetentities");
@@ -703,14 +703,14 @@ public class CLEntity {
 					//	  PGM
 					if ((renderfx & Defines.RF_USE_DISGUISE) != 0) {
 						if (ent.skin.name.startsWith("players/male")) {
-							ent.skin = Context.re.RegisterSkin("players/male/disguise.pcx");
-							ent.model = Context.re.RegisterModel("players/male/tris.md2");
+							ent.skin = Context.re.registerSkin("players/male/disguise.pcx");
+							ent.model = Context.re.registerModel("players/male/tris.md2");
 						} else if (ent.skin.name.startsWith("players/female")) {
-							ent.skin = Context.re.RegisterSkin("players/female/disguise.pcx");
-							ent.model = Context.re.RegisterModel("players/female/tris.md2");
+							ent.skin = Context.re.registerSkin("players/female/disguise.pcx");
+							ent.model = Context.re.registerModel("players/female/tris.md2");
 						} else if (ent.skin.name.startsWith("players/cyborg")) {
-							ent.skin = Context.re.RegisterSkin("players/cyborg/disguise.pcx");
-							ent.model = Context.re.RegisterModel("players/cyborg/tris.md2");
+							ent.skin = Context.re.registerSkin("players/cyborg/disguise.pcx");
+							ent.model = Context.re.registerModel("players/cyborg/tris.md2");
 						}
 					}
 					//	  PGM
@@ -806,7 +806,7 @@ public class CLEntity {
 			// add to refresh list
 			V.AddEntity(ent);
 
-			// color shells generate a seperate entity for the main model
+			// color shells generate a seperate entity for the renderMain model
 			if ((effects & Defines.EF_COLOR_SHELL) != 0) {
 				/*
 				 * PMM - at this point, all of the shells have been handled if

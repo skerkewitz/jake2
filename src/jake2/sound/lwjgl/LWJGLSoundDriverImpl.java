@@ -62,15 +62,15 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         }
 
         // set the listerner (master) volume
-        s_volume = ConsoleVar.Get("s_volume", "0.7", TVar.CVAR_FLAG_ARCHIVE);
+        s_volume = ConsoleVar.get("s_volume", "0.7", TVar.CVAR_FLAG_ARCHIVE);
         AL10.alGenBuffers(buffers);
         int count = Channel.init(buffers);
         Command.Printf("... using " + count + " channels\n");
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED);
-        Cmd.AddCommand("play", () -> Play());
-        Cmd.AddCommand("stopsound", () -> StopAllSounds());
-        Cmd.AddCommand("soundlist", () -> SoundList());
-        Cmd.AddCommand("soundinfo", () -> SoundInfo_f());
+        Cmd.registerCommand("play", () -> Play());
+        Cmd.registerCommand("stopsound", () -> StopAllSounds());
+        Cmd.registerCommand("soundlist", () -> SoundList());
+        Cmd.registerCommand("soundinfo", () -> SoundInfo_f());
 
         num_sfx = 0;
 
@@ -191,7 +191,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundImpl#Shutdown()
+     * @see jake2.sound.SoundImpl#shutdown()
      */
     public void Shutdown() {
         StopAllSounds();
@@ -199,10 +199,10 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
         AL10.alDeleteBuffers(buffers);
         exitOpenAL();
 
-        Cmd.RemoveCommand("play");
-        Cmd.RemoveCommand("stopsound");
-        Cmd.RemoveCommand("soundlist");
-        Cmd.RemoveCommand("soundinfo");
+        Cmd.removeCommand("play");
+        Cmd.removeCommand("stopsound");
+        Cmd.removeCommand("soundlist");
+        Cmd.removeCommand("soundinfo");
 
         // free all sounds
         for (int i = 0; i < num_sfx; i++) {
@@ -276,7 +276,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     boolean s_registering;
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundDriver#BeginRegistration()
+     * @see jake2.sound.SoundDriver#beginRegistration()
      */
     public void BeginRegistration() {
         s_registration_sequence++;
@@ -297,7 +297,7 @@ public final class LWJGLSoundDriverImpl implements SoundDriver {
     }
 
     /* (non-Javadoc)
-     * @see jake2.sound.SoundDriver#EndRegistration()
+     * @see jake2.sound.SoundDriver#endRegistration()
      */
     public void EndRegistration() {
         int i;

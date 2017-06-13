@@ -30,7 +30,7 @@ import jake2.game.TVar
 import jake2.qcommon.Command
 import jake2.qcommon.CommandLineOptions
 import jake2.qcommon.ConsoleVar
-import jake2.qcommon.Qcommon
+import jake2.qcommon.Engine
 import jake2.render.opengl.LwjglDriver
 import jake2.sys.Timer
 import org.lwjgl.opengl.GL
@@ -40,14 +40,14 @@ import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 
 
 /**
- * Jake2 is the main class of Quake2 for Java.
+ * Jake2 is the renderMain class of Quake2 for Java.
  */
 object Jake2 {
 
     //public static Q2DataDialog Q2Dialog;
 
     /**
-     * main is used to start the game. Quake2 for Java supports the following
+     * renderMain is used to start the game. Quake2 for Java supports the following
      * command line arguments:
 
      * @param args
@@ -83,7 +83,7 @@ object Jake2 {
 
         // TODO: check if dedicated is set in config file
 
-        Context.dedicated = ConsoleVar.Get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
+        Context.dedicated = ConsoleVar.get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
 
         if (dedicated)
             Context.dedicated.value = 1.0f
@@ -98,9 +98,9 @@ object Jake2 {
 
         // in C the first arg is the filename
         val commandLineOptions = CommandLineOptions(arrayOf("jake2") + args)
-        Qcommon.Init(commandLineOptions)
+        Engine.init(commandLineOptions)
 
-        Context.nostdout = ConsoleVar.Get("nostdout", "0", 0)
+        Context.nostdout = ConsoleVar.get("nostdout", "0", 0)
 
         var oldtime = Timer.Milliseconds()
         var newtime: Int
@@ -114,7 +114,7 @@ object Jake2 {
             time = newtime - oldtime
 
             if (time > 0) {
-                Qcommon.Frame(time)
+                Engine.Frame(time)
             }
 
             oldtime = newtime

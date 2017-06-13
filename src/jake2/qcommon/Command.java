@@ -348,7 +348,7 @@ public final class Command {
         // static char msg[MAXPRINTMSG];
 
         if (recursive) {
-            Qcommon.Companion.Error("recursive error after: " + msg);
+            Engine.Companion.Error("recursive error after: " + msg);
         }
         recursive = true;
 
@@ -369,7 +369,7 @@ public final class Command {
             CL.Shutdown();
         }
 
-        Qcommon.Companion.Error(msg);
+        Engine.Companion.Error(msg);
     }
 
     public static void dprintln(String fmt) {
@@ -465,7 +465,7 @@ public final class Command {
             Context.logfile = null;
         }
 
-        Qcommon.Companion.Quit();
+        Engine.Companion.Quit();
     }
 
     public static void SetServerState(int i) {
@@ -488,7 +488,7 @@ public final class Command {
      */
     public static byte BlockSequenceCRCByte(byte base[], int offset, int length, int sequence) {
         if (sequence < 0)
-            Qcommon.Companion.Error("sequence < 0, this shouldn't happen\n");
+            Engine.Companion.Error("sequence < 0, this shouldn't happen\n");
 
         //p_ndx = (sequence % (sizeof(chktbl) - 4));
         int p_ndx = (sequence % (1024 - 4));

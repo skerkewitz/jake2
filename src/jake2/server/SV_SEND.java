@@ -156,7 +156,7 @@ public class SV_SEND {
 
 		// if doing a serverrecord, store everything
 		if (ServerInit.svs.demofile != null)
-			ServerInit.svs.demo_multicast.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
+			ServerInit.svs.demo_multicast.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.writeHeadPosition);
 
 		switch (to) {
 			case Defines.MULTICAST_ALL_R :
@@ -211,9 +211,9 @@ public class SV_SEND {
 			}
 
 			if (reliable) {
-				client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
+				client.netchan.message.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.writeHeadPosition);
 			} else {
-				client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.cursize);
+				client.datagram.write(ServerInit.sv.multicast.data, ServerInit.sv.multicast.writeHeadPosition);
 			}
 		}
 
@@ -357,7 +357,7 @@ public class SV_SEND {
 	===============================================================================
 	*/
 
-	private static final TSizeBuffer msg = new TSizeBuffer();
+	private static final TBuffer msg = new TBuffer();
 	/*
 	=======================
 	SV_SendClientDatagram
@@ -369,7 +369,7 @@ public class SV_SEND {
 		SV_ENTS.SV_BuildClientFrame(client);
 
 		msg.init(msgbuf, msgbuf.length);
-		msg.allowoverflow = true;
+		msg.allowOverflow = true;
 
 		// send over all the relevant TEntityState
 		// and the TPlayerState
@@ -379,22 +379,22 @@ public class SV_SEND {
 		// for this client out to the message
 		// it is necessary for this to be after the WriteEntities
 		// so that entity references will be current
-		if (client.datagram.overflowed)
-			Command.Printf("WARNING: datagram overflowed for " + client.name + "\n");
+		if (client.datagram.didOverflow)
+			Command.Printf("WARNING: datagram didOverflow for " + client.name + "\n");
 		else
-			msg.write(client.datagram.data, client.datagram.cursize);
+			msg.write(client.datagram.data, client.datagram.writeHeadPosition);
 		client.datagram.clear();
 
-		if (msg.overflowed) { // must have room left for the packet header
-			Command.Printf("WARNING: msg overflowed for " + client.name + "\n");
+		if (msg.didOverflow) { // must have room left for the packet header
+			Command.Printf("WARNING: msg didOverflow for " + client.name + "\n");
 			msg.clear();
 		}
 
 		// send the datagram
-		Netchan.Transmit(client.netchan, msg.cursize, msg.data);
+		Netchan.Transmit(client.netchan, msg.writeHeadPosition, msg.data);
 
 		// record the size for rate estimation
-		client.message_size[ServerInit.sv.framenum % Defines.RATE_MESSAGES] = msg.cursize;
+		client.message_size[ServerInit.sv.framenum % Defines.RATE_MESSAGES] = msg.writeHeadPosition;
 
 		return true;
 	}
@@ -505,12 +505,12 @@ public class SV_SEND {
 
 			if (c.state == 0)
 				continue;
-			// if the reliable message overflowed,
+			// if the reliable message didOverflow,
 			// drop the client
-			if (c.netchan.message.overflowed) {
+			if (c.netchan.message.didOverflow) {
 				c.netchan.message.clear();
 				c.datagram.clear();
-				SV_BroadcastPrintf(Defines.PRINT_HIGH, c.name + " overflowed\n");
+				SV_BroadcastPrintf(Defines.PRINT_HIGH, c.name + " didOverflow\n");
 				ServerMain.SV_DropClient(c);
 			}
 
@@ -527,7 +527,7 @@ public class SV_SEND {
 			}
 			else {
 				// just update reliable	if needed
-				if (c.netchan.message.cursize != 0 || Context.curtime - c.netchan.last_sent > 1000)
+				if (c.netchan.message.writeHeadPosition != 0 || Context.curtime - c.netchan.last_sent > 1000)
 					Netchan.Transmit(c.netchan, 0, NULLBYTE);
 			}
 		}

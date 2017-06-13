@@ -195,8 +195,8 @@ public class CL_parse {
     public static void ParseDownload() {
 
         // read the data
-        int size = TSizeBuffer.ReadShort(Context.net_message);
-        int percent = TSizeBuffer.ReadByte(Context.net_message);
+        int size = TBuffer.ReadShort(Context.net_message);
+        int percent = TBuffer.ReadByte(Context.net_message);
         if (size == -1) {
             Command.Printf("Server does not have this file.\n");
             if (Context.cls.getDownload() != null) {
@@ -219,7 +219,7 @@ public class CL_parse {
 
             Context.cls.setDownload(Lib.fopen(name, "rw"));
             if (Context.cls.getDownload() == null) {
-                Context.net_message.readcount += size;
+                Context.net_message.readHeadPosition += size;
                 Command.Printf("Failed to open " + Context.cls.getDownloadtempname()
                         + "\n");
                 CL.RequestNextDownload();
@@ -230,11 +230,11 @@ public class CL_parse {
 
         try {
             Context.cls.getDownload().write(Context.net_message.data,
-                    Context.net_message.readcount, size);
+                    Context.net_message.readHeadPosition, size);
         } 
         catch (Exception e) {
         }
-        Context.net_message.readcount += size;
+        Context.net_message.readHeadPosition += size;
 
         if (percent != 100) {
             // request next block
@@ -286,7 +286,7 @@ public class CL_parse {
         Context.cls.setState(Defines.ca_connected);
 
         //	   parse protocol version number
-        int i = TSizeBuffer.ReadLong(Context.net_message);
+        int i = TBuffer.ReadLong(Context.net_message);
         Context.cls.setServerProtocol(i);
 
         // BIG HACK to let demos from release work with the 3.0x patch!!!
@@ -295,11 +295,11 @@ public class CL_parse {
             Command.Error(Defines.ERR_DROP, "Server returned version " + i
                     + ", not " + Defines.PROTOCOL_VERSION);
 
-        Context.cl.servercount = TSizeBuffer.ReadLong(Context.net_message);
-        Context.cl.attractloop = TSizeBuffer.ReadByte(Context.net_message) != 0;
+        Context.cl.servercount = TBuffer.ReadLong(Context.net_message);
+        Context.cl.attractloop = TBuffer.ReadByte(Context.net_message) != 0;
 
         // game directory
-        String str = TSizeBuffer.ReadString(Context.net_message);
+        String str = TBuffer.ReadString(Context.net_message);
         Context.cl.gamedir = str;
         Command.dprintln("gamedir=" + str);
 
@@ -313,10 +313,10 @@ public class CL_parse {
             ConsoleVar.Set("game", str);
 
         // parse player entity number
-        Context.cl.playernum = TSizeBuffer.ReadShort(Context.net_message);
+        Context.cl.playernum = TBuffer.ReadShort(Context.net_message);
         Command.dprintln("numplayers=" + Context.cl.playernum);
         // get the full level name
-        str = TSizeBuffer.ReadString(Context.net_message);
+        str = TBuffer.ReadString(Context.net_message);
         Command.dprintln("levelname=" + str);
 
         if (Context.cl.playernum == -1) { // playing a cinematic or showing a
@@ -382,12 +382,12 @@ public class CL_parse {
             skin_filename = ("players/male/grunt.pcx");
             ci.iconname = ("/players/male/grunt_i.pcx");
 
-            ci.model = Context.re.RegisterModel(model_filename);
+            ci.model = Context.re.registerModel(model_filename);
 
             ci.weaponmodel = new TModel[Defines.MAX_CLIENTWEAPONMODELS];
-            ci.weaponmodel[0] = Context.re.RegisterModel(weapon_filename);
-            ci.skin = Context.re.RegisterSkin(skin_filename);
-            ci.icon = Context.re.RegisterPic(ci.iconname);
+            ci.weaponmodel[0] = Context.re.registerModel(weapon_filename);
+            ci.skin = Context.re.registerSkin(skin_filename);
+            ci.icon = Context.re.registerPic(ci.iconname);
             
         } else {
             // isolate the model name
@@ -408,17 +408,17 @@ public class CL_parse {
 
             // model file
             model_filename = "players/" + model_name + "/tris.md2";
-            ci.model = Context.re.RegisterModel(model_filename);
+            ci.model = Context.re.registerModel(model_filename);
 
             if (ci.model == null) {
                 model_name = "male";
                 model_filename = "players/male/tris.md2";
-                ci.model = Context.re.RegisterModel(model_filename);
+                ci.model = Context.re.registerModel(model_filename);
             }
 
             // skin file
             skin_filename = "players/" + model_name + "/" + skin_name + ".pcx";
-            ci.skin = Context.re.RegisterSkin(skin_filename);
+            ci.skin = Context.re.registerSkin(skin_filename);
 
             // if we don't have the skin and the model wasn't male,
             // see if the male has it (this is for CTF'entityState skins)
@@ -426,12 +426,12 @@ public class CL_parse {
                 // change model to male
                 model_name = "male";
                 model_filename = "players/male/tris.md2";
-                ci.model = Context.re.RegisterModel(model_filename);
+                ci.model = Context.re.registerModel(model_filename);
 
                 // see if the skin exists for the male model
                 skin_filename = "players/" + model_name + "/" + skin_name
                         + ".pcx";
-                ci.skin = Context.re.RegisterSkin(skin_filename);
+                ci.skin = Context.re.registerSkin(skin_filename);
             }
 
             // if we still don't have a skin, it means that the male model
@@ -440,20 +440,20 @@ public class CL_parse {
             if (ci.skin == null) {
                 // see if the skin exists for the male model
                 skin_filename = "players/" + model_name + "/grunt.pcx";
-                ci.skin = Context.re.RegisterSkin(skin_filename);
+                ci.skin = Context.re.registerSkin(skin_filename);
             }
 
             // weapon file
             for (int i = 0; i < ClientView.num_cl_weaponmodels; i++) {
                 weapon_filename = "players/" + model_name + "/"
                         + ClientView.cl_weaponmodels[i];
-                ci.weaponmodel[i] = Context.re.RegisterModel(weapon_filename);
+                ci.weaponmodel[i] = Context.re.registerModel(weapon_filename);
                 if (null == ci.weaponmodel[i] && model_name.equals("cyborg")) {
                     // try male
                     weapon_filename = "players/male/"
                             + ClientView.cl_weaponmodels[i];
                     ci.weaponmodel[i] = Context.re
-                            .RegisterModel(weapon_filename);
+                            .registerModel(weapon_filename);
                 }
                 if (0 == Context.cl_vwep.value)
                     break; // only one when vwep is off
@@ -461,7 +461,7 @@ public class CL_parse {
 
             // icon file
             ci.iconname = "/players/" + model_name + "/" + skin_name + "_i.pcx";
-            ci.icon = Context.re.RegisterPic(ci.iconname);
+            ci.icon = Context.re.registerPic(ci.iconname);
         }
 
         // must have loaded all data types to be valud
@@ -492,12 +492,12 @@ public class CL_parse {
      * ================ CL_ParseConfigString ================
      */
     public static void ParseConfigString() {
-        int i = TSizeBuffer.ReadShort(Context.net_message);
+        int i = TBuffer.ReadShort(Context.net_message);
 
         if (i < 0 || i >= Defines.MAX_CONFIGSTRINGS)
             Command.Error(Defines.ERR_DROP, "configstring > MAX_CONFIGSTRINGS");
 
-        String s = TSizeBuffer.ReadString(Context.net_message);
+        String s = TBuffer.ReadString(Context.net_message);
 
         String olds = Context.cl.configstrings[i];
         Context.cl.configstrings[i] = s;
@@ -514,7 +514,7 @@ public class CL_parse {
         } else if (i >= Defines.CS_MODELS && i < Defines.CS_MODELS + Defines.MAX_MODELS) {
             if (Context.cl.refresh_prepped) {
                 Context.cl.model_draw[i - Defines.CS_MODELS] = Context.re
-                        .RegisterModel(Context.cl.configstrings[i]);
+                        .registerModel(Context.cl.configstrings[i]);
                 if (Context.cl.configstrings[i].startsWith("*"))
                     Context.cl.model_clip[i - Defines.CS_MODELS] = CM
                             .InlineModel(Context.cl.configstrings[i]);
@@ -530,7 +530,7 @@ public class CL_parse {
                 && i < Defines.CS_IMAGES + Defines.MAX_MODELS) {
             if (Context.cl.refresh_prepped)
                 Context.cl.image_precache[i - Defines.CS_IMAGES] = Context.re
-                        .RegisterPic(Context.cl.configstrings[i]);
+                        .registerPic(Context.cl.configstrings[i]);
         } else if (i >= Defines.CS_PLAYERSKINS
                 && i < Defines.CS_PLAYERSKINS + Defines.MAX_CLIENTS) {
             if (Context.cl.refresh_prepped && !olds.equals(s))
@@ -551,31 +551,31 @@ public class CL_parse {
      * ================== CL_ParseStartSoundPacket ==================
      */
     public static void ParseStartSoundPacket() {
-        int flags = TSizeBuffer.ReadByte(Context.net_message);
-        int sound_num = TSizeBuffer.ReadByte(Context.net_message);
+        int flags = TBuffer.ReadByte(Context.net_message);
+        int sound_num = TBuffer.ReadByte(Context.net_message);
 
         float volume;
         if ((flags & Defines.SND_VOLUME) != 0)
-            volume = TSizeBuffer.ReadByte(Context.net_message) / 255.0f;
+            volume = TBuffer.ReadByte(Context.net_message) / 255.0f;
         else
             volume = Defines.DEFAULT_SOUND_PACKET_VOLUME;
 
         float attenuation;
         if ((flags & Defines.SND_ATTENUATION) != 0)
-            attenuation = TSizeBuffer.ReadByte(Context.net_message) / 64.0f;
+            attenuation = TBuffer.ReadByte(Context.net_message) / 64.0f;
         else
             attenuation = Defines.DEFAULT_SOUND_PACKET_ATTENUATION;
 
         float ofs;
         if ((flags & Defines.SND_OFFSET) != 0)
-            ofs = TSizeBuffer.ReadByte(Context.net_message) / 1000.0f;
+            ofs = TBuffer.ReadByte(Context.net_message) / 1000.0f;
         else
             ofs = 0;
 
         int channel;
         int ent;
         if ((flags & Defines.SND_ENT) != 0) { // entity reletive
-            channel = TSizeBuffer.ReadShort(Context.net_message);
+            channel = TBuffer.ReadShort(Context.net_message);
             ent = channel >> 3;
             if (ent > Defines.MAX_EDICTS)
                 Command.Error(Defines.ERR_DROP, "CL_ParseStartSoundPacket: entityDict = "
@@ -589,7 +589,7 @@ public class CL_parse {
 
         float pos[];
         if ((flags & Defines.SND_POS) != 0) { // positioned in space
-            TSizeBuffer.ReadPos(Context.net_message, pos_v);
+            TBuffer.ReadPos(Context.net_message, pos_v);
             // is ok. sound driver copies
             pos = pos_v;
         } else
@@ -605,7 +605,7 @@ public class CL_parse {
 
     public static void SHOWNET(String s) {
         if (Context.cl_shownet.value >= 2)
-            Command.Printf(Context.net_message.readcount - 1 + ":" + s + "\n");
+            Command.Printf(Context.net_message.readHeadPosition - 1 + ":" + s + "\n");
     }
 
     /*
@@ -616,7 +616,7 @@ public class CL_parse {
         //	   if recording demos, copy the message out
         //
         //if (cl_shownet.value == 1)
-        //Command.Printf(net_message.cursize + " ");
+        //Command.Printf(net_message.writeHeadPosition + " ");
         //else if (cl_shownet.value >= 2)
         //Command.Printf("------------------\n");
 
@@ -624,13 +624,13 @@ public class CL_parse {
         //	   parse the message
         //
         while (true) {
-            if (Context.net_message.readcount > Context.net_message.cursize) {
+            if (Context.net_message.readHeadPosition > Context.net_message.writeHeadPosition) {
                 Command.Error(Defines.ERR_FATAL,
                         "CL_ParseServerMessage: Bad server message:");
                 break;
             }
 
-            int cmd = TSizeBuffer.ReadByte(Context.net_message);
+            int cmd = TBuffer.ReadByte(Context.net_message);
 
             if (cmd == -1) {
                 SHOWNET("END OF MESSAGE");
@@ -639,7 +639,7 @@ public class CL_parse {
 
             if (Context.cl_shownet.value >= 2) {
                 if (null == svc_strings[cmd])
-                    Command.Printf(Context.net_message.readcount - 1 + ":BAD CMD "
+                    Command.Printf(Context.net_message.readHeadPosition - 1 + ":BAD CMD "
                             + cmd + "\n");
                 else
                     SHOWNET(svc_strings[cmd]);
@@ -676,27 +676,27 @@ public class CL_parse {
                 break;
 
             case Defines.svc_print:
-                int i = TSizeBuffer.ReadByte(Context.net_message);
+                int i = TBuffer.ReadByte(Context.net_message);
                 if (i == Defines.PRINT_CHAT) {
                     Sound.StartLocalSound("misc/talk.wav");
                     Context.console.ormask = 128;
                 }
-                Command.Printf(TSizeBuffer.ReadString(Context.net_message));
+                Command.Printf(TBuffer.ReadString(Context.net_message));
                 Context.console.ormask = 0;
                 break;
 
             case Defines.svc_centerprint:
-                SCR.CenterPrint(TSizeBuffer.ReadString(Context.net_message));
+                SCR.CenterPrint(TBuffer.ReadString(Context.net_message));
                 break;
 
             case Defines.svc_stufftext:
-                String s = TSizeBuffer.ReadString(Context.net_message);
+                String s = TBuffer.ReadString(Context.net_message);
                 Command.DPrintf("stufftext: " + s + "\n");
-                Cbuf.AddText(s);
+                CommandBuffer.AddText(s);
                 break;
 
             case Defines.svc_serverdata:
-                Cbuf.Execute(); // make sure any stuffed commands are done
+                CommandBuffer.execute(); // make sure any stuffed commands are done
                 ParseServerData();
                 break;
 
@@ -737,7 +737,7 @@ public class CL_parse {
                 break;
 
             case Defines.svc_layout:
-        	Context.cl.layout = TSizeBuffer.ReadString(Context.net_message);
+        	Context.cl.layout = TBuffer.ReadString(Context.net_message);
                 break;
 
             case Defines.svc_playerinfo:

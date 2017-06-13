@@ -124,6 +124,18 @@ public final class SCR {
         void clear() {
             x1 = x2 = y1 = y2 = 0;
         }
+
+        void addDirtyPoint(int x, int y) {
+            if (x < x1)
+                x1 = x;
+            else if (x > x2)
+                x2 = x;
+
+            if (y < y1)
+                y1 = y;
+            else if (y > y2)
+                y2 = y;
+        }
     }
 
     /*
@@ -307,14 +319,14 @@ public final class SCR {
                         || cs.charAt(start + l) == '\n')
                     break;
             x = (viddef.getWidth() - l * 8) / 2;
-            SCR.AddDirtyPoint(x, y);
+            SCR.addDirtyPoint(x, y);
             for (j = 0; j < l; j++, x += 8) {
                 re.DrawChar(x, y, cs.charAt(start + j));
                 if (remaining == 0)
                     return;
                 remaining--;
             }
-            SCR.AddDirtyPoint(x, y + 8);
+            SCR.addDirtyPoint(x, y + 8);
 
             y += 8;
 
@@ -409,7 +421,7 @@ public final class SCR {
             axis[2] = 1;
         }
 
-        re.SetSky(Cmd.Argv(1), rotate, axis);
+        re.setSky(Cmd.Argv(1), rotate, axis);
     }
 
     // ============================================================================
@@ -418,45 +430,45 @@ public final class SCR {
      * ================== SCR_Init ==================
      */
     static void Init() {
-        scr_viewsize = ConsoleVar.Get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
-        scr_conspeed = ConsoleVar.Get("scr_conspeed", "3", 0);
-        scr_showturtle = ConsoleVar.Get("scr_showturtle", "0", 0);
-        scr_showpause = ConsoleVar.Get("scr_showpause", "1", 0);
-        scr_centertime = ConsoleVar.Get("scr_centertime", "2.5", 0);
-        scr_printspeed = ConsoleVar.Get("scr_printspeed", "8", 0);
-        scr_netgraph = ConsoleVar.Get("netgraph", "1", 0);
-        scr_timegraph = ConsoleVar.Get("timegraph", "1", 0);
-        scr_debuggraph = ConsoleVar.Get("debuggraph", "1", 0);
-        scr_graphheight = ConsoleVar.Get("graphheight", "32", 0);
-        scr_graphscale = ConsoleVar.Get("graphscale", "1", 0);
-        scr_graphshift = ConsoleVar.Get("graphshift", "0", 0);
-        scr_drawall = ConsoleVar.Get("scr_drawall", "1", 0);
-        fps = ConsoleVar.Get("fps", "0", 0);
+        scr_viewsize = ConsoleVar.get("viewsize", "100", TVar.CVAR_FLAG_ARCHIVE);
+        scr_conspeed = ConsoleVar.get("scr_conspeed", "3", 0);
+        scr_showturtle = ConsoleVar.get("scr_showturtle", "0", 0);
+        scr_showpause = ConsoleVar.get("scr_showpause", "1", 0);
+        scr_centertime = ConsoleVar.get("scr_centertime", "2.5", 0);
+        scr_printspeed = ConsoleVar.get("scr_printspeed", "8", 0);
+        scr_netgraph = ConsoleVar.get("netgraph", "1", 0);
+        scr_timegraph = ConsoleVar.get("timegraph", "1", 0);
+        scr_debuggraph = ConsoleVar.get("debuggraph", "1", 0);
+        scr_graphheight = ConsoleVar.get("graphheight", "32", 0);
+        scr_graphscale = ConsoleVar.get("graphscale", "1", 0);
+        scr_graphshift = ConsoleVar.get("graphshift", "0", 0);
+        scr_drawall = ConsoleVar.get("scr_drawall", "1", 0);
+        fps = ConsoleVar.get("fps", "0", 0);
 
         //
         // register our commands
         //
-        Cmd.AddCommand("timerefresh", new TXCommand() {
+        Cmd.registerCommand("timerefresh", new TXCommand() {
             public void execute() {
                 TimeRefresh_f();
             }
         });
-        Cmd.AddCommand("loading", new TXCommand() {
+        Cmd.registerCommand("loading", new TXCommand() {
             public void execute() {
                 Loading_f();
             }
         });
-        Cmd.AddCommand("sizeup", new TXCommand() {
+        Cmd.registerCommand("sizeup", new TXCommand() {
             public void execute() {
                 SizeUp_f();
             }
         });
-        Cmd.AddCommand("sizedown", new TXCommand() {
+        Cmd.registerCommand("sizedown", new TXCommand() {
             public void execute() {
                 SizeDown_f();
             }
         });
-        Cmd.AddCommand("sky", new TXCommand() {
+        Cmd.registerCommand("sky", new TXCommand() {
             public void execute() {
                 Sky_f();
             }
@@ -622,7 +634,7 @@ public final class SCR {
             re.BeginFrame(0);
             for (i = 0; i < 128; i++) {
                 cl.refdef.viewangles[1] = i / 128.0f * 360.0f;
-                re.RenderFrame(cl.refdef);
+                re.renderFrame(cl.refdef);
             }
             re.EndFrame();
         } else {
@@ -630,7 +642,7 @@ public final class SCR {
                 cl.refdef.viewangles[1] = i / 128.0f * 360.0f;
 
                 re.BeginFrame(0);
-                re.RenderFrame(cl.refdef);
+                re.renderFrame(cl.refdef);
                 re.EndFrame();
             }
         }
@@ -641,8 +653,8 @@ public final class SCR {
     }
 
     public static void DirtyScreen() {
-        AddDirtyPoint(0, 0);
-        AddDirtyPoint(viddef.getWidth() - 1, viddef.getHeight() - 1);
+        addDirtyPoint(0, 0);
+        addDirtyPoint(viddef.getWidth() - 1, viddef.getHeight() - 1);
     }
 
     /*
@@ -820,8 +832,8 @@ public final class SCR {
         if (width > 5)
             width = 5;
 
-        AddDirtyPoint(x, y);
-        AddDirtyPoint(x + width * CHAR_WIDTH + 2, y + 23);
+        addDirtyPoint(x, y);
+        addDirtyPoint(x + width * CHAR_WIDTH + 2, y + 23);
 
         num = String.valueOf(value);
         l = num.length();
@@ -853,7 +865,7 @@ public final class SCR {
 
         for (i = 0; i < 2; i++)
             for (j = 0; j < 11; j++)
-                re.RegisterPic(sb_nums[i][j]);
+                re.registerPic(sb_nums[i][j]);
 
         if (crosshair.value != 0.0f) {
             if (crosshair.value > 3.0f || crosshair.value < 0.0f)
@@ -931,8 +943,8 @@ public final class SCR {
                 if (value >= MAX_IMAGES)
                     Command.Error(ERR_DROP, "Pic >= MAX_IMAGES");
                 if (cl.configstrings[CS_IMAGES + value] != null) {
-                    AddDirtyPoint(x, y);
-                    AddDirtyPoint(x + 23, y + 23);
+                    addDirtyPoint(x, y);
+                    addDirtyPoint(x + 23, y + 23);
                     re.DrawPic(x, y, cl.configstrings[CS_IMAGES + value]);
                 }
                 continue;
@@ -945,8 +957,8 @@ public final class SCR {
                 x = viddef.getWidth() / 2 - 160 + parser.tokenAsInt();
                 parser.next();
                 y = viddef.getHeight() / 2 - 120 + parser.tokenAsInt();
-                AddDirtyPoint(x, y);
-                AddDirtyPoint(x + 159, y + 31);
+                addDirtyPoint(x, y);
+                addDirtyPoint(x + 159, y + 31);
 
                 parser.next();
                 value = parser.tokenAsInt();
@@ -982,8 +994,8 @@ public final class SCR {
                 x = viddef.getWidth() / 2 - 160 + parser.tokenAsInt();
                 parser.next();
                 y = viddef.getHeight() / 2 - 120 + parser.tokenAsInt();
-                AddDirtyPoint(x, y);
-                AddDirtyPoint(x + 159, y + 31);
+                addDirtyPoint(x, y);
+                addDirtyPoint(x + 159, y + 31);
 
                 parser.next();
                 value = parser.tokenAsInt();
@@ -1011,8 +1023,8 @@ public final class SCR {
 
             if (parser.tokenEquals("picn")) { // draw a pic from a name
                 parser.next();
-                AddDirtyPoint(x, y);
-                AddDirtyPoint(x + 23, y + 23);
+                addDirtyPoint(x, y);
+                addDirtyPoint(x + 23, y + 23);
                 re.DrawPic(x, y, parser.token());
                 continue;
             }
@@ -1297,11 +1309,7 @@ public final class SCR {
                 crosshair_pic);
     }
 
-    private static TXCommand updateScreenCallback = new TXCommand() {
-        public void execute() {
-            UpdateScreen2();
-        }
-    };
+    private static TXCommand updateScreenCallback = SCR::UpdateScreen2;
 
     // wird anstelle von der richtigen UpdateScreen benoetigt
     public static void UpdateScreen() {
@@ -1311,15 +1319,8 @@ public final class SCR {
     /*
      * ================= SCR_AddDirtyPoint =================
      */
-    static void AddDirtyPoint(int x, int y) {
-        if (x < scr_dirty.x1)
-            scr_dirty.x1 = x;
-        if (x > scr_dirty.x2)
-            scr_dirty.x2 = x;
-        if (y < scr_dirty.y1)
-            scr_dirty.y1 = y;
-        if (y > scr_dirty.y2)
-            scr_dirty.y2 = y;
+    static void addDirtyPoint(int x, int y) {
+        scr_dirty.addDirtyPoint(x, y);
     }
 
     private static int lastframes = 0;
