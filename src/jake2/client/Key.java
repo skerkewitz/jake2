@@ -29,7 +29,7 @@ import jake2.Defines;
 import jake2.client.ui.Menu;
 import jake2.game.Cmd;
 import jake2.qcommon.*;
-import jake2.sys.Timer;
+import jake2.qcommon.Timer;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -832,6 +832,6 @@ public class Key {
 		re.getKeyboardHandler().Update();
 
         // grab frame time
-        sys_frame_time = Timer.Milliseconds();
+        sys_frame_time = Timer.Companion.Milliseconds();
     }
 }

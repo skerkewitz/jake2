@@ -35,8 +35,8 @@ import jake2.qcommon.TXCommand
 import jake2.render.Base
 import jake2.render.TImage
 import jake2.render.TModel
-import jake2.sys.GlfwKeyboardImpl
-import jake2.sys.Keyboard
+import jake2.sys.GlfwKeyboardInputImpl
+import jake2.sys.KeyboardInput
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWWindowFocusCallbackI
@@ -54,7 +54,7 @@ internal class LwjglRenderer private constructor() : GLDriver, TRenderExport, Re
     // is assign from RendererFactory factory
     private var impl: RenderAPI? = null
 
-    private var keyboard: Keyboard = GlfwKeyboardImpl() //new LWJGLKBD();
+    private var keyboardInput: KeyboardInput = GlfwKeyboardInputImpl() //new LWJGLKBD();
 
     //	private DisplayMode oldDisplayMode;
 
@@ -228,8 +228,8 @@ internal class LwjglRenderer private constructor() : GLDriver, TRenderExport, Re
         return arrayOf()
     }
 
-    override fun getKeyboardHandler(): Keyboard {
-        return keyboard
+    override fun getKeyboardHandler(): KeyboardInput {
+        return keyboardInput
     }
 
     // ============================================================================

@@ -32,7 +32,7 @@ import jake2.common.Dimension;
 import jake2.qcommon.TXCommand;
 import jake2.render.TImage;
 import jake2.render.TModel;
-import jake2.sys.Keyboard;
+import jake2.sys.KeyboardInput;
 
 
 /**
@@ -105,5 +105,5 @@ public interface TRenderExport {
 	
 	DisplayMode[] getModeList();
 	
-	Keyboard getKeyboardHandler();
+	KeyboardInput getKeyboardHandler();
 }

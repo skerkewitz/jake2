@@ -34,8 +34,7 @@ import jake2.io.FileSystem
 import jake2.network.Netchan
 import jake2.render.opengl.LwjglRenderer
 import jake2.server.ServerMain
-import jake2.sys.*
-import jake2.sys.Network
+import jake2.network.Network
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.opengl.GL

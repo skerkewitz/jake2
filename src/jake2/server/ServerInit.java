@@ -29,7 +29,7 @@ import jake2.client.SCR;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
-import jake2.sys.Network;
+import jake2.network.Network;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 

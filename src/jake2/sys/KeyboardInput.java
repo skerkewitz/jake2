@@ -26,25 +26,21 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.sys;
 
 
-import jake2.client.Context;
-
 /**
- * Keyboard
+ * KeyboardInput
  */
-abstract public class Keyboard {
-	
-	static int win_x = 0;
-	static int win_y = 0;
+public interface KeyboardInput {
 
-	abstract public void Init();
+    void Init();
 
-	abstract public void Update();
+    void Update();
 
-	abstract public void Close();
-	abstract public void Do_Key_Event(int key, boolean down);
+    void Close();
 
-	abstract public void installGrabs();
-	abstract public void uninstallGrabs();
-	//abstract public void centerMouse();
+    void Do_Key_Event(int key, boolean down);
+
+    void installGrabs();
+
+    void uninstallGrabs();
 }
 

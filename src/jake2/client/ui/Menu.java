@@ -37,8 +37,7 @@ import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.TXCommand;
 import jake2.sound.Sound;
-import jake2.sys.Network;
-import jake2.sys.Timer;
+import jake2.qcommon.Timer;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -963,7 +962,7 @@ public final class Menu {
         if (bind_grab)
             re.DrawChar(menu.x, menu.y + menu.cursor * 9, '=');
         else
-            re.DrawChar(menu.x, menu.y + menu.cursor * 9, 12 + (Timer
+            re.DrawChar(menu.x, menu.y + menu.cursor * 9, 12 + (Timer.Companion
                     .Milliseconds() / 250 & 1));
     }
 
@@ -2216,7 +2215,7 @@ public final class Menu {
         if (index >= m_num_servers)
             return;
 
-        buffer = "connect " + Network.AdrToString(local_server_netadr[index])
+        buffer = "connect " + local_server_netadr[index].adrToString()
                 + "\n";
         CommandBuffer.AddText(buffer);
         forceMenuOff();
@@ -3917,7 +3916,7 @@ public final class Menu {
             else
                 offset = f.cursor;
 
-            if ((Timer.Milliseconds() / 250 & 1) != 0) {
+            if ((Timer.Companion.Milliseconds() / 250 & 1) != 0) {
                 re.DrawChar(f.x + f.parent.x + (offset + 2) * 8 + 8, f.y
                         + f.parent.y, 11);
             } else {
@@ -4160,10 +4159,10 @@ public final class Menu {
         } else if (item != null && item.type != MTYPE_FIELD) {
             if ((item.flags & QMF_LEFT_JUSTIFY) != 0) {
                 re.DrawChar(menu.x + item.x - 24 + item.cursor_offset, menu.y
-                        + item.y, 12 + (Timer.Milliseconds() / 250 & 1));
+                        + item.y, 12 + (Timer.Companion.Milliseconds() / 250 & 1));
             } else {
                 re.DrawChar(menu.x + item.cursor_offset, menu.y + item.y,
-                        12 + (Timer.Milliseconds() / 250 & 1));
+                        12 + (Timer.Companion.Milliseconds() / 250 & 1));
             }
         }
 

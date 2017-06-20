@@ -29,7 +29,7 @@ import jake2.common.TDynamicLight;
 import jake2.game.Cmd;
 import jake2.game.TVar;
 import jake2.qcommon.*;
-import jake2.sys.Timer;
+import jake2.qcommon.Timer;
 import jake2.util.Math3D;
 
 import java.io.IOException;
@@ -274,7 +274,7 @@ public final class V {
 
         if (cl_timedemo.value != 0.0f) {
             if (cl.timedemo_start == 0)
-                cl.timedemo_start = Timer.Milliseconds();
+                cl.timedemo_start = Timer.Companion.Milliseconds();
             cl.timedemo_frames++;
         }
 

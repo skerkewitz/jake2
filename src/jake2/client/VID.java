@@ -34,7 +34,7 @@ import jake2.qcommon.*;
 import jake2.render.opengl.RendererFactory;
 import jake2.sound.Sound;
 import jake2.sys.MouseInput;
-import jake2.sys.Keyboard;
+import jake2.sys.KeyboardInput;
 
 import static jake2.Defines.MTYPE_ACTION;
 import static jake2.Defines.MTYPE_SLIDER;
@@ -144,9 +144,9 @@ public class VID {
 	static void FreeReflib()
 	{
 		if (re != null) {
-			Keyboard keyboardHandler = re.getKeyboardHandler();
-			if (keyboardHandler != null) {
-				keyboardHandler.Close();
+			KeyboardInput keyboardInputHandler = re.getKeyboardHandler();
+			if (keyboardInputHandler != null) {
+				keyboardInputHandler.Close();
 			}
 			MouseInput.Shutdown();
 		}
@@ -212,7 +212,7 @@ public class VID {
 			return false;
 		}
 
-		/* init Keyboard */
+		/* init KeyboardInput */
 		re.getKeyboardHandler().Init();
 
 		Command.Printf( "------------------------------------\n");

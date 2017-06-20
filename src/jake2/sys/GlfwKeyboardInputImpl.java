@@ -1,6 +1,7 @@
 package jake2.sys;
 
 import jake2.client.Key;
+import jake2.qcommon.Timer;
 import jake2.render.opengl.LwjglRenderer;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -8,7 +9,7 @@ import static org.lwjgl.glfw.GLFW.*;
 /**
  * Created by tropper on 18.05.17.
  */
-public class GlfwKeyboardImpl extends Keyboard {
+public class GlfwKeyboardInputImpl implements KeyboardInput {
 
     private int last_mx;
     private int last_my;
@@ -134,7 +135,7 @@ public class GlfwKeyboardImpl extends Keyboard {
 
     @Override
     public void Do_Key_Event(int key, boolean down) {
-        Key.Event(key, down, Timer.Milliseconds());
+        Key.Event(key, down, Timer.Companion.Milliseconds());
     }
 
     @Override
@@ -249,7 +250,7 @@ public class GlfwKeyboardImpl extends Keyboard {
 //
 //
 //
-//final public class JOGLKBD extends Keyboard
+//final public class JOGLKBD extends KeyboardInput
 //{
 //
 //

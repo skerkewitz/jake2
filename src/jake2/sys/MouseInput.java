@@ -133,13 +133,13 @@ public final class MouseInput {
             return;
         }
 	
-		Keyboard keyboard = Context.re.getKeyboardHandler();
+		KeyboardInput keyboardInput = Context.re.getKeyboardHandler();
 		for (int i=0 ; i<3 ; i++) {
 			if ( (MouseInput.mouse_buttonstate & (1<<i)) != 0 && (MouseInput.mouse_oldbuttonstate & (1<<i)) == 0 )
-				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, true);
+				keyboardInput.Do_Key_Event(Key.K_MOUSE1 + i, true);
 	
 			if ( (MouseInput.mouse_buttonstate & (1<<i)) == 0 && (MouseInput.mouse_oldbuttonstate & (1<<i)) != 0 )
-				keyboard.Do_Key_Event(Key.K_MOUSE1 + i, false);
+				keyboardInput.Do_Key_Event(Key.K_MOUSE1 + i, false);
 		}
 		MouseInput.mouse_oldbuttonstate = MouseInput.mouse_buttonstate;
     }

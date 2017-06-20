@@ -28,8 +28,7 @@ import jake2.client.Context;
 import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.server.ServerMain;
-import jake2.sys.Network;
-import jake2.sys.Timer;
+import jake2.qcommon.Timer;
 import jake2.util.Lib;
 
 /**
@@ -109,7 +108,7 @@ public final class Netchan extends ServerMain {
         long port;
 
         // pick a port value that should be nice and random
-        port = Timer.Milliseconds() & 0xffff;
+        port = Timer.Companion.Milliseconds() & 0xffff;
 
         showpackets = ConsoleVar.get("showpackets", "0", 0);
         showdrop = ConsoleVar.get("showdrop", "0", 0);
@@ -194,7 +193,7 @@ public final class Netchan extends ServerMain {
         // check for message overflow
         if (chan.message.didOverflow) {
             chan.fatal_error = true;
-            Command.Printf(Network.AdrToString(chan.remote_address)
+            Command.Printf(chan.remote_address.adrToString()
                     + ":Outgoing message overflow\n");
             return;
         }
@@ -297,7 +296,7 @@ public final class Netchan extends ServerMain {
         //
         if (sequence <= chan.incoming_sequence) {
             if (showdrop.value != 0)
-                Command.Printf(Network.AdrToString(chan.remote_address)
+                Command.Printf(chan.remote_address.adrToString()
                         + ":Out of order packet " + sequence + " at "
                         + chan.incoming_sequence + "\n");
             return false;
@@ -309,7 +308,7 @@ public final class Netchan extends ServerMain {
         chan.dropped = sequence - (chan.incoming_sequence + 1);
         if (chan.dropped > 0) {
             if (showdrop.value != 0)
-                Command.Printf(Network.AdrToString(chan.remote_address) + ":Dropped "
+                Command.Printf(chan.remote_address.adrToString() + ":Dropped "
                         + chan.dropped + " packets at " + sequence + "\n");
         }
 

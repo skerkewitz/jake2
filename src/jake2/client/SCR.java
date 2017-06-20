@@ -31,7 +31,7 @@ import jake2.game.TVar;
 import jake2.io.FileSystem;
 import jake2.qcommon.*;
 import jake2.sound.Sound;
-import jake2.sys.Timer;
+import jake2.qcommon.Timer;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -598,7 +598,7 @@ public final class SCR {
             scr_draw_loading = 1;
 
         UpdateScreen();
-        cls.setDisableScreen(Timer.Milliseconds());
+        cls.setDisableScreen(Timer.Companion.Milliseconds());
         cls.setDisableServerCount(cl.servercount);
     }
 
@@ -628,7 +628,7 @@ public final class SCR {
         if (cls.getState() != ca_active)
             return;
 
-        start = Timer.Milliseconds();
+        start = Timer.Companion.Milliseconds();
 
         if (Cmd.Argc() == 2) { // run without page flipping
             re.BeginFrame(0);
@@ -647,7 +647,7 @@ public final class SCR {
             }
         }
 
-        stop = Timer.Milliseconds();
+        stop = Timer.Companion.Milliseconds();
         time = (stop - start) / 1000.0f;
         Command.Printf("%f seconds (%f fps)\n", time, 128.0f / time);
     }
@@ -1185,7 +1185,7 @@ public final class SCR {
         // changing)
         // do nothing at all
         if (cls.getDisableScreen() != 0) {
-            if (Timer.Milliseconds() - cls.getDisableScreen() > 120000) {
+            if (Timer.Companion.Milliseconds() - cls.getDisableScreen() > 120000) {
                 cls.setDisableScreen(0);
                 Command.Printf("Loading plaque timed out.\n");
             }
@@ -1857,6 +1857,6 @@ public final class SCR {
         cin.restart_sound = true;
         cl.cinematicframe = 0;
         cin.pic = ReadNextFrame();
-        cl.cinematictime = Timer.Milliseconds();
+        cl.cinematictime = Timer.Companion.Milliseconds();
     }
 }

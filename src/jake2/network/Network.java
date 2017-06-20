@@ -20,7 +20,7 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA.
  *  
  */
-package jake2.sys;
+package jake2.network;
 
 import jake2.Defines;
 import jake2.client.Context;
@@ -46,71 +46,33 @@ public final class Network {
     /** Local loopback adress. */
     private static TNetAddr net_local_adr = new TNetAddr();
 
-    public static class loopmsg_t {
+    private static class TLoopMsg {
         byte data[] = new byte[Defines.MAX_MSGLEN];
-
         int datalen;
     }
 
-    public static class loopback_t {
-        public loopback_t() {
-            msgs = new loopmsg_t[MAX_LOOPBACK];
+    private static class TLoopback {
+        TLoopMsg msgs[];
+        int get, send;
+
+        public TLoopback() {
+            msgs = new TLoopMsg[MAX_LOOPBACK];
             for (int n = 0; n < MAX_LOOPBACK; n++) {
-                msgs[n] = new loopmsg_t();
+                msgs[n] = new TLoopMsg();
             }
         }
-
-        loopmsg_t msgs[];
-
-        int get, send;
     }
 
-    public static loopback_t loopbacks[] = new loopback_t[2];
+    private static TLoopback loopbacks[] = new TLoopback[2];
+
     static {
-        loopbacks[0] = new loopback_t();
-        loopbacks[1] = new loopback_t();
+        loopbacks[0] = new TLoopback();
+        loopbacks[1] = new TLoopback();
     }
 
     private static DatagramChannel[] ip_channels = { null, null };
 
     private static DatagramSocket[] ip_sockets = { null, null };
-
-    /**
-     * Compares ip address and port.
-     */
-    public static boolean CompareAdr(TNetAddr a, TNetAddr b) {
-        return (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2]
-                && a.ip[3] == b.ip[3] && a.port == b.port);
-    }
-
-    /**
-     * Compares ip address without the port.
-     */
-    public static boolean CompareBaseAdr(TNetAddr a, TNetAddr b) {
-        if (a.type != b.type)
-            return false;
-
-        if (a.type == Defines.NA_LOOPBACK)
-            return true;
-
-        if (a.type == Defines.NA_IP) {
-            return (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1]
-                    && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3]);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a string holding ip address and port like "ip0.ip1.ip2.ip3:port".
-     */
-    public static String AdrToString(TNetAddr a) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(a.ip[0] & 0xFF).append('.').append(a.ip[1] & 0xFF);
-        sb.append('.');
-        sb.append(a.ip[2] & 0xFF).append('.').append(a.ip[3] & 0xFF);
-        sb.append(':').append(a.port);
-        return sb.toString();
-    }
 
     /**
      * Returns IP address without the port as string.
@@ -149,7 +111,7 @@ public final class Network {
      * Seems to return true, if the address is is on 127.0.0.1.
      */
     public static boolean IsLocalAddress(TNetAddr adr) {
-        return CompareAdr(adr, net_local_adr);
+        return adr.compareAdr(net_local_adr);
     }
 
     /*
@@ -163,10 +125,9 @@ public final class Network {
     /**
      * Gets a packet from internal loopback.
      */
-    public static boolean GetLoopPacket(int sock, TNetAddr net_from,
-            TBuffer net_message) {
+    private static boolean GetLoopPacket(int sock, TNetAddr net_from, TBuffer net_message) {
 	
-        loopback_t loop = loopbacks[sock];
+        TLoopback loop = loopbacks[sock];
 
         if (loop.send - loop.get > MAX_LOOPBACK)
             loop.get = loop.send - MAX_LOOPBACK;
@@ -177,8 +138,7 @@ public final class Network {
         int i = loop.get & (MAX_LOOPBACK - 1);
         loop.get++;
 
-        System.arraycopy(loop.msgs[i].data, 0, net_message.data, 0,
-                loop.msgs[i].datalen);
+        System.arraycopy(loop.msgs[i].data, 0, net_message.data, 0, loop.msgs[i].datalen);
         net_message.writeHeadPosition = loop.msgs[i].datalen;
 
         net_from.set(net_local_adr);
@@ -188,15 +148,12 @@ public final class Network {
     /**
      * Sends a packet via internal loopback.
      */
-    public static void SendLoopPacket(int sock, int length, byte[] data,
-            TNetAddr to) {
-        int i;
-        loopback_t loop;
+    private static void SendLoopPacket(int sock, int length, byte[] data, TNetAddr to) {
 
-        loop = loopbacks[sock ^ 1];
+        TLoopback loop = loopbacks[sock ^ 1];
 
         // modulo 4
-        i = loop.send & (MAX_LOOPBACK - 1);
+        int i = loop.send & (MAX_LOOPBACK - 1);
         loop.send++;
 
         System.arraycopy(data, 0, loop.msgs[i].data, 0, length);
@@ -206,15 +163,15 @@ public final class Network {
     /**
      * Gets a packet from a network channel
      */
-    public static boolean GetPacket(int sock, TNetAddr net_from,
-            TBuffer net_message) {
+    public static boolean GetPacket(int sock, TNetAddr net_from, TBuffer net_message) {
 
         if (GetLoopPacket(sock, net_from, net_message)) {
             return true;
         }
 
-        if (ip_sockets[sock] == null)
+        if (ip_sockets[sock] == null) {
             return false;
+        }
 
         try {
             ByteBuffer receiveBuffer = ByteBuffer.wrap(net_message.data);
@@ -231,7 +188,7 @@ public final class Network {
             int packetLength = receiveBuffer.position();
 
             if (packetLength > net_message.maxsize) {
-                Command.Println("Oversize packet from " + AdrToString(net_from));
+                Command.Println("Oversize packet from " + net_from.adrToString());
                 return false;
             }
 
@@ -242,8 +199,7 @@ public final class Network {
             return true;
 
         } catch (IOException e) {
-            Command.DPrintf("NET_GetPacket: " + e + " from "
-                    + AdrToString(net_from) + "\n");
+            Command.DPrintf("NET_GetPacket: " + e + " from " + net_from.adrToString() + "\n");
             return false;
         }
     }
@@ -269,30 +225,29 @@ public final class Network {
             SocketAddress dstSocket = new InetSocketAddress(to.getInetAddress(), to.port);
             ip_channels[sock].send(ByteBuffer.wrap(data, 0, length), dstSocket);
         } catch (Exception e) {
-            Command.Println("NET_SendPacket ERROR: " + e + " to " + AdrToString(to));
+            Command.Println("NET_SendPacket ERROR: " + e + " to " + to.adrToString());
         }
     }
 
     /**
      * OpenIP, creates the network sockets. 
      */
-    public static void OpenIP() {
-        TVar port, ip, clientport;
+    private static void OpenIP() {
+        TVar port = ConsoleVar.get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
+        TVar ip = ConsoleVar.get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
+        TVar clientport = ConsoleVar.get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
+        
+        if (ip_sockets[Defines.NS_SERVER] == null) {
+            ip_sockets[Defines.NS_SERVER] = Socket(Defines.NS_SERVER, ip.string, (int) port.value);
+        }
+        
+        if (ip_sockets[Defines.NS_CLIENT] == null) {
+            ip_sockets[Defines.NS_CLIENT] = Socket(Defines.NS_CLIENT, ip.string, (int) clientport.value);
+        }
 
-        port = ConsoleVar.get("port", "" + Defines.PORT_SERVER, TVar.CVAR_FLAG_NOSET);
-        ip = ConsoleVar.get("ip", "localhost", TVar.CVAR_FLAG_NOSET);
-        clientport = ConsoleVar.get("clientport", "" + Defines.PORT_CLIENT, TVar.CVAR_FLAG_NOSET);
-        
-        if (ip_sockets[Defines.NS_SERVER] == null)
-            ip_sockets[Defines.NS_SERVER] = Socket(Defines.NS_SERVER,
-                    ip.string, (int) port.value);
-        
-        if (ip_sockets[Defines.NS_CLIENT] == null)
-            ip_sockets[Defines.NS_CLIENT] = Socket(Defines.NS_CLIENT,
-                    ip.string, (int) clientport.value);
-        if (ip_sockets[Defines.NS_CLIENT] == null)
-            ip_sockets[Defines.NS_CLIENT] = Socket(Defines.NS_CLIENT,
-                    ip.string, Defines.PORT_ANY);
+        if (ip_sockets[Defines.NS_CLIENT] == null) {
+            ip_sockets[Defines.NS_CLIENT] = Socket(Defines.NS_CLIENT, ip.string, Defines.PORT_ANY);
+        }
     }
 
     /**
@@ -323,7 +278,7 @@ public final class Network {
     /*
      * Socket
      */
-    public static DatagramSocket Socket(int sock, String ip, int port) {
+    private static DatagramSocket Socket(int sock, String ip, int port) {
 
         DatagramSocket newsocket = null;
         try {

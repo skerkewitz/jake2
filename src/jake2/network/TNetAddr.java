@@ -23,7 +23,6 @@
 package jake2.network;
 
 import jake2.Defines;
-import jake2.sys.Network;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -44,6 +43,43 @@ public class TNetAddr {
             this.ip = InetAddress.getByName(null).getAddress();
         } catch (UnknownHostException e) {
         }
+    }
+
+    /**
+     * Compares ip address and port.
+     */
+    public boolean compareAdr(TNetAddr b) {
+        return (this.ip[0] == b.ip[0] && this.ip[1] == b.ip[1] && this.ip[2] == b.ip[2]
+                && this.ip[3] == b.ip[3] && this.port == b.port);
+    }
+
+    /**
+     * Returns a string holding ip address and port like "ip0.ip1.ip2.ip3:port".
+     */
+    public String adrToString() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(this.ip[0] & 0xFF).append('.').append(this.ip[1] & 0xFF);
+        sb.append('.');
+        sb.append(this.ip[2] & 0xFF).append('.').append(this.ip[3] & 0xFF);
+        sb.append(':').append(this.port);
+        return sb.toString();
+    }
+
+    /**
+     * Compares ip address without the port.
+     */
+    public boolean compareBaseAdr(TNetAddr b) {
+        if (this.type != b.type)
+            return false;
+
+        if (this.type == Defines.NA_LOOPBACK)
+            return true;
+
+        if (this.type == Defines.NA_IP) {
+            return (this.ip[0] == b.ip[0] && this.ip[1] == b.ip[1]
+                    && this.ip[2] == b.ip[2] && this.ip[3] == b.ip[3]);
+        }
+        return false;
     }
 
     public InetAddress getInetAddress() throws UnknownHostException {
@@ -70,7 +106,7 @@ public class TNetAddr {
     }
 
     public String toString() {
-        return (type == Defines.NA_LOOPBACK) ? "loopback" : Network
-                .AdrToString(this);
+        return (type == Defines.NA_LOOPBACK) ? "loopback" : this
+                .adrToString();
     }
 }

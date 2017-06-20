@@ -29,8 +29,8 @@ import jake2.io.FileSystem;
 import jake2.network.Netchan;
 import jake2.network.TNetAddr;
 import jake2.qcommon.*;
-import jake2.sys.Network;
-import jake2.sys.Timer;
+import jake2.network.Network;
+import jake2.qcommon.Timer;
 import jake2.util.Lib;
 
 import java.io.IOException;
@@ -171,7 +171,7 @@ public class ServerMain {
      *  SVC_Ack
      */
     public static void SVC_Ack() {
-        Command.Printf("Ping acknowledge from " + Network.AdrToString(Context.net_from)
+        Command.Printf("Ping acknowledge from " + Context.net_from.adrToString()
                 + "\n");
     }
 
@@ -228,7 +228,7 @@ public class ServerMain {
 
         // see if we already have a challenge for this ip
         for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-            if (Network.CompareBaseAdr(Context.net_from,
+            if (Context.net_from.compareBaseAdr(
                     ServerInit.svs.challenges[i].adr))
                 break;
             if (ServerInit.svs.challenges[i].time < oldestTime) {
@@ -279,7 +279,7 @@ public class ServerMain {
         userinfo = Cmd.Argv(4);
 
         // force the IP key/value pair so the game can filter based on ip
-        userinfo = Info.Info_SetValueForKey(userinfo, "ip", Network.AdrToString(Context.net_from));
+        userinfo = Info.Info_SetValueForKey(userinfo, "ip", Context.net_from.adrToString());
 
         // attractloop servers are ONLY for local clients
         if (ServerInit.sv.attractloop) {
@@ -294,7 +294,7 @@ public class ServerMain {
         // see if the challenge is valid
         if (!Network.IsLocalAddress(adr)) {
             for (i = 0; i < Defines.MAX_CHALLENGES; i++) {
-                if (Network.CompareBaseAdr(Context.net_from,
+                if (Context.net_from.compareBaseAdr(
                         ServerInit.svs.challenges[i].adr)) {
                     if (challenge == ServerInit.svs.challenges[i].challenge)
                         break; // good
@@ -316,15 +316,15 @@ public class ServerMain {
 
             if (cl.state == Defines.cs_free)
                 continue;
-            if (Network.CompareBaseAdr(adr, cl.netchan.remote_address)
+            if (adr.compareBaseAdr(cl.netchan.remote_address)
                     && (cl.netchan.qport == qport || adr.port == cl.netchan.remote_address.port)) {
                 if (!Network.IsLocalAddress(adr)
                         && (ServerInit.svs.realtime - cl.lastconnect) < ((int) ServerMain.sv_reconnect_limit.value * 1000)) {
-                    Command.DPrintf(Network.AdrToString(adr)
+                    Command.DPrintf(adr.adrToString()
                             + ":reconnect rejected : too soon\n");
                     return;
                 }
-                Command.Printf(Network.AdrToString(adr) + ":reconnect\n");
+                Command.Printf(adr.adrToString() + ":reconnect\n");
 
                 gotnewcl(i, challenge, userinfo, adr, qport);
                 return;
@@ -431,10 +431,10 @@ public class ServerMain {
         String msg = Lib.CtoJava(Context.net_message.data, 4, 1024);
 
         if (i == 0)
-            Command.Printf("Bad rcon from " + Network.AdrToString(Context.net_from)
+            Command.Printf("Bad rcon from " + Context.net_from.adrToString()
                     + ":\n" + msg + "\n");
         else
-            Command.Printf("Rcon from " + Network.AdrToString(Context.net_from) + ":\n"
+            Command.Printf("Rcon from " + Context.net_from.adrToString() + ":\n"
                     + msg + "\n");
 
         Command.BeginRedirect(Defines.RD_PACKET, SV_SEND.sv_outputbuf,
@@ -479,7 +479,7 @@ public class ServerMain {
         c = Cmd.Argv(0);
         
         //for debugging purposes 
-        //Command.Printf("Packet " + Network.AdrToString(Netchan.net_from) + " : " + c + "\n");
+        //Command.Printf("Packet " + Network.adrToString(Netchan.net_from) + " : " + c + "\n");
         //Command.Printf(Lib.hexDump(net_message.data, 64, false) + "\n");
 
         if (0 == Lib.strcmp(c, "ping"))
@@ -498,7 +498,7 @@ public class ServerMain {
             SVC_RemoteCommand();
         else {
             Command.Printf("bad connectionless packet from "
-                    + Network.AdrToString(Context.net_from) + "\n");
+                    + Context.net_from.adrToString() + "\n");
             Command.Printf("[" + s + "]\n");
             Command.Printf("" + Lib.hexDump(Context.net_message.data, 128, false));
         }
@@ -587,7 +587,7 @@ public class ServerMain {
                 cl = ServerInit.svs.clients[i];
                 if (cl.state == Defines.cs_free)
                     continue;
-                if (!Network.CompareBaseAdr(Context.net_from,
+                if (!Context.net_from.compareBaseAdr(
                         cl.netchan.remote_address))
                     continue;
                 if (cl.netchan.qport != qport)
@@ -673,7 +673,7 @@ public class ServerMain {
      */
     public static void SV_RunGameFrame() {
         if (Context.host_speeds.value != 0)
-            Context.time_before_game = Timer.Milliseconds();
+            Context.time_before_game = Timer.Companion.Milliseconds();
 
         // we always need to bump framenum, even if we
         // don't run the world, otherwise the delta
@@ -695,7 +695,7 @@ public class ServerMain {
         }
 
         if (Context.host_speeds.value != 0)
-            Context.time_after_game = Timer.Milliseconds();
+            Context.time_after_game = Timer.Companion.Milliseconds();
 
     }
 
@@ -787,7 +787,7 @@ public class ServerMain {
         for (i = 0; i < Defines.MAX_MASTERS; i++)
             if (ServerMain.master_adr[i].port != 0) {
                 Command.Printf("Sending heartbeat to "
-                        + Network.AdrToString(ServerMain.master_adr[i]) + "\n");
+                        + ServerMain.master_adr[i].adrToString() + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         ServerMain.master_adr[i], "heartbeat\n" + string);
             }
@@ -813,7 +813,7 @@ public class ServerMain {
             if (ServerMain.master_adr[i].port != 0) {
                 if (i > 0)
                     Command.Printf("Sending heartbeat to "
-                            + Network.AdrToString(ServerMain.master_adr[i]) + "\n");
+                            + ServerMain.master_adr[i].adrToString() + "\n");
                 Netchan.OutOfBandPrint(Defines.NS_SERVER,
                         ServerMain.master_adr[i], "shutdown");
             }

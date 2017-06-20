@@ -34,7 +34,7 @@ import jake2.qcommon.CM;
 import jake2.qcommon.Command;
 import jake2.qcommon.ConsoleVar;
 import jake2.qcommon.TBuffer;
-import jake2.sys.Network;
+import jake2.network.Network;
 import jake2.util.Lib;
 
 import java.io.File;
@@ -88,7 +88,7 @@ public class ServerCommands {
             if (ServerMain.master_adr[slot].port == 0)
                 ServerMain.master_adr[slot].port = Defines.PORT_MASTER;
 
-            Command.Printf("Master server at " + Network.AdrToString(ServerMain.master_adr[slot]) + "\n");
+            Command.Printf("Master server at " + ServerMain.master_adr[slot].adrToString() + "\n");
             Command.Printf("Sending a ping.\n");
 
             Netchan.OutOfBandPrint(Defines.NS_SERVER, ServerMain.master_adr[slot], "ping");
@@ -737,7 +737,7 @@ public class ServerCommands {
 
             Command.Printf("%7i ", ServerInit.svs.realtime - cl.lastmessage);
 
-            s = Network.AdrToString(cl.netchan.remote_address);
+            s = cl.netchan.remote_address.adrToString();
             Command.Printf(s);
             l = 22 - s.length();
             for (j = 0; j < l; j++)

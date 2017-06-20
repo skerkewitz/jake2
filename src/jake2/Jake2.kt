@@ -31,10 +31,7 @@ import jake2.qcommon.Command
 import jake2.qcommon.CommandLineOptions
 import jake2.qcommon.ConsoleVar
 import jake2.qcommon.Engine
-import jake2.render.opengl.LwjglRenderer
-import jake2.sys.Timer
-import org.lwjgl.glfw.GLFW.glfwPollEvents
-import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
+import jake2.qcommon.Timer
 
 
 /**

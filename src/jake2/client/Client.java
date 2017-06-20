@@ -30,6 +30,7 @@ import jake2.client.ui.Menu;
 import jake2.game.*;
 import jake2.io.FileSystem;
 import jake2.network.Netchan;
+import jake2.network.Network;
 import jake2.network.TNetAddr;
 import jake2.qcommon.*;
 import jake2.server.ServerMain;
@@ -677,7 +678,7 @@ public final class Client {
         }
 
         if (Context.cl_timedemo != null && Context.cl_timedemo.value != 0.0f) {
-            int time = Timer.Milliseconds() - Context.cl.timedemo_start;
+            int time = Timer.Companion.Milliseconds() - Context.cl.timedemo_start;
             if (time > 0)
                 Command.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
                         Context.cl.timedemo_frames, time / 1000.0,  Context.cl.timedemo_frames * 1000.0 / time);
@@ -811,8 +812,7 @@ public final class Client {
      * ReadPackets
      */
     static void ReadPackets() {
-        while (Network.GetPacket(Defines.NS_CLIENT, Context.net_from,
-                Context.net_message)) {
+        while (Network.GetPacket(Defines.NS_CLIENT, Context.net_from, Context.net_message)) {
 
             //
             // remote command packet
@@ -831,7 +831,7 @@ public final class Client {
                 continue; // dump it if not connected
 
             if (Context.net_message.writeHeadPosition < 8) {
-                Command.Printf(Network.AdrToString(Context.net_from)
+                Command.Printf(Context.net_from.adrToString()
                         + ": Runt packet\n");
                 continue;
             }
@@ -839,9 +839,8 @@ public final class Client {
             //
             // packet from server
             //
-            if (!Network.CompareAdr(Context.net_from,
-                    Context.cls.getNetchan().remote_address)) {
-                Command.DPrintf(Network.AdrToString(Context.net_from)
+            if (!Context.net_from.compareAdr(Context.cls.getNetchan().remote_address)) {
+                Command.DPrintf(Context.net_from.adrToString()
                         + ":sequenced packet without connection\n");
                 continue;
             }
@@ -1216,7 +1215,7 @@ public final class Client {
      */
     private static void InitLocal() {
         Context.cls.setState(Defines.ca_disconnected);
-        Context.cls.setRealtime(Timer.Milliseconds());
+        Context.cls.setRealtime(Timer.Companion.Milliseconds());
 
         clientInput.InitInput();
 
@@ -1482,7 +1481,7 @@ public final class Client {
 
         // if in the debugger last frame, don't timeout
         if (msec > 5000)
-            Context.cls.getNetchan().last_received = Timer.Milliseconds();
+            Context.cls.getNetchan().last_received = Timer.Companion.Milliseconds();
 
         // fetch results from server
         ReadPackets();
