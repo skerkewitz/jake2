@@ -26,7 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.qcommon;
 
 import jake2.Defines;
-import jake2.client.CL;
+import jake2.client.Client;
 import jake2.client.Console;
 import jake2.client.Context;
 import jake2.game.Cmd;
@@ -355,18 +355,18 @@ public final class Command {
         msg = String.format(fmt, vargs);
 
         if (code == Defines.ERR_DISCONNECT) {
-            CL.Drop();
+            Client.Drop();
             recursive = false;
             throw new QuakeException();
         } else if (code == Defines.ERR_DROP) {
             Command.Printf("********************\nERROR: " + msg + "\n********************\n");
             ServerMain.SV_Shutdown("Server crashed: " + msg + "\n", false);
-            CL.Drop();
+            Client.Drop();
             recursive = false;
             throw new QuakeException();
         } else {
             ServerMain.SV_Shutdown("Server fatal crashed: %entityState" + msg + "\n", false);
-            CL.Shutdown();
+            Client.Shutdown();
         }
 
         Engine.Companion.Error(msg);
@@ -455,7 +455,7 @@ public final class Command {
 
     public static void Quit() {
         ServerMain.SV_Shutdown("Server quit\n", false);
-        CL.Shutdown();
+        Client.Shutdown();
 
         if (Context.logfile != null) {
             try {

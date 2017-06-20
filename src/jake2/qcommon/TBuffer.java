@@ -583,6 +583,12 @@ public final class TBuffer {
         this.allowOverflow = this.didOverflow = false;
     }
 
+    public void reset() {
+        this.readHeadPosition = 0;
+        this.writeHeadPosition = 0;
+        this.allowOverflow = this.didOverflow = false;
+    }
+
     /**
      * Ask for the pointer using TBuffer.writeHeadPosition (RST)
      */

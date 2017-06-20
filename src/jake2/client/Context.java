@@ -84,7 +84,7 @@ public final class Context {
     public static TVar in_joystick;
 
 
-    public static TBuffer net_message = new TBuffer();
+    public static TBuffer net_message = TBuffer.createWithSize(MAX_MSGLEN);
 
     /*
     =============================================================================
@@ -97,8 +97,6 @@ public final class Context {
     public static cmdalias_t cmd_alias;
 
     //=============================================================================
-
-    public static byte[] net_message_buffer = new byte[MAX_MSGLEN];
 
     public static int time_before_game;
     public static int time_after_game;

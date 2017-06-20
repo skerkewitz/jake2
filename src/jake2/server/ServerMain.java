@@ -895,7 +895,7 @@ public class ServerMain {
         ServerMain.public_server = ConsoleVar.get("public", "0", 0);
         ServerMain.sv_reconnect_limit = ConsoleVar.get("sv_reconnect_limit", "3", TVar.CVAR_FLAG_ARCHIVE);
 
-        Context.net_message.init(Context.net_message_buffer, Context.net_message_buffer.length);
+        Context.net_message.reset();
     }
 
     /**

@@ -207,7 +207,7 @@ public class CL_parse {
                 }
                 Context.cls.setDownload(null);
             }
-            CL.RequestNextDownload();
+            Client.RequestNextDownload();
             return;
         }
 
@@ -222,7 +222,7 @@ public class CL_parse {
                 Context.net_message.readHeadPosition += size;
                 Command.Printf("Failed to open " + Context.cls.getDownloadtempname()
                         + "\n");
-                CL.RequestNextDownload();
+                Client.RequestNextDownload();
                 return;
             }
         }
@@ -261,7 +261,7 @@ public class CL_parse {
 
             // get another file if needed
 
-            CL.RequestNextDownload();
+            Client.RequestNextDownload();
         }
     }
 
@@ -282,7 +282,7 @@ public class CL_parse {
         //
         //	   wipe the TClientState struct
         //
-        CL.ClearState();
+        Client.ClearState();
         Context.cls.setState(Defines.ca_connected);
 
         //	   parse protocol version number
@@ -755,6 +755,6 @@ public class CL_parse {
         // after we have parsed the frame
         //
         if (Context.cls.getDemorecording() && !Context.cls.getDemowaiting())
-            CL.WriteDemoMessage();
+            Client.WriteDemoMessage();
     }
 }

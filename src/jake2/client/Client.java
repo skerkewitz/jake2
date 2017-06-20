@@ -43,9 +43,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * CL
+ * Client
  */
-public final class CL {
+public final class Client {
     
     static int precache_check; // for autodownload of precache items
 
@@ -92,26 +92,24 @@ public final class CL {
      * 
      * Stop recording a demo.
      */
-    static TXCommand Stop_f = new TXCommand() {
-        public void execute() {
-            try {
+    static TXCommand Stop_f = () -> {
+        try {
 
-                int len;
+            int len;
 
-                if (!Context.cls.getDemorecording()) {
-                    Command.Printf("Not recording a demo.\n");
-                    return;
-                }
-
-                //	   finish up
-                len = -1;
-                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(len));
-                Context.cls.getDemofile().close();
-                Context.cls.setDemofile(null);
-                Context.cls.setDemorecording(false);
-                Command.Printf("Stopped demo.\n");
-            } catch (IOException e) {
+            if (!Context.cls.getDemorecording()) {
+                Command.Printf("Not recording a demo.\n");
+                return;
             }
+
+            //	   finish up
+            len = -1;
+            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(len));
+            Context.cls.getDemofile().close();
+            Context.cls.setDemofile(null);
+            Context.cls.setDemorecording(false);
+            Command.Printf("Stopped demo.\n");
+        } catch (IOException e) {
         }
     };
 
@@ -123,146 +121,140 @@ public final class CL {
      * record &lt;demoname&gt;
      * Begins recording a demo from the current position.
      */
-    static TXCommand Record_f = new TXCommand() {
-        public void execute() {
-            try {
-                String name;
-                byte buf_data[] = new byte[Defines.MAX_MSGLEN];
-                TBuffer buf = new TBuffer();
-                int i;
-                TEntityState ent;
+    static TXCommand Record_f = () -> {
+        try {
+            String name;
+            byte buf_data[] = new byte[Defines.MAX_MSGLEN];
+            TBuffer buf = new TBuffer();
+            int i;
+            TEntityState ent;
 
-                if (Cmd.Argc() != 2) {
-                    Command.Printf("record <demoname>\n");
-                    return;
-                }
+            if (Cmd.Argc() != 2) {
+                Command.Printf("record <demoname>\n");
+                return;
+            }
 
-                if (Context.cls.getDemorecording()) {
-                    Command.Printf("Already recording.\n");
-                    return;
-                }
+            if (Context.cls.getDemorecording()) {
+                Command.Printf("Already recording.\n");
+                return;
+            }
 
-                if (Context.cls.getState() != Defines.ca_active) {
-                    Command.Printf("You must be in a level to record.\n");
-                    return;
-                }
+            if (Context.cls.getState() != Defines.ca_active) {
+                Command.Printf("You must be in a level to record.\n");
+                return;
+            }
 
-                //
-                // open the demo file
-                //
-                name = FileSystem.gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
+            //
+            // open the demo file
+            //
+            name = FileSystem.gamedir() + "/demos/" + Cmd.Argv(1) + ".dm2";
 
-                Command.Printf("recording to " + name + ".\n");
-                FileSystem.CreatePath(name);
-                Context.cls.setDemofile(new RandomAccessFile(name, "rw"));
-                if (Context.cls.getDemofile() == null) {
-                    Command.Printf("ERROR: couldn't open.\n");
-                    return;
-                }
-                Context.cls.setDemorecording(true);
+            Command.Printf("recording to " + name + ".\n");
+            FileSystem.CreatePath(name);
+            Context.cls.setDemofile(new RandomAccessFile(name, "rw"));
+            if (Context.cls.getDemofile() == null) {
+                Command.Printf("ERROR: couldn't open.\n");
+                return;
+            }
+            Context.cls.setDemorecording(true);
 
-                // don't start saving messages until a non-delta compressed
-                // message is received
-                Context.cls.setDemowaiting(true);
+            // don't start saving messages until a non-delta compressed
+            // message is received
+            Context.cls.setDemowaiting(true);
 
-                //
-                // write out messages to hold the startup information
-                //
-                buf.init(buf_data, Defines.MAX_MSGLEN);
+            //
+            // write out messages to hold the startup information
+            //
+            buf.init(buf_data, Defines.MAX_MSGLEN);
 
-                // send the serverdata
-                buf.writeByte(Defines.svc_serverdata);
-                buf.writeInt(Defines.PROTOCOL_VERSION);
-                buf.writeInt(0x10000 + Context.cl.servercount);
-                buf.writeByte(1); // demos are always attract loops
-                buf.writeString(Context.cl.gamedir);
-                buf.writeShort(Context.cl.playernum);
+            // send the serverdata
+            buf.writeByte(Defines.svc_serverdata);
+            buf.writeInt(Defines.PROTOCOL_VERSION);
+            buf.writeInt(0x10000 + Context.cl.servercount);
+            buf.writeByte(1); // demos are always attract loops
+            buf.writeString(Context.cl.gamedir);
+            buf.writeShort(Context.cl.playernum);
 
-                buf.writeString(Context.cl.configstrings[Defines.CS_NAME]);
+            buf.writeString(Context.cl.configstrings[Defines.CS_NAME]);
 
-                // configstrings
-                for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++) {
-                    if (Context.cl.configstrings[i].length() > 0) {
-                        if (buf.writeHeadPosition + Context.cl.configstrings[i].length()
-                                + 32 > buf.maxsize) { 
-                            // write it out
-                            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
-                            Context.cls.getDemofile()
-                                    .write(buf.data, 0, buf.writeHeadPosition);
-                            buf.writeHeadPosition = 0;
-                        }
-
-                        buf.writeByte(Defines.svc_configstring);
-                        buf.writeShort(i);
-                        buf.writeString(Context.cl.configstrings[i]);
-                    }
-
-                }
-
-                // baselines
-                nullstate.clear();
-                for (i = 0; i < Defines.MAX_EDICTS; i++) {
-                    ent = Context.cl_entities[i].baseline;
-                    if (ent.modelIndex == 0)
-                        continue;
-
-                    if (buf.writeHeadPosition + 64 > buf.maxsize) { // write it out
+            // configstrings
+            for (i = 0; i < Defines.MAX_CONFIGSTRINGS; i++) {
+                if (Context.cl.configstrings[i].length() > 0) {
+                    if (buf.writeHeadPosition + Context.cl.configstrings[i].length()
+                            + 32 > buf.maxsize) {
+                        // write it out
                         Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
-                        Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
+                        Context.cls.getDemofile()
+                                .write(buf.data, 0, buf.writeHeadPosition);
                         buf.writeHeadPosition = 0;
                     }
 
-                    buf.writeByte(Defines.svc_spawnbaseline);
-                    buf.writeDeltaEntity(nullstate, Context.cl_entities[i].baseline, true, true);
+                    buf.writeByte(Defines.svc_configstring);
+                    buf.writeShort(i);
+                    buf.writeString(Context.cl.configstrings[i]);
                 }
 
-                buf.writeByte(Defines.svc_stufftext);
-                buf.writeString("precache\n");
-
-                // write it to the demo file
-                Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
-                Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
-                // the rest of the demo file will be individual frames
-
-            } catch (IOException e) {
             }
+
+            // baselines
+            nullstate.clear();
+            for (i = 0; i < Defines.MAX_EDICTS; i++) {
+                ent = Context.cl_entities[i].baseline;
+                if (ent.modelIndex == 0)
+                    continue;
+
+                if (buf.writeHeadPosition + 64 > buf.maxsize) { // write it out
+                    Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
+                    Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
+                    buf.writeHeadPosition = 0;
+                }
+
+                buf.writeByte(Defines.svc_spawnbaseline);
+                buf.writeDeltaEntity(nullstate, Context.cl_entities[i].baseline, true, true);
+            }
+
+            buf.writeByte(Defines.svc_stufftext);
+            buf.writeString("precache\n");
+
+            // write it to the demo file
+            Context.cls.getDemofile().writeInt(EndianHandler.swapInt(buf.writeHeadPosition));
+            Context.cls.getDemofile().write(buf.data, 0, buf.writeHeadPosition);
+            // the rest of the demo file will be individual frames
+
+        } catch (IOException e) {
         }
     };
 
     /**
      * ForwardToServer_f
      */
-    static TXCommand ForwardToServer_f = new TXCommand() {
-        public void execute() {
-            if (Context.cls.getState() != Defines.ca_connected
-                    && Context.cls.getState() != Defines.ca_active) {
-                Command.Printf("Can't \"" + Cmd.Argv(0) + "\", not connected\n");
-                return;
-            }
+    static TXCommand ForwardToServer_f = () -> {
+        if (Context.cls.getState() != Defines.ca_connected
+                && Context.cls.getState() != Defines.ca_active) {
+            Command.Printf("Can't \"" + Cmd.Argv(0) + "\", not connected\n");
+            return;
+        }
 
-            // don't forward the first argument
-            if (Cmd.Argc() > 1) {
-                Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
-                Context.cls.getNetchan().message.print(Cmd.Args());
-            }
+        // don't forward the first argument
+        if (Cmd.Argc() > 1) {
+            Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.print(Cmd.Args());
         }
     };
 
     /**
      * Pause_f
      */
-    static TXCommand Pause_f = new TXCommand() {
-        public void execute() {
-            // never pause in multiplayer
+    static TXCommand Pause_f = () -> {
+        // never pause in multiplayer
 
-            if (ConsoleVar.VariableValue("maxclients") > 1
-                    || Context.server_state == 0) {
-                ConsoleVar.SetValue("paused", 0);
-                return;
-            }
-
-            ConsoleVar.SetValue("paused", Context.cl_paused.value);
+        if (ConsoleVar.VariableValue("maxclients") > 1
+                || Context.server_state == 0) {
+            ConsoleVar.SetValue("paused", 0);
+            return;
         }
+
+        ConsoleVar.SetValue("paused", Context.cl_paused.value);
     };
 
     /**
@@ -276,34 +268,32 @@ public final class CL {
     /**
      * Connect_f
      */
-    static TXCommand Connect_f = new TXCommand() {
-        public void execute() {
-            String server;
+    static TXCommand Connect_f = () -> {
+        String server;
 
-            if (Cmd.Argc() != 2) {
-                Command.Printf("usage: connect <server>\n");
-                return;
-            }
-
-            if (Context.server_state != 0) {
-                // if running a local server, kill it and reissue
-                ServerMain.SV_Shutdown("Server quit\n", false);
-            } else {
-                Disconnect();
-            }
-
-            server = Cmd.Argv(1);
-
-            Network.Config(true); // allow remote
-
-            Disconnect();
-
-            Context.cls.setState(Defines.ca_connecting);
-            //strncpy (cls.servername, server, sizeof(cls.servername)-1);
-            Context.cls.setServername(server);
-            Context.cls.setConnectTime(-99999);
-            // CL_CheckForResend() will fire immediately
+        if (Cmd.Argc() != 2) {
+            Command.Printf("usage: connect <server>\n");
+            return;
         }
+
+        if (Context.server_state != 0) {
+            // if running a local server, kill it and reissue
+            ServerMain.SV_Shutdown("Server quit\n", false);
+        } else {
+            Disconnect();
+        }
+
+        server = Cmd.Argv(1);
+
+        Network.Config(true); // allow remote
+
+        Disconnect();
+
+        Context.cls.setState(Defines.ca_connecting);
+        //strncpy (cls.servername, server, sizeof(cls.servername)-1);
+        Context.cls.setServername(server);
+        Context.cls.setConnectTime(-99999);
+        // CL_CheckForResend() will fire immediately
     };
 
     /**
@@ -311,77 +301,69 @@ public final class CL {
      * 
      * Send the rest of the command line over as an unconnected command.
      */
-    static TXCommand Rcon_f = new TXCommand() {
-        public void execute() {
+    static TXCommand Rcon_f = () -> {
 
-            if (Context.rcon_client_password.string.length() == 0) {
-                Command.Printf("You must set 'rcon_password' before\nissuing an rcon command.\n");
+        if (Context.rcon_client_password.string.length() == 0) {
+            Command.Printf("You must set 'rcon_password' before\nissuing an rcon command.\n");
+            return;
+        }
+
+        StringBuffer message = new StringBuffer(1024);
+
+        // connection less packet
+        message.append('\u00ff');
+        message.append('\u00ff');
+        message.append('\u00ff');
+        message.append('\u00ff');
+
+        // allow remote
+        Network.Config(true);
+
+        message.append("rcon ");
+        message.append(Context.rcon_client_password.string);
+        message.append(" ");
+
+        for (int i = 1; i < Cmd.Argc(); i++) {
+            message.append(Cmd.Argv(i));
+            message.append(" ");
+        }
+
+        TNetAddr to = new TNetAddr();
+
+        if (Context.cls.getState() >= Defines.ca_connected)
+            to = Context.cls.getNetchan().remote_address;
+        else {
+            if (Context.rcon_address.string.length() == 0) {
+                Command.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
                 return;
             }
-
-            StringBuffer message = new StringBuffer(1024);
-
-            // connection less packet
-            message.append('\u00ff');
-            message.append('\u00ff');
-            message.append('\u00ff');
-            message.append('\u00ff');
-
-            // allow remote
-            Network.Config(true);
-
-            message.append("rcon ");
-            message.append(Context.rcon_client_password.string);
-            message.append(" ");
-
-            for (int i = 1; i < Cmd.Argc(); i++) {
-                message.append(Cmd.Argv(i));
-                message.append(" ");
-            }
-
-            TNetAddr to = new TNetAddr();
-
-            if (Context.cls.getState() >= Defines.ca_connected)
-                to = Context.cls.getNetchan().remote_address;
-            else {
-                if (Context.rcon_address.string.length() == 0) {
-                    Command.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
-                    return;
-                }
-                Network.StringToAdr(Context.rcon_address.string, to);
-                if (to.port == 0) to.port = Defines.PORT_SERVER;
-            }
-            message.append('\0');
-            String b = message.toString();
-            Network.SendPacket(Defines.NS_CLIENT, b.length(), Lib.stringToBytes(b), to);
+            Network.StringToAdr(Context.rcon_address.string, to);
+            if (to.port == 0) to.port = Defines.PORT_SERVER;
         }
+        message.append('\0');
+        String b = message.toString();
+        Network.SendPacket(Defines.NS_CLIENT, b.length(), Lib.stringToBytes(b), to);
     };
 
-    static TXCommand Disconnect_f = new TXCommand() {
-        public void execute() {
-            Command.Error(Defines.ERR_DROP, "Disconnected from server");
-        }
-    };
+    static TXCommand Disconnect_f = () -> Command.Error(Defines.ERR_DROP, "Disconnected from server");
 
     /**
      * Changing_f
      * 
      * Just sent as a hint to the client that they should drop to full console.
      */
-    static TXCommand Changing_f = new TXCommand() {
-        public void execute() {
-            //ZOID
-            //if we are downloading, we don't change!
-            // This so we don't suddenly stop downloading a map
+    static TXCommand Changing_f = () -> {
+        //ZOID
+        //if we are downloading, we don't change!
+        // This so we don't suddenly stop downloading a map
 
-            if (Context.cls.getDownload() != null)
-                return;
+        if (Context.cls.getDownload() != null)
+            return;
 
-            SCR.BeginLoadingPlaque();
-            Context.cls.setState(Defines.ca_connected); // not active anymore, but
-                                                      // not disconnected
-            Command.Printf("\nChanging map...\n");
-        }
+        SCR.BeginLoadingPlaque();
+        Context.cls.setState(Defines.ca_connected); // not active anymore, but
+                                                  // not disconnected
+        Command.Printf("\nChanging map...\n");
     };
 
     /**
@@ -389,33 +371,31 @@ public final class CL {
      * 
      * The server is changing levels.
      */
-    static TXCommand Reconnect_f = new TXCommand() {
-        public void execute() {
-            //ZOID
-            //if we are downloading, we don't change! This so we don't suddenly
-            // stop downloading a map
-            if (Context.cls.getDownload() != null)
-                return;
+    static TXCommand Reconnect_f = () -> {
+        //ZOID
+        //if we are downloading, we don't change! This so we don't suddenly
+        // stop downloading a map
+        if (Context.cls.getDownload() != null)
+            return;
 
-            Sound.StopAllSounds();
-            if (Context.cls.getState() == Defines.ca_connected) {
-                Command.Printf("reconnecting...\n");
-                Context.cls.setState(Defines.ca_connected);
-                Context.cls.getNetchan().message.writeChar(Defines.clc_stringcmd);
-                Context.cls.getNetchan().message.writeString("new");
-                return;
-            }
+        Sound.StopAllSounds();
+        if (Context.cls.getState() == Defines.ca_connected) {
+            Command.Printf("reconnecting...\n");
+            Context.cls.setState(Defines.ca_connected);
+            Context.cls.getNetchan().message.writeChar(Defines.clc_stringcmd);
+            Context.cls.getNetchan().message.writeString("new");
+            return;
+        }
 
-            if (Context.cls.getServername() != null) {
-                if (Context.cls.getState() >= Defines.ca_connected) {
-                    Disconnect();
-                    Context.cls.setConnectTime(Context.cls.getRealtime() - 1500);
-                } else
-                    Context.cls.setConnectTime(-99999); // fire immediately
+        if (Context.cls.getServername() != null) {
+            if (Context.cls.getState() >= Defines.ca_connected) {
+                Disconnect();
+                Context.cls.setConnectTime(Context.cls.getRealtime() - 1500);
+            } else
+                Context.cls.setConnectTime(-99999); // fire immediately
 
-                Context.cls.setState(Defines.ca_connecting);
-                Command.Printf("reconnecting...\n");
-            }
+            Context.cls.setState(Defines.ca_connecting);
+            Command.Printf("reconnecting...\n");
         }
     };
 
@@ -481,20 +461,18 @@ public final class CL {
      * 
      * Load or download any custom player skins and models.
      */
-    static TXCommand Skins_f = new TXCommand() {
-        public void execute() {
-            int i;
+    static TXCommand Skins_f = () -> {
+        int i;
 
-            for (i = 0; i < Defines.MAX_CLIENTS; i++) {
-                if (Context.cl.configstrings[Defines.CS_PLAYERSKINS + i] == null)
-                    continue;
-                Command.Printf("client " + i + ": "
-                        + Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
-                        + "\n");
-                SCR.UpdateScreen();
-                Key.SendKeyEvents(); // pump message loop
-                CL_parse.ParseClientinfo(i);
-            }
+        for (i = 0; i < Defines.MAX_CLIENTS; i++) {
+            if (Context.cl.configstrings[Defines.CS_PLAYERSKINS + i] == null)
+                continue;
+            Command.Printf("client " + i + ": "
+                    + Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
+                    + "\n");
+            SCR.UpdateScreen();
+            Key.SendKeyEvents(); // pump message loop
+            CL_parse.ParseClientinfo(i);
         }
     };
 
@@ -520,7 +498,7 @@ public final class CL {
 
     //	   ENV_CNT is map load, ENV_CNT+1 is first env map
     public static final int ENV_CNT = (Defines.CS_PLAYERSKINS + Defines.MAX_CLIENTS
-            * CL.PLAYER_MULT);
+            * Client.PLAYER_MULT);
 
     public static final int TEXTURE_CNT = (ENV_CNT + 13);
 
@@ -530,28 +508,26 @@ public final class CL {
      * The server will send this command right before allowing the client into
      * the server.
      */
-    static TXCommand Precache_f = new TXCommand() {
-        public void execute() {
-            // Yet another hack to let old demos work the old precache sequence.
-            if (Cmd.Argc() < 2) {
+    static TXCommand Precache_f = () -> {
+        // Yet another hack to let old demos work the old precache sequence.
+        if (Cmd.Argc() < 2) {
 
-                int iw[] = { 0 }; // for detecting cheater maps
+            int iw[] = { 0 }; // for detecting cheater maps
 
-                CM.CM_LoadMap(Context.cl.configstrings[Defines.CS_MODELS + 1],
-                        true, iw);
+            CM.CM_LoadMap(Context.cl.configstrings[Defines.CS_MODELS + 1],
+                    true, iw);
 
-                CL_parse.RegisterSounds();
-                ClientView.PrepRefresh();
-                return;
-            }
-
-            CL.precache_check = Defines.CS_MODELS;
-            CL.precache_spawncount = Lib.atoi(Cmd.Argv(1));
-            CL.precache_model = null;
-            CL.precache_model_skin = 0;
-
-            RequestNextDownload();
+            CL_parse.RegisterSounds();
+            ClientView.PrepRefresh();
+            return;
         }
+
+        Client.precache_check = Defines.CS_MODELS;
+        Client.precache_spawncount = Lib.atoi(Cmd.Argv(1));
+        Client.precache_model = null;
+        Client.precache_model_skin = 0;
+
+        RequestNextDownload();
     };
 
     private static int extratime;
@@ -572,10 +548,9 @@ public final class CL {
      * Dumps the current net message, prefixed by the length
      */
     static void WriteDemoMessage() {
-        int swlen;
 
         // the first eight bytes are just packet sequencing stuff
-        swlen = Context.net_message.writeHeadPosition - 8;
+        int swlen = Context.net_message.writeHeadPosition - 8;
 
         try {
             Context.cls.getDemofile().writeInt(EndianHandler.swapInt(swlen));
@@ -680,15 +655,12 @@ public final class CL {
      */
     static void Disconnect() {
 
-        String fin;
-
-        if (Context.cls.getState() == Defines.ca_disconnected)
+        if (Context.cls.getState() == Defines.ca_disconnected) {
             return;
+        }
 
         if (Context.cl_timedemo != null && Context.cl_timedemo.value != 0.0f) {
-            int time;
-
-            time = Timer.Milliseconds() - Context.cl.timedemo_start;
+            int time = Timer.Milliseconds() - Context.cl.timedemo_start;
             if (time > 0)
                 Command.Printf("%i frames, %3.1f seconds: %3.1f fps\n",
                         Context.cl.timedemo_frames, time / 1000.0,  Context.cl.timedemo_frames * 1000.0 / time);
@@ -708,7 +680,7 @@ public final class CL {
             Stop_f.execute();
 
         // send a disconnect message to the server
-        fin = (char) Defines.clc_stringcmd + "disconnect";
+        String fin = (char) Defines.clc_stringcmd + "disconnect";
         Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
         Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
         Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
@@ -730,10 +702,7 @@ public final class CL {
      * Handle a reply from a ping.
      */
     static void ParseStatusMessage() {
-        String s;
-
-        s = TBuffer.ReadString(Context.net_message);
-
+        String s = TBuffer.ReadString(Context.net_message);
         Command.Printf(s + "\n");
         Menu.AddToServerList(Context.net_from, s);
     }
@@ -917,159 +886,159 @@ public final class CL {
         if (Context.cls.getState() != Defines.ca_connected)
             return;
 
-        if (ServerMain.allow_download.value == 0 && CL.precache_check < ENV_CNT)
-            CL.precache_check = ENV_CNT;
+        if (ServerMain.allow_download.value == 0 && Client.precache_check < ENV_CNT)
+            Client.precache_check = ENV_CNT;
 
         //	  ZOID
-        if (CL.precache_check == Defines.CS_MODELS) { // confirm map
-            CL.precache_check = Defines.CS_MODELS + 2; // 0 isn't used
+        if (Client.precache_check == Defines.CS_MODELS) { // confirm map
+            Client.precache_check = Defines.CS_MODELS + 2; // 0 isn't used
             if (ServerMain.allow_download_maps.value != 0)
                 if (!CL_parse
                         .CheckOrDownloadFile(Context.cl.configstrings[Defines.CS_MODELS + 1]))
                     return; // started a download
         }
-        if (CL.precache_check >= Defines.CS_MODELS
-                && CL.precache_check < Defines.CS_MODELS + Defines.MAX_MODELS) {
+        if (Client.precache_check >= Defines.CS_MODELS
+                && Client.precache_check < Defines.CS_MODELS + Defines.MAX_MODELS) {
             if (ServerMain.allow_download_models.value != 0) {
-                while (CL.precache_check < Defines.CS_MODELS
+                while (Client.precache_check < Defines.CS_MODELS
                         + Defines.MAX_MODELS
-                        && Context.cl.configstrings[CL.precache_check].length() > 0) {
-                    if (Context.cl.configstrings[CL.precache_check].charAt(0) == '*'
-                            || Context.cl.configstrings[CL.precache_check]
+                        && Context.cl.configstrings[Client.precache_check].length() > 0) {
+                    if (Context.cl.configstrings[Client.precache_check].charAt(0) == '*'
+                            || Context.cl.configstrings[Client.precache_check]
                                     .charAt(0) == '#') {
-                        CL.precache_check++;
+                        Client.precache_check++;
                         continue;
                     }
-                    if (CL.precache_model_skin == 0) {
+                    if (Client.precache_model_skin == 0) {
                         if (!CL_parse
-                                .CheckOrDownloadFile(Context.cl.configstrings[CL.precache_check])) {
-                            CL.precache_model_skin = 1;
+                                .CheckOrDownloadFile(Context.cl.configstrings[Client.precache_check])) {
+                            Client.precache_model_skin = 1;
                             return; // started a download
                         }
-                        CL.precache_model_skin = 1;
+                        Client.precache_model_skin = 1;
                     }
 
                     // checking for skins in the model
-                    if (CL.precache_model == null) {
+                    if (Client.precache_model == null) {
 
-                        CL.precache_model = FileSystem
-                                .loadFile(Context.cl.configstrings[CL.precache_check]);
-                        if (CL.precache_model == null) {
-                            CL.precache_model_skin = 0;
-                            CL.precache_check++;
+                        Client.precache_model = FileSystem
+                                .loadFile(Context.cl.configstrings[Client.precache_check]);
+                        if (Client.precache_model == null) {
+                            Client.precache_model_skin = 0;
+                            Client.precache_check++;
                             continue; // couldn't load it
                         }
-                        ByteBuffer bb = ByteBuffer.wrap(CL.precache_model);
+                        ByteBuffer bb = ByteBuffer.wrap(Client.precache_model);
                         bb.order(ByteOrder.LITTLE_ENDIAN);
 
                         int header = bb.getInt();
 
                         if (header != qfiles.IDALIASHEADER) {
                             // not an alias model
-                            FileSystem.FreeFile(CL.precache_model);
-                            CL.precache_model = null;
-                            CL.precache_model_skin = 0;
-                            CL.precache_check++;
+                            FileSystem.FreeFile(Client.precache_model);
+                            Client.precache_model = null;
+                            Client.precache_model_skin = 0;
+                            Client.precache_check++;
                             continue;
                         }
                         pheader = new qfiles.dmdl_t(ByteBuffer.wrap(
-                                CL.precache_model).order(
+                                Client.precache_model).order(
                                 ByteOrder.LITTLE_ENDIAN));
                         if (pheader.version != Defines.ALIAS_VERSION) {
-                            CL.precache_check++;
-                            CL.precache_model_skin = 0;
+                            Client.precache_check++;
+                            Client.precache_model_skin = 0;
                             continue; // couldn't load it
                         }
                     }
 
                     pheader = new qfiles.dmdl_t(ByteBuffer.wrap(
-                            CL.precache_model).order(ByteOrder.LITTLE_ENDIAN));
+                            Client.precache_model).order(ByteOrder.LITTLE_ENDIAN));
 
                     int num_skins = pheader.num_skins;
 
-                    while (CL.precache_model_skin - 1 < num_skins) {
+                    while (Client.precache_model_skin - 1 < num_skins) {
                         //Command.Printf("critical code section because of endian
                         // mess!\n");
 
-                        String name = Lib.CtoJava(CL.precache_model,
+                        String name = Lib.CtoJava(Client.precache_model,
                                 pheader.ofs_skins
-                                        + (CL.precache_model_skin - 1)
+                                        + (Client.precache_model_skin - 1)
                                         * Defines.MAX_SKINNAME,
                                 Defines.MAX_SKINNAME * num_skins);
 
                         if (!CL_parse.CheckOrDownloadFile(name)) {
-                            CL.precache_model_skin++;
+                            Client.precache_model_skin++;
                             return; // started a download
                         }
-                        CL.precache_model_skin++;
+                        Client.precache_model_skin++;
                     }
-                    if (CL.precache_model != null) {
-                        FileSystem.FreeFile(CL.precache_model);
-                        CL.precache_model = null;
+                    if (Client.precache_model != null) {
+                        FileSystem.FreeFile(Client.precache_model);
+                        Client.precache_model = null;
                     }
-                    CL.precache_model_skin = 0;
-                    CL.precache_check++;
+                    Client.precache_model_skin = 0;
+                    Client.precache_check++;
                 }
             }
-            CL.precache_check = Defines.CS_SOUNDS;
+            Client.precache_check = Defines.CS_SOUNDS;
         }
-        if (CL.precache_check >= Defines.CS_SOUNDS
-                && CL.precache_check < Defines.CS_SOUNDS + Defines.MAX_SOUNDS) {
+        if (Client.precache_check >= Defines.CS_SOUNDS
+                && Client.precache_check < Defines.CS_SOUNDS + Defines.MAX_SOUNDS) {
             if (ServerMain.allow_download_sounds.value != 0) {
-                if (CL.precache_check == Defines.CS_SOUNDS)
-                    CL.precache_check++; // zero is blank
-                while (CL.precache_check < Defines.CS_SOUNDS
+                if (Client.precache_check == Defines.CS_SOUNDS)
+                    Client.precache_check++; // zero is blank
+                while (Client.precache_check < Defines.CS_SOUNDS
                         + Defines.MAX_SOUNDS
-                        && Context.cl.configstrings[CL.precache_check].length() > 0) {
-                    if (Context.cl.configstrings[CL.precache_check].charAt(0) == '*') {
-                        CL.precache_check++;
+                        && Context.cl.configstrings[Client.precache_check].length() > 0) {
+                    if (Context.cl.configstrings[Client.precache_check].charAt(0) == '*') {
+                        Client.precache_check++;
                         continue;
                     }
                     fn = "sound/"
-                            + Context.cl.configstrings[CL.precache_check++];
+                            + Context.cl.configstrings[Client.precache_check++];
                     if (!CL_parse.CheckOrDownloadFile(fn))
                         return; // started a download
                 }
             }
-            CL.precache_check = Defines.CS_IMAGES;
+            Client.precache_check = Defines.CS_IMAGES;
         }
-        if (CL.precache_check >= Defines.CS_IMAGES
-                && CL.precache_check < Defines.CS_IMAGES + Defines.MAX_IMAGES) {
-            if (CL.precache_check == Defines.CS_IMAGES)
-                CL.precache_check++; // zero is blank
+        if (Client.precache_check >= Defines.CS_IMAGES
+                && Client.precache_check < Defines.CS_IMAGES + Defines.MAX_IMAGES) {
+            if (Client.precache_check == Defines.CS_IMAGES)
+                Client.precache_check++; // zero is blank
 
-            while (CL.precache_check < Defines.CS_IMAGES + Defines.MAX_IMAGES
-                    && Context.cl.configstrings[CL.precache_check].length() > 0) {
-                fn = "pics/" + Context.cl.configstrings[CL.precache_check++]
+            while (Client.precache_check < Defines.CS_IMAGES + Defines.MAX_IMAGES
+                    && Context.cl.configstrings[Client.precache_check].length() > 0) {
+                fn = "pics/" + Context.cl.configstrings[Client.precache_check++]
                         + ".pcx";
                 if (!CL_parse.CheckOrDownloadFile(fn))
                     return; // started a download
             }
-            CL.precache_check = Defines.CS_PLAYERSKINS;
+            Client.precache_check = Defines.CS_PLAYERSKINS;
         }
         // skins are special, since a player has three things to download:
         // model, weapon model and skin
         // so precache_check is now *3
-        if (CL.precache_check >= Defines.CS_PLAYERSKINS
-                && CL.precache_check < Defines.CS_PLAYERSKINS
-                        + Defines.MAX_CLIENTS * CL.PLAYER_MULT) {
+        if (Client.precache_check >= Defines.CS_PLAYERSKINS
+                && Client.precache_check < Defines.CS_PLAYERSKINS
+                        + Defines.MAX_CLIENTS * Client.PLAYER_MULT) {
             if (ServerMain.allow_download_players.value != 0) {
-                while (CL.precache_check < Defines.CS_PLAYERSKINS
-                        + Defines.MAX_CLIENTS * CL.PLAYER_MULT) {
+                while (Client.precache_check < Defines.CS_PLAYERSKINS
+                        + Defines.MAX_CLIENTS * Client.PLAYER_MULT) {
 
                     int i, n;
                     //char model[MAX_QPATH], skin[MAX_QPATH], * p;
                     String model, skin;
 
-                    i = (CL.precache_check - Defines.CS_PLAYERSKINS)
-                            / CL.PLAYER_MULT;
-                    n = (CL.precache_check - Defines.CS_PLAYERSKINS)
-                            % CL.PLAYER_MULT;
+                    i = (Client.precache_check - Defines.CS_PLAYERSKINS)
+                            / Client.PLAYER_MULT;
+                    n = (Client.precache_check - Defines.CS_PLAYERSKINS)
+                            % Client.PLAYER_MULT;
 
                     if (Context.cl.configstrings[Defines.CS_PLAYERSKINS + i]
                             .length() == 0) {
-                        CL.precache_check = Defines.CS_PLAYERSKINS + (i + 1)
-                                * CL.PLAYER_MULT;
+                        Client.precache_check = Defines.CS_PLAYERSKINS + (i + 1)
+                                * Client.PLAYER_MULT;
                         continue;
                     }
 
@@ -1095,8 +1064,8 @@ public final class CL {
                     case 0: // model
                         fn = "players/" + model + "/tris.md2";
                         if (!CL_parse.CheckOrDownloadFile(fn)) {
-                            CL.precache_check = Defines.CS_PLAYERSKINS + i
-                                    * CL.PLAYER_MULT + 1;
+                            Client.precache_check = Defines.CS_PLAYERSKINS + i
+                                    * Client.PLAYER_MULT + 1;
                             return; // started a download
                         }
                         n++;
@@ -1105,8 +1074,8 @@ public final class CL {
                     case 1: // weapon model
                         fn = "players/" + model + "/weapon.md2";
                         if (!CL_parse.CheckOrDownloadFile(fn)) {
-                            CL.precache_check = Defines.CS_PLAYERSKINS + i
-                                    * CL.PLAYER_MULT + 2;
+                            Client.precache_check = Defines.CS_PLAYERSKINS + i
+                                    * Client.PLAYER_MULT + 2;
                             return; // started a download
                         }
                         n++;
@@ -1115,8 +1084,8 @@ public final class CL {
                     case 2: // weapon skin
                         fn = "players/" + model + "/weapon.pcx";
                         if (!CL_parse.CheckOrDownloadFile(fn)) {
-                            CL.precache_check = Defines.CS_PLAYERSKINS + i
-                                    * CL.PLAYER_MULT + 3;
+                            Client.precache_check = Defines.CS_PLAYERSKINS + i
+                                    * Client.PLAYER_MULT + 3;
                             return; // started a download
                         }
                         n++;
@@ -1125,8 +1094,8 @@ public final class CL {
                     case 3: // skin
                         fn = "players/" + model + "/" + skin + ".pcx";
                         if (!CL_parse.CheckOrDownloadFile(fn)) {
-                            CL.precache_check = Defines.CS_PLAYERSKINS + i
-                                    * CL.PLAYER_MULT + 4;
+                            Client.precache_check = Defines.CS_PLAYERSKINS + i
+                                    * Client.PLAYER_MULT + 4;
                             return; // started a download
                         }
                         n++;
@@ -1135,22 +1104,22 @@ public final class CL {
                     case 4: // skin_i
                         fn = "players/" + model + "/" + skin + "_i.pcx";
                         if (!CL_parse.CheckOrDownloadFile(fn)) {
-                            CL.precache_check = Defines.CS_PLAYERSKINS + i
-                                    * CL.PLAYER_MULT + 5;
+                            Client.precache_check = Defines.CS_PLAYERSKINS + i
+                                    * Client.PLAYER_MULT + 5;
                             return; // started a download
                         }
                         // move on to next model
-                        CL.precache_check = Defines.CS_PLAYERSKINS + (i + 1)
-                                * CL.PLAYER_MULT;
+                        Client.precache_check = Defines.CS_PLAYERSKINS + (i + 1)
+                                * Client.PLAYER_MULT;
                     }
                 }
             }
             // precache phase completed
-            CL.precache_check = ENV_CNT;
+            Client.precache_check = ENV_CNT;
         }
 
-        if (CL.precache_check == ENV_CNT) {
-            CL.precache_check = ENV_CNT + 1;
+        if (Client.precache_check == ENV_CNT) {
+            Client.precache_check = ENV_CNT + 1;
 
             int iw[] = { map_checksum };
 
@@ -1172,11 +1141,11 @@ public final class CL {
             }
         }
 
-        if (CL.precache_check > ENV_CNT && CL.precache_check < TEXTURE_CNT) {
+        if (Client.precache_check > ENV_CNT && Client.precache_check < TEXTURE_CNT) {
             if (ServerMain.allow_download.value != 0
                     && ServerMain.allow_download_maps.value != 0) {
-                while (CL.precache_check < TEXTURE_CNT) {
-                    int n = CL.precache_check++ - ENV_CNT - 1;
+                while (Client.precache_check < TEXTURE_CNT) {
+                    int n = Client.precache_check++ - ENV_CNT - 1;
 
                     if ((n & 1) != 0)
                         fn = "env/" + Context.cl.configstrings[Defines.CS_SKY]
@@ -1188,32 +1157,32 @@ public final class CL {
                         return; // started a download
                 }
             }
-            CL.precache_check = TEXTURE_CNT;
+            Client.precache_check = TEXTURE_CNT;
         }
 
-        if (CL.precache_check == TEXTURE_CNT) {
-            CL.precache_check = TEXTURE_CNT + 1;
-            CL.precache_tex = 0;
+        if (Client.precache_check == TEXTURE_CNT) {
+            Client.precache_check = TEXTURE_CNT + 1;
+            Client.precache_tex = 0;
         }
 
         // confirm existance of textures, download any that don't exist
-        if (CL.precache_check == TEXTURE_CNT + 1) {
+        if (Client.precache_check == TEXTURE_CNT + 1) {
             // from qcommon/cmodel.c
             // extern int numtexinfo;
             // extern mapsurface_t map_surfaces[];
 
             if (ServerMain.allow_download.value != 0
                     && ServerMain.allow_download_maps.value != 0) {
-                while (CL.precache_tex < CM.numtexinfo) {
+                while (Client.precache_tex < CM.numtexinfo) {
                     //char fn[MAX_OSPATH];
 
-                    fn = "textures/" + CM.map_surfaces[CL.precache_tex++].rname
+                    fn = "textures/" + CM.map_surfaces[Client.precache_tex++].rname
                             + ".wal";
                     if (!CL_parse.CheckOrDownloadFile(fn))
                         return; // started a download
                 }
             }
-            CL.precache_check = TEXTURE_CNT + 999;
+            Client.precache_check = TEXTURE_CNT + 999;
         }
 
         //	  ZOID
@@ -1222,13 +1191,13 @@ public final class CL {
 
         Context.cls.getNetchan().message.writeByte(Defines.clc_stringcmd);
         Context.cls.getNetchan().message.writeString("begin "
-                + CL.precache_spawncount + "\n");
+                + Client.precache_spawncount + "\n");
     }
 
     /**
      * InitLocal
      */
-    public static void InitLocal() {
+    private static void InitLocal() {
         Context.cls.setState(Defines.ca_disconnected);
         Context.cls.setRealtime(Timer.Milliseconds());
 
@@ -1247,8 +1216,7 @@ public final class CL {
         //
         // register our variables
         //
-        Context.cl_stereo_separation = ConsoleVar.get("cl_stereo_separation", "0.4",
-                TVar.CVAR_FLAG_ARCHIVE);
+        Context.cl_stereo_separation = ConsoleVar.get("cl_stereo_separation", "0.4", TVar.CVAR_FLAG_ARCHIVE);
         Context.cl_stereo = ConsoleVar.get("cl_stereo", "0", 0);
 
         Context.cl_add_blend = ConsoleVar.get("cl_blend", "1", 0);
@@ -1273,8 +1241,7 @@ public final class CL {
         Context.cl_run = ConsoleVar.get("cl_run", "0", TVar.CVAR_FLAG_ARCHIVE);
         Context.lookspring = ConsoleVar.get("lookspring", "0", TVar.CVAR_FLAG_ARCHIVE);
         Context.lookstrafe = ConsoleVar.get("lookstrafe", "0", TVar.CVAR_FLAG_ARCHIVE);
-        Context.sensitivity = ConsoleVar
-                .get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
+        Context.sensitivity = ConsoleVar.get("sensitivity", "3", TVar.CVAR_FLAG_ARCHIVE);
 
         Context.m_pitch = ConsoleVar.get("m_pitch", "0.022", TVar.CVAR_FLAG_ARCHIVE);
         Context.m_yaw = ConsoleVar.get("m_yaw", "0.022", 0);
@@ -1381,14 +1348,12 @@ public final class CL {
      * Writes key bindings and archived cvars to config.cfg.
      */
     public static void WriteConfiguration() {
-        RandomAccessFile f;
-        String path;
 
 //        if (Context.cls.state == Defines.ca_uninitialized)
 //            return;
 
-        path = FileSystem.gamedir() + "/config.cfg";
-        f = Lib.fopen(path, "rw");
+        String path = FileSystem.gamedir() + "/config.cfg";
+        RandomAccessFile f = Lib.fopen(path, "rw");
         if (f == null) {
             Command.Printf("Couldn't write config.cfg.\n");
             return;
@@ -1413,7 +1378,7 @@ public final class CL {
      */
     public static void FixCvarCheats() {
         int i;
-        CL.cheatvar_t var;
+        Client.cheatvar_t var;
 
         if ("1".equals(Context.cl.configstrings[Defines.CS_MAXCLIENTS])
                 || 0 == Context.cl.configstrings[Defines.CS_MAXCLIENTS]
@@ -1421,18 +1386,18 @@ public final class CL {
             return; // single player can cheat
 
         // find all the cvars if we haven't done it yet
-        if (0 == CL.numcheatvars) {
-            while (CL.cheatvars[CL.numcheatvars].name != null) {
-                CL.cheatvars[CL.numcheatvars].var = ConsoleVar.get(
-                        CL.cheatvars[CL.numcheatvars].name,
-                        CL.cheatvars[CL.numcheatvars].value, 0);
-                CL.numcheatvars++;
+        if (0 == Client.numcheatvars) {
+            while (Client.cheatvars[Client.numcheatvars].name != null) {
+                Client.cheatvars[Client.numcheatvars].var = ConsoleVar.get(
+                        Client.cheatvars[Client.numcheatvars].name,
+                        Client.cheatvars[Client.numcheatvars].value, 0);
+                Client.numcheatvars++;
             }
         }
 
         // make sure they are all set to the proper values
-        for (i = 0; i < CL.numcheatvars; i++) {
-            var = CL.cheatvars[i];
+        for (i = 0; i < Client.numcheatvars; i++) {
+            var = Client.cheatvars[i];
             if (!var.var.string.equals(var.value)) {
                 ConsoleVar.Set(var.name, var.value);
             }
@@ -1565,8 +1530,9 @@ public final class CL {
      * Initialize client subsystem.
      */
     public static void Init() {
-        if (Context.dedicated.value != 0.0f)
+        if (Context.dedicated.value != 0.0f) {
             return; // nothing running on the client
+        }
 
         // all archived variables will now be loaded
 
@@ -1576,9 +1542,6 @@ public final class CL {
         VID.Init();
 
         V.Init();
-
-        Context.net_message.data = Context.net_message_buffer;
-        Context.net_message.maxsize = Context.net_message_buffer.length;
 
         Menu.Init();
 

@@ -137,7 +137,7 @@ class Engine {
                 ConsoleVar.Set("cddir", dir)
                 fileSystem.setCDDir()
 
-                CL.Init()
+                Client.Init()
 
                 // add + commands from command line
                 if (!CommandBuffer.AddLateCommands()) {
@@ -157,7 +157,7 @@ class Engine {
                 Command.Printf("====== Quake2 Initialized ======\n\n")
 
                 // save config when configuration is completed
-                CL.WriteConfiguration()
+                Client.WriteConfiguration()
 
                 //			if (Context.dedicated.value != 1.0f)
                 //				Jake2.Q2Dialog.dispose();
@@ -253,8 +253,8 @@ class Engine {
                 if (Context.host_speeds.value != 0.0f)
                     time_between = Timer.Milliseconds()
 
-                Command.debugContext = "CL:"
-                CL.Frame(msec)
+                Command.debugContext = "Client:"
+                Client.Frame(msec)
 
                 if (Context.host_speeds.value != 0.0f) {
                     time_after = Timer.Milliseconds()
@@ -276,7 +276,7 @@ class Engine {
 
         }
 
-        internal fun reconfigure(clear: Boolean) {
+        private fun reconfigure(clear: Boolean) {
             val dir = ConsoleVar.get("cddir", "", TVar.CVAR_FLAG_ARCHIVE)!!.string
             CommandBuffer.AddText("exec default.cfg\n")
             CommandBuffer.AddText("bind MWHEELUP weapnext\n")
@@ -295,14 +295,14 @@ class Engine {
         }
 
         @JvmStatic fun Error(error: String) {
-            CL.Shutdown()
+            Client.Shutdown()
             //StackTrace();
             Exception(error).printStackTrace()
             java.lang.System.exit(1)
         }
 
         @JvmStatic fun Quit() {
-            CL.Shutdown()
+            Client.Shutdown()
 
             java.lang.System.exit(0)
         }

@@ -1544,7 +1544,7 @@ public final class Menu {
             // the text box won't show up unless we do a buffer swap
             re.EndFrame();
 
-            CL.Snd_Restart_f.execute();
+            Client.Snd_Restart_f.execute();
         }
     }
 
@@ -2245,7 +2245,7 @@ public final class Menu {
         re.EndFrame();
 
         // send out info packets
-        CL.PingServers_f.execute();
+        Client.PingServers_f.execute();
     }
 
     static void SearchLocalGamesFunc(Object self) {
@@ -3750,7 +3750,7 @@ public final class Menu {
             case 'Y':
             case 'y':
                 cls.setKey_dest(key_console);
-                CL.Quit_f.execute();
+                Client.Quit_f.execute();
                 break;
 
             default:

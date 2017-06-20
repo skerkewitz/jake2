@@ -23,7 +23,7 @@
 package jake2.server;
 
 import jake2.Defines;
-import jake2.client.CL;
+import jake2.client.Client;
 import jake2.client.Context;
 import jake2.client.SCR;
 import jake2.game.*;
@@ -301,7 +301,7 @@ public class ServerInit {
             ServerMain.SV_Shutdown("Server restarted\n", true);
         } else {
             // make sure the client is down
-            CL.Drop();
+            Client.Drop();
             SCR.BeginLoadingPlaque();
         }
 

@@ -560,7 +560,7 @@ public class CL_input {
 
 		// send a userinfo update if needed
 		if (Context.userinfo_modified) {
-			CL.FixUpGender();
+			Client.FixUpGender();
 			Context.userinfo_modified = false;
 			Context.cls.getNetchan().message.writeByte(Defines.clc_userinfo);
 			Context.cls.getNetchan().message.writeString(ConsoleVar.Userinfo());
