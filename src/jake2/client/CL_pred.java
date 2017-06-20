@@ -49,7 +49,7 @@ public class CL_pred {
                 || (Context.cl.frame.playerstate.pmove.pm_flags & pmove_t.PMF_NO_PREDICTION) != 0)
             return;
 
-        // calculate the last usercmd_t we sent that the server has processed
+        // calculate the last TUserCmd we sent that the server has processed
         frame = Context.cls.getNetchan().incoming_acknowledged;
         frame &= (Defines.CMD_BACKUP - 1);
 
@@ -216,7 +216,7 @@ public class CL_pred {
 
         if (Context.cl_predict.value == 0.0f
                 || (Context.cl.frame.playerstate.pmove.pm_flags & pmove_t.PMF_NO_PREDICTION) != 0) {
-            // just set angles
+            // just assign angles
             for (int i = 0; i < 3; i++) {
                 Context.cl.predicted_angles[i] = Context.cl.viewangles[i]
                         + Math3D
@@ -261,12 +261,12 @@ public class CL_pred {
         int frame = 0;
 
         // run frames
-        usercmd_t cmd;
+        TUserCmd cmd;
         while (++ack < current) {
             frame = ack & (Defines.CMD_BACKUP - 1);
             cmd = Context.cl.cmds[frame];
 
-            pm.cmd.set(cmd);
+            pm.cmd.assign(cmd);
 
             PMove.Pmove(pm);
 

@@ -45,8 +45,8 @@ public class gclient_t
 	public client_respawn_t resp = new client_respawn_t();
 	public pmove_state_t old_pmove = new pmove_state_t(); // for detecting out-of-pmove changes
 
-	public boolean showscores; // set layout stat
-	public boolean showinventory; // set layout stat
+	public boolean showscores; // assign layout stat
+	public boolean showinventory; // assign layout stat
 	public boolean showhelp;
 	public boolean showhelpicon;
 
@@ -128,8 +128,8 @@ public class gclient_t
 		resp = new client_respawn_t();
 		old_pmove = new pmove_state_t();
 		
-		showscores = false; // set layout stat
-		showinventory = false; // set layout stat
+		showscores = false; // assign layout stat
+		showinventory = false; // assign layout stat
 		showhelp = false;
 		showhelpicon = false;
 

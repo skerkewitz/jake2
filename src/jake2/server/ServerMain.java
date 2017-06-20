@@ -921,13 +921,13 @@ public class ServerMain {
         for (i = 0; i < ServerInit.svs.clients.length; i++) {
             cl = ServerInit.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Context.net_message.writeHeadPosition,
+                Netchan.transmit(cl.netchan, Context.net_message.writeHeadPosition,
                         Context.net_message.data);
         }
         for (i = 0; i < ServerInit.svs.clients.length; i++) {
             cl = ServerInit.svs.clients[i];
             if (cl.state >= Defines.cs_connected)
-                Netchan.Transmit(cl.netchan, Context.net_message.writeHeadPosition,
+                Netchan.transmit(cl.netchan, Context.net_message.writeHeadPosition,
                         Context.net_message.data);
         }
     }

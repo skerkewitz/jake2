@@ -356,7 +356,6 @@ public final class Context {
 
     public static float vec3_origin[] = { 0.0f, 0.0f, 0.0f };
 
-    public static TVar m_filter;
     public static int vidref_val = VIDREF_GL;
 
     public static Random rnd = new Random();

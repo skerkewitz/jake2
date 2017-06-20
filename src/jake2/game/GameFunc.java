@@ -243,7 +243,7 @@ public class GameFunc {
      * "speed" overrides default 200. "accel" overrides default 500 "lip"
      * overrides default 8 pixel lip
      * 
-     * If the "height" key is set, that will determine the amount the plat
+     * If the "height" key is assign, that will determine the amount the plat
      * moves, instead of being implicitly determoveinfoned by the model'entityState
      * height.
      * 
@@ -331,8 +331,8 @@ public class GameFunc {
      * 
      * "message" is printed when the door is touched if it is a trigger door and
      * it hasn't been fired yet "angle" determines the opening direction
-     * "targetname" if set, no touch field will be spawned and a remote button
-     * or trigger field activates the door. "health" if set, door must be shot
+     * "targetname" if assign, no touch field will be spawned and a remote button
+     * or trigger field activates the door. "health" if assign, door must be shot
      * open "speed" movement speed (100 default) "wait" wait before returning (3
      * default, -1 = never return) "lip" lip remaining at end of move (8
      * default) "dmg" damage to inflict when blocked (2 default) "sounds" 1)
@@ -687,7 +687,7 @@ public class GameFunc {
             float traveltime;
             float frames;
 
-            // set destdelta to the vector needed to move
+            // assign destdelta to the vector needed to move
             if (ent.moveinfo.state == STATE_UP)
                 Math3D.VectorSubtract(ent.moveinfo.end_angles, ent.entityState.angles,
                         destdelta);
@@ -712,7 +712,7 @@ public class GameFunc {
             // velocity
             Math3D.VectorScale(destdelta, 1.0f / traveltime, ent.avelocity);
 
-            // set nextthink to trigger a think when dest is reached
+            // assign nextthink to trigger a think when dest is reached
             ent.nextthink = GameBase.level.time + frames * Defines.FRAMETIME;
             ent.think = AngleMove_Final;
             return true;
@@ -910,7 +910,7 @@ public class GameFunc {
             else
                 ent.movetype = Defines.MOVETYPE_PUSH;
 
-            // set the axis of rotation
+            // assign the axis of rotation
             Math3D.VectorClear(ent.movedir);
             if ((ent.spawnflags & 4) != 0)
                 ent.movedir[2] = 1.0f;
@@ -967,7 +967,7 @@ public class GameFunc {
      * matching targetname will be used "speed" override the default 40 speed
      * "wait" override the default 1 second wait (-1 = never return) "lip"
      * override the default 4 pixel lip remaining at end of move "health" if
-     * set, the button must be killed instead of touched "sounds" 1) silent 2)
+     * assign, the button must be killed instead of touched "sounds" 1) silent 2)
      * steam metal 3) wooden clunk 4) metallic click 5) in-out
      */
 
@@ -1517,8 +1517,8 @@ public class GameFunc {
      * 
      * "message" is printed when the door is touched if it is a trigger door and
      * it hasn't been fired yet "angle" determines the opening direction
-     * "targetname" if set, no touch field will be spawned and a remote button
-     * or trigger field activates the door. "health" if set, door must be shot
+     * "targetname" if assign, no touch field will be spawned and a remote button
+     * or trigger field activates the door. "health" if assign, door must be shot
      * open "speed" movement speed (100 default) "wait" wait before returning (3
      * default, -1 = never return) "dmg" damage to inflict when blocked (2
      * default) "sounds" 1) silent 2) light 3) medium 4) heavy
@@ -1529,7 +1529,7 @@ public class GameFunc {
         public boolean think(TEntityDict ent) {
             Math3D.VectorClear(ent.entityState.angles);
 
-            // set the axis of rotation
+            // assign the axis of rotation
             Math3D.VectorClear(ent.movedir);
             if ((ent.spawnflags & DOOR_X_AXIS) != 0)
                 ent.movedir[2] = 1.0f;
@@ -1545,7 +1545,7 @@ public class GameFunc {
 
             if (0 == GameBase.st.distance) {
                 GameBase.gi.dprintf(ent.classname + " at "
-                        + Lib.vtos(ent.entityState.origin) + " with no distance set\n");
+                        + Lib.vtos(ent.entityState.origin) + " with no distance assign\n");
                 GameBase.st.distance = 90;
             }
 

@@ -678,7 +678,7 @@ public class RenderMain {
     void R_SetupGL() {
 
         //
-        // set up viewport
+        // assign up viewport
         //
         //int x = (int) Math.floor(r_newrefdef.x * vid.getWidth() / vid.getWidth());
         int x = r_newrefdef.x;
@@ -695,7 +695,7 @@ public class RenderMain {
         GL11.glViewport(x, y2, w, h);
 
         //
-        // set up projection matrix
+        // assign up projection matrix
         //
         float screenaspect = (float) r_newrefdef.width / r_newrefdef.height;
         GL11.glMatrixMode(GL11.GL_PROJECTION);
@@ -718,7 +718,7 @@ public class RenderMain {
         r_world_matrix.clear();
 
         //
-        // set drawing parms
+        // assign drawing parms
         //
         if (gl_cull.value != 0.0f)
             GL11.glEnable(GL11.GL_CULL_FACE);
@@ -774,7 +774,7 @@ public class RenderMain {
 
     /**
      * renderView
-     * r_newrefdef must be set before the first call
+     * r_newrefdef must be assign before the first call
      */
     private void renderView(TRefDef fd) {
 
@@ -834,7 +834,7 @@ public class RenderMain {
      * @param videoDef
      */
     private void setGL2D(TVideoDef videoDef) {
-        // set 2D virtual screen size
+        // assign 2D virtual screen size
         GL11.glViewport(0, 0, videoDef.getWidth(), videoDef.getHeight());
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
@@ -1021,10 +1021,10 @@ public class RenderMain {
 
         registerVariables();
 
-        // set our "safe" modes
+        // assign our "safe" modes
         gl_state.prev_mode = 3;
 
-        // create the window and set up the context
+        // create the window and assign up the context
         if (!R_SetMode()) {
             VID.Printf(VID.PRINT_ALL, "ref_gl::R_Init() - could not R_SetMode()\n");
             return false;

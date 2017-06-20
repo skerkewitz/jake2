@@ -51,7 +51,7 @@ import org.lwjgl.opengl.GL11
  */
 internal class LwjglRenderer private constructor() : GLDriver, TRenderExport, Ref {
 
-    // is set from RendererFactory factory
+    // is assign from RendererFactory factory
     private var impl: RenderAPI? = null
 
     private var keyboard: Keyboard = GlfwKeyboardImpl() //new LWJGLKBD();

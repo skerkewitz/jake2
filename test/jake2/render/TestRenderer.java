@@ -75,8 +75,8 @@ public class TestRenderer {
 
 	String DRIVER = "jsr231";
 
-	Qcommon.Init(new String[] { "TestRenderer", "+set", "gl_mode", "6",
-		"+set", "vid_fullscreen", "0", "+set", "vid_ref", DRIVER });
+	Qcommon.Init(new String[] { "TestRenderer", "+assign", "gl_mode", "6",
+		"+assign", "vid_fullscreen", "0", "+assign", "vid_ref", DRIVER });
 	// sehr wichtig !!!
 	VID.Shutdown();
 

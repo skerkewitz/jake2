@@ -24,7 +24,7 @@ package jake2.client;
 
 import jake2.Defines;
 import jake2.game.TCModel;
-import jake2.game.usercmd_t;
+import jake2.game.TUserCmd;
 import jake2.render.TImage;
 import jake2.render.TModel;
 import jake2.sound.TSound;
@@ -35,7 +35,7 @@ public class TClientState {
 
 	public TClientState() {
 		for (int n = 0; n < Defines.CMD_BACKUP; n++)
-			cmds[n] = new usercmd_t();
+			cmds[n] = new TUserCmd();
 		for (int i = 0; i < frames.length; i++) {
 			frames[i] = new TFrame();
 		}
@@ -61,8 +61,8 @@ public class TClientState {
 
 	int parse_entities; // index (not anded off) into cl_parse_entities[]
 
-	usercmd_t cmd = new usercmd_t();
-	usercmd_t cmds[] = new usercmd_t[Defines.CMD_BACKUP]; // each mesage will send several old cmds
+	TUserCmd cmd = new TUserCmd();
+	TUserCmd cmds[] = new TUserCmd[Defines.CMD_BACKUP]; // each mesage will send several old cmds
 
 	int cmd_time[] = new int[Defines.CMD_BACKUP]; // time sent, for calculating pings
 	short predicted_origins[][] = new short[Defines.CMD_BACKUP][3]; // for debug comparing against server
@@ -93,7 +93,7 @@ public class TClientState {
 
 	float[] v_forward = { 0, 0, 0 };
 	float[] v_right = { 0, 0, 0 };
-	float[] v_up = { 0, 0, 0 }; // set when refdef.angles is set
+	float[] v_up = { 0, 0, 0 }; // assign when refdef.angles is assign
 
 	//
 	// transient data from server

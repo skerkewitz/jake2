@@ -38,7 +38,7 @@ public class GameTarget {
         String buffer;
 
         if (GameBase.st.noise == null) {
-            GameBase.gi.dprintf("target_speaker with no noise set at "
+            GameBase.gi.dprintf("target_speaker with no noise assign at "
                     + Lib.vtos(ent.entityState.origin) + "\n");
             return;
         }
@@ -71,7 +71,7 @@ public class GameTarget {
     /**
      * QUAKED target_help (1 0 1) (-16 -16 -24) (16 16 24) help1 When fired, the
      * "message" key becomes the current personal computer string, and the
-     * message light will be set on all clients status bars.
+     * message light will be assign on all clients status bars.
      */
     public static void SP_target_help(TEntityDict ent) {
         if (GameBase.deathmatch.value != 0) { // auto-remove for deathmatch
@@ -281,7 +281,7 @@ public class GameTarget {
      * level "volume" 0.0 to 1.0
      * 
      * Normal sounds play each time the target is used. The reliable flag can be
-     * set for crucial voiceovers.
+     * assign for crucial voiceovers.
      * 
      * Looped sounds are always atten 3 / vol 1, and the use function toggles it
      * on/off. Multiple identical looping sounds will just increase volume
@@ -456,7 +456,7 @@ public class GameTarget {
      * Set "sounds" to one of the following: 1) sparks 2) blue water 3) brown
      * water 4) slime 5) lava 6) blood
      * 
-     * "count" how many pixels in the splash "dmg" if set, does a radius damage
+     * "count" how many pixels in the splash "dmg" if assign, does a radius damage
      * at this location when it splashes useful for lava/sparks
      */
     static EntUseAdapter use_target_splash = new EntUseAdapter() {
@@ -507,7 +507,7 @@ public class GameTarget {
 
     /**
      * QUAKED target_blaster (1 0 0) (-8 -8 -8) (8 8 8) NOTRAIL NOEFFECTS Fires
-     * a blaster bolt in the set direction when triggered.
+     * a blaster bolt in the assign direction when triggered.
      * 
      * dmg default is 15 speed default is 1000
      */
@@ -572,7 +572,7 @@ public class GameTarget {
 
     /**
      * QUAKED target_laser (0 .5 .8) (-8 -8 -8) (8 8 8) START_ON RED GREEN BLUE
-     * YELLOW ORANGE FAT When triggered, fires a laser. You can either set a
+     * YELLOW ORANGE FAT When triggered, fires a laser. You can either assign a
      * target or a direction.
      */
     public static EntThinkAdapter target_laser_think = new EntThinkAdapter() {
@@ -669,13 +669,13 @@ public class GameTarget {
             self.entityState.renderfx |= Defines.RF_BEAM | Defines.RF_TRANSLUCENT;
             self.entityState.modelIndex = 1; // must be non-zero
 
-            // set the beam diameter
+            // assign the beam diameter
             if ((self.spawnflags & 64) != 0)
                 self.entityState.frame = 16;
             else
                 self.entityState.frame = 4;
 
-            // set the color
+            // assign the color
             if ((self.spawnflags & 2) != 0)
                 self.entityState.skinnum = 0xf2f2f0f0;
             else if ((self.spawnflags & 4) != 0)

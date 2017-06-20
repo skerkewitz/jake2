@@ -65,23 +65,10 @@ public class GlfwKeyboardImpl extends Keyboard {
     public void Update() {
 //        HandleEvents();
 
-        double[] l_mx = new double[1];
-        double[] l_my = new double[1];
-
-        glfwGetCursorPos(LwjglRenderer.Companion.getWindow(), l_mx, l_my);
-
-        if (Input.mouse_active) {
-            mx = (int) ((l_mx[0] - 640 / 2) * 2);
-            my = (int) ((l_my[0] - 480 / 2) * 2);
-        } else {
-            mx = 0;
-            my = 0;
-        }
-
-        glfwSetCursorPos(LwjglRenderer.Companion.getWindow(), 320, 240);
+        MouseInput.update();
     }
 
-//    private void HandleEvents() {
+    //    private void HandleEvents() {
 //        int key;
 //
 //        Jake2InputEvent event;
@@ -93,11 +80,11 @@ public class GlfwKeyboardImpl extends Keyboard {
 //                    break;
 //
 //                case Jake2InputEvent.MotionNotify:
-////					if (Input.ignorefirst) {
-////						Input.ignorefirst = false;
+////					if (MouseInput.ignorefirst) {
+////						MouseInput.ignorefirst = false;
 ////						break;
 ////					}
-//                    if (Input.mouse_active) {
+//                    if (MouseInput.mouse_active) {
 //                        mx = (((MouseEvent)event.ev).getX() - win_w2) * 2;
 //                        my = (((MouseEvent)event.ev).getY() - win_h2) * 2;
 //                    } else {
@@ -288,11 +275,11 @@ public class GlfwKeyboardImpl extends Keyboard {
 //                    break;
 //
 //                case Jake2InputEvent.MotionNotify:
-////					if (Input.ignorefirst) {
-////						Input.ignorefirst = false;
+////					if (MouseInput.ignorefirst) {
+////						MouseInput.ignorefirst = false;
 ////						break;
 ////					}
-//                    if (Input.mouse_active) {
+//                    if (MouseInput.mouse_active) {
 //                        mx = (((MouseEvent)event.ev).getX() - win_w2) * 2;
 //                        my = (((MouseEvent)event.ev).getY() - win_h2) * 2;
 //                    } else {

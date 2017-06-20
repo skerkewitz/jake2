@@ -154,7 +154,7 @@ public class ServerWorld {
         if (!ent.inUse) {
             return;
         }
-        // set the size
+        // assign the size
         Math3D.VectorSubtract(ent.maxs, ent.mins, ent.size);
         // encode the size into the entity_state for client prediction
         if (ent.solid == Defines.SOLID_BBOX && 0 == (ent.svflags & Defines.SVF_DEADMONSTER)) {
@@ -181,7 +181,7 @@ public class ServerWorld {
             ent.entityState.solid = 31; // a solid_bbox will never create this value
         } else
             ent.entityState.solid = 0;
-        // set the abs box
+        // assign the abs box
         if (ent.solid == Defines.SOLID_BSP
                 && (ent.entityState.angles[0] != 0 || ent.entityState.angles[1] != 0 || ent.entityState.angles[2] != 0)) {
             // expand for rotation
@@ -221,7 +221,7 @@ public class ServerWorld {
         num_leafs = CM.CM_BoxLeafnums(ent.absmin, ent.absmax, ServerWorld.leafs,
                 ServerWorld.MAX_TOTAL_ENT_LEAFS, iw);
         topnode = iw[0];
-        // set areas
+        // assign areas
         for (int i = 0; i < num_leafs; i++) {
             ServerWorld.clusters[i] = CM.CM_LeafCluster(ServerWorld.leafs[i]);
             area = CM.CM_LeafArea(ServerWorld.leafs[i]);

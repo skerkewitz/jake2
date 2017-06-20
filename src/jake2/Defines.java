@@ -131,7 +131,7 @@ public interface Defines {
     int CONTENTS_MONSTER = 0x2000000; // should never be on a brush, only in game
     int CONTENTS_DEADMONSTER = 0x4000000;
     int CONTENTS_DETAIL = 0x8000000; // brushes to be added after vis leafs
-    int CONTENTS_TRANSLUCENT = 0x10000000; // auto set if any surface has trans
+    int CONTENTS_TRANSLUCENT = 0x10000000; // auto assign if any surface has trans
     int CONTENTS_LADDER = 0x20000000;
 
     int SURF_LIGHT = 0x1; // value will hold the light strength
@@ -789,7 +789,7 @@ public interface Defines {
     int MOD_FRIENDLY_FIRE = 0x8000000;
 
     //	edict->spawnflags
-    //	these are set with checkboxes on each entity in the map editor
+    //	these are assign with checkboxes on each entity in the map editor
     int SPAWNFLAG_NOT_EASY = 0x00000100;
     int SPAWNFLAG_NOT_MEDIUM = 0x00000200;
     int SPAWNFLAG_NOT_HARD = 0x00000400;
@@ -1080,7 +1080,7 @@ public interface Defines {
     int U_MOREBITS1 = (1 << 7); // read one additional byte
 
     // second byte
-    int U_NUMBER16 = (1 << 8); // NUMBER8 is implicit if not set
+    int U_NUMBER16 = (1 << 8); // NUMBER8 is implicit if not assign
     int U_ORIGIN3 = (1 << 9);
     int U_ANGLE1 = (1 << 10);
     int U_MODEL = (1 << 11);
@@ -1117,7 +1117,7 @@ public interface Defines {
 
     int clc_bad = 0;
     int clc_nop = 1;
-    int clc_move = 2; // [[usercmd_t]
+    int clc_move = 2; // [[TUserCmd]
     int clc_userinfo = 3; // [[userinfo string]
     int clc_stringcmd = 4; // [string] message
 

@@ -52,12 +52,12 @@ object Jake2 {
 
         var dedicated = false
 
-        //    	Configuration.DEBUG.set(true);
+        //    	Configuration.DEBUG.assign(true);
 
         // check if we are in dedicated mode to hide the java dialog.
         var n = 0
         while (n < args.size) {
-            if (args[n] == "+set") {
+            if (args[n] == "+assign") {
                 if (n++ >= args.size)
                     break
 
@@ -77,7 +77,7 @@ object Jake2 {
             n++
         }
 
-        // TODO: check if dedicated is set in config file
+        // TODO: check if dedicated is assign in config file
 
         Context.dedicated = ConsoleVar.get("dedicated", "0", TVar.CVAR_FLAG_NOSET)
 

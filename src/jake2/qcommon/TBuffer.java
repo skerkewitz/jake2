@@ -28,7 +28,7 @@ package jake2.qcommon;
 import jake2.Defines;
 import jake2.client.Context;
 import jake2.game.TEntityState;
-import jake2.game.usercmd_t;
+import jake2.game.TUserCmd;
 import jake2.util.Lib;
 import jake2.util.Math3D;
 
@@ -192,13 +192,13 @@ public final class TBuffer {
         return Math3D.SHORT2ANGLE(ReadShort(msg_read));
     }
 
-    public static void ReadDeltaUsercmd(TBuffer msg_read, usercmd_t from,
-                                        usercmd_t move) {
+    public static void ReadDeltaUsercmd(TBuffer msg_read, TUserCmd from,
+                                        TUserCmd move) {
         int bits;
 
         //memcpy(move, from, sizeof(* move));
         // IMPORTANT!! copy without new
-        move.set(from);
+        move.assign(from);
         bits = ReadByte(msg_read);
 
         // read current angles
@@ -238,7 +238,7 @@ public final class TBuffer {
     }
 
 
-    public void writeDeltaUsercmd(usercmd_t from, usercmd_t cmd) {
+    public void writeDeltaUsercmd(TUserCmd from, TUserCmd cmd) {
         int bits;
 
         //
@@ -596,7 +596,7 @@ public final class TBuffer {
 
         if (this.writeHeadPosition + length > this.maxsize) {
             if (!this.allowOverflow)
-                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowOverflow set");
+                Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: overflow without allowOverflow assign");
 
             if (length > this.maxsize)
                 Command.Error(Defines.ERR_FATAL, "SZ_GetSpace: " + length + " is > full buffer size");

@@ -30,7 +30,7 @@ import java.io.IOException;
 public class client_respawn_t
 
 {
-	/** What to set client->pers to on a respawn */
+	/** What to assign client->pers to on a respawn */
 	protected client_persistant_t coop_respawn = new client_persistant_t();
 	 
 	/** Level.framenum the client entered the game. */

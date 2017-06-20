@@ -202,7 +202,7 @@ public class ServerInit {
         sv.loadgame = loadgame;
         sv.attractloop = attractloop;
 
-        // save name for levels that don't set message
+        // save name for levels that don't assign message
         sv.configstrings[Defines.CS_NAME] = server;
 
         if (ConsoleVar.VariableValue("deathmatch") != 0) {
@@ -281,7 +281,7 @@ public class ServerInit {
         // check for a savegame
         checkForSavegame();
 
-        // set serverinfo variable
+        // assign serverinfo variable
         ConsoleVar.FullSet("mapname", sv.name, TVar.CVAR_FLAG_SERVERINFO | TVar.CVAR_FLAG_NOSET);
     }
 
@@ -312,13 +312,13 @@ public class ServerInit {
 
         if (ConsoleVar.VariableValue("coop") != 0
                 && ConsoleVar.VariableValue("deathmatch") != 0) {
-            Command.Printf("Deathmatch and Coop both set, disabling Coop\n");
+            Command.Printf("Deathmatch and Coop both assign, disabling Coop\n");
             ConsoleVar.FullSet("coop", "0", TVar.CVAR_FLAG_SERVERINFO
                     | TVar.CVAR_FLAG_LATCH);
         }
 
         // dedicated servers are can't be single player and are usually DM
-        // so unless they explicity set coop, force it to deathmatch
+        // so unless they explicity assign coop, force it to deathmatch
         if (Context.dedicated.value != 0) {
             if (0 == ConsoleVar.VariableValue("coop"))
                 ConsoleVar.FullSet("deathmatch", "1", TVar.CVAR_FLAG_SERVERINFO
@@ -371,7 +371,7 @@ public class ServerInit {
         for (i = 0; i < ServerMain.maxclients.value; i++) {
             ent = GameBase.entityDicts[i + 1];
             svs.clients[i].edict = ent;
-            svs.clients[i].lastcmd = new usercmd_t();
+            svs.clients[i].lastcmd = new TUserCmd();
         }
     }
                                                                // server info
@@ -403,7 +403,7 @@ public class ServerInit {
 
         level = levelstring; // bis hier her ok.
 
-        // if there is a + in the map, set nextserver to the remainder
+        // if there is a + in the map, assign nextserver to the remainder
 
         int c = level.indexOf('+');
         if (c != -1) {

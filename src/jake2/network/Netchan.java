@@ -46,7 +46,7 @@ public final class Netchan extends ServerMain {
      * The remote connection never knows if it missed a reliable message, the
      * local side detects that it has been dropped by seeing a sequence
      * acknowledge higher thatn the last reliable sequence, but without the
-     * correct evon/odd bit for the reliable set.
+     * correct evon/odd bit for the reliable assign.
      * 
      * If the sender notices that a reliable message has been dropped, it will
      * be retransmitted. It will not be retransmitted again until a message
@@ -187,7 +187,7 @@ public final class Netchan extends ServerMain {
      * A 0 length will still generate a packet and deal with the reliable
      * messages.
      */
-    public static void Transmit(TNetChan chan, int length, byte data[]) {
+    public static void transmit(TNetChan chan, int length, byte data[]) {
         int send_reliable;
         int w1, w2;
 
@@ -210,11 +210,10 @@ public final class Netchan extends ServerMain {
         }
 
         // write the packet header
-        send.init(send_buf, send_buf.length);
+        final TBuffer send = TBuffer.createWithSize(Defines.MAX_MSGLEN);
 
         w1 = (chan.outgoing_sequence & ~(1 << 31)) | (send_reliable << 31);
-        w2 = (chan.incoming_sequence & ~(1 << 31))
-                | (chan.incoming_reliable_sequence << 31);
+        w2 = (chan.incoming_sequence & ~(1 << 31)) | (chan.incoming_reliable_sequence << 31);
 
         chan.outgoing_sequence++;
         chan.last_sent = Context.curtime;

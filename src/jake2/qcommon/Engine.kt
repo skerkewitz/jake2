@@ -76,7 +76,7 @@ class Engine {
                 Key.Init()
 
                 // we need to add the early commands twice, because
-                // a basedir or cddir needs to be set before execing
+                // a basedir or cddir needs to be assign before execing
                 // config files, but we want other parms to override
                 // the settings of the config files
                 CommandBuffer.AddEarlyCommands(false)
@@ -282,7 +282,7 @@ class Engine {
             CommandBuffer.AddText("bind MWHEELUP weapnext\n")
             CommandBuffer.AddText("bind MWHEELDOWN weapprev\n")
             CommandBuffer.AddText("bind w +forward\n")
-            CommandBuffer.AddText("bind entityState +back\n")
+            CommandBuffer.AddText("bind s +back\n")
             CommandBuffer.AddText("bind a +moveleft\n")
             CommandBuffer.AddText("bind d +moveright\n")
             CommandBuffer.execute()

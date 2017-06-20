@@ -42,6 +42,9 @@ public final class Cmd {
     private static final int MAX_STRING_TOKENS = 80; // max tokens resulting from Cmd_TokenizeString
     private static final int ALIAS_LOOP_COUNT = 16;
 
+    private static int cmd_argc;
+    private static String[] cmd_argv = new String[MAX_STRING_TOKENS];
+
     public static TXCommand Wait_f = () -> Context.cmd_wait = true;
 
     public static Comparator PlayerSort = (o1, o2) -> {
@@ -69,8 +72,7 @@ public final class Cmd {
         }
         Command.Printf(i + " commands\n");
     };
-    private static int cmd_argc;
-    private static String[] cmd_argv = new String[MAX_STRING_TOKENS];
+
     static TXCommand Exec_f = () -> {
         if (Cmd.Argc() != 2) {
             Command.Printf("exec <filename> : execute a script file\n");
@@ -78,12 +80,13 @@ public final class Cmd {
         }
 
         byte[] f = null;
-        f = FileSystem.loadFile(Cmd.Argv(1));
+        String filename = Cmd.Argv(1);
+        f = FileSystem.loadFile(filename);
         if (f == null) {
-            Command.Printf("couldn't exec " + Cmd.Argv(1) + "\n");
+            Command.Printf("couldn't exec " + filename + "\n");
             return;
         }
-        Command.Printf("execing " + Cmd.Argv(1) + "\n");
+        Command.Printf("execing " + filename + "\n");
 
         CommandBuffer.InsertText(new String(f));
 
@@ -265,7 +268,7 @@ public final class Cmd {
             if (c == 0)
                 return;
 
-            // set cmd_args to everything after the first arg
+            // assign cmd_args to everything after the first arg
             if (cmd_argc == 1) {
                 cmd_args = new String(text, ph.index, len - ph.index);
                 cmd_args.trim();
@@ -283,22 +286,22 @@ public final class Cmd {
         }
     }
 
-    public static void registerCommand(String cmd_name, TXCommand function) {
+    public static void registerCommand(String name, TXCommand function) {
 
         //Command.DPrintf("Cmd_AddCommand: " + cmd_name + "\n");
         // fail if the command is a variable name
-        if ((ConsoleVar.VariableString(cmd_name)).length() > 0) {
-            Command.Printf("Cmd_AddCommand: " + cmd_name + " already defined as a var\n");
+        if ((ConsoleVar.VariableString(name)).length() > 0) {
+            Command.Printf("Cmd_AddCommand: " + name + " already defined as a var\n");
             return;
         }
 
         // fail if the command already exists
-        if (cmd_functions.containsKey(cmd_name)) {
-            Command.Printf("Cmd_AddCommand: " + cmd_name + " already defined\n");
+        if (cmd_functions.containsKey(name)) {
+            Command.Printf("Cmd_AddCommand: " + name + " already defined\n");
             return;
         }
 
-        cmd_functions.put(cmd_name, new TCmdFunction(cmd_name, function));
+        cmd_functions.put(name, new TCmdFunction(name, function));
     }
 
     /**
@@ -394,7 +397,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             ServerGame.PF_cprintfhigh(ent,
-                    "You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+assign cheats 1' to enable this command.\n");
             return;
         }
 
@@ -523,7 +526,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             ServerGame.PF_cprintfhigh(ent,
-                    "You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+assign cheats 1' to enable this command.\n");
             return;
         }
 
@@ -548,7 +551,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             ServerGame.PF_cprintfhigh(ent,
-                    "You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+assign cheats 1' to enable this command.\n");
             return;
         }
 
@@ -571,7 +574,7 @@ public final class Cmd {
 
         if (GameBase.deathmatch.value != 0 && GameBase.sv_cheats.value == 0) {
             ServerGame.PF_cprintfhigh(ent,
-                    "You must run the server with '+set cheats 1' to enable this command.\n");
+                    "You must run the server with '+assign cheats 1' to enable this command.\n");
             return;
         }
 
@@ -1098,9 +1101,9 @@ public final class Cmd {
      * when they are typed in at the console, they will need to be forwarded.
      */
     public static void ForwardToServer() {
-        String cmd;
 
-        cmd = Cmd.Argv(0);
+
+        String cmd = Cmd.Argv(0);
         if (Context.cls.getState() <= Defines.ca_connected || cmd.charAt(0) == '-'
                 || cmd.charAt(0) == '+') {
             Command.Printf("Unknown command \"" + cmd + "\"\n");

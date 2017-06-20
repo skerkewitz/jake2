@@ -433,7 +433,7 @@ public final class Light {
 
         RenderMain renderMain = RenderAPIImpl.renderMain;
         try {
-            // set to full bright if no light data
+            // assign to full bright if no light data
             if (mapSurface.samples == null) {
                 for (i = 0; i < size * 3; i++) {
                     s_blocklights[i] = 255;
@@ -576,7 +576,7 @@ public final class Light {
 
                     /*
                      * * alpha is ONLY used for the mono lightmap case. For this
-                     * reason * we set it to the brightest of the color
+                     * reason * we assign it to the brightest of the color
                      * components so that * things don't get too dim.
                      */
                     a = max;
@@ -625,7 +625,7 @@ public final class Light {
 
                     /*
                      * * alpha is ONLY used for the mono lightmap case. For this
-                     * reason * we set it to the brightest of the color
+                     * reason * we assign it to the brightest of the color
                      * components so that * things don't get too dim.
                      */
                     a = max;
@@ -644,8 +644,8 @@ public final class Light {
                     }
 
                     /*
-                     * * So if we are doing alpha lightmaps we need to set the
-                     * R, G, and B * components to 0 and we need to set alpha to
+                     * * So if we are doing alpha lightmaps we need to assign the
+                     * R, G, and B * components to 0 and we need to assign alpha to
                      * 1-alpha.
                      */
                     switch (monolightmap) {

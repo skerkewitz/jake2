@@ -148,7 +148,7 @@ public class GameSpawn {
             //---------------
             // reserve some spots for dead player bodies for coop / deathmatch
             PlayerClient.InitBodyQue();
-            // set configstrings for items
+            // assign configstrings for items
             GameItems.SetItemNames();
             if (GameBase.st.nextmap != null)
                 GameBase.level.nextmap = GameBase.st.nextmap;
@@ -215,7 +215,7 @@ public class GameSpawn {
             GameBase.gi.soundindex("*pain100_1.wav");
             GameBase.gi.soundindex("*pain100_2.wav");
             // sexed models
-            // THIS ORDER MUST MATCH THE DEFINES Input g_local.h
+            // THIS ORDER MUST MATCH THE DEFINES MouseInput g_local.h
             // you can add more, max 15
             GameBase.gi.modelindex("#w_blaster.md2");
             GameBase.gi.modelindex("#w_shotgun.md2");
@@ -402,8 +402,8 @@ public class GameSpawn {
      * 
      * Chain together all entities with a matching team field.
      * 
-     * All but the first will have the FL_TEAMSLAVE flag set. All but the last
-     * will have the teamchain field set to the next one.
+     * All but the first will have the FL_TEAMSLAVE flag assign. All but the last
+     * will have the teamchain field assign to the next one.
      */
 
     static void G_FindTeams() {
@@ -482,7 +482,7 @@ public class GameSpawn {
         GameBase.level.mapname = mapname;
         GameBase.game.spawnpoint = spawnpoint;
 
-        // set client fields on player ents
+        // assign client fields on player ents
         for (i = 0; i < GameBase.game.maxclients; i++)
             GameBase.entityDicts[i + 1].client = GameBase.game.clients[i];
 

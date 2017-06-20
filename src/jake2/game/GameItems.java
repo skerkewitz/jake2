@@ -1154,7 +1154,7 @@ public class GameItems {
                 ent.spawnflags = 0;
                 GameBase.gi.dprintf("" + ent.classname + " at "
                         + Lib.vtos(ent.entityState.origin)
-                        + " has invalid spawnflags set\n");
+                        + " has invalid spawnflags assign\n");
             }
         }
     

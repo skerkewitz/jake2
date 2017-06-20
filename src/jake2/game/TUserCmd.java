@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 package jake2.game;
 
 
-public class usercmd_t implements Cloneable {
+public class TUserCmd implements Cloneable {
 	public byte msec;
 	public byte buttons;
 	public short angles[]= new short[3];
@@ -36,10 +36,10 @@ public class usercmd_t implements Cloneable {
 		angles[0] = angles[1] = angles[2] = 0;
 	}
 
-	public usercmd_t() {
+	public TUserCmd() {
 	}
 
-    public usercmd_t(usercmd_t from) {
+    public TUserCmd(TUserCmd from) {
 		msec= from.msec;
 		buttons= from.buttons;
 		angles[0]= from.angles[0];
@@ -52,7 +52,7 @@ public class usercmd_t implements Cloneable {
 		lightlevel= from.lightlevel;
 	}
 
-	public usercmd_t set(usercmd_t from) {
+	public TUserCmd assign(TUserCmd from) {
 		msec= from.msec;
 		buttons= from.buttons;
 		angles[0]= from.angles[0];

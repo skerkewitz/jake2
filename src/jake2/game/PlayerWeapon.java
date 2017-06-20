@@ -1093,7 +1093,7 @@ public class PlayerWeapon {
         ent.client.newweapon = null;
         ent.client.machinegun_shots = 0;
 
-        // set visible model
+        // assign visible model
         if (ent.entityState.modelIndex == 255) {
             if (ent.client.pers.weapon != null)
                 i = ((ent.client.pers.weapon.weapmodel & 0xff) << 8);

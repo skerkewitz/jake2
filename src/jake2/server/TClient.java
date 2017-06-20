@@ -24,7 +24,7 @@ package jake2.server;
 
 import jake2.Defines;
 import jake2.game.TEntityDict;
-import jake2.game.usercmd_t;
+import jake2.game.TUserCmd;
 import jake2.network.TNetChan;
 import jake2.qcommon.TBuffer;
 
@@ -40,7 +40,7 @@ public class TClient {
     int lastframe;
 
     /** For filling in big drops. */
-    usercmd_t lastcmd = new usercmd_t();
+    TUserCmd lastcmd = new TUserCmd();
 
     int commandMsec; // every seconds this is reset, if user
     int frame_latency[] = new int[LATENCY_COUNTS];

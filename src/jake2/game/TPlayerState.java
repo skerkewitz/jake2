@@ -46,7 +46,7 @@ public class TPlayerState {
 	public float[] viewoffset= { 0, 0, 0 }; // add to pmovestate->origin
 	public float[] kick_angles= { 0, 0, 0 }; // add to view direction to get render angles
 
-	// set by weapon kicks, pain effects, etc
+	// assign by weapon kicks, pain effects, etc
 	public float[] gunangles= { 0, 0, 0 };
 	public float[] gunoffset= { 0, 0, 0 };
 	public int gunindex;

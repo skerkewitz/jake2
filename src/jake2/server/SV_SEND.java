@@ -391,7 +391,7 @@ public class SV_SEND {
 		}
 
 		// send the datagram
-		Netchan.Transmit(client.netchan, msg.writeHeadPosition, msg.data);
+		Netchan.transmit(client.netchan, msg.writeHeadPosition, msg.data);
 
 		// record the size for rate estimation
 		client.message_size[ServerInit.sv.framenum % Defines.RATE_MESSAGES] = msg.writeHeadPosition;
@@ -517,7 +517,7 @@ public class SV_SEND {
 			if (ServerInit.sv.state == Defines.ss_cinematic
 				|| ServerInit.sv.state == Defines.ss_demo
 				|| ServerInit.sv.state == Defines.ss_pic)
-				Netchan.Transmit(c.netchan, msglen, msgbuf);
+				Netchan.transmit(c.netchan, msglen, msgbuf);
 			else if (c.state == Defines.cs_spawned) {
 				// don't overrun bandwidth
 				if (SV_RateDrop(c))
@@ -528,7 +528,7 @@ public class SV_SEND {
 			else {
 				// just update reliable	if needed
 				if (c.netchan.message.writeHeadPosition != 0 || Context.curtime - c.netchan.last_sent > 1000)
-					Netchan.Transmit(c.netchan, 0, NULLBYTE);
+					Netchan.transmit(c.netchan, 0, NULLBYTE);
 			}
 		}
 	}

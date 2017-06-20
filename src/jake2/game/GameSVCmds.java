@@ -61,7 +61,7 @@ public class GameSVCmds {
      * prohibited from entering the game. This is the default setting.
      * 
      * If 0, then only addresses matching the list will be allowed. This lets
-     * you easily set up a private game, or a game that only allows players from
+     * you easily assign up a private game, or a game that only allows players from
      * your local network.
      * 
      */

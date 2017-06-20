@@ -603,7 +603,7 @@ public class Model {
                 out.samples = pointer; // subarray
             }
 
-            // set the drawing flags
+            // assign the drawing flags
 
             if ((out.texinfo.flags & Defines.SURF_WARP) != 0) {
                 out.flags |= Defines.SURF_DRAWTURB;
@@ -837,7 +837,7 @@ public class Model {
         Mod_LoadSubmodels(header.lumps[Defines.LUMP_MODELS]);
         mod.numframes = 2;        // regular and alternate animation
 
-        // set up the submodels
+        // assign up the submodels
         for (int i = 0; i < mod.numsubmodels; i++) {
             TMapModel bm = mod.submodels[i];
             TModel starmod = mod_inline[i] = loadmodel.copy();
@@ -954,7 +954,7 @@ public class Model {
             mod.skins[i] = RenderAPIImpl.image.GL_FindImage(skinNames[i], it_skin);
         }
 
-        // set the model arrays
+        // assign the model arrays
         pheader.skinNames = skinNames; // skin names
         pheader.stVerts = poutst; // textur koordinaten
         pheader.triAngles = pouttri; // dreiecke

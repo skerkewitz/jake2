@@ -97,7 +97,7 @@ public class CLEntity {
 	 * ==================
 	 */
 	public static void ParseDelta(TEntityState from, TEntityState to, int number, int bits) {
-		// set everything to the state we are delta'ing from
+		// assign everything to the state we are delta'ing from
 		to.set(from);
 
 		Math3D.VectorCopy(from.origin, to.old_origin);
@@ -623,7 +623,7 @@ public class CLEntity {
 			effects = s1.effects;
 			renderfx = s1.renderfx;
 
-			// set frame
+			// assign frame
 			if ((effects & Defines.EF_ANIM01) != 0)
 				ent.frame = autoanim & 1;
 			else if ((effects & Defines.EF_ANIM23) != 0)
@@ -688,7 +688,7 @@ public class CLEntity {
 				Math.random();
 				ent.model = null;
 			} else {
-				// set skin
+				// assign skin
 				if (s1.modelIndex == 255) { // use custom player skin
 					ent.skinnum = 0;
 					ci = Context.cl.clientinfo[s1.skinnum & 0xff];
@@ -778,7 +778,7 @@ public class CLEntity {
 				continue;
 			}
 
-			// if set to invisible, skip
+			// if assign to invisible, skip
 			if (s1.modelIndex == 0)
 				continue;
 
@@ -810,7 +810,7 @@ public class CLEntity {
 			if ((effects & Defines.EF_COLOR_SHELL) != 0) {
 				/*
 				 * PMM - at this point, all of the shells have been handled if
-				 * we're in the rogue pack, set up the custom mixing, otherwise
+				 * we're in the rogue pack, assign up the custom mixing, otherwise
 				 * just keep going if(Developer_searchpath(2) == 2) { all of the
 				 * solo colors are fine. we need to catch any of the
 				 * combinations that look bad (double & half) and turn them into
@@ -1051,7 +1051,7 @@ public class CLEntity {
 		if (gun.model == null)
 			return;
 
-		// set up gun position
+		// assign up gun position
 		for (i = 0; i < 3; i++) {
 			gun.origin[i] = Context.cl.refdef.vieworg[i] + ops.gunoffset[i] + Context.cl.lerpfrac
 					* (ps.gunoffset[i] - ops.gunoffset[i]);

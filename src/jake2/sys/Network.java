@@ -235,9 +235,9 @@ public final class Network {
                 return false;
             }
 
-            // set the size
+            // assign the size
             net_message.writeHeadPosition = packetLength;
-            // set the sentinel
+            // assign the sentinel
             net_message.data[packetLength] = 0;
             return true;
 

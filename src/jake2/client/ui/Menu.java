@@ -198,7 +198,7 @@ public final class Menu {
             "\"Quake II Theme Song\"", "(C) 1997 Rob Zombie. All Rights",
             "Reserved.", "", "Track 10 (\"Climb\") by Jer Sypult", "",
             "Voice of computers by", "Carly Staehlin-Taylor", "",
-            "+THANKS TO ACTIVISION", "+Input PARTICULAR:", "", "John Tam",
+            "+THANKS TO ACTIVISION", "+MouseInput PARTICULAR:", "", "John Tam",
             "Steve Rosenthal", "Marty Stratton", "Henk Hartong", "",
             "Quake II(tm) (C)1997 Id Software, Inc.",
             "All Rights Reserved.  Distributed by",
@@ -237,14 +237,14 @@ public final class Menu {
             "Tim Willits", "Christian Antkow", "Paul Jaquays", "Brandon James",
             "Todd Hollenshead", "Barrett (Bear) Alexander",
             "Dave \"Zoid\" Kirsch", "Donna Jackson", "", "", "",
-            "+THANKS TO ACTIVISION", "+Input PARTICULAR:", "", "Marty Stratton",
+            "+THANKS TO ACTIVISION", "+MouseInput PARTICULAR:", "", "Marty Stratton",
             "Henk \"The Original Ripper\" Hartong", "Kevin Kraff",
             "Jamey Gottlieb", "Chris Hepburn", "", "+AND THE GAME TESTERS", "",
             "Tim Vanlaw", "Doug Jacobs", "Steven Rosenthal", "David Baker",
             "Chris Campbell", "Aaron Casillas", "Steve Elwell",
             "Derek Johnstone", "Igor Krinitskiy", "Samantha Lee",
             "Michael Spann", "Chris Toft", "Juan Valdes", "",
-            "+THANKS TO INTERGRAPH COMPUTER SYTEMS", "+Input PARTICULAR:", "",
+            "+THANKS TO INTERGRAPH COMPUTER SYTEMS", "+MouseInput PARTICULAR:", "",
             "Michael T. Nicolaou", "", "",
             "Quake II Mission Pack: The Reckoning",
             "(tm) (C)1998 Id Software, Inc. All",
@@ -281,7 +281,7 @@ public final class Menu {
             "Paul Jaquays", "Brandon James", "Todd Hollenshead",
             "Barrett (Bear) Alexander", "Katherine Anna Kang", "Donna Jackson",
             "Dave \"Zoid\" Kirsch", "", "", "", "+THANKS TO ACTIVISION",
-            "+Input PARTICULAR:", "", "Marty Stratton", "Henk Hartong",
+            "+MouseInput PARTICULAR:", "", "Marty Stratton", "Henk Hartong",
             "Mitch Lasky", "Steve Rosenthal", "Steve Elwell", "",
             "+AND THE GAME TESTERS", "", "The Ranger Clan",
             "Dave \"Zoid\" Kirsch", "Nihilistic Software", "Robert Duffy", "",
@@ -2628,7 +2628,7 @@ public final class Menu {
 
         Menu_Center(s_startserver_menu);
 
-        // call this now to set proper inital state
+        // call this now to assign proper inital state
         RulesChangeFunc(null);
     }
 
@@ -3042,7 +3042,7 @@ public final class Menu {
 
         Menu_Center(s_dmoptions_menu);
 
-        // set the original dmflags statusbar
+        // assign the original dmflags statusbar
         DMFlagCallback(null);
         Menu_SetStatusBar(s_dmoptions_menu, dmoptions_statusbar);
     }

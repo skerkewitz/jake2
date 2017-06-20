@@ -313,7 +313,7 @@ public class Key {
                 return; // ignore most autorepeats
 
             if (key >= 200 && keybindings[key] == null)
-                Command.Printf(Key.KeynumToString(key) + " is unbound, hit F4 to set.\n");
+                Command.Printf(Key.KeynumToString(key) + " is unbound, hit F4 to assign.\n");
         } else {
             key_repeats[key] = 0;
         }

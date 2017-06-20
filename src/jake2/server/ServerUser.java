@@ -113,7 +113,7 @@ public class ServerUser {
 
         //
         // serverdata needs to go over for all types of servers
-        // to make sure the protocol is right, and to set the gamedir
+        // to make sure the protocol is right, and to assign the gamedir
         //
         String gamedir = ConsoleVar.VariableString("gamedir");
 
@@ -142,11 +142,11 @@ public class ServerUser {
         // game server
         // 
         if (ServerInit.sv.state == Defines.ss_game) {
-            // set up the entity for the client
+            // assign up the entity for the client
             TEntityDict ent = GameBase.entityDicts[playernum + 1];
             ent.entityState.number = playernum + 1;
             ServerMain.sv_client.edict = ent;
-            ServerMain.sv_client.lastcmd = new usercmd_t();
+            ServerMain.sv_client.lastcmd = new TUserCmd();
 
             // begin fetching configstrings
             ServerMain.sv_client.netchan.message.writeByte(Defines.svc_stufftext);
@@ -487,7 +487,7 @@ public class ServerUser {
      * ===========================================================================
      */
 
-    public static void SV_ClientThink(TClient cl, usercmd_t cmd) {
+    public static void SV_ClientThink(TClient cl, TUserCmd cmd) {
         cl.commandMsec -= cmd.msec & 0xFF;
 
         if (cl.commandMsec < 0 && ServerMain.sv_enforcetime.value != 0) {
@@ -508,8 +508,8 @@ public class ServerUser {
         int c;
         String s;
 
-        usercmd_t nullcmd = new usercmd_t();
-        usercmd_t oldest = new usercmd_t(), oldcmd = new usercmd_t(), newcmd = new usercmd_t();
+        TUserCmd nullcmd = new TUserCmd();
+        TUserCmd oldest = new TUserCmd(), oldcmd = new TUserCmd(), newcmd = new TUserCmd();
         int net_drop;
         int stringCmdCount;
         int checksum, calculatedChecksum;
@@ -569,7 +569,7 @@ public class ServerUser {
                 }
 
                 //memset (nullcmd, 0, sizeof(nullcmd));
-                nullcmd = new usercmd_t();
+                nullcmd = new TUserCmd();
                 TBuffer.ReadDeltaUsercmd(Context.net_message, nullcmd, oldest);
                 TBuffer.ReadDeltaUsercmd(Context.net_message, oldest, oldcmd);
                 TBuffer.ReadDeltaUsercmd(Context.net_message, oldcmd, newcmd);
@@ -616,7 +616,7 @@ public class ServerUser {
                 }
 
                 // copy.
-                cl.lastcmd.set(newcmd);
+                cl.lastcmd.assign(newcmd);
                 break;
 
             case Defines.clc_stringcmd:

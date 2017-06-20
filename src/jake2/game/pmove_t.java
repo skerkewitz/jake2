@@ -48,7 +48,7 @@ public class pmove_t {
     public pmove_state_t s = new pmove_state_t();
 
     // command (in)
-    public usercmd_t cmd = new usercmd_t();
+    public TUserCmd cmd = new TUserCmd();
 
     public boolean snapinitial; // if entityState has been changed outside pmove
 

@@ -306,9 +306,7 @@ public final class FileSystem {
 
     public static int file_from_pak = 0;
 
-    /*
-     * openfile
-     * 
+    /**
      * Finds the file in the search path. returns a RadomAccesFile. Used for
      * streaming data out of either a pak file or a seperate file.
      */
@@ -977,7 +975,7 @@ public final class FileSystem {
      * <p>
      * In the pattern string, `*' matches any sequence of characters, `?'
      * matches any character, [SET] matches any character in the specified set,
-     * [!SET] matches any character not in the specified set. A set is composed
+     * [!SET] matches any character not in the specified assign. A assign is composed
      * of characters or ranges; a range looks like character hyphen character
      * (as in 0-9 or A-Z). [0-9a-zA-Z_] is the set of characters allowed in C
      * identifiers. Any other character in the pattern must be matched exactly.

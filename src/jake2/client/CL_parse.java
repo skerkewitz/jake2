@@ -303,7 +303,7 @@ public class CL_parse {
         Context.cl.gamedir = str;
         Command.dprintln("gamedir=" + str);
 
-        // set gamedir
+        // assign gamedir
         if (str.length() > 0
                 && (FileSystem.varGameDir.string == null
                         || FileSystem.varGameDir.string.length() == 0 || FileSystem.varGameDir.string

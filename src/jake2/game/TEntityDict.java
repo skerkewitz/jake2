@@ -105,7 +105,7 @@ public class TEntityDict {
 
     public float timestamp;
 
-    /** set in qe3, -1 = up, -2 = down */
+    /** assign in qe3, -1 = up, -2 = down */
     public float angle;
 
     public String target = null;
@@ -443,7 +443,7 @@ public class TEntityDict {
         } // F_ANGLEHACK),
 
         if (key.equals("item")) {
-            GameBase.gi.error("entityDict.set(\"item\") called.");
+            GameBase.gi.error("entityDict.assign(\"item\") called.");
             return true;
         } // F_ITEM)
 

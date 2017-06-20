@@ -766,7 +766,7 @@ public class M_Insane {
     static EntThinkAdapter insane_checkup = new EntThinkAdapter() {
     	public String getID() { return "insane_checkup"; }
         public boolean think(TEntityDict self) {
-            //			If Hold_Ground and Crawl are set
+            //			If Hold_Ground and Crawl are assign
             if ((self.spawnflags & 4) != 0 && (self.spawnflags & 16) != 0)
                 return true;
             if (Lib.random() < 0.5)
@@ -783,7 +783,7 @@ public class M_Insane {
                 self.monsterinfo.currentmove = insane_move_cross;
                 self.monsterinfo.aiflags |= Defines.AI_STAND_GROUND;
             }
-            // If Hold_Ground and Crawl are set
+            // If Hold_Ground and Crawl are assign
             else if ((self.spawnflags & 4) != 0 && (self.spawnflags & 16) != 0)
                 self.monsterinfo.currentmove = insane_move_down;
             else if (Lib.random() < 0.5)

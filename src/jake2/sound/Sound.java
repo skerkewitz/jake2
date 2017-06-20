@@ -91,7 +91,7 @@ public class Sound {
             }
         }
         // if driver not found use dummy
-        impl = drivers.get(drivers.size());
+        impl = drivers.get(0);
     }
 
     /**

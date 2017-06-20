@@ -30,10 +30,10 @@ package jake2.game;
  */
 public final class TVar {
 
-    final public static int CVAR_FLAG_ARCHIVE = 1; // set to cause it to be saved to vars.rc
+    final public static int CVAR_FLAG_ARCHIVE = 1; // assign to cause it to be saved to vars.rc
     final public static int CVAR_FLAG_USERINFO = 2; // added to userinfo when changed
     final public static int CVAR_FLAG_SERVERINFO = 4; // added to serverinfo when changed
-    final public static int CVAR_FLAG_NOSET = 8; // don't allow change from console at all, but can be set from the command line
+    final public static int CVAR_FLAG_NOSET = 8; // don't allow change from console at all, but can be assign from the command line
     final public static int CVAR_FLAG_LATCH = 16; // save changes until server restart
 
     public String name;

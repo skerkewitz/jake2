@@ -40,7 +40,7 @@ public class GameTrigger {
     }
 
     // the trigger was just activated
-    // entityDict.activator should be set to the activator so it can be held through a
+    // entityDict.activator should be assign to the activator so it can be held through a
     // delay so wait for the delay time before firing
     public static void multi_trigger(TEntityDict ent) {
         if (ent.nextthink != 0)
@@ -92,7 +92,7 @@ public class GameTrigger {
 
     /**
      * QUAKED trigger_once (.5 .5 .5) ? x x TRIGGERED Triggers once, then
-     * removes itself. You must set the key "target" to the name of another
+     * removes itself. You must assign the key "target" to the name of another
      * object in the level that has a matching "targetname".
      * 
      * If TRIGGERED, this trigger must be triggered before it is live.
@@ -212,7 +212,7 @@ public class GameTrigger {
 
     public static void SP_trigger_gravity(TEntityDict self) {
         if (GameBase.st.gravity == null) {
-            GameBase.gi.dprintf("trigger_gravity without gravity set at "
+            GameBase.gi.dprintf("trigger_gravity without gravity assign at "
                     + Lib.vtos(self.entityState.origin) + "\n");
             GameUtil.G_FreeEdict(self);
             return;
@@ -235,7 +235,7 @@ public class GameTrigger {
         self.movedir[2] = GameBase.st.height;
     }
 
-    // the wait time has passed, so set back up for another activation
+    // the wait time has passed, so assign back up for another activation
     public static EntThinkAdapter multi_wait = new EntThinkAdapter() {
     	public String getID(){ return "multi_wait"; }
         public boolean think(TEntityDict ent) {
@@ -282,9 +282,9 @@ public class GameTrigger {
     /**
      * QUAKED trigger_multiple (.5 .5 .5) ? MONSTER NOT_PLAYER TRIGGERED
      * Variable sized repeatable trigger. Must be targeted at one or more
-     * entities. If "delay" is set, the trigger waits some time after activating
+     * entities. If "delay" is assign, the trigger waits some time after activating
      * before firing. "wait" : Seconds between triggerings. (.2 default) sounds
-     * 1) secret 2) beep beep 3) large switch 4) set "message" to text string
+     * 1) secret 2) beep beep 3) large switch 4) assign "message" to text string
      */
     static EntUseAdapter trigger_enable = new EntUseAdapter() {
     	public String getID(){ return "trigger_enable"; }
@@ -390,7 +390,7 @@ public class GameTrigger {
      * QUAKED trigger_counter (.5 .5 .5) ? nomessage Acts as an intermediary for
      * an action that takes multiple inputs.
      * 
-     * If nomessage is not set, t will print "1 more.. " etc when triggered and
+     * If nomessage is not assign, t will print "1 more.. " etc when triggered and
      * "sequence complete" when finished.
      * 
      * After the counter has been triggered "count" times (default 2), it will
@@ -573,7 +573,7 @@ public class GameTrigger {
             if (0 == (other.svflags & Defines.SVF_MONSTER))
                 return;
 
-            // set XY even if not on ground, so the jump will clear lips
+            // assign XY even if not on ground, so the jump will clear lips
             other.velocity[0] = self.movedir[0] * self.speed;
             other.velocity[1] = self.movedir[1] * self.speed;
 

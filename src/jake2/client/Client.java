@@ -42,6 +42,11 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import static jake2.Defines.key_console;
+import static jake2.Defines.key_menu;
+import static jake2.client.Context.cl;
+import static jake2.client.Context.cls;
+
 /**
  * Client
  */
@@ -58,6 +63,18 @@ public final class Client {
     static byte precache_model[]; // used for skin checking in alias models
 
     public static final int PLAYER_MULT = 5;
+
+    public static final ClientInput clientInput = new ClientInput();
+
+    public static void Frame() {
+
+        if (!cl.cinematicpalette_active
+                && (!cl.refresh_prepped || cls.getKey_dest() == key_console || cls.getKey_dest() == key_menu)) {
+            MouseInput.DeactivateMouse();
+        } else {
+            MouseInput.ActivateMouse();
+        }
+    }
 
     public static class cheatvar_t {
         String name;
@@ -304,7 +321,7 @@ public final class Client {
     static TXCommand Rcon_f = () -> {
 
         if (Context.rcon_client_password.string.length() == 0) {
-            Command.Printf("You must set 'rcon_password' before\nissuing an rcon command.\n");
+            Command.Printf("You must assign 'rcon_password' before\nissuing an rcon command.\n");
             return;
         }
 
@@ -334,7 +351,7 @@ public final class Client {
             to = Context.cls.getNetchan().remote_address;
         else {
             if (Context.rcon_address.string.length() == 0) {
-                Command.Printf("You must either be connected,\nor set the 'rcon_address' cvar\nto issue rcon commands\n");
+                Command.Printf("You must either be connected,\nor assign the 'rcon_address' cvar\nto issue rcon commands\n");
                 return;
             }
             Network.StringToAdr(Context.rcon_address.string, to);
@@ -681,9 +698,9 @@ public final class Client {
 
         // send a disconnect message to the server
         String fin = (char) Defines.clc_stringcmd + "disconnect";
-        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
-        Netchan.Transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
+        Netchan.transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
+        Netchan.transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
+        Netchan.transmit(Context.cls.getNetchan(), fin.length(), Lib.stringToBytes(fin));
 
         ClearState();
 
@@ -860,7 +877,7 @@ public final class Client {
         if (Context.gender_auto.value != 0.0f) {
 
             if (Context.gender.modified) {
-                // was set directly, don't override the user
+                // was assign directly, don't override the user
                 Context.gender.modified = false;
                 return;
             }
@@ -1201,7 +1218,7 @@ public final class Client {
         Context.cls.setState(Defines.ca_disconnected);
         Context.cls.setRealtime(Timer.Milliseconds());
 
-        CL_input.InitInput();
+        clientInput.InitInput();
 
         ConsoleVar.get("adr0", "", TVar.CVAR_FLAG_ARCHIVE);
         ConsoleVar.get("adr1", "", TVar.CVAR_FLAG_ARCHIVE);
@@ -1395,7 +1412,7 @@ public final class Client {
             }
         }
 
-        // make sure they are all set to the proper values
+        // make sure they are all assign to the proper values
         for (i = 0; i < Client.numcheatvars; i++) {
             var = Client.cheatvars[i];
             if (!var.var.string.equals(var.value)) {
@@ -1414,7 +1431,7 @@ public final class Client {
         Key.SendKeyEvents();
 
         // allow mice or other external controllers to add commands
-        Input.Commands();
+        MouseInput.Commands();
 
         // process console commands
         CommandBuffer.execute();
@@ -1423,7 +1440,7 @@ public final class Client {
         FixCvarCheats();
 
         // send intentions now
-        CL_input.SendCmd();
+        clientInput.sendUserComand();
 
         // resend a connection request if necessary
         CheckForResend();
@@ -1451,7 +1468,7 @@ public final class Client {
         }
 
         // let the mouse activate or deactivate
-        Input.Frame();
+        Frame();
 
         // decide the simulation time
         Context.cls.setFrametime(extratime / 1000.0f);
@@ -1522,7 +1539,7 @@ public final class Client {
         WriteConfiguration();
 
         Sound.Shutdown();
-        Input.Shutdown();
+        MouseInput.Shutdown();
         VID.Shutdown();
     }
 
@@ -1549,7 +1566,8 @@ public final class Client {
         //Context.cls.disableScreen = 1.0f; // don't draw yet
 
         InitLocal();
-        Input.Init();
+        Context.in_mouse = ConsoleVar.get("in_mouse", "1", TVar.CVAR_FLAG_ARCHIVE);
+        Context.in_joystick = ConsoleVar.get("in_joystick", "0", TVar.CVAR_FLAG_ARCHIVE);
 
         FileSystem.ExecAutoexec();
         CommandBuffer.execute();

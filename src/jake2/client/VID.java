@@ -33,7 +33,7 @@ import jake2.game.TVar;
 import jake2.qcommon.*;
 import jake2.render.opengl.RendererFactory;
 import jake2.sound.Sound;
-import jake2.sys.Input;
+import jake2.sys.MouseInput;
 import jake2.sys.Keyboard;
 
 import static jake2.Defines.MTYPE_ACTION;
@@ -148,7 +148,7 @@ public class VID {
 			if (keyboardHandler != null) {
 				keyboardHandler.Close();
 			}
-			Input.Shutdown();
+			MouseInput.Shutdown();
 		}
 
 		re = null;
@@ -166,7 +166,7 @@ public class VID {
 		if ( reflib_active )
 		{
 			re.getKeyboardHandler().Close();
-			Input.Shutdown();
+			MouseInput.Shutdown();
 
 			re.Shutdown();
 			FreeReflib();
@@ -203,7 +203,7 @@ public class VID {
 			Command.Error(Defines.ERR_FATAL, name + " has incompatible api_version");
 		}
 
-		Input.Real_IN_Init();
+		MouseInput.Real_IN_Init();
 
 		if ( !re.init((int)vid_xpos.value, (int)vid_ypos.value) )
 		{
@@ -332,7 +332,7 @@ public class VID {
 		if ( reflib_active )
 		{
 			re.getKeyboardHandler().Close();
-			Input.Shutdown();
+			MouseInput.Shutdown();
 
 			re.Shutdown();
 			FreeReflib();

@@ -47,7 +47,7 @@ public class TTrace {
     public csurface_t surface; // surface hit
     public int contents; // contents on other side of surface hit
     // pointer
-    public TEntityDict entityDict; // not set by CM_*() functions
+    public TEntityDict entityDict; // not assign by CM_*() functions
 
     public void set(TTrace from) {
         allSolid = from.allSolid;

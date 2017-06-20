@@ -72,8 +72,8 @@ public class DancingQueens {
         
 	String DRIVER = "lwjgl";
 	
-        Qcommon.Init(new String[] { "DancingQueens", "+set", "gl_mode", "4",
-                "+set", "vid_fullscreen", "0", "+set", "vid_ref", DRIVER });
+        Qcommon.Init(new String[] { "DancingQueens", "+assign", "gl_mode", "4",
+                "+assign", "vid_fullscreen", "0", "+assign", "vid_ref", DRIVER });
         // sehr wichtig !!!
         VID.Shutdown();
         

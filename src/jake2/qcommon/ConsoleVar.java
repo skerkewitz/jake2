@@ -94,7 +94,7 @@ public class ConsoleVar {
         Cmd.registerCommand("set", () -> {
             int c = Cmd.Argc();
             if (c != 3 && c != 4) {
-                Command.Printf("usage: set <variable> <value> [u / entityState]\n");
+                Command.Printf("usage: assign <variable> <value> [u / entityState]\n");
                 return;
             }
 
@@ -195,7 +195,7 @@ public class ConsoleVar {
     }
     
     /**
-     * Gereric set function, sets the value of the variable, with forcing its even possible to 
+     * Gereric assign function, sets the value of the variable, with forcing its even possible to
      * override the variables write protection. 
      */
     static TVar Set2(String var_name, String value, boolean force) {
@@ -307,7 +307,7 @@ public class ConsoleVar {
         if (v == null)
             return false;
 
-        // perform a variable print or set
+        // perform a variable print or assign
         if (Cmd.Argc() == 1) {
             Command.Printf("\"" + v.name + "\" is \"" + v.string + "\"\n");
             return true;

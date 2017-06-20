@@ -157,7 +157,7 @@ public final class V {
     /*
      * ================ V_TestParticles
      * 
-     * If cl_testparticles is set, create 4096 particles in the view
+     * If cl_testparticles is assign, create 4096 particles in the view
      * ================
      */
     static void TestParticles() {
@@ -179,7 +179,7 @@ public final class V {
     /*
      * ================ V_TestEntities
      * 
-     * If cl_testentities is set, create 32 player models ================
+     * If cl_testentities is assign, create 32 player models ================
      */
     static void TestEntities() {
         int i, j;
@@ -209,7 +209,7 @@ public final class V {
     /*
      * ================ V_TestLights
      * 
-     * If cl_testlights is set, create 32 lights models ================
+     * If cl_testlights is assign, create 32 lights models ================
      */
     static void TestLights() {
         int i, j;

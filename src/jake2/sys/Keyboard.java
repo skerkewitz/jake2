@@ -35,10 +35,6 @@ abstract public class Keyboard {
 	
 	static int win_x = 0;
 	static int win_y = 0;
-		
-	// motion values
-	public static int mx = 0;
-	public static int my = 0;
 
 	abstract public void Init();
 

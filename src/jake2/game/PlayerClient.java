@@ -303,7 +303,7 @@ public class PlayerClient {
     /**
      * QUAKED info_player_intermission (1 0 1) (-16 -16 -24) (16 16 32) The
      * deathmatch intermission point will be at one of these Use 'angles'
-     * instead of 'angle', so you can set pitch or roll as well as yaw. 'pitch
+     * instead of 'angle', so you can assign pitch or roll as well as yaw. 'pitch
      * yaw roll'
      */
     public static void SP_info_player_intermission() {
@@ -1084,7 +1084,7 @@ public class PlayerClient {
         ent.entityState.origin[2] += 1; // make sure off ground
         Math3D.VectorCopy(ent.entityState.origin, ent.entityState.old_origin);
 
-        // set the delta angle
+        // assign the delta angle
         for (i = 0; i < 3; i++) {
             client.ps.pmove.delta_angles[i] = (short) Math3D
                     .ANGLE2SHORT(spawn_angles[i] - client.resp.cmd_angles[i]);
@@ -1221,17 +1221,17 @@ public class PlayerClient {
             return "\\name\\badinfo\\skin\\male/grunt";
         }
 
-        // set name
+        // assign name
         s = Info.Info_ValueForKey(userinfo, "name");
 
         ent.client.pers.netname = s;
 
-        // set spectator
+        // assign spectator
         s = Info.Info_ValueForKey(userinfo, "spectator");
         // spectators are only supported in deathmatch
         ent.client.pers.spectator = GameBase.deathmatch.value != 0 && !s.equals("0");
 
-        // set skin
+        // assign skin
         s = Info.Info_ValueForKey(userinfo, "skin");
 
         playernum = ent.index - 1;
@@ -1390,7 +1390,7 @@ public class PlayerClient {
      * This will be called once for each client frame, which will usually be a
      * couple times for each server frame.
      */
-    public static void ClientThink(TEntityDict ent, usercmd_t ucmd) {
+    public static void ClientThink(TEntityDict ent, TUserCmd ucmd) {
         gclient_t client;
         TEntityDict other;
         int i, j;
@@ -1418,7 +1418,7 @@ public class PlayerClient {
 
         } else {
 
-            // set up for pmove
+            // assign up for pmove
             pm = new pmove_t();
 
             if (ent.movetype == Defines.MOVETYPE_NOCLIP)
@@ -1444,7 +1444,7 @@ public class PlayerClient {
             }
 
             // this should be a copy
-            pm.cmd.set(ucmd);
+            pm.cmd.assign(ucmd);
 
             pm.trace = PlayerClient.PM_trace; // adds default parms
             pm.pointcontents = GameBase.gi.pointcontents;
@@ -1611,7 +1611,7 @@ public class PlayerClient {
     }
 
     /** 
-     * Returns true, if the players gender flag was set to female. 
+     * Returns true, if the players gender flag was assign to female.
      */
     public static boolean IsFemale(TEntityDict ent) {
         char info;
@@ -1625,7 +1625,7 @@ public class PlayerClient {
     }
 
     /**
-     * Returns true, if the players gender flag was neither set to female nor to
+     * Returns true, if the players gender flag was neither assign to female nor to
      * male.
      */
     public static boolean IsNeutral(TEntityDict ent) {
